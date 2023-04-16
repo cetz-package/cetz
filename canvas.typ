@@ -227,11 +227,6 @@
       place(path(stroke: self.stroke, fill: self.fill,
                  closed: self.close, ..pos))
     },
-    circle: (self, center) => {
-      place(dx: center.at(0), dy: center.at(1),
-        circle(radius: self.radius, fill: self.fill,
-               stroke: self.stroke))
-    },
     rect: (self, a, b) => {
       let (x1, y1) = a
       let (x2, y2) = b

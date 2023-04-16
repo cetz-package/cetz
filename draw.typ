@@ -192,7 +192,11 @@
   )
 ),)
 
-#let circle(center, radius: 1) = ((
+#let circle(center, radius: 1,
+            samples: auto,
+            start: 0deg,
+            end: 360deg,
+            cycle: false) = ((
   (
     positions: ctx => {
       (center, (radius, 0, 0),)
@@ -202,6 +206,10 @@
        default: center)
     },
     render: (ctx, center, radius) => {
+      let samples = samples
+      if samples == auto {
+        samples = int((end - start) / 1deg)
+      }
       let radius = radius.at(0)
       let (x, y, ..) = center
       center.at(0) = x - radius
@@ -212,9 +220,15 @@
       let t = (x, y - radius)
       let b = (x, y + radius)
 
-      ((cmd: "circle", pos: (center,),
-        bounds: (l, r, t, b), radius: radius * ctx.length,
-        stroke: ctx.stroke, fill: ctx.fill),)
+      let pts = ()
+      for i in range(0, samples + 1) {
+        let angle = start + (end - start) * (i / samples)
+        pts.push((x + calc.cos(angle) * radius,
+                  y + calc.sin(angle) * radius,
+                  center.at(2)))
+      }
+
+      path-cmd(ctx, ..pts, cycle: cycle)
     }
   )
 ),)
