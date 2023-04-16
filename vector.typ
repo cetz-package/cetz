@@ -59,16 +59,13 @@
   return (x, y, z)
 }
 
-/// Calculate angle between two vectors of dim 2 or dim 3
-#let angle(v1, v2) = {
+/// Calculate angle between three points 
+#let angle(v1, c, v2) = {
   assert(dim(v1) == dim(v2))
-  if dim(v1) == 2 {
-    let n = calc.max(-1, calc.min(1, (dot(v1, v2) / (len(v1) * len(v2)))))
-    // FIXME: Bug
-    return calc.acos(n)
-  } else if dim(v1) == 3 {
-    panic("TODO")
-    //return calc.asin(cross(v1, v2) / (len(v1) * len(v2)))
+  if dim(v1) == 2 or dim(v1) == 3 {
+    v1 = sub(v1, c)
+    v2 = sub(v2, c)
+    return calc.acos(dot(norm(v1), norm(v2)))
   } else {
     panic("Invalid vector dimension")
   }
