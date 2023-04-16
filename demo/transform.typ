@@ -1,6 +1,6 @@
 #import "../canvas.typ": *
 
-#canvas(fill: gray, length: 2cm, ctx => {
+#canvas(fill: gray, length: 2cm, {
   import "../draw.typ": *
 
   rect((-1, -1), (1, 1))

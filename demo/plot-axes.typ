@@ -1,6 +1,6 @@
 #import "../canvas.typ": *
 
-#canvas(fill: gray, length: 1cm, ctx => {
+#canvas(fill: gray, length: 1cm, {
   import "../draw.typ": *
   stroke(black + .5pt)
 

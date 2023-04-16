@@ -209,7 +209,7 @@
               anchors: anchors)
     }
 
-    let r = render-element(b(ctx), ctx, bounds)
+    let r = render-element(b, ctx, bounds)
     if r != none {
       bounds = r.bounds
       ctx = r.ctx
