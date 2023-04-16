@@ -140,11 +140,13 @@
 
         // Render element
         if "render" in element {
+          let cur-transform = ctx.transform-stack.last()
+
           // Query element for points
           let abs = ()
           if "positions" in element {
             for p in (element.positions)(ctx) {
-              p = vector.as-vec(position-to-vec(p, ctx), init: (0, 0, 0))
+              p = vector.as-vec(position-to-vec(p, ctx), init: (0,0,0,1))
               ctx.prev.pt = p
               abs.push(p)
             }
@@ -153,6 +155,11 @@
           // Allow the element to store anchors
           if "anchors" in element {
             let elem-anchors = (element.anchors)(ctx, ..abs)
+            // TODO: Apply transform here and apply _inverse_ transform
+            //       on anchor (or all final points) in position-to-vec.
+            //for (k, v) in elem-anchors {
+            //  elem-anchors.at(k) = apply-transform(cur-transform, v)
+            //}
             if "default" in elem-anchors {
               ctx.prev.pt = elem-anchors.default
             }
@@ -160,8 +167,6 @@
           }
 
           for (i, draw) in (element.render)(ctx, ..abs).enumerate() {
-            let cur-transform = ctx.transform-stack.last()
-
             if "pos" in draw {
               draw.pos = draw.pos.map(x => apply-transform(cur-transform, x))
               drawables.push(draw)

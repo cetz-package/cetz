@@ -101,8 +101,8 @@
 }
 
 #let rect-cmd(ctx, a, b) = {
-  let (x1, y1, z1) = a
-  let (x2, y2, z2) = b
+  let (x1, y1, z1, ..) = a
+  let (x2, y2, z2, ..) = b
   path-cmd(ctx, (x1, y1, z1), (x2, y1, z2),
                 (x2, y2, z2), (x1, y2, z1), cycle: true)
 }
@@ -150,7 +150,8 @@
     },
     anchors: (ctx, ..pts) => {
       (start: pts.pos().at(0),
-       end: pts.pos().at(-1),)
+       end: pts.pos().at(-1),
+       default: pts.pos().at(-1))
     },
     render: (ctx, ..pts) => {
       path-cmd(ctx, ..pts.pos())
@@ -177,9 +178,15 @@
 #let rect(a, b) = ((
   (
     positions: ctx => {
-      (a, b,)
+      (a, b, vector.add(a, vector.div(vector.sub(b, a), 2)))
     },
-    render: (ctx, a, b) => {
+    anchors: (ctx, a, b, center) => {
+      let r = (
+        center: center,
+      )
+      return r
+    },
+    render: (ctx, a, b, center) => {
       rect-cmd(ctx, a, b)
     },
   )
