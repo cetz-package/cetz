@@ -273,3 +273,27 @@
     }
   )
 ),)
+
+// Merge multiple paths
+#let merge-path(..body, cycle: false) = ((
+  (
+    children: ctx => {
+      body.pos()
+    },
+    finalize-children: (ctx, children) => {
+      let merged = none
+      for child in children {
+        assert(child.cmd == "line")
+        if merged == none {
+          merged = child
+        } else {
+          merged.pos += child.pos
+        }
+      }
+      merged.close = cycle
+      merged.fill = ctx.fill
+      merged.stroke = ctx.stroke
+      return (merged,)
+    }
+  )
+),)

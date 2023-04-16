@@ -124,12 +124,19 @@
 
         // Render children
         if "children" in element {
+          let child-drawables = ()
           for child in (element.children)(ctx) {
             let r = render-element(child, ctx, bounds)
             ctx = r.ctx
             bounds = r.bounds
-            drawables += r.drawables
+            child-drawables += r.drawables
             anchors += r.anchors
+          }
+
+          if "finalize-children" in element {
+            drawables += (element.finalize-children)(ctx, child-drawables)
+          } else {
+            drawables += child-drawables
           }
         }
 
