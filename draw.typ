@@ -1,4 +1,7 @@
 #import "vector.typ"
+#import "matrix.typ"
+
+#let typst-rotate = rotate
 
 #let fill(color) = ((
   (apply: ctx => {
@@ -19,6 +22,32 @@
     let pt = (ctx.pos-to-pt)(pt)
     ctx.prev.pt = pt
     ctx.prev.bounds = (l: pt, r: pt, t: pt, b: pt)
+    return ctx
+  })
+),)
+
+// Rotate on z-axis (defaul) or specified axes if `angle` is of type
+// dictionary
+#let rotate(angle) = ((
+  (apply: ctx => {
+    if type(angle) == "dictionary" {
+      for (key, value) in angle {
+        ctx.transform-stack.last().insert("rotate-"+key,
+          if key == "x" {
+            matrix.transform-rotate-x(value)
+          } else if key == "y" {
+            matrix.transform-rotate-y(value)
+          } else if key == "z" {
+            matrix.transform-rotate-z(value)
+          } else {
+            panic("Invalid rotation axis")
+          }
+        )
+      }
+    } else {
+      ctx.transform-stack.last().rotate = matrix.transform-rotate-z(angle)
+    }
+
     return ctx
   })
 ),)
@@ -183,7 +212,10 @@
   )
 ),)
 
-#let content(pt, content, position: auto,
+// Render content
+// NOTE: Content itself is not transformed by the canvas transformations!
+//       native transformation matrix support from typst would be required.
+#let content(pt, ct, position: auto,
              angle: 0deg,
              handle-x: .5, handle-y: .5) = ((
   (positions: ctx => {
@@ -200,7 +232,7 @@
     if position == "right"  { handle-x = 0 }
     if position == "on"     { handle-x = .5; handle-y = .5 }    
 
-    let bounds = measure(content, ctx.style)
+    let bounds = measure(ct, ctx.style)
     let tw = bounds.width / ctx.length
     let th = bounds.height / ctx.length
     let w = (calc.abs(calc.sin(angle) * th) + calc.abs(calc.cos(angle) * tw))
@@ -216,7 +248,7 @@
     ((cmd: "content", pos: (pt,), content:
       move(dx: -bounds.width/2 + w/2*ctx.length - w * ctx.length * handle-x,
            dy: -bounds.height/2 + h/2*ctx.length - h * ctx.length * handle-y,
-           rotate(angle, content)), bounds: (tl, tr, bl, br)), )
+           typst-rotate(angle, ct)), bounds: (tl, tr, bl, br)), )
     }
   )
 ),)

@@ -112,6 +112,7 @@
     // returns them (to allow modifying function locals
     // of the root scope)
     let render-element(b, ctx, bounds) = {
+      if b == none { return }
       let drawables = ()
       let anchors = (:)
 
@@ -197,9 +198,15 @@
     }
 
     let r = render-element(b(ctx), ctx, bounds)
-    bounds = r.bounds
-    ctx = r.ctx
-    drawables += r.drawables
+    if r != none {
+      bounds = r.bounds
+      ctx = r.ctx
+      drawables += r.drawables
+    }
+  }
+
+  if bounds == none {
+    return []
   }
 
   // Final canvas size
