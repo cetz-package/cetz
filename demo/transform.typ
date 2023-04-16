@@ -5,7 +5,11 @@
 
   rect((-1, -1), (1, 1))
 
-  rotate((z: 45deg, x: 45deg))
-  rect((-1, -1), (1, 1))
-  content((0,0), [Content is not rotated])
+  node("A", {
+    rotate((z: 45deg, x: 45deg))
+    rect((-1, -1), (1, 1))
+    content((0,0), [Content is not rotated])
+  })
+
+  rect((-2, -2), (2, 2))
 })

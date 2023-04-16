@@ -67,13 +67,14 @@
 #let node(name, ..body) = ((
   (apply: ctx => {
     ctx.anchors = (:)
+    ctx.transform-stack.push(ctx.transform-stack.last())
     return ctx
   },
   children: ctx => {
     body.pos()
   },
   finalize: (ctx, anchors) => {
-    //panic(anchors)
+    let _ = ctx.transform-stack.pop()
     ctx.nodes.insert(name, (
       anchor: anchors,
       bounds: ctx.prev.bounds,
@@ -102,7 +103,8 @@
 #let rect-cmd(ctx, a, b) = {
   let (x1, y1, z1) = a
   let (x2, y2, z2) = b
-  path-cmd(ctx, (x1, y1, z1), (x2, y1, z2), (x2, y2, z2), (x1, y2, z1), cycle: true)
+  path-cmd(ctx, (x1, y1, z1), (x2, y1, z2),
+                (x2, y2, z2), (x1, y2, z1), cycle: true)
 }
 
 #let arrow-head-cmd(ctx, from, to, symbol) = {
@@ -115,20 +117,18 @@
 
   if symbol == ">" {
     let s = vector.sub(to, from)
-    let n = (-s.at(1) / 3,
-             s.at(0) / 3,
-             from.at(2))
-    path-cmd(ctx, from, vector.add(from, n), to, vector.add(from, vector.neg(n)),
+    let n = (-s.at(1) / 3, s.at(0) / 3, from.at(2))
+    path-cmd(ctx, from, vector.add(from, n), to,
+             vector.add(from, vector.neg(n)),
              cycle: true, fill: parse-stroke-color(ctx.stroke))
   } else if symbol == "|" {
     let s = vector.sub(to, from)
-    let n = (-s.at(1) / 3,
-             s.at(0) / 3,
-             to.at(2))
-    path-cmd(ctx, vector.add(to, n), vector.add(to, vector.neg(n)),
+    let n = (-s.at(1) / 3, s.at(0) / 3, to.at(2))
+    path-cmd(ctx, vector.add(to, n),
+             vector.add(to, vector.neg(n)),
              cycle: false)
   } else {
-    panic("Unknown symbol " + symbol)
+    panic("Unknown arrow head: " + symbol)
   }
 }
 
