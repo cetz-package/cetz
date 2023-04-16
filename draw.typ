@@ -192,6 +192,14 @@
   )
 ),)
 
+#let pt-on-circle(center, x-rad, y-rad, start, end, i) = {
+  let (x, y, z, ..) = center
+  let angle = start + (end - start) * i
+  (x + calc.cos(angle) * x-rad,
+   y + calc.sin(angle) * y-rad,
+   z)
+}
+
 #let circle(center, radius: 1,
             samples: auto,
             start: 0deg,
@@ -202,7 +210,10 @@
       (center, (radius, 0, 0),)
     },
     anchors: (ctx, center, radius) => {
+      let radius = radius.at(0)
       (center: center,
+       start: pt-on-circle(center, radius, radius, start, end, 0),
+       end: pt-on-circle(center, radius, radius, start, end, 1),
        default: center)
     },
     render: (ctx, center, radius) => {
@@ -211,21 +222,10 @@
         samples = int((end - start) / 1deg)
       }
       let radius = radius.at(0)
-      let (x, y, ..) = center
-      center.at(0) = x - radius
-      center.at(1) = y + radius
-
-      let l = (x - radius, y)
-      let r = (x + radius, y)
-      let t = (x, y - radius)
-      let b = (x, y + radius)
-
       let pts = ()
       for i in range(0, samples + 1) {
-        let angle = start + (end - start) * (i / samples)
-        pts.push((x + calc.cos(angle) * radius,
-                  y + calc.sin(angle) * radius,
-                  center.at(2)))
+        pts.push(pt-on-circle(center, radius, radius, start, end,
+          i / samples))
       }
 
       path-cmd(ctx, ..pts, cycle: cycle)
