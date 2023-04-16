@@ -108,6 +108,9 @@
 }
 
 #let arrow-head-cmd(ctx, from, to, symbol) = {
+  from = vector.as-vec(from, init: (0,0,0))
+  to = vector.as-vec(to, init: (0,0,0))
+
   if symbol == "<" {
     let tmp = to
     to = from

@@ -46,7 +46,7 @@
 
       // Add relative positions to previous position
       if "rel" in v {
-        return vector.add(ctx.prev.pt,
+        return vector.add(vector.as-vec(ctx.prev.pt, init: (0,0,0)),
           vector.as-vec(position-to-vec(v.rel, ctx),
                         init: (0, 0, 0)))
       }
