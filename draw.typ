@@ -305,7 +305,7 @@
 ),)
 
 // Render shadow of children by rendering them twice
-#let shadow(..body, color: gray, offset-x: .1, offset-y: .1) = ((
+#let shadow(color: gray, offset-x: .1, offset-y: .1, ..body) = ((
 (
   children: ctx => {
     (
