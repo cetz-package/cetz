@@ -270,7 +270,7 @@
     let vec-to-pt(vec) = {
       // the vector has control points
       if type(vec.first()) == "array" {
-        return vec.map(slice_vec)
+        return vec.map(vec-to-pt)
       } else {
         return vec.slice(0, 2)
           .map(x => length * x)
