@@ -155,7 +155,7 @@
        default: pts.pos().at(-1))
     },
     render: (ctx, ..pts) => {
-      path-cmd(ctx, ..pts.pos())
+      path-cmd(ctx, ..pts.pos(), cycle: cycle)
 
       if pts.pos().len() >= 2 {
         if mark-begin != none {
