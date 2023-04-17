@@ -197,7 +197,7 @@
         }
 
         if "finalize" in element {
-          ctx = (element.finalize)(ctx, anchors)
+          ctx = (element.finalize)(ctx, ctx.anchors)
         }
       }
 
