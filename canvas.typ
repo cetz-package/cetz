@@ -31,6 +31,16 @@
       return ctx.prev.pt
     }
 
+    // Allow strings as shorthand for anchors
+    if type(v) == "string" {
+       let parts = v.split(".")
+       if parts.len() == 1 {
+         v = (node: parts.at(0))
+       } else {
+         v = (node: parts.slice(0, -1).join("."), at: parts.at(-1))
+       }
+    }
+
     if type(v) == "dictionary" {
       if "node" in v {
         assert(v.node in ctx.anchors, message: "Unknown node '" + v.node + "'")
