@@ -52,47 +52,45 @@
   })
 ),)
 
-#let anchor(name, pos) = ((
-  (positions: ctx => {
-    (pos,)
-  },
-  anchors: (ctx, pos) => {
-    let d = (:)
-    d.insert(name, pos)
-    return d
-  },
-  render: (ctx, pos) => {()})
-),)
-
-#let node(name, ..body) = ((
+// Translate
+#let translate(x, y, z) = ((
   (apply: ctx => {
-    ctx.anchors = (:)
-    ctx.transform-stack.push(ctx.transform-stack.last())
-    return ctx
-  },
-  children: ctx => {
-    body.pos()
-  },
-  finalize: (ctx, anchors) => {
-    let _ = ctx.transform-stack.pop()
-    ctx.nodes.insert(name, (
-      anchor: anchors,
-      bounds: ctx.prev.bounds,
-      pt: ctx.prev.pt
-    ))
+    ctx.transform-stack.last().translate = matrix.transform-translate(x,y,z)
     return ctx
   })
 ),)
 
-// TODO: Replace me if this feature has native support
-#let parse-stroke-color(paint) = {
-  if type(paint) == "color" {
-    return paint
-  } else if type(paint) == "stroke" {
-    // OUCH!
-    return rgb(repr(paint).slice(repr(paint).position("#"), -2))
-  } 
-}
+// Register anchor `name` at position `pos`.
+#let anchor(name, pos) = ((
+(
+  name: name,
+  positions: ctx => {
+    (pos,)
+  },
+  anchors: (ctx, pos) => {
+    (default: pos)
+  },
+  render: (ctx, pos) => {()})
+),)
+
+// Group
+#let group(name: none, ..body) = ((
+(
+  name: name,
+  apply: ctx => {
+    ctx.transform-stack.push(ctx.transform-stack.last())
+    return ctx
+  },
+  children: ctx => {
+    let (old-fill, old-stroke) = (ctx.fill, ctx.stroke)
+    (..body.pos(), fill(old-fill), stroke(old-stroke))
+  },
+  finalize: (ctx) => {
+    let _ = ctx.transform-stack.pop()
+    return ctx
+  }
+)
+),)
 
 #let path-cmd(ctx, ..pts, cycle: false, fill: auto) = {
   if fill == auto { fill = ctx.fill }
@@ -123,7 +121,7 @@
     let n = (-s.at(1) / 3, s.at(0) / 3, from.at(2))
     path-cmd(ctx, from, vector.add(from, n), to,
              vector.add(from, vector.neg(n)),
-             cycle: true, fill: parse-stroke-color(ctx.stroke))
+             cycle: true, fill: ctx.fill)
   } else if symbol == "|" {
     let s = vector.sub(to, from)
     let n = (-s.at(1) / 3, s.at(0) / 3, to.at(2))
@@ -273,7 +271,7 @@
     let tr = (x + w, y, z, 1)
     let bl = (x, y - h, z, 1)
     let br = (x + w, y - h, z, 1)
-    
+
     ((cmd: "content", pos: (pt,), content:
       move(dx: -bounds.width/2 + w/2*ctx.length - w * ctx.length * handle-x,
            dy: -bounds.height/2 + h/2*ctx.length - h * ctx.length * handle-y,
@@ -304,4 +302,22 @@
       return (merged,)
     }
   )
+),)
+
+// Render shadow of children by rendering them twice
+#let shadow(..body, color: gray, offset-x: .1, offset-y: .1) = ((
+(
+  children: ctx => {
+    (
+      group(
+        // FIXME: only modify stroke color!
+        fill(color), stroke(color),
+        translate(offset-x, offset-y, 0),
+        ..body.pos(),
+      ),
+      translate(0, 0, 0),
+      ..body.pos()
+    )
+  },
+)
 ),)

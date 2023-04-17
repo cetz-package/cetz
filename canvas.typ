@@ -168,6 +168,7 @@
             if "default" in elem-anchors {
               ctx.prev.pt = elem-anchors.default
             }
+
             ctx.anchors.insert(element.name, elem-anchors)
           }
 
@@ -197,7 +198,7 @@
         }
 
         if "finalize" in element {
-          ctx = (element.finalize)(ctx, ctx.anchors)
+          ctx = (element.finalize)(ctx)
         }
       }
 

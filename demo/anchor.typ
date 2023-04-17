@@ -10,8 +10,11 @@
   circle((node: "a", at: "start"), radius: .1)
 
   // Create custom anchors
-  //group({
-  //  line((0,1), (1,1))
-  //})
-  //circle((node: "b", at: "mid"))
+  /* NEEDS FIX
+  group(name: "b", {
+    line((0,1), (1,1))
+    anchor("mid", (.5,1))
+  })
+  circle((node: "b", at: "mid"), radius: .1)
+  */
 })
