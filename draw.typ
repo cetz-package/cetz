@@ -52,6 +52,15 @@
   })
 ),)
 
+// Translate
+#let translate(x, y, z) = ((
+  (apply: ctx => {
+    ctx.transform-stack.last().translate = matrix.transform-translate(x,y,z)
+    return ctx
+  })
+),)
+
+// Register anchor `name` at position `pos`.
 #let anchor(name, pos) = ((
   (positions: ctx => {
     (pos,)
@@ -64,35 +73,29 @@
   render: (ctx, pos) => {()})
 ),)
 
-#let node(name, ..body) = ((
+// Group
+#let group(..body, name: none) = ((
   (apply: ctx => {
     ctx.anchors = (:)
     ctx.transform-stack.push(ctx.transform-stack.last())
     return ctx
   },
   children: ctx => {
-    body.pos()
+    let (old-fill, old-stroke) = (ctx.fill, ctx.stroke)
+    (..body.pos(), fill(old-fill), stroke(old-stroke))
   },
   finalize: (ctx, anchors) => {
     let _ = ctx.transform-stack.pop()
-    ctx.nodes.insert(name, (
-      anchor: anchors,
-      bounds: ctx.prev.bounds,
-      pt: ctx.prev.pt
-    ))
+    if name != none {
+      ctx.nodes.insert(name, (
+        anchor: anchors,
+        bounds: ctx.prev.bounds,
+        pt: ctx.prev.pt
+      ))
+    }
     return ctx
   })
 ),)
-
-// TODO: Replace me if this feature has native support
-#let parse-stroke-color(paint) = {
-  if type(paint) == "color" {
-    return paint
-  } else if type(paint) == "stroke" {
-    // OUCH!
-    return rgb(repr(paint).slice(repr(paint).position("#"), -2))
-  } 
-}
 
 #let path-cmd(ctx, ..pts, cycle: false, fill: auto) = {
   if fill == auto { fill = ctx.fill }
@@ -123,7 +126,7 @@
     let n = (-s.at(1) / 3, s.at(0) / 3, from.at(2))
     path-cmd(ctx, from, vector.add(from, n), to,
              vector.add(from, vector.neg(n)),
-             cycle: true, fill: parse-stroke-color(ctx.stroke))
+             cycle: true, fill: ctx.fill)
   } else if symbol == "|" {
     let s = vector.sub(to, from)
     let n = (-s.at(1) / 3, s.at(0) / 3, to.at(2))
@@ -273,7 +276,7 @@
     let tr = (x + w, y, z, 1)
     let bl = (x, y - h, z, 1)
     let br = (x + w, y - h, z, 1)
-    
+
     ((cmd: "content", pos: (pt,), content:
       move(dx: -bounds.width/2 + w/2*ctx.length - w * ctx.length * handle-x,
            dy: -bounds.height/2 + h/2*ctx.length - h * ctx.length * handle-y,
@@ -304,4 +307,22 @@
       return (merged,)
     }
   )
+),)
+
+// Render shadow of children by rendering them twice
+#let shadow(..body, color: gray, offset-x: .1, offset-y: .1) = ((
+(
+  children: ctx => {
+    (
+      group(
+        // FIXME: only modify stroke color!
+        fill(color), stroke(color),
+        translate(offset-x, offset-y, 0),
+        ..body.pos(),
+      ),
+      translate(0, 0, 0),
+      ..body.pos()
+    )
+  },
+)
 ),)
