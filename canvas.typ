@@ -14,7 +14,8 @@
   // Apply all transformation matrices `queue` in order
   // on `vec`.
   let apply-transform(queue, vec) = {
-    if type(vec) == "array" and type(vec.first()) != "float" {
+    if type(vec.first()) == "array" {
+      // the vector has control points, don't transform them
       vec.at(0) = apply-transform(queue, vec.first())
     } else {
     for (k, m) in queue {
@@ -86,7 +87,7 @@
   let bounding-box(pts, init: none) = {
     let bounds = init
     for (i, pt) in pts.enumerate() {
-      // check if point has control points
+      // check if point has control points, only use the point itself not the control points
       if type(pt.first()) == "array" {
         pt = pt.first()
       }
@@ -264,23 +265,20 @@
       place(dx: pt.at(0), dy: pt.at(1), self.content)
     }
   );
-  // repr(drawables)
   box(width: width, height: height, fill: fill, {
-    let map_translate(v, t: true) = {
-      if type(v.first()) == "array" {
-        v.at(0) = apply-transform((translate: translate), v.first())
-        return v.map(v => map_translate(v, t: false))
+
+    let vec-to-pt(vec) = {
+      // the vector has control points
+      if type(vec.first()) == "array" {
+        return vec.map(slice_vec)
       } else {
-        if t {
-          v = apply-transform((translate: translate), v)
-        }
-        return v.slice(0, 2)
+        return vec.slice(0, 2)
           .map(x => length * x)
       }
     }
 
     for d in drawables {
-      draw.at(d.cmd)(d, ..d.pos.map(map_translate))
+      draw.at(d.cmd)(d, ..d.pos.map(v => vec-to-pt(apply-transform((translate: translate), v))))
     }
   })
 })
