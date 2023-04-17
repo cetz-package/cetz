@@ -14,12 +14,16 @@
   // Apply all transformation matrices `queue` in order
   // on `vec`.
   let apply-transform(queue, vec) = {
-    for m in queue.values() {
+    if type(vec) == "array" and type(vec.first()) != "float" {
+      vec.at(0) = apply-transform(queue, vec.first())
+    } else {
+    for (k, m) in queue {
       if m != none {
         vec = matrix.mul-vec(m, vector.as-vec(
           vec, init: (0, 0, 0, 1)))
       }
     }
+  }
     return vec
   }
 
@@ -70,8 +74,11 @@
       } else {
         float(x / length)
       }
-    } else {
+    } else if type(x) in ("boolean", "integer", "float", "ratio", "string") {
       float(x)
+    } else {
+      // position has control points
+      vector.as-vec(position-to-vec(x, ctx))
     })
   }
 
@@ -79,6 +86,10 @@
   let bounding-box(pts, init: none) = {
     let bounds = init
     for (i, pt) in pts.enumerate() {
+      // check if point has control points
+      if type(pt.first()) == "array" {
+        pt = pt.first()
+      }
       if init == none and i == 0 {
         bounds = (l: pt.at(0), r: pt.at(0), t: pt.at(1), b: pt.at(1))
       }
@@ -159,7 +170,10 @@
           let abs = ()
           if "positions" in element {
             for p in (element.positions)(ctx) {
-              p = vector.as-vec(position-to-vec(p, ctx), init: (0,0,0,1))
+              p = position-to-vec(p, ctx)
+              if type(p.first()) != "array" {
+                p = vector.as-vec(p, init: (0,0,0,1))
+              }
               ctx.prev.pt = p
               abs.push(p)
             }
@@ -183,6 +197,7 @@
           for (i, draw) in (element.render)(ctx, ..abs).enumerate() {
             if "pos" in draw {
               draw.pos = draw.pos.map(x => apply-transform(cur-transform, x))
+              // panic(draw.pos)
               drawables.push(draw)
 
               // Remember last bounding box
@@ -190,7 +205,7 @@
 
               // Grow canvas
               bounds = bounding-box(draw.pos.map(x =>
-                vector.mul(x, length)), init: bounds)
+                vector.mul(if type(x.first()) == "array" {x.first()} else {x}, length)), init: bounds)
             }
 
             if "bounds" in draw {
@@ -237,8 +252,7 @@
 
   let draw = (
     line: (self, ..pos) => {
-      place(path(stroke: self.stroke, fill: self.fill,
-                 closed: self.close, ..pos))
+      place(path(stroke: self.stroke, fill: self.fill, closed: self.close, ..pos))
     },
     rect: (self, a, b) => {
       let (x1, y1) = a
@@ -250,12 +264,24 @@
       place(dx: pt.at(0), dy: pt.at(1), self.content)
     }
   );
-  
+  // repr(drawables)
   box(width: width, height: height, fill: fill, {
+    let map_translate(v, t: true) = {
+      if type(v.first()) == "array" {
+        v.at(0) = apply-transform((translate: translate), v.first())
+        return v.map(v => map_translate(v, t: false))
+      } else {
+        if t {
+          v = apply-transform((translate: translate), v)
+        }
+        return v.slice(0, 2)
+          .map(x => length * x)
+      }
+    }
+
     for d in drawables {
-      draw.at(d.cmd)(d, ..d.pos.map(v =>
-        apply-transform((translate: translate), v).slice(0, 2)
-          .map(x => length * x)))
+      draw.at(d.cmd)(d, ..d.pos.map(map_translate))
     }
   })
 })
+
