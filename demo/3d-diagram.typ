@@ -1,5 +1,7 @@
 #import "../canvas.typ": *
 
+#set page(width: auto, height: auto)
+
 #canvas(fill: none, length: 1cm, {
   import "../draw.typ": *
 
