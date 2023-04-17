@@ -146,8 +146,9 @@
   )
 ),)
 
-#let line(..pts, cycle: false, mark-begin: none, mark-end: none) = ((
+#let line(..pts, cycle: false, mark-begin: none, mark-end: none, name: none) = ((
   (
+    name: name,
     positions: ctx => {
       pts.pos()
     },
@@ -178,8 +179,9 @@
   )
 ),)
 
-#let rect(a, b) = ((
+#let rect(a, b, name: none) = ((
   (
+    name: name,
     positions: ctx => {
       (a, b, vector.add(a, vector.div(vector.sub(b, a), 2)))
     },
@@ -207,8 +209,11 @@
             samples: auto,
             start: 0deg,
             end: 360deg,
-            cycle: false) = ((
+            cycle: false,
+            name: none
+            ) = ((
   (
+    name: name,
     positions: ctx => {
       (center, (radius, 0, 0),)
     },

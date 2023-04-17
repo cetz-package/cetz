@@ -7,14 +7,11 @@
   line((-1.5, 0), (1.5, 0))
   line((0, -1.5), (0, 1.5))
 
-  node("C", {
-    circle((0, 0, 0), radius: 1cm)
-    rect((0, 0), (.5, .5))
-  })
+  circle((0, 0, 0), radius: 1cm, name: "C")
+  rect((0, 0), (.5, .5))
 
-  node("A", {
-    rect((-.5, -.5), (-1, -1))
-  })
+  rect((-.5, -.5), (-1, -1), name: "A")
+
   stroke(red + .5pt)
 
   stroke(black + .5pt)
