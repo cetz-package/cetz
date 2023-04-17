@@ -33,15 +33,13 @@
 
     if type(v) == "dictionary" {
       if "node" in v {
-        assert(v.node in ctx.nodes)
-        let node = ctx.nodes.at(v.node)
+        assert(v.node in ctx.anchors, message: "Unknown node '" + v.node + "'")
+        let node = ctx.anchors.at(v.node)
         if "at" in v {
-          if not v.at in node.anchor {
-            panic("Unknown anchor '" + v.at + "' of " + repr(node.anchor))
-          }
-          return node.anchor.at(v.at)
+          assert( v.at in node, message: "Unknown anchor '" + v.at + "' of " + repr(node))
+          return node.at(v.at)
         }
-        return node.pt
+        return node.default
       }
 
       // Add relative positions to previous position
@@ -103,6 +101,8 @@
 
     // Saved nodes (see draw.node(...))
     nodes: (:),
+
+    anchors: (:)
   )
   
   let drawables = ()
@@ -114,7 +114,6 @@
     let render-element(b, ctx, bounds) = {
       if b == none { return }
       let drawables = ()
-      let anchors = (:)
 
       for element in b {
         // Allow to modify the context
@@ -130,7 +129,6 @@
             ctx = r.ctx
             bounds = r.bounds
             child-drawables += r.drawables
-            anchors += r.anchors
           }
 
           if "finalize-children" in element {
@@ -160,7 +158,7 @@
           }
 
           // Allow the element to store anchors
-          if "anchors" in element {
+          if "anchors" in element and "name" in element and type(element.name) == "string" {
             let elem-anchors = (element.anchors)(ctx, ..abs)
             // TODO: Apply transform here and apply _inverse_ transform
             //       on anchor (or all final points) in position-to-vec.
@@ -170,7 +168,7 @@
             if "default" in elem-anchors {
               ctx.prev.pt = elem-anchors.default
             }
-            anchors += elem-anchors
+            ctx.anchors.insert(element.name, elem-anchors)
           }
 
           for (i, draw) in (element.render)(ctx, ..abs).enumerate() {
@@ -205,8 +203,7 @@
 
       return (bounds: bounds,
               ctx: ctx,
-              drawables: drawables,
-              anchors: anchors)
+              drawables: drawables)
     }
 
     let r = render-element(b, ctx, bounds)
