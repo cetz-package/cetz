@@ -99,9 +99,7 @@
     // Current transform stack
     transform-stack: (default-transform,),
 
-    // Saved nodes (see draw.node(...))
-    nodes: (:),
-
+    // Saved anchors
     anchors: (:)
   )
   

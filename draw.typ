@@ -74,9 +74,8 @@
 ),)
 
 // Group
-#let group(name: none, ..body) = ((
+#let group(..body) = ((
 (
-  name: name,
   apply: ctx => {
     ctx.transform-stack.push(ctx.transform-stack.last())
     return ctx
