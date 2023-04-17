@@ -3,6 +3,23 @@
 
 #let typst-rotate = rotate
 
+#let quad-fn(a, b, c, t) = {
+    let tt = (1 - t) * (1 - t)
+    let x = tt * a.at(0) + 2 * (1 - t) * t * c.at(0) + t * t * b.at(0)
+    let y = tt * a.at(1) + 2 * (1 - t) * t * c.at(1) + t * t * b.at(1)
+    let z = tt * a.at(2) + 2 * (1 - t) * t * c.at(2) + t * t * b.at(2)
+    return (x, y, z)
+}
+
+#let cubic-fn(a, b, c1, c2, t) = {
+    let ttt = (1 - t) * (1 - t) * (1 - t)
+    let x = ttt * a.at(0) + 3 * (1-t) * (1-t) * t * c1.at(0) + 3 * (1-t) * t *t * c2.at(0) + t * t * t * b.at(0)
+    let y = ttt * a.at(1) + 3 * (1-t) * (1-t) * t * c1.at(1) + 3 * (1-t) * t *t * c2.at(1) + t * t * t * b.at(1)
+    let z = ttt * a.at(2) + 3 * (1-t) * (1-t) * t * c1.at(2) + 3 * (1-t) * t *t * c2.at(2) + t * t * t * b.at(2)
+    return (x, y, z)
+}
+
+
 #let fill(color) = ((
   (apply: ctx => {
     ctx.fill = color
@@ -141,6 +158,37 @@
       arrow-head-cmd(ctx, from, to, symbol)
     }
   )
+),)
+
+#let curve(a, b, ctrl: (), samples: 100, name: none) = ((
+(
+    name: name,
+    positions: ctx => {
+        (a, b, ..ctrl)
+    },
+    anchors: (ctx, a, b, ..ctrl) => {
+        let pts = (start: a, end: b, default: b)
+        for i in range(0, ctrl.pos().len()) {
+            pts.insert("ctrl-"+str(i), ctrl.pos().at(i))
+        }
+        return pts
+    },
+    render: (ctx, a, b, ..ctrl) => {
+        let pts = (a,)
+        let len = ctrl.pos().len()
+        assert(len >= 0 and len <= 2, message: "curve expects 0, 1 or 2 control points. Got " + str(len))
+
+        for i in range(1, samples) {
+            if len == 1 {
+                pts.push(quad-fn(a, b, ctrl.pos().at(0), i / samples))
+            } else if len == 2 {
+                pts.push(cubic-fn(a, b, ctrl.pos().at(0), ctrl.pos().at(1), i / samples))
+            }
+        }
+        pts.push(b)
+        path-cmd(ctx, ..pts)
+    }
+)
 ),)
 
 #let line(..pts, cycle: false, mark-begin: none, mark-end: none, name: none) = ((
