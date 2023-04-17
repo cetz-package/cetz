@@ -62,21 +62,22 @@
 
 // Register anchor `name` at position `pos`.
 #let anchor(name, pos) = ((
-  (positions: ctx => {
+(
+  name: name,
+  positions: ctx => {
     (pos,)
   },
   anchors: (ctx, pos) => {
-    let d = (:)
-    d.insert(name, pos)
-    return d
+    (default: pos)
   },
   render: (ctx, pos) => {()})
 ),)
 
 // Group
-#let group(..body, name: none) = ((
-  (apply: ctx => {
-    ctx.anchors = (:)
+#let group(name: none, ..body) = ((
+(
+  name: name,
+  apply: ctx => {
     ctx.transform-stack.push(ctx.transform-stack.last())
     return ctx
   },
@@ -84,17 +85,11 @@
     let (old-fill, old-stroke) = (ctx.fill, ctx.stroke)
     (..body.pos(), fill(old-fill), stroke(old-stroke))
   },
-  finalize: (ctx, anchors) => {
+  finalize: (ctx) => {
     let _ = ctx.transform-stack.pop()
-    if name != none {
-      ctx.nodes.insert(name, (
-        anchor: anchors,
-        bounds: ctx.prev.bounds,
-        pt: ctx.prev.pt
-      ))
-    }
     return ctx
-  })
+  }
+)
 ),)
 
 #let path-cmd(ctx, ..pts, cycle: false, fill: auto) = {
