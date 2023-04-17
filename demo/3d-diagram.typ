@@ -6,12 +6,12 @@
   import "../draw.typ": *
 
   // Draw grid
-  stroke((color: black, dash: "dashed", thickness: .5pt))
+  //stroke((color: black, dash: "dashed", thickness: .5pt)) // not on release yet
   for i in range(0, 6) {
     line((0, i, 0), (0, i, 1), (7, i, 1))
     content((-.1, i, 0), [$#{i*20}$], position: "left")
   }
-  stroke((color: black, thickness: .5pt))
+  //stroke((color: black, thickness: .5pt))
   line((0, 0, 1), (0, 5, 1))
   line((0, 5, 0), (0, 0, 0), (7, 0, 0))
 
