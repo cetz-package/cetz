@@ -18,12 +18,16 @@
 ),)
 
 #let move-to(pt) = ((
-  (apply: ctx => {
+(
+  points: ctx => {
+    (pt,)
+  },
+  apply: ctx => {
     let pt = (ctx.pos-to-pt)(pt)
     ctx.prev.pt = pt
-    ctx.prev.bounds = (l: pt, r: pt, t: pt, b: pt)
     return ctx
-  })
+  }
+)
 ),)
 
 // Rotate on z-axis (defaul) or specified axes if `angle` is of type
@@ -71,17 +75,39 @@
     (pos,)
   },
   anchors: (ctx, pos) => {
-    (default: pos)
+    if ctx.group.len() == 0 {
+      return (default: pt) // Fallback if called outsides a group
+    }
+    return ()
   },
-  render: (ctx, pos) => {()})
+  render: (ctx, pos) => {()},
+  finalize: (ctx, pos) => {
+    if ctx.group.len() > 0 {
+      ctx.group.last().anchors.insert(name, pos)
+      return ctx
+    }
+    return ctx
+  }
+)
 ),)
 
 // Group
+//
+// Scopes the following attributes
+// - fill
+// - stroke
+// - transformations
+// - position
 #let group(name: none, ..body) = ((
 (
   name: name,
   apply: ctx => {
     ctx.transform-stack.push(ctx.transform-stack.last())
+    ctx.group.push((
+      name: name,
+      pt: ctx.prev.pt,
+      anchors: (:),
+    ))
     return ctx
   },
   children: ctx => {
@@ -90,6 +116,14 @@
   },
   finalize: (ctx) => {
     let _ = ctx.transform-stack.pop()
+
+    let self = ctx.group.pop()
+    ctx.prev.pt = self.pt
+
+    if name != none {
+      ctx.anchors.insert(name, self.anchors)
+    }
+
     return ctx
   }
 )

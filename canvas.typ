@@ -20,7 +20,6 @@
   // Apply all transformation matrices `queue` in order
   // on `vec`.
   let apply-transform(queue, vec) = {
-      if not "do" in queue { panic(queue)}
     for m in queue.do {
       if m != none {
         vec = matrix.mul-vec(m, vector.as-vec(
@@ -45,7 +44,7 @@
   let position-to-vec(v, ctx) = {
     // Use previous position
     if v == () {
-      return ctx.prev.pt
+      return (vec: ctx.prev.pt, move: true)
     }
 
     // Allow strings as shorthand for anchors
@@ -70,23 +69,24 @@
 
           let vec = node.at(v.at)
           vec = reverse-transform(ctx.transform-stack.last(), vec)
-          return vec
+          return (vec: vec, move: true)
         }
-        return node.default
+        return (vec: node.default, move: true)
       }
 
       // Add relative positions to previous position
       if "rel" in v {
-        return vector.add(vector.as-vec(ctx.prev.pt, init: (0,0,0)),
-          vector.as-vec(position-to-vec(v.rel, ctx),
+        let vec = vector.add(vector.as-vec(ctx.prev.pt, init: (0,0,0)),
+          vector.as-vec(position-to-vec(v.rel, ctx).vec,
                         init: (0, 0, 0)))
+        return (vec: vec, move: if "move" in v {v.move} else {true})
       }
 
       panic("Not implemented")
     }
 
     // Transform lengths with unit to canvas lenght
-    return v.map(x => if type(x) == "length" {
+    return (vec: v.map(x => if type(x) == "length" {
       // HACK ALERT!
       if repr(x).ends-with("em") {
         float(repr(x).slice(0, -2)) * em-size.width / length
@@ -95,7 +95,7 @@
       }
     } else {
       float(x)
-    })
+    }), move: true)
   }
 
   // Compute bounding box of points
@@ -148,7 +148,10 @@
     transform-stack: (default-transform,),
 
     // Saved anchors (transformed vectors)
-    anchors: (:)
+    anchors: (:),
+
+    // Group stack
+    group: ()
   )
   
   let drawables = ()
@@ -188,20 +191,23 @@
 
         // Update context functions
         ctx.pos-to-pt = (p) => {
-          return vector.as-vec(position-to-vec(p, ctx), init: (0,0,0))
+          return vector.as-vec(position-to-vec(p, ctx).vec, init: (0,0,0))
         }
 
         // Render element
+        let abs = ()
         if "render" in element {
           let cur-transform = ctx.transform-stack.last()
 
           // Query element for points
-          let abs = ()
           if "positions" in element {
             for p in (element.positions)(ctx) {
-              p = vector.as-vec(position-to-vec(p, ctx), init: (0,0,0,1))
-              ctx.prev.pt = p
-              abs.push(p)
+              let pos = position-to-vec(p, ctx)
+              pos.vec = vector.as-vec(pos.vec, init: (0,0,0,1))
+              if pos.move {
+                ctx.prev.pt = pos.vec
+              }
+              abs.push(pos.vec)
             }
           }
 
@@ -286,7 +292,7 @@
         }
 
         if "finalize" in element {
-          ctx = (element.finalize)(ctx)
+          ctx = (element.finalize)(ctx, ..abs)
         }
       }
 
