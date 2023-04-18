@@ -2,7 +2,7 @@
 #import "vector.typ"
 #import "draw.typ"
 
-#let canvas(length: 1cm, fill: none, ..body) = style(st => {
+#let canvas(length: 1cm, fill: none, debug: false, ..body) = style(st => {
   let em-size = measure(box(width: 1em, height: 1em), st)
 
   // Default transformation matrices
@@ -78,14 +78,27 @@
   // Compute bounding box of points
   let bounding-box(pts, init: none) = {
     let bounds = init
-    for (i, pt) in pts.enumerate() {
-      if init == none and i == 0 {
-        bounds = (l: pt.at(0), r: pt.at(0), t: pt.at(1), b: pt.at(1))
+    if type(pts) == "array" {
+      for (i, pt) in pts.enumerate() {
+        if init == none and i == 0 {
+          bounds = (l: pt.at(0), r: pt.at(0), t: pt.at(1), b: pt.at(1))
+        }
+        bounds.l = calc.min(bounds.l, pt.at(0))
+        bounds.r = calc.max(bounds.r, pt.at(0))
+        bounds.t = calc.min(bounds.t, pt.at(1))
+        bounds.b = calc.max(bounds.b, pt.at(1))
       }
-      bounds.l = calc.min(bounds.l, pt.at(0))
-      bounds.r = calc.max(bounds.r, pt.at(0))
-      bounds.t = calc.min(bounds.t, pt.at(1))
-      bounds.b = calc.max(bounds.b, pt.at(1))
+    } else if type(pts) == "dictionary" {
+      if init == none {
+        bounds = pts
+      } else {
+        bounds.l = calc.min(bounds.l, pts.l)
+        bounds.r = calc.max(bounds.r, pts.r)
+        bounds.t = calc.min(bounds.t, pts.t)
+        bounds.b = calc.max(bounds.b, pts.b)
+      }
+    } else {
+      panic("Expected array of vectors or bbox dictionary!")
     }
     return bounds
   }
@@ -95,6 +108,7 @@
 
   // Canvas context object
   let ctx = (
+    debug: debug,
     style: st,
     length: length,
 
@@ -124,6 +138,8 @@
       let drawables = ()
 
       for element in b {
+        let element-bounds = none
+
         // Allow to modify the context
         if "apply" in element {
           ctx = (element.apply)(ctx)
@@ -133,9 +149,9 @@
         if "children" in element {
           let child-drawables = ()
           for child in (element.children)(ctx) {
-            let r = render-element(child, ctx, bounds)
+            let r = render-element(child, ctx, element-bounds)
             ctx = r.ctx
-            bounds = r.bounds
+            element-bounds = bounding-box(r.bounds, init: element-bounds)
             child-drawables += r.drawables
           }
 
@@ -180,7 +196,6 @@
             ctx.anchors.insert(element.name, elem-anchors)
           }
 
-          let element-bounds = none
           for (i, draw) in (element.render)(ctx, ..abs).enumerate() {
             if "pos" in draw {
               draw.pos = draw.pos.map(x => apply-transform(cur-transform, x))
@@ -189,8 +204,7 @@
               element-bounds = bounding-box(draw.pos, init: element-bounds)
 
               // Grow canvas
-              bounds = bounding-box(draw.pos.map(x =>
-                vector.mul(x, length)), init: bounds)
+              bounds = bounding-box(draw.pos, init: bounds)
 
               // Push draw command
               drawables.push(draw)
@@ -202,14 +216,24 @@
 
               // Remember last bounding box
               element-bounds = bounding-box(draw.bounds, init: element-bounds)
-
-              // Grow canvas
-              bounds = bounding-box(draw.bounds.map(x =>
-                vector.mul(x, length)), init: bounds)
             }
           }
 
           // TODO: Create default anchors for bounding box
+        }
+
+        if ctx.debug and element-bounds != none {
+          drawables.push((cmd: "line", pos: (
+            (element-bounds.l, element-bounds.t),
+            (element-bounds.r, element-bounds.t),
+            (element-bounds.r, element-bounds.b),
+            (element-bounds.l, element-bounds.b)),
+            stroke: red, fill: none, close: true) )
+        }
+
+        // Grow canvas
+        if element-bounds != none {
+          bounds = bounding-box(element-bounds, init: bounds)
         }
 
         if "finalize" in element {
@@ -232,6 +256,10 @@
 
   if bounds == none {
     return []
+  } else {
+    for (k, v) in bounds {
+      bounds.insert(k, v * length)
+    }
   }
 
   // Final canvas size
@@ -258,7 +286,7 @@
     }
   );
   
-  box(width: width, height: height, fill: fill, {
+  box(stroke: if debug {green}, width: width, height: height, fill: fill, {
     for d in drawables {
       draw.at(d.cmd)(d, ..d.pos.map(v =>
         apply-transform((translate: translate), v).slice(0, 2)
