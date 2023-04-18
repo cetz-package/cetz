@@ -250,6 +250,10 @@
           }
         }
 
+        if "finalize" in element {
+          ctx = (element.finalize)(ctx, ..abs)
+        }
+
         // Add default anchors (bbox)
         if "name" in element and element.name != none {
           if element-bounds != none {
@@ -289,10 +293,6 @@
         // Grow canvas
         if element-bounds != none {
           bounds = bounding-box(element-bounds, init: bounds)
-        }
-
-        if "finalize" in element {
-          ctx = (element.finalize)(ctx, ..abs)
         }
       }
 
