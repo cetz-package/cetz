@@ -120,8 +120,8 @@
         bounds.t = calc.min(bounds.t, pts.t)
         bounds.b = calc.max(bounds.b, pts.b)
       }
-    } else {
-      panic("Expected array of vectors or bbox dictionary!")
+    } else if pts != none {
+      panic("Expected array of vectors or bbox dictionary! Got " + repr(pts))
     }
     return bounds
   }

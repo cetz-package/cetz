@@ -98,7 +98,7 @@
 // - stroke
 // - transformations
 // - position
-#let group(name: none, ..body) = ((
+#let group(name: none, move: false, ..body) = ((
 (
   name: name,
   apply: ctx => {
@@ -118,7 +118,9 @@
     let _ = ctx.transform-stack.pop()
 
     let self = ctx.group.pop()
-    ctx.prev.pt = self.pt
+    if not move {
+      ctx.prev.pt = self.pt
+    }
 
     if name != none {
       ctx.anchors.insert(name, self.anchors)
@@ -218,15 +220,12 @@
   (
     name: name,
     positions: ctx => {
-      (a, b, vector.add(a, vector.div(vector.sub(b, a), 2)))
+      (a, b)
     },
-    anchors: (ctx, a, b, center) => {
-      let r = (
-        center: center,
-      )
-      return r
+    anchors: (ctx, a, b) => {
+      (:)
     },
-    render: (ctx, a, b, center) => {
+    render: (ctx, a, b) => {
       rect-cmd(ctx, a, b)
     },
   )
@@ -354,7 +353,7 @@
         ..body.pos(),
       ),
       translate(0, 0, 0),
-      ..body.pos()
+      ..body.pos(),
     )
   },
 )
