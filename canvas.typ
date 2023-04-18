@@ -99,7 +99,7 @@
     length: length,
 
     // Previous element position & bbox
-    prev: (pt: (0, 0, 0), bounds: bounding-box(())),
+    prev: (pt: (0, 0, 0)),
 
     // Current draw attributes
     mark-size: .15,
@@ -180,29 +180,36 @@
             ctx.anchors.insert(element.name, elem-anchors)
           }
 
+          let element-bounds = none
           for (i, draw) in (element.render)(ctx, ..abs).enumerate() {
             if "pos" in draw {
               draw.pos = draw.pos.map(x => apply-transform(cur-transform, x))
-              drawables.push(draw)
 
               // Remember last bounding box
-              ctx.prev.bounds = bounding-box(abs)
+              element-bounds = bounding-box(draw.pos, init: element-bounds)
 
               // Grow canvas
               bounds = bounding-box(draw.pos.map(x =>
                 vector.mul(x, length)), init: bounds)
+
+              // Push draw command
+              drawables.push(draw)
             }
 
             if "bounds" in draw {
-              bounds = bounding-box(draw.bounds.map(x =>
-                apply-transform(cur-transform, x)
-                  .map(x => length * x)), init: bounds)
+              draw.bounds = draw.bounds.map(
+                x => apply-transform(cur-transform, x))
 
-              // Add bounds points to bounding box
-              ctx.prev.bounds = bounding-box(draw.bounds,
-                init: ctx.prev.bounds)
+              // Remember last bounding box
+              element-bounds = bounding-box(draw.bounds, init: element-bounds)
+
+              // Grow canvas
+              bounds = bounding-box(draw.bounds.map(x =>
+                vector.mul(x, length)), init: bounds)
             }
           }
+
+          // TODO: Create default anchors for bounding box
         }
 
         if "finalize" in element {
