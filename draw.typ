@@ -301,7 +301,7 @@
     let w = (calc.abs(calc.sin(angle) * th) + calc.abs(calc.cos(angle) * tw))
     let h = (calc.abs(calc.cos(angle) * th) + calc.abs(calc.sin(angle) * tw))
     x -= w * handle-x
-    y -= h * (handle-y - 1)
+    y -= h * handle-y
 
     let tl = (x, y, z)
     let tr = (x + w, y, z)
