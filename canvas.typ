@@ -7,14 +7,31 @@
 
   // Default transformation matrices
   let default-transform = (
-    flip-x: matrix.transform-scale((x: 1, y: -1, z: 1)),
-    shear: matrix.transform-shear-z(),
+    do: (
+      matrix.transform-scale((x: 1, y: -1, z: 1)),
+      matrix.transform-shear-z(factor: .5),
+    ),
+    undo: (
+      matrix.transform-scale((x: 1, y: -1, z: 1)),
+      matrix.transform-shear-z(factor: -.5),
+    ) 
   )
 
   // Apply all transformation matrices `queue` in order
   // on `vec`.
   let apply-transform(queue, vec) = {
-    for m in queue.values() {
+      if not "do" in queue { panic(queue)}
+    for m in queue.do {
+      if m != none {
+        vec = matrix.mul-vec(m, vector.as-vec(
+          vec, init: (0, 0, 0, 1)))
+      }
+    }
+    return vec
+  }
+
+  let reverse-transform(queue, vec) = {
+    for m in queue.undo.rev() {
       if m != none {
         vec = matrix.mul-vec(m, vector.as-vec(
           vec, init: (0, 0, 0, 1)))
@@ -43,11 +60,17 @@
 
     if type(v) == "dictionary" {
       if "node" in v {
-        assert(v.node in ctx.anchors, message: "Unknown node '" + v.node + "'")
+        assert(v.node in ctx.anchors,
+               message: "Unknown node '" + v.node + "'")
+        
         let node = ctx.anchors.at(v.node)
         if "at" in v {
-          assert( v.at in node, message: "Unknown anchor '" + v.at + "' of " + repr(node))
-          return node.at(v.at)
+          assert(v.at in node,
+                 message: "Unknown anchor '" + v.at + "' of " + repr(node))
+
+          let vec = node.at(v.at)
+          vec = reverse-transform(ctx.transform-stack.last(), vec)
+          return vec
         }
         return node.default
       }
@@ -121,9 +144,10 @@
     stroke: black + 1pt,
 
     // Current transform stack
+    // array of dictionaries (do: (...), undo: (...))
     transform-stack: (default-transform,),
 
-    // Saved anchors
+    // Saved anchors (transformed vectors)
     anchors: (:)
   )
   
@@ -184,13 +208,13 @@
           // Allow the element to store anchors
           if "anchors" in element and "name" in element and type(element.name) == "string" {
             let elem-anchors = (element.anchors)(ctx, ..abs)
-            // TODO: Apply transform here and apply _inverse_ transform
-            //       on anchor (or all final points) in position-to-vec.
-            //for (k, v) in elem-anchors {
-            //  elem-anchors.at(k) = apply-transform(cur-transform, v)
-            //}
+
             if "default" in elem-anchors {
               ctx.prev.pt = elem-anchors.default
+            }
+
+            for (k, v) in elem-anchors {
+              elem-anchors.at(k) = apply-transform(cur-transform, v)
             }
 
             ctx.anchors.insert(element.name, elem-anchors)
@@ -218,8 +242,33 @@
               element-bounds = bounding-box(draw.bounds, init: element-bounds)
             }
           }
+        }
 
-          // TODO: Create default anchors for bounding box
+        // Add default anchors (bbox)
+        if "name" in element and element.name != none {
+          if element-bounds != none {
+            let (x, y, w, h) = (
+              element-bounds.l, element-bounds.t,
+              element-bounds.r - element-bounds.l,
+              element-bounds.b - element-bounds.t,
+            )
+            
+            let existing-anchors = if element.name in ctx.anchors {
+              ctx.anchors.at(element.name)
+            } else { (:) }
+
+            ctx.anchors.insert(element.name, (
+              top-left: (x, y, 0),
+              top: (x + w / 2, y, 0),
+              top-right: (x + w, y, 0),
+              left: (x, y + h / 2, 0),
+              right: (x + w, y + h / 2, 0),
+              bottom-left: (x, y + h, 0),
+              bottom: (x + w / 2, y + h, 0),
+              bottom-right: (x + w, y + h, 0),
+              center: (x + w / 2, y + h / 2, 0),
+            ) + existing-anchors)
+          }
         }
 
         if ctx.debug and element-bounds != none {
@@ -228,7 +277,7 @@
             (element-bounds.r, element-bounds.t),
             (element-bounds.r, element-bounds.b),
             (element-bounds.l, element-bounds.b)),
-            stroke: red, fill: none, close: true) )
+            stroke: red, fill: none, close: true, debug: true) )
         }
 
         // Grow canvas
@@ -289,7 +338,7 @@
   box(stroke: if debug {green}, width: width, height: height, fill: fill, {
     for d in drawables {
       draw.at(d.cmd)(d, ..d.pos.map(v =>
-        apply-transform((translate: translate), v).slice(0, 2)
+        apply-transform((do: (translate,)), v).slice(0, 2)
           .map(x => length * x)))
     }
   })

@@ -30,22 +30,24 @@
 // dictionary
 #let rotate(angle) = ((
   (apply: ctx => {
+    let (x, y, z) = (0, 0, angle)
     if type(angle) == "dictionary" {
-      for (key, value) in angle {
-        ctx.transform-stack.last().insert("rotate-"+key,
-          if key == "x" {
-            matrix.transform-rotate-x(value)
-          } else if key == "y" {
-            matrix.transform-rotate-y(value)
-          } else if key == "z" {
-            matrix.transform-rotate-z(value)
-          } else {
-            panic("Invalid rotation axis")
-          }
-        )
-      }
-    } else {
-      ctx.transform-stack.last().rotate = matrix.transform-rotate-z(angle)
+      if "x" in angle { x = angle.x } else { x = 0 }
+      if "y" in angle { y = angle.y } else { y = 0 }
+      if "z" in angle { z = angle.z } else { z = 0 }
+    }
+      
+    if x != 0 {
+      ctx.transform-stack.last().do.push(matrix.transform-rotate-x(x))
+      ctx.transform-stack.last().undo.push(matrix.transform-rotate-x(-x))
+    }
+    if y != 0 {
+      ctx.transform-stack.last().do.push(matrix.transform-rotate-y(y))
+      ctx.transform-stack.last().undo.push(matrix.transform-rotate-y(-y))
+    }
+    if z != 0 {
+      ctx.transform-stack.last().do.push(matrix.transform-rotate-z(z))
+      ctx.transform-stack.last().undo.push(matrix.transform-rotate-z(-z))
     }
 
     return ctx
@@ -55,7 +57,8 @@
 // Translate
 #let translate(x, y, z) = ((
   (apply: ctx => {
-    ctx.transform-stack.last().translate = matrix.transform-translate(x,y,z)
+    ctx.transform-stack.last().do.push(matrix.transform-translate(x,y,z))
+    ctx.transform-stack.last().undo.push(matrix.transform-translate(-x,-y,-z))
     return ctx
   })
 ),)
@@ -74,8 +77,9 @@
 ),)
 
 // Group
-#let group(..body) = ((
+#let group(name: none, ..body) = ((
 (
+  name: name,
   apply: ctx => {
     ctx.transform-stack.push(ctx.transform-stack.last())
     return ctx
@@ -264,12 +268,12 @@
     let w = (calc.abs(calc.sin(angle) * th) + calc.abs(calc.cos(angle) * tw))
     let h = (calc.abs(calc.cos(angle) * th) + calc.abs(calc.sin(angle) * tw))
     x -= w * handle-x
-    y -= h * handle-y
+    y -= h * (handle-y - 1)
 
-    let tl = (x, y, z, 1)
-    let tr = (x + w, y, z, 1)
-    let bl = (x, y - h, z, 1)
-    let br = (x + w, y - h, z, 1)
+    let tl = (x, y, z)
+    let tr = (x + w, y, z)
+    let bl = (x, y - h, z)
+    let br = (x + w, y - h, z)
 
     ((cmd: "content", pos: (pt,), content:
       move(dx: -bounds.width/2 + w/2*ctx.length - w * ctx.length * handle-x,
@@ -288,6 +292,7 @@
     finalize-children: (ctx, children) => {
       let merged = none
       for child in children {
+        if "debug" in child { continue } // Do not merge debug info
         assert(child.cmd == "line")
         if merged == none {
           merged = child
