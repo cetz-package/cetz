@@ -1,60 +1,69 @@
 #import "vector.typ"
 #import "matrix.typ"
+#import "cmd.typ"
 
 #let typst-rotate = rotate
 
-#let fill(color) = ((
-  (apply: ctx => {
-    ctx.fill = color
-    return ctx
-  })
-),)
+#let fill(color) = {
+  ((
+    modify-ctx: ctx => {
+      ctx.fill = color
+      return ctx
+    }
+  ),)
+}
 
-#let stroke(color) = ((
-  (apply: ctx => {
-    ctx.stroke = color
-    return ctx
-  })
-),)
+#let stroke(color) = {
+  ((
+    modify-ctx: ctx => {
+      ctx.stroke = color
+      return ctx
+    }
+  ),)
+}
 
-#let move-to(pt) = ((
-  (apply: ctx => {
-    let pt = (ctx.pos-to-pt)(pt)
-    ctx.prev.pt = pt
-    ctx.prev.bounds = (l: pt, r: pt, t: pt, b: pt)
-    return ctx
-  })
-),)
+#let move-to(pt) = {
+  ((
+    modify-ctx: ctx => {
+      let pt = (ctx.pos-to-pt)(pt)
+      ctx.prev.pt = pt
+      ctx.prev.bounds = (l: pt, r: pt, t: pt, b: pt)
+      return ctx
+    }
+  ),)
+}
 
 // Rotate on z-axis (defaul) or specified axes if `angle` is of type
 // dictionary
-#let rotate(angle) = ((
-  (apply: ctx => {
-    if type(angle) == "dictionary" {
-      for (key, value) in angle {
-        ctx.transform-stack.last().insert("rotate-"+key,
-          if key == "x" {
-            matrix.transform-rotate-x(value)
-          } else if key == "y" {
-            matrix.transform-rotate-y(value)
-          } else if key == "z" {
-            matrix.transform-rotate-z(value)
-          } else {
-            panic("Invalid rotation axis")
-          }
-        )
+#let rotate(angle) = {
+  ((
+    modify-ctx: ctx => {
+      if type(angle) == "dictionary" {
+        for (key, value) in angle {
+          ctx.transform-stack.last().insert("rotate-"+key,
+            if key == "x" {
+              matrix.transform-rotate-x(value)
+            } else if key == "y" {
+              matrix.transform-rotate-y(value)
+            } else if key == "z" {
+              matrix.transform-rotate-z(value)
+            } else {
+              panic("Invalid rotation axis")
+            }
+          )
+        }
+      } else {
+        ctx.transform-stack.last().rotate = matrix.transform-rotate-z(angle)
       }
-    } else {
-      ctx.transform-stack.last().rotate = matrix.transform-rotate-z(angle)
-    }
 
-    return ctx
-  })
-),)
+      return ctx
+    }
+  ),)
+}
 
 // Translate
 #let translate(x, y, z) = ((
-  (apply: ctx => {
+  (modify-ctx: ctx => {
     ctx.transform-stack.last().translate = matrix.transform-translate(x,y,z)
     return ctx
   })
@@ -76,7 +85,7 @@
 // Group
 #let group(..body) = ((
 (
-  apply: ctx => {
+  modify-ctx: ctx => {
     ctx.transform-stack.push(ctx.transform-stack.last())
     return ctx
   },
@@ -91,47 +100,6 @@
 )
 ),)
 
-#let path-cmd(ctx, ..pts, cycle: false, fill: auto) = {
-  if fill == auto { fill = ctx.fill }
-  ((cmd: "line", pos: (..pts.pos()),
-    stroke: ctx.stroke, fill: fill, close: cycle),)
-}
-
-#let rect-cmd(ctx, a, b) = {
-  let (x1, y1, z1, ..) = a
-  let (x2, y2, z2, ..) = b
-  path-cmd(ctx, (x1, y1, z1), (x2, y1, z2),
-                (x2, y2, z2), (x1, y2, z1), cycle: true)
-}
-
-#let arrow-head-cmd(ctx, from, to, symbol) = {
-  from = vector.as-vec(from, init: (0,0,0))
-  to = vector.as-vec(to, init: (0,0,0))
-
-  if symbol == "<" {
-    let tmp = to
-    to = from
-    from = tmp
-    symbol = ">"
-  }
-
-  if symbol == ">" {
-    let s = vector.sub(to, from)
-    let n = (-s.at(1) / 3, s.at(0) / 3, from.at(2))
-    path-cmd(ctx, from, vector.add(from, n), to,
-             vector.add(from, vector.neg(n)),
-             cycle: true, fill: ctx.fill)
-  } else if symbol == "|" {
-    let s = vector.sub(to, from)
-    let n = (-s.at(1) / 3, s.at(0) / 3, to.at(2))
-    path-cmd(ctx, vector.add(to, n),
-             vector.add(to, vector.neg(n)),
-             cycle: false)
-  } else {
-    panic("Unknown arrow head: " + symbol)
-  }
-}
-
 #let arrow-head(from, to, symbol: ">") = ((
   (
     positions: ctx => {
@@ -143,38 +111,33 @@
   )
 ),)
 
-#let line(..pts, cycle: false, mark-begin: none, mark-end: none, name: none) = ((
-  (
+#let line(start, end, cycle: false, mark-begin: none, mark-end: none, name: none) = {
+  ((
     name: name,
-    positions: ctx => {
-      pts.pos()
+    coordinates: (
+      start, end
+    ),
+    custom-anchors: (start, end) => {
+      (
+        start: start,
+        end: end,
+      )
     },
-    anchors: (ctx, ..pts) => {
-      (start: pts.pos().at(0),
-       end: pts.pos().at(-1),
-       default: pts.pos().at(-1))
-    },
-    render: (ctx, ..pts) => {
-      path-cmd(ctx, ..pts.pos(), cycle: cycle)
-
-      if pts.pos().len() >= 2 {
+    render: (ctx, start, end) => {
+      cmd.path(ctx, start, end)
+      if mark-begin != none or mark-end != none {
+        let n = vector.mul(vector.norm(vector.sub(start, end)), ctx.mark-size)
         if mark-begin != none {
-          let a = pts.pos().at(0)
-          let b = pts.pos().at(1)
-          let n = vector.mul(vector.norm(vector.sub(a, b)), ctx.mark-size)
-          arrow-head-cmd(ctx, vector.sub(a, n), a, mark-begin)
+          cmd.arrow-head(ctx, start, vector.sub(start, n), mark-begin)
         }
-
-      if mark-end != none {
-        let c = pts.pos().at(-2)
-        let d = pts.pos().at(-1)
-        let n = vector.mul(vector.norm(vector.sub(d, c)), ctx.mark-size)
-        arrow-head-cmd(ctx, vector.sub(d, n), d, mark-end)
+        if mark-end != none {
+          cmd.arrow-head(ctx, end, vector.sub(end, n), mark-end)
+        }
       }
+
     }
-  },
-  )
-),)
+  ),)
+}
 
 #let rect(a, b, name: none) = ((
   (
@@ -189,95 +152,108 @@
       return r
     },
     render: (ctx, a, b, center) => {
-      rect-cmd(ctx, a, b)
+      let (x1, y1) = a
+      let (x2, y2) = b
+      path-cmd(ctx, (x1, y1), (x2, y1), (x2, y2), (x1, y2), cycle: true)
     },
   )
 ),)
 
-#let pt-on-circle(center, x-rad, y-rad, start, end, i) = {
-  let (x, y, z, ..) = center
-  let angle = start + (end - start) * i
-  (x + calc.cos(angle) * x-rad,
-   y + calc.sin(angle) * y-rad,
-   z)
+// #let pt-on-circle(center, x-rad, y-rad, start, end, i) = {
+//   let (x, y) = center
+//   let angle = start + (end - start) * i
+//   (
+//     x + calc.cos(angle) * x-rad,
+//     y + calc.sin(angle) * y-rad
+//   )
+// }
+
+#let arc(position, start, stop, radius: 1, name: none, anchor: none) = {
+  ((
+    name: name,
+    anchor: anchor,
+    default-anchor: "start",
+    coordinates: (position,),
+    custom-anchors: (position) => {
+      let (x,y) = position
+      (
+        start: position,
+        end: (
+          x - radius*calc.sin(start) + radius*calc.sin(stop),
+          y - radius*calc.cos(start) + radius*calc.cos(stop),
+        ),
+        origin: (
+          x - radius*calc.sin(start),
+          y - radius*calc.cos(start),
+        )
+      )
+    },
+    render: (ctx, position) => {
+      cmd.arc(ctx, position.first(), position.last(), start, stop, radius)
+    }
+  ),)
 }
 
-#let circle(center, radius: 1,
-            samples: auto,
-            start: 0deg,
-            end: 360deg,
-            cycle: false,
-            name: none
-            ) = ((
-  (
+#let circle(center, radius: 1, name: none, anchor: none) = {
+  ((
     name: name,
-    positions: ctx => {
-      (center, (radius, 0, 0),)
-    },
-    anchors: (ctx, center, radius) => {
-      let radius = radius.at(0)
-      (center: center,
-       start: pt-on-circle(center, radius, radius, start, end, 0),
-       end: pt-on-circle(center, radius, radius, start, end, 1),
-       default: center)
-    },
-    render: (ctx, center, radius) => {
-      let samples = samples
-      if samples == auto {
-        samples = int((end - start) / 1deg)
-      }
-      let radius = radius.at(0)
-      let pts = ()
-      for i in range(0, samples + 1) {
-        pts.push(pt-on-circle(center, radius, radius, start, end,
-          i / samples))
-      }
-
-      path-cmd(ctx, ..pts, cycle: cycle)
+    coordinates: (center,),
+    default-anchor: "center",
+    anchor: anchor,
+    // anchors: (ctx, center) => {
+    //   let radius = radius.at(0)
+    //   (center: center,
+    //    start: pt-on-circle(center, radius, radius, start, end, 0),
+    //    end: pt-on-circle(center, radius, radius, start, end, 1),
+    //    default: center)
+    // },
+    render: (ctx, center) => {
+      cmd.arc(ctx, center.first(), center.last()+radius, 0deg, 360deg, radius, close: true)
     }
-  )
-),)
+  ),)
+}
 
 // Render content
 // NOTE: Content itself is not transformed by the canvas transformations!
 //       native transformation matrix support from typst would be required.
-#let content(pt, ct, position: auto,
-             angle: 0deg,
-             handle-x: .5, handle-y: .5) = ((
-  (positions: ctx => {
-    (pt,)
-  },
-  render: (ctx, pt) => {
-    let handle-x = handle-x
-    let handle-y = handle-y
-    let (x, y, z) = vector.as-vec(pt, init: (0, 0, 0))
+#let content(
+  pt,
+  ct,
+  angle: 0deg,
+  anchor: none,
+  name: none
+  ) = {(
+  (
+    name: name,
+    coordinates: (pt,),
+    anchor: anchor,
+    default-anchor: "center",
+    render: (ctx, pt) => {
+      let (x, y) = pt
 
-    if position == "bellow" { handle-y = 0 }
-    if position == "above"  { handle-y = 1 }
-    if position == "left"   { handle-x = 1 }
-    if position == "right"  { handle-x = 0 }
-    if position == "on"     { handle-x = .5; handle-y = .5 }    
+      let size = measure(ct, ctx.style)
+      let tw = size.width / ctx.length
+      let th = size.height / ctx.length
+      let w = (calc.abs(calc.sin(angle) * th) + calc.abs(calc.cos(angle) * tw))
+      let h = (calc.abs(calc.cos(angle) * th) + calc.abs(calc.sin(angle) * tw))
 
-    let bounds = measure(ct, ctx.style)
-    let tw = bounds.width / ctx.length
-    let th = bounds.height / ctx.length
-    let w = (calc.abs(calc.sin(angle) * th) + calc.abs(calc.cos(angle) * tw))
-    let h = (calc.abs(calc.cos(angle) * th) + calc.abs(calc.sin(angle) * tw))
-    x -= w * handle-x
-    y -= h * handle-y
-
-    let tl = (x, y, z, 1)
-    let tr = (x + w, y, z, 1)
-    let bl = (x, y - h, z, 1)
-    let br = (x + w, y - h, z, 1)
-
-    ((cmd: "content", pos: (pt,), content:
-      move(dx: -bounds.width/2 + w/2*ctx.length - w * ctx.length * handle-x,
-           dy: -bounds.height/2 + h/2*ctx.length - h * ctx.length * handle-y,
-           typst-rotate(angle, ct)), bounds: (tl, tr, bl, br)), )
+      // x += w/2
+      // y -= h/2
+      cmd.content(
+        ctx,
+        x,
+        y,
+        w,
+        h,
+        move(
+          dx: -tw/2 * ctx.length,
+          dy: -th/2 * ctx.length,
+          typst-rotate(angle, ct)
+        )
+      )
     }
-  )
-),)
+  ),)
+}
 
 // Merge multiple paths
 #let merge-path(..body, cycle: false) = ((
@@ -288,11 +264,11 @@
     finalize-children: (ctx, children) => {
       let merged = none
       for child in children {
-        assert(child.cmd == "line")
+        assert(child.cmd == "path")
         if merged == none {
           merged = child
         } else {
-          merged.pos += child.pos
+          merged.vertices += child.vertices
         }
       }
       merged.close = cycle

@@ -14,7 +14,7 @@
 
 /// Add two vectors of the same dimension
 #let add(v1, v2) = {
-  assert(dim(v1) == dim(v2))
+  assert(dim(v1) == dim(v2), message: "Cannot add vectors, " + repr(v1) + " and " + repr(v2) + " are not of the same dimensions.")
   return v1.enumerate().map(t => t.at(1) + v2.at(t.at(0)))
 }
 
