@@ -7,6 +7,28 @@
 /// Return dimension of vector v
 #let dim(v) = { assert(type(v) == "array"); return v.len() }
 
+
+/// Convert vector `v` to row or column matrix
+#let as-mat(v, mode: "row") = {
+  if mode == "column" {
+    return (v,)
+  } else if mode == "row" {
+    return (for c in v { (c,) }, )
+  } else {
+    panic("Invalid mode " + mode)
+  }
+}
+
+/// Convert vector to vector of different dimension
+/// with missing fields of `v` set to fields of vector `init`
+#let as-vec(v, init: (0, 0, 0)) = {
+  for i in range(0, calc.min(dim(v), dim(init))) {
+    init.at(i) = v.at(i)
+  }
+  return init
+}
+
+
 /// Return length of vector v
 #let len(v) = {
   return calc.sqrt(v.fold(0, (s, c) => s + c * c))
@@ -14,18 +36,26 @@
 
 /// Add two vectors of the same dimension
 #let add(v1, v2) = {
-  assert(dim(v1) == dim(v2))
+  if dim(v1) != dim(v2) {
+    v1 = as-vec(v1)
+    v2 = as-vec(v2)
+  }
+  assert(dim(v1) == dim(v2), message: "Cannot add vectors, " + repr(v1) + " and " + repr(v2) + " are not of the same dimensions.")
   return v1.enumerate().map(t => t.at(1) + v2.at(t.at(0)))
 }
 
 /// Substract two vectors of the same dimension
 #let sub(v1, v2) = {
-  assert(dim(v1) == dim(v2))
+  if dim(v1) != dim(v2) {
+    v1 = as-vec(v1)
+    v2 = as-vec(v2)
+  }
+  assert(dim(v1) == dim(v2), message: "Cannot subtract vectors, " + repr(v1) + " and " + repr(v2) + " are not of the same dimensions.")
   return v1.enumerate().map(t => t.at(1) - v2.at(t.at(0)))
 }
 
 /// Multiply each vector field with number `x`
-#let mul(v, x) = {
+#let scale(v, x) = {
   return v.map(c => c * x)
 }
 
@@ -36,7 +66,7 @@
 
 /// Negate each vector field
 #let neg(v) = {
-  return mul(v, -1)
+  return scale(v, -1)
 }
 
 /// Normalize vector (divide by its length)
@@ -69,24 +99,4 @@
   } else {
     panic("Invalid vector dimension")
   }
-}
-
-/// Convert vector `v` to row or column matrix
-#let as-mat(v, mode: "row") = {
-  if mode == "column" {
-    return (v,)
-  } else if mode == "row" {
-    return (for c in v { (c,) }, )
-  } else {
-    panic("Invalid mode " + mode)
-  }
-}
-
-/// Convert vector to vector of different dimension
-/// with missing fields of `v` set to fields of vector `init`
-#let as-vec(v, init: (0, 0, 0, 1)) = {
-  for i in range(0, calc.min(dim(v), dim(init))) {
-    init.at(i) = v.at(i)
-  }
-  return init
 }

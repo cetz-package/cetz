@@ -2,7 +2,7 @@
 
 #set page(width: auto, height: auto)
 
-#canvas(fill: gray, length: 1cm, {
+#canvas(background: gray, length: 1cm, {
   import "../draw.typ": *
   stroke(black + .5pt)
 
@@ -12,7 +12,7 @@
   circle((node: "a", at: "start"), radius: .1)
 
   // Alternative anchor syntax
-  line((0,-1), "a") // default
+  line((0,-1), "a.end") // default
   line((0,-1), "a.start")
 
   // Create custom anchors
