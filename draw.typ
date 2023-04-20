@@ -111,7 +111,7 @@
   )
 ),)
 
-#let line(start, end, cycle: false, mark-begin: none, mark-end: none, name: none) = {
+#let line(start, end, mark-begin: none, mark-end: none, name: none) = {
   ((
     name: name,
     coordinates: (
@@ -139,36 +139,21 @@
   ),)
 }
 
-#let rect(a, b, name: none) = ((
+#let rect(a, b, name: none, anchor: none) = ((
   (
     name: name,
-    positions: ctx => {
-      (a, b, vector.add(a, vector.div(vector.sub(b, a), 2)))
-    },
-    anchors: (ctx, a, b, center) => {
-      let r = (
-        center: center,
-      )
-      return r
-    },
-    render: (ctx, a, b, center) => {
+    default-anchor: "center",
+    anchor: anchor,
+    coordinates: (a, b),
+    render: (ctx, a, b) => {
       let (x1, y1) = a
       let (x2, y2) = b
-      path-cmd(ctx, (x1, y1), (x2, y1), (x2, y2), (x1, y2), cycle: true)
+      cmd.path(ctx, (x1, y1), (x2, y1), (x2, y2), (x1, y2), close: true)
     },
   )
 ),)
 
-// #let pt-on-circle(center, x-rad, y-rad, start, end, i) = {
-//   let (x, y) = center
-//   let angle = start + (end - start) * i
-//   (
-//     x + calc.cos(angle) * x-rad,
-//     y + calc.sin(angle) * y-rad
-//   )
-// }
-
-#let arc(position, start, stop, radius: 1, name: none, anchor: none) = {
+#let arc(position, start, stop, radius: 1, mode: "OPEN", name: none, anchor: none) = {
   ((
     name: name,
     anchor: anchor,
@@ -189,7 +174,7 @@
       )
     },
     render: (ctx, position) => {
-      cmd.arc(ctx, position.first(), position.last(), start, stop, radius)
+      cmd.arc(ctx, position.first(), position.last(), start, stop, radius, mode: mode)
     }
   ),)
 }
@@ -200,15 +185,8 @@
     coordinates: (center,),
     default-anchor: "center",
     anchor: anchor,
-    // anchors: (ctx, center) => {
-    //   let radius = radius.at(0)
-    //   (center: center,
-    //    start: pt-on-circle(center, radius, radius, start, end, 0),
-    //    end: pt-on-circle(center, radius, radius, start, end, 1),
-    //    default: center)
-    // },
     render: (ctx, center) => {
-      cmd.arc(ctx, center.first(), center.last()+radius, 0deg, 360deg, radius, close: true)
+      cmd.arc(ctx, center.first(), center.last()+radius, 0deg, 360deg, radius, mode: "CLOSE")
     }
   ),)
 }

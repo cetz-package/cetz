@@ -4,9 +4,14 @@
   table(
     columns: (auto, auto),
     stroke: none,
-    body,
+    canvas(background: gray.lighten(75%), body),
     source
   )
+}
+
+#let br() = {
+  v(0.5cm)
+  line(length: 100%)
 }
 
 #set page(
@@ -66,18 +71,17 @@ There are four different ways to specify coordinates.
 Anchors are named positions relative to named elements. 
 
 To use an anchor of an element, you must give the element a name using the `name` parameter.
-#example(
-  canvas(background: gray.lighten(75%), {
+#example({
     import "draw.typ": *
     circle((0,0), name: "circle")
     fill(red)
     stroke(none)
     circle("circle.left", radius: 0.3)
-  }),
+  },
   [
     ```typ
     #canvas({
-      import "draw.typ": *
+      import "typst-canvas/draw.typ": *
       // Name the circle
       circle((0,0), name: "circle")
       
@@ -93,18 +97,17 @@ To use an anchor of an element, you must give the element a name using the `name
 All elements will have default anchors based on its bounding box, they are: `center`, `left`, `right`, `above` and `below`. Some elements will have their own anchors.
 
 Elements can be placed relative to its own anchors.
-#example(
-  canvas(background: gray.lighten(75%), {
+#example({
     import "draw.typ": *
     circle((0,0), anchor: "left")
     fill(red)
     stroke(none)
     circle((0,0), radius: 0.3)
-  }),
+  },
   [
     ```typ
     #canvas({
-      import "draw.typ": *
+      import "typst-canvas/draw.typ": *
       // An element does not have to be named 
       // in order to use its own anchors.
       circle((0,0), anchor: "left")
@@ -131,5 +134,119 @@ Elements can be placed relative to its own anchors.
   / `body`: A code block in which functions from `draw.typ` have been called.
 
 == Elements
+#br()
 
+```typ
+#line(start, end, mark-begin: none, mark-end: none, name: none)
+```
+Draws a line (a direct path between two points) to the canvas.
+  / `start`: The coordinate to start drawing the line from
+  / `end`: The coordinate to draw the line to.
+  / `mark-begin`: The type of arrow to draw at the start of the line.
+  / `mark-end`: The type of arrow to draw at the end of the line.
+
+#example({
+    import "draw.typ": *
+    line((-1.5, 0), (rel: (3, 0)))
+    line((0, -1.5), (rel: (0, 3)))
+  },
+
+  [
+  ```typ
+  #canvas({
+    import "typst-canvas/draw.typ": *
+    line((-1.5, 0), (rel: (3, 0)))
+    line((0, -1.5), (rel: (0, 3)))
+  })
+  ```
+  ])
+
+#br()
+
+```typ
+#rect(a, b, name: none)
+```
+Draws a rectangle to the canvas.
+  / a: The top left coordinate of the rectangle.
+  / b: The bottom right coordinate of the rectangle.
+
+#example({
+    import "draw.typ": *
+    rect((-1.5, 1.5), (1.5, -1.5))
+  },
+
+  [
+  ```typ
+  #canvas({
+    import "typst-canvas/draw.typ": *
+    rect((-1.5, 1.5), (1.5, -1.5))
+  })
+  ```
+])
+
+#br()
+
+```typ
+#arc(position, start, stop, radius: 1, name: none, anchor: none)
+```
+Draws an arc to the canvas.
+  / position: The coordinate to start drawing the arc from.
+  / start: The angle to start the arc.
+  / stop: The angle to stop the arc.
+  / radius: The radius of the arc's circle.
+
+#example({
+    import "draw.typ": *
+    arc((0,0), 45deg, 135deg)
+  },
+  [```typ
+  #canvas({
+    import "typst-canvas/draw.typ": *
+    arc((0,0), 45deg, 135deg)
+  })
+  ```]
+)
+
+#br()
+
+```typ
+#circle(center, radius: 1, name: none, anchor: none)
+```
+Draws a circle to the canvas.
+  / center: The coordinate of the circle's origin.
+  / radius: The circle's radius.
+
+#example({
+    import "draw.typ": *
+    circle((0,0))
+  },
+  [```typ
+  #canvas({
+    import "typst-canvas/draw.typ": *
+    circle((0,0))
+  })
+  ```]
+)
+
+#br()
+
+```typ
+#content(pt, ct, angle: 0deg, name: none, anchor: none)
+```
+Draws a content block to the canvas.
+  / pt: The coordinate of the center of the content block.
+  / ct: The content block.
+  / angle: The angle to rotate the content block by. Uses Typst's `rotate` function.
+
+#example({
+    import "draw.typ": *
+    content((0,0), [Hello World!])
+  },
+  [```typ
+  #canvas({
+    import "typst-canvas/draw.typ": *
+    content((0,0), [Hello World!])
+  })
+  ```]
+)
 == Styles

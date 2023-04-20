@@ -77,16 +77,20 @@
 }
 
 
-#let arc(ctx, x, y, start, stop, radius, close: false) = {
+#let arc(ctx, x, y, start, stop, radius, mode: "OPEN") = {
   let samples = int((stop - start) / 1deg)
   path(ctx,
-    close: close,
+    close: mode == "CLOSE",
     ..range(0, samples+1).map(i => {
       let angle = start + (stop - start) * i / samples
       (
         x - radius*calc.sin(start) + radius*calc.sin(angle),
         y - radius*calc.cos(start) + radius*calc.cos(angle),
       )
-    })
+    }) + if mode == "PIE" {
+      ((x - radius*calc.sin(start), y - radius*calc.cos(start)),)
+    } else {
+      ()
+    }
   )
 }
