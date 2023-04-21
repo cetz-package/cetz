@@ -3,26 +3,20 @@
 
 #let typst-path = path
 
-#let content(ctx, x, y, w, h, c) = {
-  // let br = apply-transform(ctx.transform-stack.last(), (x + w/2, y - h/2))
-  // let tl = apply-transform(ctx.transform-stack.last(), (x - w/2, y + h/2))
-  // let (x,y) = apply-transform(ctx.transform-stack.last(), (x - w/2, y + h/2))
-  ((
-    coordinates: ((x,y),),
-    bounds: (
-      (x + w/2, y - h/2),
-      (x - w/2, y + h/2)
-      ),
-    draw: (self) => {
-      let (x,y) = self.coordinates.first()
-      // let (x, y) = apply-transform(transform, (x,y)).map(x => ctx.length * x)
-      place(
-        dx: x, dy: y, 
-        c
-      )
-    },
-    ),)
-}
+#let content(ctx, x, y, w, h, c) = ((
+  coordinates: ((x,y),),
+  bounds: (
+    (x + w/2, y - h/2),
+    (x - w/2, y + h/2)
+  ),
+  draw: (self) => {
+    let (x, y) = self.coordinates.first()
+    place(
+      dx: x, dy: y, 
+      c
+    )
+  },
+),)
 
 #let path(ctx, close: false, fill: auto, stroke: auto, ..vertices) = {
   if fill == auto { fill = ctx.fill }
@@ -77,7 +71,7 @@
 }
 
 
-#let arc(ctx, x, y, start, stop, radius, mode: "OPEN") = {
+#let arc(ctx, x, y, z, start, stop, radius, mode: "OPEN") = {
   let samples = int((stop - start) / 1deg)
   path(ctx,
     close: mode == "CLOSE",
@@ -86,9 +80,10 @@
       (
         x - radius*calc.sin(start) + radius*calc.sin(angle),
         y - radius*calc.cos(start) + radius*calc.cos(angle),
+        z
       )
     }) + if mode == "PIE" {
-      ((x - radius*calc.sin(start), y - radius*calc.cos(start)),)
+      ((x - radius*calc.sin(start), y - radius*calc.cos(start)), z)
     } else {
       ()
     }
