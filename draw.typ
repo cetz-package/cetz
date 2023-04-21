@@ -202,13 +202,12 @@
 #let circle(center, radius: 1, name: none, anchor: none) = {
   ((
     name: name,
-    coordinates: (center, (radius, 0, 0), ),
+    coordinates: (center, ),
     default-anchor: "center",
     anchor: anchor,
-    render: (ctx, center, r) => {
+    render: (ctx, center) => {
       let (x, y, z) = center
-      let r = r.at(0)
-      cmd.arc(ctx, x, y + r, z, 0deg, 360deg, radius, mode: "CLOSE")
+      cmd.arc(ctx, x, y + radius, z, 0deg, 360deg, radius, mode: "CLOSE")
     }
   ),)
 }
