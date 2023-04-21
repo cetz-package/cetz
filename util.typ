@@ -3,7 +3,7 @@
 
 // Apply all transformation matrices `queue` in order on `vec`.
 #let apply-transform(queue, vec) = {
-  vec = vector.as-vec(vec)
+  vec = vector.as-vec(vec, init: (0,0,0,1))
   for (_, m) in queue {
     if m != none {
       vec = matrix.mul-vec(m, vec)
@@ -44,7 +44,7 @@
 
     // Add relative positions to previous position
     if "rel" in c {
-      return vector.add(ctx.prev.pt, c.rel)
+      return vector.add(ctx.prev.pt, vector.as-vec(c.rel))
     }
 
     panic("Not implemented")

@@ -131,7 +131,7 @@
   )
 ),)
 
-#let line(..pts, mark-begin: none, mark-end: none, name: none) = {
+#let line(..pts, close: false, mark-begin: none, mark-end: none, name: none) = {
   ((
     name: name,
     coordinates: pts.pos(),
@@ -142,7 +142,7 @@
       )
     },
     render: (ctx, ..pts) => {
-      cmd.path(ctx, ..pts)
+      cmd.path(ctx, close: close, ..pts)
       let start = pts.pos().first()
       let end = pts.pos().last()
       if mark-begin != none or mark-end != none {
@@ -180,7 +180,7 @@
     default-anchor: "start",
     coordinates: (position,),
     custom-anchors: (position) => {
-      let (x,y) = position
+      let (x,y, ..) = position
       (
         start: position,
         end: (
@@ -194,7 +194,7 @@
       )
     },
     render: (ctx, position) => {
-      cmd.arc(ctx, position.first(), position.last(), start, stop, radius, mode: mode)
+      cmd.arc(ctx, position.first(), position.at(1), start, stop, radius, mode: mode)
     }
   ),)
 }

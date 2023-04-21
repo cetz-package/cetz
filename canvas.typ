@@ -97,22 +97,27 @@
       center: (
         (bounds.l + bounds.r)/2,
         (bounds.b + bounds.t)/2,
+        0
       ),
       left: (
         bounds.l,
         (bounds.b + bounds.t)/2,
+        0
       ),
       right: (
         bounds.r,
         (bounds.b + bounds.t)/2,
+        0
       ),
       above: (
         (bounds.r + bounds.l)/2,
-        bounds.t
+        bounds.t,
+        0
       ),
       below: (
         (bounds.r + bounds.l)/2,
-        bounds.b
+        bounds.b,
+        0
       ),
     )
   }
@@ -130,6 +135,7 @@
 
   if "anchor" in element and type(element.anchor) == "string" {
     assert(element.anchor in anchors, message: "Anchor '" + element.anchor + "' not found in " + repr(anchors))
+    // panic((anchors, element.default-anchor, element.anchor))
     let translate = vector.sub(anchors.at(element.default-anchor), anchors.at(element.anchor))
     for (i, d) in drawables.enumerate() {
         drawables.at(i).coordinates = d.coordinates.map(
