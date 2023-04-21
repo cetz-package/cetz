@@ -1,0 +1,89 @@
+#!/bin/env bash
+set -eu
+set -o pipefail
+
+DIR="$(dirname "${BASH_SOURCE[0]}")"
+
+TYPST_VERSION="v0.2.0"
+TYPST_BASE_URL="https://github.com/typst/typst/releases/download"
+TYPST_ARCHIVE="typst-x86_64-unknown-linux-gnu.tar.gz"
+
+function install_typst()
+{
+  #TMP="$(mktemp -d)"
+  TMP="${TMP:-/tmp}/typst-${TYPST_VERSION}"
+  if mkdir "$TMP" 2> /dev/null ; then
+    local PKG="${TMP}/typst.tar.gz"
+
+    wget "${TYPST_BASE_URL}/${TYPST_VERSION}/${TYPST_ARCHIVE}" \
+         -O "$PKG"
+    mkdir "${TMP}/typst"
+    tar -xf "$PKG" -C "${TMP}/typst" --strip-components=1
+    rm "$PKG"
+  fi
+
+  PATH="${TMP}/typst/:$PATH"
+}
+
+function img_compare()
+{
+  compare -metric rmse "$1" "$2" null: 2>&1 | cut -d\  -f1
+}
+
+function update_test_ref()
+{
+  (
+    cd "$1"
+    local NAME
+    NAME="$(basename "$1")"
+
+    echo "[UPDATING] ${NAME}"
+
+    typst --root . compile test.typ
+    pdftoppm test.pdf res -png -singlefile
+    
+    cp "res.png" "ref.png"
+  )
+}
+
+function run_test()
+{
+  (
+    cd "$1"
+    local NAME
+    NAME="$(basename "$1")"
+
+    echo "[TEST] ${NAME} ..."
+
+    if [[ ! -f test.typ ]]; then echo "Missing file 'test.typ'!"; exit 1; fi
+
+    typst --root . compile test.typ
+    pdftoppm test.pdf res -png -singlefile
+
+    if [[ $(img_compare res.png ref.png) != 0 ]] ; then
+      compare -compose src res.png ref.png diff.png || true
+      echo "[FAIL] see $(pwd)/diff.png for differences"
+      exit 1
+    fi
+
+    echo "[  OK]"
+  )
+}
+
+install_typst
+
+MODE="${1:-test}"
+
+find "$DIR" -type d | \
+  while read -r test
+  do
+    if [[ "$test" == "." || "$test" == ".." ]]; then continue; fi
+
+    if [[ "$MODE" == "test" ]]; then
+      run_test "$test"
+    elif [[ "$MODE" == "update" ]]; then
+      update_test_ref "$test"
+    else
+      echo "Unknown mode '$MODE'"; exit 1
+    fi
+  done
