@@ -25,7 +25,7 @@
 }
 
 /// Multiply each vector field with number `x`
-#let mul(v, x) = {
+#let scale(v, x) = {
   return v.map(c => c * x)
 }
 
@@ -36,7 +36,7 @@
 
 /// Negate each vector field
 #let neg(v) = {
-  return mul(v, -1)
+  return scale(v, -1)
 }
 
 /// Normalize vector (divide by its length)

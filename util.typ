@@ -62,3 +62,28 @@
     float(x)
   }))
 }
+
+#let bezier-quadratic-pt(a, b, c, t) = {
+  // (1-t)^2 * a + 2 * (1-t) * t * c + t^2 b
+  return vector.add(
+    vector.add(
+      vector.scale(a, calc.pow(1-t, 2)),
+      vector.scale(c, 2 * (1-t) * t)
+    ),
+    vector.scale(b, calc.pow(t, 2))
+  )
+}
+
+#let bezier-cubic-pt(a, b, c1, c2, t) = {
+  // (1-t)^3*a + 3*(1-t)^2*t*c1 + 3*(1-t)*t^2*c2 + t^3*b
+  vector.add(
+    vector.add(
+      vector.scale(a, calc.pow(1-t, 3)),
+      vector.scale(c1, 3 * calc.pow(1-t, 2) * t)
+    ),
+    vector.add(
+      vector.scale(c2, 3*(1-t)*calc.pow(t,2)),
+      vector.scale(b, calc.pow(t, 3))
+    )
+  )
+}

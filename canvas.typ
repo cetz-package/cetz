@@ -34,8 +34,6 @@
 }
 
 
-
-
 // Recursive element traversal function which takes the current ctx, bounds and also returns them (to allow modifying function locals of the root scope)
 #let process-element(element, ctx) = {
   if element == none { return }
@@ -123,13 +121,6 @@
     anchors += (element.custom-anchors-ctx)(ctx, ..coordinates)
   } else if "custom-anchors" in element {
     anchors += (element.custom-anchors)(..coordinates)
-    // let prev-pt = ctx.prev.pt
-    // for (k, c) in (element.custom-anchors)(..coordinates) {
-    //   c = util.abs-coordinate(ctx, c)
-    //   ctx.prev.pt = c
-    //   anchors.insert(k, c)
-    // }
-    // ctx.prev.pt = prev-pt
     // TODO: Apply transform here and apply _inverse_ transform
     //       on anchor (or all final points) in position-to-vec.
     //for (k, v) in elem-anchors {

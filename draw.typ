@@ -132,20 +132,20 @@
   )
 ),)
 
-#let line(start, end, mark-begin: none, mark-end: none, name: none) = {
+#let line(..pts, mark-begin: none, mark-end: none, name: none) = {
   ((
     name: name,
-    coordinates: (
-      start, end
-    ),
-    custom-anchors: (start, end) => {
+    coordinates: pts.pos(),
+    custom-anchors: (..pts) => {
       (
-        start: start,
-        end: end,
+        start: pts.pos().first(),
+        end: pts.pos().last(),
       )
     },
-    render: (ctx, start, end) => {
-      cmd.path(ctx, start, end)
+    render: (ctx, ..pts) => {
+      cmd.path(ctx, ..pts)
+      let start = pts.pos().first()
+      let end = pts.pos().last()
       if mark-begin != none or mark-end != none {
         let n = vector.mul(vector.norm(vector.sub(start, end)), ctx.mark-size)
         if mark-begin != none {
@@ -248,6 +248,38 @@
           dx: -tw/2 * ctx.length,
           dy: -th/2 * ctx.length,
           typst-rotate(angle, ct)
+        )
+      )
+    }
+  ),)
+}
+
+#let bezier(start, end, ..ctrl, samples: 100, name: none) = {
+  let len = ctrl.pos().len()
+  assert(len >= 0 and len <= 2, message: "Bezier curve expects 1 or 2 control points. Got " + str(len))
+  return ((
+    name: name,
+    coordinates: (start, end, ..ctrl.pos()),
+    custom-anchors: (start, end, ..ctrl) => {
+      let a = (start: start, end: end)
+      for (i, c) in ctrl.pos().enumerate() {
+        a.insert("ctrl-" + str(i), c)
+      }
+      return a
+    },
+    render: (ctx, start, end, ..ctrl) => {
+      ctrl = ctrl.pos()
+      let f = if len == 1 {
+        t => util.bezier-quadratic-pt(start, end, ctrl.first(), t)
+      } else {
+        t => util.bezier-cubic-pt(start, end, ctrl.first(), ctrl.last(), t)
+      }
+      cmd.path(
+        ctx,
+        ..(
+          start,
+          ..range(1, samples).map(i => f(i/samples)),
+          end
         )
       )
     }
