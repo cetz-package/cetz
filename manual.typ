@@ -1,10 +1,12 @@
 #import "canvas.typ": canvas
 
+#let canvas-background = gray.lighten(75%)
+
 #let example(body, source) = {
   table(
-    columns: (auto, auto),
+    columns: (auto, auto), fill: (x, y) => (canvas-background, none).at(x),
     stroke: none,
-    canvas(background: gray.lighten(75%), body),
+    canvas(body),
     source
   )
 }
@@ -115,7 +117,7 @@ Elements can be placed relative to its own anchors.
       // Draw a smaller red circle at the origin
       fill(red)
       stroke(none)
-      circle("circle.left", radius: 0.3)
+      circle((0,0), radius: 0.3)
     })
     ```
   ]
@@ -227,6 +229,33 @@ Draws a circle to the canvas.
   })
   ```]
 )
+
+#br()
+
+```typ
+#bezier(start, end, ..ctrl, samples: 100, name: none)
+```
+Draws a bezier curve with 1 or 2 control points to the canvas.
+  / `start`: The coordinate to start drawing the line from
+  / `end`: The coordinate to draw the line to.
+  / `..ctrl`: List of control points
+  / `samples`: Number of lines used to constuct the curve
+
+#example({
+    import "draw.typ": *
+    bezier((0, 0), (2, 0), (1, 1))
+    bezier((0, -1), (2, -1), (.5, -2), (1.5, 0))
+  },
+
+  [
+  ```typ
+  #canvas({
+    import "typst-canvas/draw.typ": *
+    bezier((0, 0), (2, 0), (1, 1))
+    bezier((0, -1), (2, -1), (.5, -2), (1.5, 0))
+  })
+  ```
+  ])
 
 #br()
 

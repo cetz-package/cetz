@@ -34,33 +34,32 @@
   ),)
 }
 
-// Rotate on z-axis (defaul) or specified axes if `angle` is of type
+// Rotate on z-axis (default) or specified axes if `angle` is of type
 // dictionary
 #let rotate(angle) = {
   ((
     before: ctx => {
       if type(angle) == "dictionary" {
-        for (key, value) in angle {
-          ctx.transform.insert("rotate-"+key,
-            if key == "x" {
-              matrix.transform-rotate-x(value)
-            } else if key == "y" {
-              matrix.transform-rotate-y(value)
-            } else if key == "z" {
-              matrix.transform-rotate-z(value)
-            } else {
-              panic("Invalid rotation axis")
-            }
-          )
-        }
+        let (x, y, z) = (0deg, 0deg, 0deg)
+        if "x" in angle { x = angle.x }
+        if "y" in angle { y = angle.y }
+        if "z" in angle { z = angle.z }
+        ctx.transform.rotate = matrix.transform-rotate-xyz(x, y, z)
       } else {
         ctx.transform.rotate = matrix.transform-rotate-z(angle)
       }
-
       return ctx
     }
   ),)
 }
+
+// Scale canvas
+#let scale(x, y, z) = ((
+  before: ctx => {
+    ctx.transform.scale = matrix.transform-scale(x, y, z)
+    return ctx
+  }
+),)
 
 // Translate
 #let translate(vec) = {
@@ -178,9 +177,9 @@
     name: name,
     anchor: anchor,
     default-anchor: "start",
-    coordinates: (center,),
-    custom-anchors: (center) => {
-      let (x, y, z) = center
+    coordinates: (position,),
+    custom-anchors: (position) => {
+      let (x, y, z) = position
       (
         start: position,
         end: (
@@ -260,7 +259,8 @@
 
 #let bezier(start, end, ..ctrl, samples: 100, name: none) = {
   let len = ctrl.pos().len()
-  assert(len >= 0 and len <= 2, message: "Bezier curve expects 1 or 2 control points. Got " + str(len))
+  assert(len >= 1 and len <= 2,
+         message: "Bezier curve expects 1 or 2 control points. Got " + str(len))
   return ((
     name: name,
     coordinates: (start, end, ..ctrl.pos()),
