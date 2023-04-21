@@ -214,7 +214,7 @@
 
     // Current transform
     transform: (
-    // flip-x: matrix.transform-scale((x: 1, y: -1, z: 1)),
+      flip-x: matrix.transform-scale((x: 1, y: -1, z: 1)),
       shear: matrix.transform-shear-z(),
     ),
 
