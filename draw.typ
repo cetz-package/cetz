@@ -177,9 +177,9 @@
     name: name,
     anchor: anchor,
     default-anchor: "start",
-    coordinates: (center,),
-    custom-anchors: (center) => {
-      let (x, y, z) = center
+    coordinates: (position,),
+    custom-anchors: (position) => {
+      let (x, y, z) = position
       (
         start: position,
         end: (
