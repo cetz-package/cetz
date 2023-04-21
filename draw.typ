@@ -23,15 +23,12 @@
   ),)
 }
 
-#let move-to(pt) = {
-  ((
-    before: ctx => {
-      let pt = (ctx.pos-to-pt)(pt)
-      ctx.prev.pt = pt
-      return ctx
-    }
-  ),)
-}
+// Move to coordinate `pt`
+// @param pt coordinate
+#let move-to(pt) = ((
+   coordinates: (pt, ),
+   render: (ctx, pt) => (),
+),)
 
 // Rotate on z-axis (default) or specified axes if `angle` is of type
 // dictionary
@@ -118,17 +115,17 @@
 }
 
 #let arrow-head(from, to, symbol: ">") = ((
-  (
-    positions: ctx => {
-      (from, to)
-    },
-    render: (ctx, from, to) => {
-      arrow-head-cmd(ctx, from, to, symbol)
-    }
-  )
+  coordinates: (from, to),
+  render: (ctx, from, to) => {
+    arrow-head-cmd(ctx, from, to, symbol)
+  }
 ),)
 
-#let line(..pts, close: false, mark-begin: none, mark-end: none, name: none) = {
+#let line(..pts, close: false,
+          mark-begin: none,
+          mark-end: none,
+          mark-size: auto,
+          name: none) = {
   ((
     name: name,
     coordinates: pts.pos(),
@@ -140,18 +137,22 @@
     },
     render: (ctx, ..pts) => {
       cmd.path(ctx, close: close, ..pts)
-      let start = pts.pos().first()
-      let end = pts.pos().last()
-      if mark-begin != none or mark-end != none {
-        let n = vector.mul(vector.norm(vector.sub(start, end)), ctx.mark-size)
-        if mark-begin != none {
-          cmd.arrow-head(ctx, start, vector.sub(start, n), mark-begin)
-        }
-        if mark-end != none {
-          cmd.arrow-head(ctx, end, vector.sub(end, n), mark-end)
-        }
-      }
 
+      let mark-size = if mark-size != auto {mark-size} else {ctx.mark-size}
+      if mark-begin != none {
+        let (start, end) = (pts.pos().at(1), pts.pos().at(0))
+        let n = vector.scale(vector.norm(vector.sub(end, start)),
+                             mark-size)
+        start = vector.sub(end, n)
+        cmd.arrow-head(ctx, start, end, mark-begin)
+      }
+      if mark-end != none {
+        let (start, end) = (pts.pos().at(-2), pts.pos().at(-1))
+        let n = vector.scale(vector.norm(vector.sub(end, start)),
+                             mark-size)
+        start = vector.sub(end, n)
+        cmd.arrow-head(ctx, start, end, mark-end)
+      }
     }
   ),)
 }
