@@ -16,6 +16,7 @@ function install_typst()
     local PKG="${TMP}/typst.tar.gz"
 
     wget "${TYPST_BASE_URL}/${TYPST_VERSION}/${TYPST_ARCHIVE}" \
+         --quiet \
          -O "$PKG"
     mkdir "${TMP}/typst"
     tar -xf "$PKG" -C "${TMP}/typst" --strip-components=1
