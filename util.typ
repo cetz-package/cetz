@@ -21,25 +21,31 @@
 
   // Allow strings as shorthand for anchors
   if type(c) == "string" {
-        // assert(c != "g2.in 2", message: repr(ctx))
-
-      let parts = c.split(".")
-      if parts.len() == 1 {
-        c = (node: parts.at(0))
-      } else {
-        c = (node: parts.slice(0, -1).join("."), at: parts.at(-1))
-      }
+    let parts = c.split(".")
+    if parts.len() == 1 {
+      c = (node: parts.at(0))
+    } else {
+      c = (node: parts.slice(0, -1).join("."), at: parts.at(-1))
+    }
   }
 
   if type(c) == "dictionary" {
     if "node" in c {
-      assert(c.node in ctx.anchors, message: "Unknown node '" + c.node + "' in nodes " + repr(ctx.anchors))
+      assert(c.node in ctx.anchors,
+             message: "Unknown node '" + c.node + "' in nodes " + repr(ctx.anchors))
+
       let node = ctx.anchors.at(c.node)
+      let anchor = none
       if "at" in c {
-        assert( c.at in node, message: "Unknown anchor '" + c.at + "' of " + repr(node))
-        return node.at(c.at)
+        assert(c.at in node,
+               message: "Unknown anchor '" + c.at + "' of " + repr(node))
+        
+        anchor = node.at(c.at)
+      } else {
+        anchor = node.default
       }
-      return node.default
+
+      return anchor
     }
 
     // Add relative positions to previous position
@@ -50,7 +56,7 @@
     panic("Not implemented")
   }
 
-  // Transform lengths with unit to canvas lenght
+  // Transform lengths with unit to canvas length
   return apply-transform(ctx.transform, c.map(x => if type(x) == "length" {
     // HACK ALERT!
     if repr(x).ends-with("em") {

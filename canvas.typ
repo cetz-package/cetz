@@ -82,11 +82,12 @@
   if "render" in element {
     // panic(element)  
     for drawable in (element.render)(ctx, ..coordinates) {
-      // drawable.coordinates = drawable.coordinates.map(x => util.apply-transform(ctx.transform, x))
       if "bounds" not in drawable {
         drawable.bounds = drawable.coordinates
       }
+
       bounds = bounding-box(drawable.bounds, init: bounds)
+
       // Push draw command
       drawables.push(drawable)
     }
@@ -126,24 +127,22 @@
     anchors += (element.custom-anchors-ctx)(ctx, ..coordinates)
   } else if "custom-anchors" in element {
     anchors += (element.custom-anchors)(..coordinates)
-    // TODO: Apply transform here and apply _inverse_ transform
-    //       on anchor (or all final points) in position-to-vec.
-    //for (k, v) in elem-anchors {
-    //  elem-anchors.at(k) = util.apply-transform(cur-transform, v)
-    //}
   }
 
   if "anchor" in element and type(element.anchor) == "string" {
     assert(element.anchor in anchors, message: "Anchor '" + element.anchor + "' not found in " + repr(anchors))
     // panic((anchors, element.default-anchor, element.anchor))
-    let translate = vector.sub(anchors.at(element.default-anchor), anchors.at(element.anchor))
+    let translate = vector.sub(anchors.at(element.default-anchor),
+                               anchors.at(element.anchor))
     for (i, d) in drawables.enumerate() {
         drawables.at(i).coordinates = d.coordinates.map(
           c => vector.add(translate, c))
     }
+
     for (k, a) in anchors {
       anchors.at(k) = vector.add(translate, a)
     }
+
     bounds = bounding-box(
       (
         vector.add(
@@ -256,12 +255,11 @@
   
   box(stroke: if debug {green}, width: width, height: height, fill: background, {
     for d in draw-cmds {
-      d.coordinates = d.coordinates.map(
-              v => 
-                util.apply-transform(
-                  (translate: translate), v
-                ).slice(0,2).map(x => ctx.length * x)
-            )
+      d.coordinates = d.coordinates.map(v => 
+        util.apply-transform(
+            (translate: translate,), v
+          ).slice(0,2).map(x => ctx.length * x)
+        )
       (d.draw)(d)
     }
   })
