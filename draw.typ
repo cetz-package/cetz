@@ -1,12 +1,13 @@
 #import "vector.typ"
 #import "matrix.typ"
 #import "cmd.typ"
+#import "util.typ"
 
 #let typst-rotate = rotate
 
 #let fill(color) = {
   ((
-    modify-ctx: ctx => {
+    before: ctx => {
       ctx.fill = color
       return ctx
     }
@@ -15,7 +16,7 @@
 
 #let stroke(color) = {
   ((
-    modify-ctx: ctx => {
+    before: ctx => {
       ctx.stroke = color
       return ctx
     }
@@ -24,7 +25,7 @@
 
 #let move-to(pt) = {
   ((
-    modify-ctx: ctx => {
+    before: ctx => {
       let pt = (ctx.pos-to-pt)(pt)
       ctx.prev.pt = pt
       ctx.prev.bounds = (l: pt, r: pt, t: pt, b: pt)
@@ -37,10 +38,10 @@
 // dictionary
 #let rotate(angle) = {
   ((
-    modify-ctx: ctx => {
+    before: ctx => {
       if type(angle) == "dictionary" {
         for (key, value) in angle {
-          ctx.transform-stack.last().insert("rotate-"+key,
+          ctx.transform.insert("rotate-"+key,
             if key == "x" {
               matrix.transform-rotate-x(value)
             } else if key == "y" {
@@ -53,7 +54,7 @@
           )
         }
       } else {
-        ctx.transform-stack.last().rotate = matrix.transform-rotate-z(angle)
+        ctx.transform.rotate = matrix.transform-rotate-z(angle)
       }
 
       return ctx
@@ -62,43 +63,63 @@
 }
 
 // Translate
-#let translate(x, y, z) = ((
-  (modify-ctx: ctx => {
-    ctx.transform-stack.last().translate = matrix.transform-translate(x,y,z)
-    return ctx
-  })
-),)
+#let translate(vec) = {
+  ((
+    before: ctx => {
+      let (x,y) = util.abs-coordinate(ctx, vec)
+      // assert(vec != "and.out", message: repr((x,y)))
+      if "translate" in ctx.transform {
+        let t = ctx.transform.translate
+        ctx.transform.translate = matrix.transform-translate(x + t.at(0).at(3), y + t.at(1).at(3), 0)
+      } else {
+        ctx.transform.translate = matrix.transform-translate(x,y,0)
+      }
+      return ctx
+    }
+  ),)
+}
 
-// Register anchor `name` at position `pos`.
-#let anchor(name, pos) = ((
-(
-  name: name,
-  positions: ctx => {
-    (pos,)
-  },
-  anchors: (ctx, pos) => {
-    (default: pos)
-  },
-  render: (ctx, pos) => {()})
-),)
+// Register anchor `name` at position.
+#let anchor(name, position) = {
+  ((
+    name: name,
+    coordinates: (position,),
+    after: (ctx, position) => {
+      assert(ctx.groups.len() > 0, message: "Anchor '" + name + "' created outside of group!")
+      ctx.groups.last().anchors.insert(name, position)
+      // panic(ctx.groups)
+      return ctx
+    }
+  ),)
+}
 
 // Group
-#let group(..body) = ((
-(
-  modify-ctx: ctx => {
-    ctx.transform-stack.push(ctx.transform-stack.last())
-    return ctx
-  },
-  children: ctx => {
-    let (old-fill, old-stroke) = (ctx.fill, ctx.stroke)
-    (..body.pos(), fill(old-fill), stroke(old-stroke))
-  },
-  finalize: (ctx) => {
-    let _ = ctx.transform-stack.pop()
-    return ctx
-  }
-)
-),)
+#let group(name: none, anchor: none, body) = {
+  ((
+    name: name,
+    anchor: anchor,
+    default-anchor: "center",
+    before: ctx => {
+      ctx.groups.push((
+        ctx: ctx,
+        anchors: (:),
+      ))
+      return ctx
+    },
+    children: body,
+    custom-anchors-ctx: (ctx) => ctx.groups.last().anchors,
+    after: (ctx) => {
+      let self = ctx.groups.pop()
+      let anchors = ctx.anchors
+      ctx = self.ctx
+      // panic(self)
+      if name != none {
+        ctx.anchors.insert(name, anchors.at(name))
+      }
+      return ctx
+    }
+  ),)
+}
 
 #let arrow-head(from, to, symbol: ">") = ((
   (

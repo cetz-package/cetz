@@ -2,55 +2,7 @@
 #import "vector.typ"
 #import "draw.typ"
 #import "cmd.typ"
-
-// Convert absolute, relative or anchor coordinate to absolute coordinate
-#let abs-coordinate(ctx, c) = {
-  // Use previous position
-  if c == () {
-    return ctx.prev.pt
-  }
-
-  // Allow strings as shorthand for anchors
-  if type(c) == "string" {
-      let parts = c.split(".")
-      if parts.len() == 1 {
-        c = (node: parts.at(0))
-      } else {
-        c = (node: parts.slice(0, -1).join("."), at: parts.at(-1))
-      }
-  }
-
-  if type(c) == "dictionary" {
-    if "node" in c {
-      assert(c.node in ctx.anchors, message: "Unknown node '" + c.node + "'")
-      let node = ctx.anchors.at(c.node)
-      if "at" in c {
-        assert( c.at in node, message: "Unknown anchor '" + c.at + "' of " + repr(node))
-        return node.at(c.at)
-      }
-      return node.default
-    }
-
-    // Add relative positions to previous position
-    if "rel" in c {
-      return vector.add(ctx.prev.pt, abs-coordinate(ctx, c.rel))
-    }
-
-    panic("Not implemented")
-  }
-
-  // Transform lengths with unit to canvas lenght
-  return c.map(x => if type(x) == "length" {
-    // HACK ALERT!
-    if repr(x).ends-with("em") {
-      float(repr(x).slice(0, -2)) * em-size.width / ctx.length
-    } else {
-      float(x / ctx.length)
-    }
-  } else {
-    float(x)
-  })
-}
+#import "util.typ"
 
 // Compute bounding box of points
 #let bounding-box(pts, init: none) = {
@@ -81,53 +33,48 @@
   return bounds
 }
 
-// Apply all transformation matrices `queue` in order on `vec`.
-#let apply-transform(queue, vec) = {
-  for m in queue.values() {
-    if m != none {
-      vec = matrix.mul-vec(m, vector.as-vec(
-        vec, init: (0, 0, 0, 1)))
-    }
-  }
-  return vec.slice(0, 2)
-}
+
 
 
 // Recursive element traversal function which takes the current ctx, bounds and also returns them (to allow modifying function locals of the root scope)
 #let process-element(element, ctx) = {
   if element == none { return }
   let drawables = ()
-
   let bounds = none
+  let anchors = (:)
 
   // Allow to modify the context
-  if "modify-ctx" in element {
-    ctx = (element.modify-ctx)(ctx)
+  if "before" in element {
+    ctx = (element.before)(ctx)
   }
 
-  // // Render children
-  // if "children" in element {
-  //   let child-drawables = ()
-  //   for child in (element.children)(ctx) {
-  //     let r = render-element(child, ctx)
-  //     ctx = r.ctx
-  //     bounds = bounding-box(r.bounds, init: bounds)
-  //     child-drawables += r.drawables
-  //   }
 
-  //   if "finalize-children" in element {
-  //     drawables += (element.finalize-children)(ctx, child-drawables)
-  //   } else {
-  //     drawables += child-drawables
-  //   }
-  // }
+  // Render children
+  if "children" in element {
+    let child-drawables = ()
+    for child in element.children {
+      let r = process-element(child, ctx)
+      if r != none {
+        if r.bounds != none {
+          bounds = bounding-box(r.bounds, init: bounds)
+        }
+        ctx = r.ctx
+        child-drawables += r.drawables
+      }
+    }
 
-  
+    if "finalize-children" in element {
+      drawables += (element.finalize-children)(ctx, child-drawables)
+    } else {
+      drawables += child-drawables
+    }
+  }
+
   // Query element for points
   let coordinates = ()
   if "coordinates" in element {
     for c in element.coordinates {
-      c = abs-coordinate(ctx, c)
+      c = util.abs-coordinate(ctx, c)
       ctx.prev.pt = c
       coordinates.push(c)
     }
@@ -135,8 +82,9 @@
 
   // Render element
   if "render" in element {
+    // panic(element)  
     for drawable in (element.render)(ctx, ..coordinates) {
-      drawable.coordinates = drawable.coordinates.map(x => apply-transform(ctx.transform-stack.last(), x))
+      // drawable.coordinates = drawable.coordinates.map(x => util.apply-transform(ctx.transform, x))
       if "bounds" not in drawable {
         drawable.bounds = drawable.coordinates
       }
@@ -146,7 +94,6 @@
     }
   }
 
-  let anchors = (:)
   if bounds != none {
     anchors = (
       center: (
@@ -172,25 +119,26 @@
     )
   }
 
-  if "custom-anchors" in element {
-    let prev-pt = ctx.prev.pt
-    for (k, c) in (element.custom-anchors)(..coordinates) {
-      c = abs-coordinate(ctx, c)
-      ctx.prev.pt = c
-      anchors.insert(k, c)
-    }
-    ctx.prev.pt = prev-pt
+  if "custom-anchors-ctx" in element {
+    anchors += (element.custom-anchors-ctx)(ctx, ..coordinates)
+  } else if "custom-anchors" in element {
+    anchors += (element.custom-anchors)(..coordinates)
+    // let prev-pt = ctx.prev.pt
+    // for (k, c) in (element.custom-anchors)(..coordinates) {
+    //   c = util.abs-coordinate(ctx, c)
+    //   ctx.prev.pt = c
+    //   anchors.insert(k, c)
+    // }
+    // ctx.prev.pt = prev-pt
     // TODO: Apply transform here and apply _inverse_ transform
     //       on anchor (or all final points) in position-to-vec.
     //for (k, v) in elem-anchors {
-    //  elem-anchors.at(k) = apply-transform(cur-transform, v)
+    //  elem-anchors.at(k) = util.apply-transform(cur-transform, v)
     //}
-    // if "default" in anchors {
-    //   ctx.prev.pt = anchors.default
-    // }
   }
 
   if "anchor" in element and type(element.anchor) == "string" {
+    assert(element.anchor in anchors, message: "Anchor '" + element.anchor + "' not found in " + repr(anchors))
     let translate = vector.sub(anchors.at(element.default-anchor), anchors.at(element.anchor))
     for (i, d) in drawables.enumerate() {
         drawables.at(i).coordinates = d.coordinates.map(
@@ -214,7 +162,8 @@
   }
 
   if "name" in element and type(element.name) == "string" {
-    // panic((anchors, bounds))
+    // panic(anchors)
+    // assert(element.name != "g2", message: repr(anchors))
     ctx.anchors.insert(element.name, anchors)
   }
 
@@ -234,8 +183,8 @@
     )
   }
 
-  if "finalize" in element {
-    ctx = (element.finalize)(ctx)
+  if "after" in element {
+    ctx = (element.after)(ctx, ..coordinates)
   }
 
   return (bounds: bounds, ctx: ctx, drawables: drawables)
@@ -247,12 +196,6 @@
     return []
   }
   let em-size = measure(box(width: 1em, height: 1em), st)
-
-  // Default transformation matrices
-  let default-transform = (
-    // flip-x: matrix.transform-scale((x: 1, y: -1, z: 1)),
-    shear: matrix.transform-shear-z(),
-  )
 
   // Canvas bounds
   let bounds = none
@@ -272,11 +215,16 @@
     fill: none,
     stroke: black + 1pt,
 
-    // Current transform stack
-    transform-stack: (default-transform,),
+    // Current transform
+    transform: (:),
+    // flip-x: matrix.transform-scale((x: 1, y: -1, z: 1)),
+    // shear: matrix.transform-shear-z(),
 
     // Saved anchors
-    anchors: (:)
+    anchors: (:),
+
+    // group stack
+    groups: (),
   )
   
   let draw-cmds = ()
@@ -312,7 +260,7 @@
     for d in draw-cmds {
       d.coordinates = d.coordinates.map(
               v => 
-                apply-transform(
+                util.apply-transform(
                   (translate: translate), v
                 ).map(x => ctx.length * x)
             )
