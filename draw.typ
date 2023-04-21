@@ -178,23 +178,26 @@
     name: name,
     anchor: anchor,
     default-anchor: "start",
-    coordinates: (position,),
-    custom-anchors: (position) => {
-      let (x,y, ..) = position
+    coordinates: (center,),
+    custom-anchors: (center) => {
+      let (x, y, z) = center
       (
         start: position,
         end: (
-          x - radius*calc.sin(start) + radius*calc.sin(stop),
-          y - radius*calc.cos(start) + radius*calc.cos(stop),
+          x + radius*calc.sin(stop),
+          y + radius*calc.cos(stop),
+          z,
         ),
         origin: (
-          x - radius*calc.sin(start),
-          y - radius*calc.cos(start),
+          x + radius*calc.sin(start),
+          y + radius*calc.cos(start),
+          z,
         )
       )
     },
     render: (ctx, position) => {
-      cmd.arc(ctx, position.first(), position.at(1), start, stop, radius, mode: mode)
+      let (x, y, z) = position
+      cmd.arc(ctx, x, y, z, start, stop, radius, mode: mode)
     }
   ),)
 }
@@ -202,11 +205,13 @@
 #let circle(center, radius: 1, name: none, anchor: none) = {
   ((
     name: name,
-    coordinates: (center,),
+    coordinates: (center, (radius, 0, 0), ),
     default-anchor: "center",
     anchor: anchor,
-    render: (ctx, center) => {
-      cmd.arc(ctx, center.first(), center.last()+radius, 0deg, 360deg, radius, mode: "CLOSE")
+    render: (ctx, center, r) => {
+      let (x, y, z) = center
+      let r = r.at(0)
+      cmd.arc(ctx, x, y + r, z, 0deg, 360deg, radius, mode: "CLOSE")
     }
   ),)
 }
