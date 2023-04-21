@@ -13,13 +13,13 @@
 }
 
 // Convert absolute, relative or anchor coordinate to absolute coordinate
-#let abs-coordinate(ctx, c) = {
-  // Use previous position
+#let abs-coordinate(ctx, c, relaxed: false) = {
+  // Format: () -- Current coordinates
   if c == () {
     return ctx.prev.pt
   }
 
-  // Allow strings as shorthand for anchors
+  // Format: <anchor-name> -- Anchor coordinates
   if type(c) == "string" {
     let parts = c.split(".")
     if parts.len() == 1 {
@@ -53,20 +53,59 @@
       return vector.add(ctx.prev.pt, vector.as-vec(c.rel))
     }
 
-    panic("Not implemented")
+    panic("Invalid coordiantes: " + repr(c))
   }
 
-  // Transform lengths with unit to canvas length
-  return apply-transform(ctx.transform, c.map(x => if type(x) == "length" {
-    // HACK ALERT!
-    if repr(x).ends-with("em") {
-      float(repr(x).slice(0, -2)) * em-size.width / ctx.length
-    } else {
-      float(x / ctx.length)
+  if type(c) == "array" {
+    let t = c.at(0)
+
+    // Format: (<angle>, <length>)
+    if t == "angle" {
+      assert(c.len() == 2,
+             message: "Expected position of format (<angle>, <length>), got: " + repr(c))
+
+      let (angle, length) = c
+      return (vec: (calc.cos(angle) * length,
+                    calc.sin(angle) * length, 0))
     }
-  } else {
-    float(x)
-  }))
+
+    // Format: (<function>, <coordinate or value>, ...)
+    if t == "function" {
+      assert(c.len() >= 2,
+             message: "Expected position of format (<function>, <position>, ...), got: " + repr(c))
+
+      let fn = c.at(0)
+      let rest = c.slice(1).map(x => {
+        let vec = abs-coordinate(x, ctx, relaxed: true)
+        if type(vec) == "dictionary" and "vec" in vec {
+          return vec.vec
+        }
+        return vec  
+      })
+
+      return (vec: fn(..rest))
+    }
+
+    // Format: (x, y[, z])
+    assert(c.len() >= 2 and c.len() <= 3,
+           message: "Expected coordinates, got: " + repr(c))
+    return apply-transform(ctx.transform, c.map(x => if type(x) == "length" {
+      // HACK ALERT!
+      if repr(x).ends-with("em") {
+        float(repr(x).slice(0, -2)) * em-size.width / ctx.length
+      } else {
+        float(x / ctx.length)
+      }
+    } else {
+      float(x)
+    }))
+  }
+
+  if not relaxed {
+    panic("Invalid coordinates: " + repr(c))
+  }
+
+  return c
 }
 
 #let bezier-quadratic-pt(a, b, c, t) = {
