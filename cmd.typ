@@ -21,7 +21,6 @@
 #let path(ctx, close: false, fill: auto, stroke: auto, ..vertices) = {
   if fill == auto { fill = ctx.fill }
   if stroke == auto { stroke = ctx.stroke }
-  // vertices = vertices.pos().map(x => apply-transform(ctx.transform-stack.last(), x))
   ((
     fill: if fill == auto { ctx.fill } else { fill },
     stroke: if stroke == auto { ctx.stroke } else { stroke },

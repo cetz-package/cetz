@@ -28,7 +28,6 @@
     before: ctx => {
       let pt = (ctx.pos-to-pt)(pt)
       ctx.prev.pt = pt
-      ctx.prev.bounds = (l: pt, r: pt, t: pt, b: pt)
       return ctx
     }
   ),)
@@ -44,9 +43,11 @@
         if "x" in angle { x = angle.x }
         if "y" in angle { y = angle.y }
         if "z" in angle { z = angle.z }
-        ctx.transform.rotate = matrix.transform-rotate-xyz(x, y, z)
+        ctx.transform.do.push(matrix.transform-rotate-xyz(x, y, z))
+        ctx.transform.undo.push(matrix.transform-rotate-xyz(-x, -y, -z))
       } else {
-        ctx.transform.rotate = matrix.transform-rotate-z(angle)
+        ctx.transform.do.push(matrix.transform-rotate-z(angle))
+        ctx.transform.undo.push(matrix.transform-rotate-z(angle))
       }
       return ctx
     }
@@ -54,9 +55,11 @@
 }
 
 // Scale canvas
-#let scale(x, y, z) = ((
+// @param factor float
+#let scale(f) = ((
   before: ctx => {
-    ctx.transform.scale = matrix.transform-scale(x, y, z)
+    ctx.transform.do.push(matrix.transform-scale(f))
+    ctx.transform.undo.push(matrix.transform-scale(1/f))
     return ctx
   }
 ),)
@@ -65,13 +68,9 @@
 #let translate(vec) = {
   ((
     before: ctx => {
-      let (x,y,z) = util.abs-coordinate(ctx, vec)
-      if "translate" in ctx.transform {
-        let t = ctx.transform.translate
-        ctx.transform.translate = matrix.transform-translate(x + t.at(0).at(3), y + t.at(1).at(3), z + t.at(2).at(3))
-      } else {
-        ctx.transform.translate = matrix.transform-translate(x,y,z)
-      }
+      let (x,y,z) = util.resolve-coordinate(ctx, vec)
+      ctx.transform.do.push(matrix.transform-translate(x, y, z))
+      ctx.transform.undo.push(matrix.transform-translate(-x, -y, -z))
       return ctx
     }
   ),)
@@ -85,7 +84,6 @@
     after: (ctx, position) => {
       assert(ctx.groups.len() > 0, message: "Anchor '" + name + "' created outside of group!")
       ctx.groups.last().anchors.insert(name, position)
-      // panic(ctx.groups)
       return ctx
     }
   ),)
@@ -167,7 +165,7 @@
     render: (ctx, a, b) => {
       let (x1, y1, z1) = a
       let (x2, y2, z2) = b
-      cmd.path(ctx, (x1, y1, z1), (x2, y1, z2), (x2, y2, z2), (x1, y2, z1), close: true)
+      cmd.path(ctx, close: true, (x1, y1, z1), (x2, y1, z2), (x2, y2, z2), (x1, y2, z1))
     },
   )
 ),)

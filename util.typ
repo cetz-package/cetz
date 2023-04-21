@@ -3,8 +3,20 @@
 
 // Apply all transformation matrices `queue` in order on `vec`.
 #let apply-transform(queue, vec) = {
-  vec = vector.as-vec(vec, init: (0,0,0,1))
-  for (_, m) in queue {
+  vec = vector.as-vec(vec, init: (0, 0, 0, 1))
+  for m in queue.do {
+    if m != none {
+      vec = matrix.mul-vec(m, vec)
+    }
+  }
+  return vec.slice(0, 3)
+}
+
+// Revert all transformation matrices `queue` in
+// reverse order on `vec`.
+#let revert-transform(queue, vec) = {
+  vec = vector.as-vec(vec, init: (0, 0, 0, 1))
+  for m in queue.undo.rev() {
     if m != none {
       vec = matrix.mul-vec(m, vec)
     }
@@ -13,7 +25,7 @@
 }
 
 // Convert absolute, relative or anchor coordinate to absolute coordinate
-#let abs-coordinate(ctx, c, relaxed: false) = {
+#let resolve-coordinate(ctx, c, relaxed: false) = {
   // Format: () -- Current coordinates
   if c == () {
     return ctx.prev.pt
@@ -45,7 +57,8 @@
         anchor = node.default
       }
 
-      return anchor
+      // Anchors are absolute, we need to reverse transform them
+      return revert-transform(ctx.transform, anchor)
     }
 
     // Add relative positions to previous position
@@ -76,7 +89,7 @@
 
       let fn = c.at(0)
       let rest = c.slice(1).map(x => {
-        let vec = abs-coordinate(x, ctx, relaxed: true)
+        let vec = resolve-coordinate(x, ctx, relaxed: true)
         if type(vec) == "dictionary" and "vec" in vec {
           return vec.vec
         }
@@ -89,7 +102,7 @@
     // Format: (x, y[, z])
     assert(c.len() >= 2 and c.len() <= 3,
            message: "Expected coordinates, got: " + repr(c))
-    return apply-transform(ctx.transform, c.map(x => if type(x) == "length" {
+    return vector.as-vec(c.map(x => if type(x) == "length" {
       // HACK ALERT!
       if repr(x).ends-with("em") {
         float(repr(x).slice(0, -2)) * em-size.width / ctx.length

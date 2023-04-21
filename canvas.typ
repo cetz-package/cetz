@@ -71,7 +71,7 @@
   let coordinates = ()
   if "coordinates" in element {
     for c in element.coordinates {
-      c = util.abs-coordinate(ctx, c)
+      c = util.resolve-coordinate(ctx, c)
       ctx.prev.pt = c
       coordinates.push(c)
     }
@@ -79,8 +79,11 @@
 
   // Render element
   if "render" in element {
-    // panic(element)  
     for drawable in (element.render)(ctx, ..coordinates) {
+      // Transform position to absolute
+      drawable.coordinates = drawable.coordinates.map(x =>
+        util.apply-transform(ctx.transform, x))
+
       if "bounds" not in drawable {
         drawable.bounds = drawable.coordinates
       }
@@ -130,7 +133,6 @@
 
   if "anchor" in element and type(element.anchor) == "string" {
     assert(element.anchor in anchors, message: "Anchor '" + element.anchor + "' not found in " + repr(anchors))
-    // panic((anchors, element.default-anchor, element.anchor))
     let translate = vector.sub(anchors.at(element.default-anchor),
                                anchors.at(element.anchor))
     for (i, d) in drawables.enumerate() {
@@ -139,7 +141,8 @@
     }
 
     for (k, a) in anchors {
-      anchors.at(k) = vector.add(translate, a)
+      a = vector.add(translate, a)
+      anchors.at(k) = a
     }
 
     bounds = bounding-box(
@@ -157,8 +160,11 @@
   }
 
   if "name" in element and type(element.name) == "string" {
-    // panic(anchors)
-    // assert(element.name != "g2", message: repr(anchors))
+    for (k, a) in anchors {
+      a = util.apply-transform(ctx.transform, a) // Anchors are absolute!
+      anchors.at(k) = a
+    }
+
     ctx.anchors.insert(element.name, anchors)
   }
 
@@ -212,8 +218,14 @@
 
     // Current transform
     transform: (
-      flip-x: matrix.transform-scale((x: 1, y: -1, z: 1)),
-      shear: matrix.transform-shear-z(),
+      do: (
+        matrix.transform-scale((x: 1, y: -1, z: 1)),
+        matrix.transform-shear-z(.5),
+      ),
+      undo: (
+        matrix.transform-scale((x: 1, y: -1, z: 1)),
+        matrix.transform-shear-z(-.5),
+      )
     ),
 
     // Saved anchors
@@ -256,7 +268,7 @@
     for d in draw-cmds {
       d.coordinates = d.coordinates.map(v => 
         util.apply-transform(
-            (translate: translate,), v
+          (do: (translate,)), v
           ).slice(0,2).map(x => ctx.length * x)
         )
       (d.draw)(d)
