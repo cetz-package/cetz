@@ -259,7 +259,8 @@
 
 #let bezier(start, end, ..ctrl, samples: 100, name: none) = {
   let len = ctrl.pos().len()
-  assert(len >= 0 and len <= 2, message: "Bezier curve expects 1 or 2 control points. Got " + str(len))
+  assert(len >= 1 and len <= 2,
+         message: "Bezier curve expects 1 or 2 control points. Got " + str(len))
   return ((
     name: name,
     coordinates: (start, end, ..ctrl.pos()),
