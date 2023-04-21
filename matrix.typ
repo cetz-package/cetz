@@ -23,7 +23,7 @@
 }
 
 // Return 4x4 z-shear matrix
-#let transform-shear-z(factor: .5) = {
+#let transform-shear-z(factor) = {
   ((1, 0, factor, 0),
    (0, 1,-factor, 0),
    (0, 0, 1, 0),
