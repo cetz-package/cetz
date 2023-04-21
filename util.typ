@@ -3,13 +3,13 @@
 
 // Apply all transformation matrices `queue` in order on `vec`.
 #let apply-transform(queue, vec) = {
+  vec = vector.as-vec(vec)
   for (_, m) in queue {
     if m != none {
-      vec = matrix.mul-vec(m, vector.as-vec(
-        vec, init: (0, 0, 0, 1)))
+      vec = matrix.mul-vec(m, vec)
     }
   }
-  return vec.slice(0, 2)
+  return vec.slice(0, 3)
 }
 
 // Convert absolute, relative or anchor coordinate to absolute coordinate

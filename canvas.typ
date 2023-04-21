@@ -207,9 +207,10 @@
     stroke: black + 1pt,
 
     // Current transform
-    transform: (:),
+    transform: (
     // flip-x: matrix.transform-scale((x: 1, y: -1, z: 1)),
-    // shear: matrix.transform-shear-z(),
+      shear: matrix.transform-shear-z(),
+    ),
 
     // Saved anchors
     anchors: (:),
@@ -253,7 +254,7 @@
               v => 
                 util.apply-transform(
                   (translate: translate), v
-                ).map(x => ctx.length * x)
+                ).slice(0,2).map(x => ctx.length * x)
             )
       (d.draw)(d)
     }

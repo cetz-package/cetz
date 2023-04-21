@@ -66,13 +66,12 @@
 #let translate(vec) = {
   ((
     before: ctx => {
-      let (x,y) = util.abs-coordinate(ctx, vec)
-      // assert(vec != "and.out", message: repr((x,y)))
+      let (x,y,z) = util.abs-coordinate(ctx, vec)
       if "translate" in ctx.transform {
         let t = ctx.transform.translate
-        ctx.transform.translate = matrix.transform-translate(x + t.at(0).at(3), y + t.at(1).at(3), 0)
+        ctx.transform.translate = matrix.transform-translate(x + t.at(0).at(3), y + t.at(1).at(3), z + t.at(2).at(3))
       } else {
-        ctx.transform.translate = matrix.transform-translate(x,y,0)
+        ctx.transform.translate = matrix.transform-translate(x,y,z)
       }
       return ctx
     }
@@ -167,9 +166,9 @@
     anchor: anchor,
     coordinates: (a, b),
     render: (ctx, a, b) => {
-      let (x1, y1) = a
-      let (x2, y2) = b
-      cmd.path(ctx, (x1, y1), (x2, y1), (x2, y2), (x1, y2), close: true)
+      let (x1, y1, z1) = a
+      let (x2, y2, z2) = b
+      cmd.path(ctx, (x1, y1, z1), (x2, y1, z2), (x2, y2, z2), (x1, y2, z1), close: true)
     },
   )
 ),)
@@ -228,7 +227,7 @@
     anchor: anchor,
     default-anchor: "center",
     render: (ctx, pt) => {
-      let (x, y) = pt
+      let (x, y, ..) = pt
 
       let size = measure(ct, ctx.style)
       let tw = size.width / ctx.length
