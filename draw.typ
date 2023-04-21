@@ -291,43 +291,25 @@
 }
 
 // Merge multiple paths
-#let merge-path(..body, cycle: false) = ((
-  (
-    children: ctx => {
-      body.pos()
-    },
-    finalize-children: (ctx, children) => {
-      let merged = none
-      for child in children {
-        assert(child.cmd == "path")
-        if merged == none {
-          merged = child
-        } else {
-          merged.vertices += child.vertices
-        }
-      }
-      merged.close = cycle
-      merged.fill = ctx.fill
-      merged.stroke = ctx.stroke
-      return (merged,)
+#let merge-path(body, close: false) = ((
+  children: body,
+  finalize-children: (ctx, children) => {
+    let merged = ()
+    for child in children {
+      merged += child.coordinates
     }
-  )
+    return cmd.path(ctx, ..merged, close: close)
+  }
 ),)
 
 // Render shadow of children by rendering them twice
-#let shadow(color: gray, offset-x: .1, offset-y: .1, ..body) = ((
-(
-  children: ctx => {
-    (
-      group(
-        // FIXME: only modify stroke color!
-        fill(color), stroke(color),
-        translate(offset-x, offset-y, 0),
-        ..body.pos(),
-      ),
-      translate(0, 0, 0),
-      ..body.pos()
-    )
-  },
-)
+#let shadow(color: gray, offset-x: .1, offset-y: -.1, body) = ((
+  children: (
+    ..group({
+      fill(color); stroke(color)
+      translate((offset-x, offset-y, 0))
+      body
+    }),
+    ..body,
+  ),
 ),)
