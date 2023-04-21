@@ -46,7 +46,6 @@
     ctx = (element.before)(ctx)
   }
 
-
   // Render children
   if "children" in element {
     let child-drawables = ()
