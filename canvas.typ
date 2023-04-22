@@ -27,8 +27,7 @@
         bounds.b = calc.max(bounds.b, pts.b)
       }
     } else {
-      panic(pts)
-      panic("Expected array of vectors or bbox dictionary!")
+      panic("Expected array of vectors or bbox dictionary, got: " + repr(pts))
     }
   return bounds
 }
@@ -77,6 +76,25 @@
     }
   }
 
+  // Query element for anchors
+  if "custom-anchors-ctx" in element {
+    anchors += (element.custom-anchors-ctx)(ctx, ..coordinates)
+  } else if "custom-anchors" in element {
+    anchors += (element.custom-anchors)(..coordinates)
+  }
+
+  // Respect translation handle (anchor)
+  // and push translation matrix
+  if "anchor" in element and element.anchor != none {
+    assert(element.anchor in anchors,
+           message: "Anchor '" + element.anchor + "' not found in " + repr(anchors))
+    let translate = vector.sub(anchors.at(element.default-anchor),
+                               anchors.at(element.anchor))
+    let (x, y, z) = translate
+    ctx.transform.do.push(matrix.transform-translate(x, y, z))
+    ctx.transform.undo.push(matrix.transform-translate(-x, -y, -z))
+  }
+
   // Render element
   if "render" in element {
     for drawable in (element.render)(ctx, ..coordinates) {
@@ -96,7 +114,7 @@
   }
 
   if bounds != none {
-    anchors = (
+    anchors += (
       center: (
         (bounds.l + bounds.r)/2,
         (bounds.b + bounds.t)/2,
@@ -121,40 +139,6 @@
         (bounds.r + bounds.l)/2,
         bounds.b,
         0
-      ),
-    )
-  }
-
-  if "custom-anchors-ctx" in element {
-    anchors += (element.custom-anchors-ctx)(ctx, ..coordinates)
-  } else if "custom-anchors" in element {
-    anchors += (element.custom-anchors)(..coordinates)
-  }
-
-  if "anchor" in element and type(element.anchor) == "string" {
-    assert(element.anchor in anchors, message: "Anchor '" + element.anchor + "' not found in " + repr(anchors))
-    let translate = vector.sub(anchors.at(element.default-anchor),
-                               anchors.at(element.anchor))
-    for (i, d) in drawables.enumerate() {
-        drawables.at(i).coordinates = d.coordinates.map(
-          c => vector.add(translate, c))
-    }
-
-    for (k, a) in anchors {
-      a = vector.add(translate, a)
-      anchors.at(k) = a
-    }
-
-    bounds = bounding-box(
-      (
-        vector.add(
-          translate, 
-          (bounds.l, bounds.t)
-        ),
-        vector.add(
-          translate,
-          (bounds.r, bounds.b)
-        )
       ),
     )
   }
