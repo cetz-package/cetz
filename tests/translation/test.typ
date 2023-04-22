@@ -5,7 +5,7 @@
     import "../../draw.typ": *
 
     group(name: "g", {
-      translate((-1.5, 1.5, 0))
+      translate((-1.5, .5, 0))
 
       rect((0, 0), (1, 1))
       anchor("tl", (0, 0))
