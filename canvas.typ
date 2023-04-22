@@ -85,6 +85,8 @@
 
       if "bounds" not in drawable {
         drawable.bounds = drawable.coordinates
+      } else {
+        drawable.bounds = drawable.bounds.map(x => util.apply-transform(ctx.transform, x))
       }
 
       bounds = bounding-box(drawable.bounds, init: bounds)
