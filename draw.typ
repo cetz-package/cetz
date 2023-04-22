@@ -44,7 +44,7 @@
         ctx.transform.undo.push(matrix.transform-rotate-xyz(-x, -y, -z))
       } else {
         ctx.transform.do.push(matrix.transform-rotate-z(angle))
-        ctx.transform.undo.push(matrix.transform-rotate-z(angle))
+        ctx.transform.undo.push(matrix.transform-rotate-z(-angle))
       }
       return ctx
     }
@@ -66,8 +66,8 @@
   ((
     before: ctx => {
       let (x,y,z) = util.resolve-coordinate(ctx, vec)
-      ctx.transform.do.push(matrix.transform-translate(x, y, z))
-      ctx.transform.undo.push(matrix.transform-translate(-x, -y, -z))
+      ctx.transform.do.push(matrix.transform-translate(x, -y, z))
+      ctx.transform.undo.push(matrix.transform-translate(-x, y, -z))
       return ctx
     }
   ),)
