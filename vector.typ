@@ -100,3 +100,17 @@
     panic("Invalid vector dimension")
   }
 }
+
+/// Linear interpolation
+#let lerp(v1, v2, t) = {
+  return add(
+    v1,
+    scale(
+      sub(
+        v2,
+        v1
+      ),
+      t,
+    )
+  )
+}
