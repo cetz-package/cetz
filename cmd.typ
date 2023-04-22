@@ -39,37 +39,6 @@
   ),)
 }
 
-#let arrow-head(ctx, from, to, symbol) = {
-  if symbol == "<" {
-    let tmp = to
-    to = from
-    from = tmp
-    symbol = ">"
-  }
-
-  if symbol == ">" {
-    let s = vector.sub(to, from)
-    let n = (-s.at(1) / 3, s.at(0) / 3)
-    path(
-      ctx, from, vector.add(from, n), to,
-      vector.add(from, vector.neg(n)),
-      cycle: true, 
-      fill: ctx.fill
-    )
-  } else if symbol == "|" {
-    let s = vector.sub(to, from)
-    let n = (-s.at(1) / 3, s.at(0) / 3)
-    path(
-      ctx, 
-      vector.add(to, n),
-      vector.add(to, vector.neg(n)),
-    )
-  } else {
-    panic("Unknown arrow head: " + symbol)
-  }
-}
-
-
 #let arc(ctx, x, y, z, start, stop, radius, mode: "OPEN") = {
   let samples = int((stop - start) / 1deg)
   path(ctx,
@@ -88,3 +57,56 @@
     }
   )
 }
+
+#let arrow-head(ctx, from, to, symbol) = {
+  let dir = vector.sub(to, from)
+  let odir = (-dir.at(1), dir.at(0), dir.at(2))
+
+  if symbol == "<" {
+    let tmp = to
+    to = from
+    from = tmp
+    symbol = ">"
+  }
+
+  let triangle() = {
+      let n = vector.scale(odir, .4)
+      (from, (vector.add(from, n)), to, (vector.add(from, vector.neg(n))))
+  }
+
+  let bar() = {
+      let n = vector.scale(odir, .5)
+      (vector.add(to, n), vector.sub(to, n))
+  }
+
+  let diamond() = {
+      let n = vector.add(vector.scale(dir, .5),
+                         vector.scale(odir, .5))
+      (from, (vector.add(from, n)), to, (vector.add(to, vector.neg(n))))
+  }
+
+  let circle() = {
+      let c = vector.add(from, vector.scale(dir, .5))
+      let pts = ()
+      let r = vector.len(dir) / 2
+      for a in range(0, 360, step: 20) {
+          pts.push((c.at(0) + calc.cos(a * 1deg) * r,
+                    c.at(1) + calc.sin(a * 1deg) * r,
+                    c.at(2)))
+      }
+      return pts
+  }
+
+  if symbol == ">" {
+    path(ctx, ..triangle(), close: true, fill: ctx.fill)
+  } else if symbol == "|" {
+    path(ctx, ..bar())
+  } else if symbol == "<>" {
+    path(ctx, ..diamond(), close: true, fill: ctx.fill)
+  } else if symbol == "o" {
+    path(ctx, ..circle(), close: true, fill: ctx.fill)
+  } else {
+    panic("Unknown arrow head: " + symbol)
+  }
+}
+
