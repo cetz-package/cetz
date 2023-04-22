@@ -35,7 +35,16 @@
 #let rotate(angle) = {
   ((
     before: ctx => {
-      if type(angle) == "dictionary" {
+      let angle = angle
+      if type(angle) == "array" {
+        if type(angle.first()) == "function" {
+          angle = util.resolve-coordinate(ctx, angle)
+        }
+      }
+      if type(angle) == "angle" {
+        ctx.transform.do.push(matrix.transform-rotate-z(angle))
+        ctx.transform.undo.push(matrix.transform-rotate-z(-angle))
+      } else if type(angle) == "dictionary" {
         let (x, y, z) = (0deg, 0deg, 0deg)
         if "x" in angle { x = angle.x }
         if "y" in angle { y = angle.y }
@@ -43,8 +52,7 @@
         ctx.transform.do.push(matrix.transform-rotate-xyz(x, y, z))
         ctx.transform.undo.push(matrix.transform-rotate-xyz(-x, -y, -z))
       } else {
-        ctx.transform.do.push(matrix.transform-rotate-z(angle))
-        ctx.transform.undo.push(matrix.transform-rotate-z(-angle))
+        panic("Invalid angle format '" + repr(angle) + "'")
       }
       return ctx
     }
