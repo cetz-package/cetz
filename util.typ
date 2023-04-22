@@ -89,7 +89,7 @@
 
       let fn = c.at(0)
       let rest = c.slice(1).map(x => {
-        let vec = resolve-coordinate(x, ctx, relaxed: true)
+        let vec = resolve-coordinate(ctx, x, relaxed: true)
         if type(vec) == "dictionary" and "vec" in vec {
           return vec.vec
         }
