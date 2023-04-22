@@ -73,17 +73,17 @@
     let t = c.at(0)
 
     // Format: (<angle>, <length>)
-    if t == "angle" {
+    if type(t) == "angle" {
       assert(c.len() == 2,
              message: "Expected position of format (<angle>, <length>), got: " + repr(c))
 
       let (angle, length) = c
-      return (vec: (calc.cos(angle) * length,
-                    calc.sin(angle) * length, 0))
+      return (calc.cos(angle) * length,
+              calc.sin(angle) * length, 0)
     }
 
     // Format: (<function>, <coordinate or value>, ...)
-    if t == "function" {
+    if type(t) == "function" {
       assert(c.len() >= 2,
              message: "Expected position of format (<function>, <position>, ...), got: " + repr(c))
 
@@ -96,7 +96,7 @@
         return vec  
       })
 
-      return (vec: fn(..rest))
+      return fn(..rest)
     }
 
     // Format: (x, y[, z])
