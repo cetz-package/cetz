@@ -86,6 +86,7 @@
   ((
     name: name,
     coordinates: (position,),
+    custom-anchors: (position) => (default: position),
     after: (ctx, position) => {
       assert(ctx.groups.len() > 0, message: "Anchor '" + name + "' created outside of group!")
       ctx.groups.last().anchors.insert(name, position)
@@ -125,7 +126,7 @@
 #let arrow-head(from, to, symbol: ">") = ((
   coordinates: (from, to),
   render: (ctx, from, to) => {
-    arrow-head-cmd(ctx, from, to, symbol)
+    cmd.arrow-head(ctx, from, to, symbol)
   }
 ),)
 
