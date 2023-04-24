@@ -5,7 +5,7 @@
 }
 
 /// Return dimension of vector v
-#let dim(v) = { assert(type(v) == "array"); return v.len() }
+#let dim(v) = { assert(type(v) == "array", message: "Expected vector to be of array type, got: " + repr(v)); return v.len() }
 
 
 /// Convert vector `v` to row or column matrix

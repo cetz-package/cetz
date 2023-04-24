@@ -51,7 +51,7 @@
         z
       )
     }) + if mode == "PIE" {
-      ((x - radius*calc.sin(start), y - radius*calc.cos(start)), z)
+      ((x - radius*calc.sin(start), y - radius*calc.cos(start), z),)
     } else {
       ()
     }
