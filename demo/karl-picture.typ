@@ -6,7 +6,7 @@
 
 #canvas(length: 4cm,   {
   import "../draw.typ": *
-
+  
   stroke(gray + .2pt)
   for v in range(-10, 11, step: 5) {
     line((v/10, -1.4), (v/10, 1.4))
@@ -14,29 +14,30 @@
   }
 
   fill(green)
-  arc((0,0), 90deg, 120deg, radius: 0.25, mode: "PIE", anchor: "origin", name: "arc")
+  arc((0,0), 60deg, 90deg, radius: 0.25, mode: "PIE", anchor: "origin", name: "arc")
 
   stroke(black + .5pt)
   fill(black)
-  line((-1.5, 0), (1.5, 0), mark-end: ">", mark-begin: "<")
-  line((0, -1.5), (0, 1.5), mark-end: ">", mark-begin: "<")
+  line((-1.5, 0), (1.5, 0), mark-end: ">", mark-begin: ">")
+  line((0, 1.5), (0, -1.5), mark-end: ">", mark-begin: ">")
   fill(none)
   circle((0,0), radius: 1)
 
   stroke(red + 2pt)
-  line((calc.sin(60deg), -calc.cos(60deg)), (rel: (0, 0.5)), name: "red line")
+  line((30deg, 1), (rel: (0, -0.5)), name: "red line")
   stroke(blue + 2pt)
   line((node: "red line", at: "end"), (0,0))
   stroke(orange + 2pt)
-  line((1, 0), (rel: (0, -calc.tan(30deg))), name: "orange line")
-
-  content("red line.center", [$ sin alpha $], anchor: "right")
-  content((0.5, -0.03), [$ cos alpha $], anchor: "below")
-  content("arc.center", [$a$])
-  content("orange line.center", [$ tan alpha = (sin alpha)/(cos alpha) $], anchor: "left")
+  line((1, 0), (rel: (0, calc.tan(30deg))), name: "orange line")
 
   stroke(black)
   line("orange line.end", (0,0))
+
+  content("red line.center", [$ sin alpha $], anchor: "right")
+  content((0.5, -0.03), [$ cos alpha $], anchor: "above")
+  content("arc.center", [$a$])
+  content("orange line.center", [$ tan alpha = (sin alpha)/(cos alpha) $], anchor: "left")
+
   for (x, xtext) in ((-1, [$ -1 $]), (-0.5,[$ -1/2 $]), (1, [$ 1 $])) {
     line((x, 0.1), (rel: (0, -0.2)))
     content((rel: (0, -0.1)), xtext)
