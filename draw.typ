@@ -307,9 +307,31 @@
   children: body,
   finalize-children: (ctx, children) => {
     let merged = ()
-    for child in children {
+    let pos = none
+    while children.len() > 0 {
+      let child = children.remove(0)
+
+      // Revert path order, if end < start
+      if merged.len() > 0 {
+        if (vector.len(vector.sub(child.coordinates.last(), pos)) <
+            vector.len(vector.sub(child.coordinates.first(), pos))) {
+           child.coordinates = child.coordinates.rev()
+        }
+      }
+
+      // Append child
       merged += child.coordinates
+
+      // Sort next children by distance
+      pos = merged.last()
+      children = children.sorted(key: a => {
+        calc.min(
+          vector.len(vector.sub(a.coordinates.first(), pos)),
+          vector.len(vector.sub(a.coordinates.last(), pos))
+        )
+      })
     }
+
     return cmd.path(ctx, ..merged, close: close)
   }
 ),)
