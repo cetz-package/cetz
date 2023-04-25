@@ -63,8 +63,13 @@
 // @param factor float
 #let scale(f) = ((
   before: ctx => {
+    let inv = if type(f) == "dictionary" {
+      (x: 1/f.x, y: 1/f.y, z: 1/f.z)
+    } else {
+      1/f
+    }
     ctx.transform.do.push(matrix.transform-scale(f))
-    ctx.transform.undo.push(matrix.transform-scale(1/f))
+    ctx.transform.undo.push(matrix.transform-scale(inv))
     return ctx
   }
 ),)
@@ -302,9 +307,31 @@
   children: body,
   finalize-children: (ctx, children) => {
     let merged = ()
-    for child in children {
+    let pos = none
+    while children.len() > 0 {
+      let child = children.remove(0)
+
+      // Revert path order, if end < start
+      if merged.len() > 0 {
+        if (vector.len(vector.sub(child.coordinates.last(), pos)) <
+            vector.len(vector.sub(child.coordinates.first(), pos))) {
+           child.coordinates = child.coordinates.rev()
+        }
+      }
+
+      // Append child
       merged += child.coordinates
+
+      // Sort next children by distance
+      pos = merged.last()
+      children = children.sorted(key: a => {
+        calc.min(
+          vector.len(vector.sub(a.coordinates.first(), pos)),
+          vector.len(vector.sub(a.coordinates.last(), pos))
+        )
+      })
     }
+
     return cmd.path(ctx, ..merged, close: close)
   }
 ),)
