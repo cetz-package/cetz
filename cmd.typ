@@ -66,10 +66,12 @@
     let tmp = to
     to = from
     from = tmp
-    symbol = ">"
   }
 
-  let triangle() = {
+  let triangle(reverse: false) = {
+      let outset = if reverse { 1 } else { 0 }
+      let from = vector.add(from, vector.scale(dir, outset))
+      let to = vector.add(to, vector.scale(dir, outset))
       let n = vector.scale(odir, .4)
       (from, (vector.add(from, n)), to, (vector.add(from, vector.neg(n))))
   }
@@ -80,12 +82,16 @@
   }
 
   let diamond() = {
+      let from = vector.add(from, vector.scale(dir, .5))
+      let to = vector.add(to, vector.scale(dir, .5))
       let n = vector.add(vector.scale(dir, .5),
                          vector.scale(odir, .5))
       (from, (vector.add(from, n)), to, (vector.add(to, vector.neg(n))))
   }
 
   let circle() = {
+      let from = vector.add(from, vector.scale(dir, .5))
+      let to = vector.add(to, vector.scale(dir, .5))
       let c = vector.add(from, vector.scale(dir, .5))
       let pts = ()
       let r = vector.len(dir) / 2
@@ -99,6 +105,8 @@
 
   if symbol == ">" {
     path(ctx, ..triangle(), close: true, fill: ctx.fill)
+  } else if symbol == "<" {
+    path(ctx, ..triangle(reverse: true), close: true, fill: ctx.fill)
   } else if symbol == "|" {
     path(ctx, ..bar())
   } else if symbol == "<>" {
