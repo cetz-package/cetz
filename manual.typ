@@ -2,11 +2,13 @@
 
 #let canvas-background = gray.lighten(75%)
 
-#let example(body, source) = {
+#let example(body, source, ..args) = {
   table(
-    columns: (auto, auto), fill: (x, y) => (canvas-background, none).at(x),
+    columns: (4cm, auto),
+    fill: (x, y) => (canvas-background, none).at(x),
+    align: (x, y) => (center, left).at(x),
     stroke: none,
-    canvas(body),
+    canvas(body, ..args),
     source
   )
 }
@@ -42,7 +44,7 @@
 
 = Introduction
 
-This package provides a way to draw stuff using a similar API to #linkurl("https://processing.org/", "Processing") but with relative coordinates and anchors from #linkurl("https://tikz.dev/", "Tikz"). You also won't have to worry about accidentally drawing over other content as the canvas will automatically resize. And remember up is negative!
+This package provides a way to draw stuff using a similar API to #linkurl("https://processing.org/", "Processing") but with relative coordinates and anchors from #linkurl("https://tikz.dev/", "Tikz"). You also won't have to worry about accidentally drawing over other content as the canvas will automatically resize. And remember: up is positive!
 
 = Usage
 
@@ -68,6 +70,8 @@ There are four different ways to specify coordinates.
   + Anchor: `(node: "name", at: "example")` or `"name.example"` \
     "The position of anchor `"example"` on node with name `"name"`." \
     See @anchors
+  + Angle + Distance: `(45deg, 1)` \
+    "Angle and distance from `(0, 0)`"
 
 == Anchors <anchors>
 Anchors are named positions relative to named elements. 
@@ -96,9 +100,9 @@ To use an anchor of an element, you must give the element a name using the `name
   ]
 )
 
-All elements will have default anchors based on its bounding box, they are: `center`, `left`, `right`, `above` and `below`. Some elements will have their own anchors.
+All elements will have default anchors based on their bounding box, they are: `center`, `left`, `right`, `above` and `below`. Some elements will have their own anchors.
 
-Elements can be placed relative to its own anchors.
+Elements can be placed relative to their own anchors.
 #example({
     import "draw.typ": *
     circle((0,0), anchor: "left")
@@ -144,8 +148,9 @@ Elements can be placed relative to its own anchors.
 Draws a line (a direct path between two points) to the canvas.
   / `start`: The coordinate to start drawing the line from
   / `end`: The coordinate to draw the line to.
-  / `mark-begin`: The type of arrow to draw at the start of the line.
+  / `mark-begin`: The type of arrow to draw at the start of the line. See @arrow-heads
   / `mark-end`: The type of arrow to draw at the end of the line.
+  / `mark-size`: Size of the marks (defaults to `.15`)
 
 #example({
     import "draw.typ": *
@@ -278,4 +283,45 @@ Draws a content block to the canvas.
   })
   ```]
 )
+
 == Styles
+
+```typst fill(color) ```
+
+Set current fill color or none.
+
+```typst stroke(stroke) ```
+
+Set current stroke style or none.
+
+== Arrow Heads <arrow-heads>
+Arrow heads -- _marks_ -- can be drawn using the `arrow-head` function
+or as start/end marks of paths (`line`). Arrow heads are filled using the
+current fill color.
+
+#example({
+  import "draw.typ": *
+  stroke((color: gray, dash: "dotted"))
+  line((1,-1), (1, 5))
+  stroke(black)
+  fill(black)
+  line((0, 0), (1, 0), mark-end: ">", mark-size: .5)
+  line((0, 1), (1, 1), mark-end: "<", mark-size: .5)
+  line((0, 2), (1, 2), mark-end: "|", mark-size: .5)
+  line((0, 3), (1, 3), mark-end: "o", mark-size: .5)
+  line((0, 4), (1, 4), mark-end: "<>", mark-size: .5)
+},
+[```typ
+#canvas({
+  import "typst-canvas/draw.typ": *
+  stroke((color: gray, dash: "dotted"))
+  line((1,-1), (1, 5))
+  stroke(black); fill(black)
+  line((0, 4), (1, 4), mark-end: "<>")
+  line((0, 3), (1, 3), mark-end: "o")
+  line((0, 2), (1, 2), mark-end: "|")
+  line((0, 1), (1, 1), mark-end: "<")
+  line((0, 0), (1, 0), mark-end: ">")
+})
+```]
+)
