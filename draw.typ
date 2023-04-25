@@ -63,8 +63,13 @@
 // @param factor float
 #let scale(f) = ((
   before: ctx => {
+    let inv = if type(f) == "dictionary" {
+      (x: 1/f.x, y: 1/f.y, z: 1/f.z)
+    } else {
+      1/f
+    }
     ctx.transform.do.push(matrix.transform-scale(f))
-    ctx.transform.undo.push(matrix.transform-scale(1/f))
+    ctx.transform.undo.push(matrix.transform-scale(inv))
     return ctx
   }
 ),)
