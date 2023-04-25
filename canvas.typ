@@ -193,11 +193,24 @@
 }
 
 
-#let canvas(length: 1cm, background: none, debug: false, body) = style(st => {
+#let canvas(length: 1cm,        /* Length of 1.0 canvas units */
+            scale-width: auto,  /* Target canvas width */
+            scale-height: auto, /* Target canvas height */
+            background: none,   /* Background paint */
+            debug: false, body) = layout(ly => style(st => {
   if body == none {
     return []
   }
+
   let em-size = measure(box(width: 1em, height: 1em), st)
+
+  let length = length
+  assert(type(length) in ("length", "ratio"),
+         message: "length: Expected length, got " + type(length) + ".")
+  if type(length) == "ratio" {
+    // NOTE: Ratio length is based on width!
+    length = ly.width * length
+  }
 
   // Canvas bounds
   let bounds = none
@@ -275,4 +288,4 @@
       (d.draw)(d)
     }
   })
-})
+}))
