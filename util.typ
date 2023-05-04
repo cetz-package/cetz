@@ -42,6 +42,7 @@
   }
 
   if type(c) == "dictionary" {
+    let pos = none
     if "node" in c {
       assert(c.node in ctx.anchors,
              message: "Unknown node '" + c.node + "' in nodes " + repr(ctx.anchors))
@@ -58,15 +59,22 @@
       }
 
       // Anchors are absolute, we need to reverse transform them
-      return revert-transform(ctx.transform, anchor)
+      pos = revert-transform(ctx.transform, anchor)
     }
 
     // Add relative positions to previous position
     if "rel" in c {
-      return vector.add(ctx.prev.pt, vector.as-vec(c.rel))
+      if pos == none {
+        pos = ctx.prev.pt
+      }
+      pos = vector.add(pos, vector.as-vec(c.rel))
     }
 
-    panic("Invalid coordiantes: " + repr(c))
+    if pos == none {
+      panic("Invalid coordiantes: " + repr(c))
+    } else {
+      return pos
+    }
   }
 
   if type(c) == "array" {
