@@ -70,6 +70,9 @@ There are four different ways to specify coordinates.
   + Anchor: `(node: "name", at: "example")` or `"name.example"` \
     "The position of anchor `"example"` on node with name `"name"`." \
     See @anchors
+  + Relative to anchor: `(node: "name", at "example", rel: (x,y))` \
+    "`x` units to the right and `y` units down from the position of anchor `"name"` on node `"example"`." \
+    See @anchors
   + Angle + Distance: `(45deg, 1)` \
     "Angle and distance from `(0, 0)`"
 
