@@ -186,6 +186,7 @@
 
 #let canvas(length: 1cm,        /* Length of 1.0 canvas units */
             background: none,   /* Background paint */
+            shear: .5,          /* Default shear */
             debug: false, body) = layout(ly => style(st => {
   if body == none {
     return []
@@ -200,6 +201,9 @@
     // NOTE: Ratio length is based on width!
     length = ly.width * length
   }
+
+  let shear = shear
+  if shear == none { shear = 0 }
 
   // Canvas bounds
   let bounds = none
@@ -223,11 +227,11 @@
     transform: (
       do: (
         matrix.transform-scale((x: 1, y: -1, z: 1)),
-        matrix.transform-shear-z(.5),
+        matrix.transform-shear-z(shear),
       ),
       undo: (
         matrix.transform-scale((x: 1, y: -1, z: 1)),
-        matrix.transform-shear-z(-.5),
+        matrix.transform-shear-z(shear),
       )
     ),
 
