@@ -143,16 +143,22 @@
       return pts
   }
 
+  // Use stroke color for fill if possible
+  let fill = ctx.fill
+  if fill == none {
+    fill = black
+  }
+
   if symbol == ">" {
-    path(ctx, ..triangle(), close: true, fill: ctx.fill)
+    path(ctx, ..triangle(), close: true, fill: fill)
   } else if symbol == "<" {
-    path(ctx, ..triangle(reverse: true), close: true, fill: ctx.fill)
+    path(ctx, ..triangle(reverse: true), close: true, fill: fill)
   } else if symbol == "|" {
     path(ctx, ..bar())
   } else if symbol == "<>" {
-    path(ctx, ..diamond(), close: true, fill: ctx.fill)
+    path(ctx, ..diamond(), close: true, fill: fill)
   } else if symbol == "o" {
-    path(ctx, ..circle(), close: true, fill: ctx.fill)
+    path(ctx, ..circle(), close: true, fill: fill)
   } else {
     panic("Unknown arrow head: " + symbol)
   }
