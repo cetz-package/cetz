@@ -306,6 +306,75 @@
   ),)
 }
 
+// Render cube
+// Note: Looks best if stroke join is set to "round".
+// @param center  coordinate       Center coordinate
+// @param l       float            Edge length
+// @param fill    string|auto|dict Fill options
+//
+// Options for fill:
+//   - "shade", the cube is rendered shaded using the current fill color.
+//   - auto, the current fill color is used
+//   - (...), the colors of the dictionary are used (left, right, top, bottom, front, back). 
+#let cube(center, l, fill: auto, name: none) = {
+  let (w, h, d) = (l, l, l) // width, height, depth
+  return ((
+    name: name,
+    coordinates: (center, ),
+    default-anchor: "center",
+    anchor: none,
+    render: (ctx, center) => {
+      let (x, y, z) = center
+      let xz-plane(h, stroke, fill) = {
+        cmd.path(ctx, (x - w, y + h, z + d), (x + w, y + h, z + d),
+                      (x + w, y + h, z - d), (x - w, y + h, z - d),
+                      close: true, stroke: stroke, fill: fill)
+      }
+      let xy-plane(d, stroke, fill) = {
+        cmd.path(ctx, (x - w, y + h, z + d), (x + w, y + h, z + d),
+                      (x + w, y - h, z + d), (x - w, y - h, z + d),
+                      close: true, stroke: stroke, fill: fill)
+      }
+      let yz-plane(w, stroke, fill) = {
+        cmd.path(ctx, (x + w, y + h, z + d), (x + w, y - h, z + d),
+                      (x + w, y - h, z - d), (x + w, y + h, z - d),
+                      close: true, stroke: stroke, fill: fill)
+      }
+
+      let stroke = ctx.stroke
+      // TODO: Modify current stroke to (join: "round")
+
+      let fill = fill
+      if fill == "shade" {
+        let base = if ctx.fill != none {ctx.fill} else {black}
+        fill = (
+          top:   base.lighten(20%),
+          front: base.lighten(0%),
+          right: base.darken(20%),
+        )
+      } else if fill == auto {
+        fill = (
+          left: ctx.fill,
+          right: ctx.fill,
+          top: ctx.fill,
+          bottom: ctx.fill,
+          back: ctx.fill,
+          front: ctx.fill,
+        )
+      } else if fill == none {
+        fill = (:)
+      }
+
+      xz-plane(-h, stroke, fill.at("bottom", default: none))
+      xy-plane(d,  stroke, fill.at("back",   default: none))
+      yz-plane(-w, stroke, fill.at("left",   default: none))
+      xz-plane(h,  stroke, fill.at("top",    default: none))
+      xy-plane(-d, stroke, fill.at("front",  default: none))
+      yz-plane(w,  stroke, fill.at("right",  default: none))
+    }
+  ),)
+}
+
 // Merge multiple paths
 #let merge-path(body, close: false) = ((
   children: body,
