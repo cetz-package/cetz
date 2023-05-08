@@ -317,7 +317,7 @@
 //   - auto, the current fill color is used
 //   - (...), the colors of the dictionary are used (left, right, top, bottom, front, back). 
 #let cube(center, l, fill: auto, name: none) = {
-  let (w, h, d) = (l, l, l) // width, height, depth
+  let (w, h, d) = (l / 2, l / 2, l / 2) // width, height, depth
   return ((
     name: name,
     coordinates: (center, ),
