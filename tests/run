@@ -72,6 +72,7 @@ function run_test()
 }
 
 install_typst
+echo "Typst: $(typst --version)"
 
 MODE="${1:-test}"
 
