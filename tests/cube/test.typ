@@ -3,11 +3,15 @@
 
 #box(stroke: 2pt + red, canvas({
     import "../../draw.typ": *
+    stroke((paint: black, join: "round"))
 
-    line((0, 0, 1), (1, 0, 1), (1, 1, 1), (0, 1, 1), close: true)
-    line((0, 0, 1), (0, 0, 0))
-    line((1, 0, 1), (1, 0, 0))
-    line((1, 1, 1), (1, 1, 0))
-    line((0, 1, 1), (0, 1, 0))
-    line((0, 0), (1, 0), (1, 1), (0, 1), close: true)
+    // No fill
+    cube((0, 0, 0), 1)
+
+    // Shade sides
+    fill(blue)
+    cube((2, 0, 0), 1, fill: "shade")
+
+    // Fill sides manually
+    cube((4, 0, 0), 1, fill: (left: yellow, back: red, bottom: blue))
 }))
