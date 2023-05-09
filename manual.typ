@@ -301,7 +301,7 @@ Set current stroke style or none.
 == Arrow Heads <arrow-heads>
 Arrow heads -- _marks_ -- can be drawn using the `arrow-head` function
 or as start/end marks of paths (`line`). Arrow heads are filled using the
-current fill color.
+current fill color or `black` if none is set.
 
 #example({
   import "draw.typ": *
@@ -328,3 +328,86 @@ current fill color.
 })
 ```]
 )
+
+== Groups
+Groups allow scoping context changes such as setting stroke-style, fill and transformations.
+```typ
+#group(content, name: none)
+```
+
+#example({
+import "draw.typ": *
+group({
+  stroke(5pt)
+  scale(.5); rotate(45deg)
+  rect((-1,-1),(1,1))
+})
+rect((-1,-1),(1,1))
+}, ```typ
+// Create group
+group({
+  stroke(5pt)
+  scale(.5); rotate(45deg)
+  rect((-1,-1),(1,1))
+})
+rect((-1,-1),(1,1))
+```)
+
+== Transformations
+All transformation functions push a transformation matrix onto the current transform-stack.
+To apply transformations scoped use a `group(...)` object.
+
+=== Translate
+```typ
+#translate(coordinate)
+```
+
+#example({
+import "draw.typ": *
+rect((0,0), (2,2))
+translate((.5,.5,0))
+rect((0,0), (1,1))
+}, ```typ
+// Outer rect
+rect((0,0), (2,2))
+// Inner rect
+translate((.5,.5,0))
+rect((0,0), (1,1))
+```)
+
+=== Rotate
+```typ
+#rotate(axis-dictionary)
+#rotate(z-angle)
+```
+
+#example({
+import "draw.typ": *
+rotate((z: 45deg))
+rect((-1,-1), (1,1))
+rotate((y: 80deg))
+circle((0,0))
+}, ```typ
+// Rotate on z-axis
+rotate((z: 45deg))
+rect((-1,-1), (1,1))
+// Rotate on y-axis
+rotate((y: 80deg))
+circle((0,0))
+```)
+
+=== Scale
+```typ
+#scale(axist-dictionary)
+#scale(factor)
+```
+
+#example({
+import "draw.typ": *
+scale((x: 1.8))
+circle((0,0))
+}, ```typ
+// Scale x-axis
+scale((x: 1.8))
+circle((0,0))
+```)
