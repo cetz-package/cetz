@@ -64,7 +64,9 @@
 #let scale(f) = ((
   before: ctx => {
     let inv = if type(f) == "dictionary" {
-      (x: 1/f.x, y: 1/f.y, z: 1/f.z)
+      (x: 1/f.at("x", default: 1),
+       y: 1/f.at("y", default: 1),
+       z: 1/f.at("z", default: 1))
     } else {
       1/f
     }
