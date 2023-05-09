@@ -60,18 +60,20 @@ This is the minimal starting point:
 Note that draw functions are imported inside the scope of the `canvas` block. This is recommended as draw functions override Typst's functions such as `line`.
 
 == Coordinates
-There are four different ways to specify coordinates.
-  + Absolute: `(x,y)` \
+There are different ways to specify coordinates.
+  / Absolute : `(x,y[,z])` : \
     "`x` units to the right and `y` units down from the origin."
-  + Relative: `(rel: (x,y))` \
+  / Relative : `(rel: (x,y[,z]))` \
     "`x` units to the right and `y` units down from the previous coordinate."
-  + Previous: `()` \
+  / Previous : `()` \
     "The previous coordinate."
-  + Anchor: `(node: "name", at: "example")` or `"name.example"` \
+  / Anchor : `(node: "name", at: "example")` or `"name.example"` \
     "The position of anchor `"example"` on node with name `"name"`." \
     See @anchors
-  + Angle + Distance: `(45deg, 1)` \
+  / Angle + Distance : `(45deg, 1)` \
     "Angle and distance from `(0, 0)`"
+  / Function : `((pos, arg) => { /* psos = (), arg = 123 */ }, (), 123)` \
+    "Pass resolved coordinates and values to callback which must return a coordinate"
 
 == Anchors <anchors>
 Anchors are named positions relative to named elements. 
