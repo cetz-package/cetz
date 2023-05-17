@@ -4,7 +4,7 @@
 #box(stroke: 2pt + red, canvas({
     import "../../draw.typ": *
 
-    let between(a, b, k) = {
+    let between(k, a, b) = {
       let (x, y, z) = a
       let (x2, y2, z2) = b
       return (x + (x2 - x) * k,
@@ -20,5 +20,5 @@
         fill(blue); circle("i." + k, radius: .1)
     }
 
-    fill(red); circle((between, "i.top-left", "i.top-right", 0.75), radius: .1)
+    fill(red); circle((between.with(0.75), "i.top-left", "i.top-right"), radius: .1)
 }))

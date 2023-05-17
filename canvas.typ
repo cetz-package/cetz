@@ -3,6 +3,7 @@
 #import "draw.typ"
 #import "cmd.typ"
 #import "util.typ"
+#import "coordinate.typ"
 
 // Compute bounding box of points
 #let bounding-box(pts, init: none) = {
@@ -70,8 +71,16 @@
   let coordinates = ()
   if "coordinates" in element {
     for c in element.coordinates {
-      c = util.resolve-coordinate(ctx, c)
-      ctx.prev.pt = c
+      c = coordinate.resolve(ctx, c)
+
+      // if the first element is `false` don't update the previous point
+      if c.first() == false {
+        // the format here is `(false, x, y, z)` so get rid of the boolean
+        c = c.slice(1)
+        // panic(c)
+      } else {
+        ctx.prev.pt = c
+      }
       coordinates.push(c)
     }
   }
@@ -212,7 +221,7 @@
     debug: debug,
 
     // Previous element position & bbox
-    prev: (pt: (0, 0)),
+    prev: (pt: (0, 0, 0)),
 
     // Current draw attributes
     mark-size: .15,

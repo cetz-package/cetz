@@ -2,6 +2,7 @@
 #import "matrix.typ"
 #import "cmd.typ"
 #import "util.typ"
+#import "coordinate.typ"
 
 #let typst-rotate = rotate
 
@@ -38,7 +39,7 @@
       let angle = angle
       if type(angle) == "array" {
         if type(angle.first()) == "function" {
-          angle = util.resolve-coordinate(ctx, angle)
+          angle = coordinate.resolve(ctx, angle)
         }
       }
       if type(angle) == "angle" {
@@ -78,7 +79,7 @@
 #let translate(vec) = {
   ((
     before: ctx => {
-      let (x,y,z) = util.resolve-coordinate(ctx, vec)
+      let (x,y,z) = coordinate.resolve(ctx, vec)
       ctx.transform.do.push(matrix.transform-translate(x, -y, z))
       ctx.transform.undo.push(matrix.transform-translate(-x, y, -z))
       return ctx
