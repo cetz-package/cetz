@@ -4,9 +4,9 @@ set -o pipefail
 
 DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-TYPST_VERSION="v0.2.0"
+TYPST_VERSION="v0.3.0"
 TYPST_BASE_URL="https://github.com/typst/typst/releases/download"
-TYPST_ARCHIVE="typst-x86_64-unknown-linux-gnu.tar.gz"
+TYPST_ARCHIVE="typst-x86_64-unknown-linux-musl.tar.xz"
 
 function install_typst()
 {
