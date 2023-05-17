@@ -107,34 +107,25 @@
     anchors.at(k) = a
   }
 
+  // Add default anchors
   if bounds != none {
+    let mid-x = (bounds.l + bounds.r) / 2
+    let mid-y = (bounds.t + bounds.b) / 2
     anchors += (
-      center: (
-        (bounds.l + bounds.r)/2,
-        (bounds.b + bounds.t)/2,
-        0
-      ),
-      left: (
-        bounds.l,
-        (bounds.b + bounds.t)/2,
-        0
-      ),
-      right: (
-        bounds.r,
-        (bounds.b + bounds.t)/2,
-        0
-      ),
-      above: (
-        (bounds.r + bounds.l)/2,
-        bounds.t,
-        0
-      ),
-      below: (
-        (bounds.r + bounds.l)/2,
-        bounds.b,
-        0
-      ),
+      center: (mid-x, mid-y, 0),
+      left: (bounds.l, mid-y, 0),
+      right: (bounds.r, mid-y, 0),
+      top: (mid-x, bounds.t, 0),
+      bottom: (mid-x, bounds.b, 0),
+      top-left: (bounds.l, bounds.t, 0),
+      top-right: (bounds.r, bounds.t, 0),
+      bottom-left: (bounds.l, bounds.b, 0),
+      bottom-right: (bounds.r, bounds.b, 0),
     )
+
+    // Add alternate names
+    anchors.above = anchors.top
+    anchors.below = anchors.bottom
   }
 
   if "anchor" in element and element.anchor != none {

@@ -100,7 +100,7 @@ To use an anchor of an element, you must give the element a name using the `name
   ]
 )
 
-All elements will have default anchors based on their bounding box, they are: `center`, `left`, `right`, `above` and `below`. Some elements will have their own anchors.
+All elements will have default anchors based on their bounding box, they are: `center`, `left`, `right`, `above`/`top` and `below`/`bottom`, `top-left`, `top-right`, `bottom-left`, `bottom-right`. Some elements will have their own anchors.
 
 Elements can be placed relative to their own anchors.
 #example({
@@ -301,7 +301,7 @@ current fill color.
 
 #example({
   import "draw.typ": *
-  stroke((color: gray, dash: "dotted"))
+  stroke((paint: gray, dash: "dotted"))
   line((1,-1), (1, 5))
   stroke(black)
   fill(black)
@@ -314,7 +314,7 @@ current fill color.
 [```typ
 #canvas({
   import "typst-canvas/draw.typ": *
-  stroke((color: gray, dash: "dotted"))
+  stroke((paint: gray, dash: "dotted"))
   line((1,-1), (1, 5))
   stroke(black); fill(black)
   line((0, 4), (1, 4), mark-end: "<>")
