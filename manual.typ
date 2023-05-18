@@ -32,9 +32,8 @@
 }
 
 #align(center)[
-  Johannes Wolf and fenjalien \
-  #linkurl("https://github.com/johannes-wolf/typst-canvas", "https://github.com/johannes-wolf/typst-canvas") \
-  #linkurl("https://github.com/fenjalien/typst-canvas", "https://github.com/fenjalien/typst-canvas")
+  #linkurl("https://github.com/johannes-wolf", "Johannes Wolf") and #linkurl("https://github.com/fenjalien","fenjalien") \
+  #linkurl("https://github.com/johannes-wolf/typst-canvas", "https://github.com/johannes-wolf/typst-canvas")
 ]
 
 #set par(justify: true)

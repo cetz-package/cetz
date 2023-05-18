@@ -137,6 +137,10 @@
     anchors.below = anchors.bottom
   }
 
+  if "default-anchor" in element {
+    anchors.default = anchors.at(element.default-anchor)
+  }
+
   if "anchor" in element and element.anchor != none {
     assert(element.anchor in anchors,
           message: "Anchor '" + element.anchor + "' not found in " + repr(anchors))
