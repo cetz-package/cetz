@@ -1,21 +1,24 @@
 #import "./vector.typ"
 #import "./util.typ"
 
-#let resolve-xyz(data, implicit: false) = {
-  if implicit {
-    return vector.as-vec(data)
+#let resolve-xyz(ctx, data, implicit: false) = {
+  if not implicit {
+    assert(
+      data.len() > 0
+      and data.len() <= 3
+      and data.keys().all(k => k in ("x", "y", "z")),
+      message: "Unkown xyz coordinate format: " + repr(data)
+    )
   }
-  assert(
-    data.len() > 0
-    and data.len() <= 3
-    and data.keys().all(k => k in ("x", "y", "z")),
-    message: "Unkown xyz coordinate format: " + repr(data)
-  )
-  return (
-    if "x" in data { data.x } else { 0 },
-    if "y" in data { data.y } else { 0 },
-    if "z" in data { data.z } else { 0 },
-  )
+  return if implicit {
+    vector.as-vec(data)
+  } else {
+     (
+      if "x" in data { data.x } else { 0 },
+      if "y" in data { data.y } else { 0 },
+      if "z" in data { data.z } else { 0 },
+    )
+  }
 }
 
 #let resolve-polar(data, implicit: false) = {
@@ -70,27 +73,23 @@
   }
 
   // Check if node is known
-  assert(name in ctx.anchors, message: "Unknown node '" + name + "' in nodes " + repr(ctx.anchors))
+  assert(name in ctx.nodes, message: "Unknown node '" + name + "' in nodes " + repr(ctx.nodes.keys()))
 
-  let node = ctx.anchors.at(name)
+  let node = ctx.nodes.at(name)
   return util.revert-transform(
     ctx.transform,
     if anchor != none {
-      assert(anchor in node,
-                message: "Unknown anchor '" + anchor + "' of " + repr(node))
-      node.at(anchor)
+      assert(anchor in node.anchors,
+                message: "Unknown anchor '" + anchor + "' of " + repr(node.anchors))
+      node.anchors.at(anchor)
     } else {
-      node.default
+      node.anchors.default
     }
   )
 }
 
 #let resolve-barycentric(ctx, data) = {
   assert(type(data) == "dictionary" and data.len() >= 1)
-
-  // let vecs = data.keys()//.map(resolve-node.with(ctx, implicit: true))
-  // let nums = data.values()
-  // let sum = nums.sum()
 
   return vector.scale(
     data.pairs().fold(
@@ -152,34 +151,80 @@
   }
 }
 
+#let resolve-perpendicular(resolve, ctx, data) = {
+  // data: (horizontal: <coordinate>, vertical: <coordinate>)
+
+  return (
+    resolve(ctx, data.horizontal).at(0),
+    resolve(ctx, data.vertical).at(1),
+    0
+  )
+}
+
+#let resolve-lerp(resolve, ctx, data) = {
+  // data: (a: <coordinate>, number: <number>, angle?: <angle>, b: <coordinate>)
+
+  let (a, b) = (data.a, data.b).map(resolve.with(ctx))
+
+  if "angle" in data {
+    let (x, y, _) = vector.sub(b,a)
+    let angle = data.angle
+    b = vector.add(
+      (
+        calc.cos(angle) * x - calc.sin(angle) * y,
+        calc.sin(angle) * x + calc.cos(angle) * y,
+        0
+      ),
+      a,
+    )
+  }
+
+  let number = if type(data.number) == "length" {
+    util.resolve-number(ctx, data.number) / vector.len(vector.sub(b,a))
+  } else {
+    data.number
+  }
+
+
+  return vector.add(
+    vector.scale(
+      a,
+      (1 - number)
+    ),
+    vector.scale(
+      b,
+      number
+    )
+  )
+}
+
 #let resolve(ctx, c) = {
   if c == () {
     return ctx.prev.pt
   }
 
-  if type(c) != "dictionary" {
+  return if type(c) != "dictionary" {
     if type(c) == "array" {
-      if c.all(x => type(x) in ("integer", "float")) and c.len() >= 2 and c.len() <= 3 {
+      if c.all(x => type(x) in ("integer", "float", "length")) and c.len() >= 2 and c.len() <= 3 {
         // xyz
-        return resolve-xyz(c, implicit: true)
+        resolve-xyz(ctx, c, implicit: true)
       } else if type(c.first()) == "angle" and c.len() == 2 {
         // polar
-        return resolve-polar(c, implicit: true)
+        resolve-polar(c, implicit: true)
       } else if type(c.first()) == "function" {
         // function
-        return resolve(ctx, c.first()(..c.slice(1).map(resolve.with(ctx))))
+        resolve(ctx, c.first()(..c.slice(1).map(resolve.with(ctx))))
       }
     } else if type(c) == "string" {
-      return resolve-node(ctx, c, implicit: true)
+      resolve-node(ctx, c, implicit: true)
     }
-    panic("Unknown implicit coordinate format: " + repr(c))
   } else {
     // cs -> coordinate system
     // (<cs>: <data>)
     let cs = c.keys().first()
     let data = c.values().first()
-    return if cs == "xyz" {
-      resolve-xyz(data)
+    if cs == "xyz" {
+      resolve-xyz(ctx, data)
     } else if cs == "polar" {
       resolve-polar(data)
     } else if cs == "barycentric" {
@@ -190,7 +235,11 @@
       resolve-relative(resolve, ctx, c)
     } else if cs == "tangent" {
       resolve-tangent(resolve, ctx, data)
+    } else if cs == "perpendicular" {
+      resolve-perpendicular(resolve, ctx, data)
+    } else if cs == "lerp" {
+      resolve-lerp(resolve, ctx, data)
     }
-  }
+  }.map(util.resolve-number.with(ctx))
   panic("Failed to resolve coordinate of format: " + repr(c))
 }

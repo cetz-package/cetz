@@ -3,6 +3,7 @@
 #import "cmd.typ"
 #import "util.typ"
 #import "coordinate.typ"
+#import "collisions.typ"
 
 #let typst-rotate = rotate
 
@@ -118,11 +119,11 @@
     custom-anchors-ctx: (ctx) => ctx.groups.last().anchors,
     after: (ctx) => {
       let self = ctx.groups.pop()
-      let anchors = ctx.anchors
+      let nodes = ctx.nodes
       ctx = self.ctx
       // panic(self)
       if name != none {
-        ctx.anchors.insert(name, anchors.at(name))
+        ctx.nodes.insert(name, nodes.at(name))
       }
       return ctx
     }
@@ -222,9 +223,10 @@
   ((
     name: name,
     coordinates: (center, ),
-    default-anchor: "center",
     anchor: anchor,
     render: (ctx, center) => {
+      assert(center.all(x => type(x) != "length"), message: repr(center))
+      let radius = util.resolve-number(ctx, radius)
       let (x, y, z) = center
       let (rx, ry) = if type(radius) == "array" {radius} else {(radius, radius)}
       cmd.ellipse(ctx, x, y, z, rx, ry)
@@ -353,3 +355,63 @@
     ..body,
   ),
 ),)
+
+// Calculate the intersections of two named paths
+#let intersections(path-1, path-2, name: "intersection") = {
+  ((
+    name: name,
+    custom-anchors-ctx: (ctx) => {
+      let (ps1, ps2) = (path-1, path-2).map(x => ctx.nodes.at(x).paths)
+      let anchors = (:)
+      for p1 in ps1 {
+        for p2 in ps2 {
+          let cs = collisions.poly-poly(p1, p2)
+          if cs != none {
+            for c in cs {
+              anchors.insert(str(anchors.len()+1), util.revert-transform(ctx.transform, c))
+            }
+          }
+        }
+      }
+      anchors
+    },
+  ),)
+}
+
+#let grid(from, to, step: 1, name: none, help-lines: false) = {
+  ((
+    name: name,
+    coordinates: (from, to),
+    render: (ctx, from, to) => {
+      let stroke = if help-lines {
+        0.2pt + gray
+      } else {
+        auto
+      }
+      let (x-step, y-step) = if type(step) == "dictionary" {
+        (
+          if "x" in step {step.x} else {1},
+          if "y" in step {step.y} else {1},
+        )
+      } else {
+        (step, step)
+      }
+
+      if x-step != 0 {
+        for x in range(int((to.at(0) - from.at(0)) / x-step)+1) {
+          x *= x-step
+          x += from.at(0)
+          cmd.path(ctx, (x, from.at(1)), (x, to.at(1)), stroke: stroke)
+        }
+      }
+
+      if y-step != 0 {
+        for y in range(int((to.at(1) - from.at(1)) / y-step)+1) {
+          y *= y-step
+          y += from.at(1)
+          cmd.path(ctx, (from.at(0), y), (to.at(0), y), stroke: stroke)
+        }
+      }
+    }
+  ),)
+}
