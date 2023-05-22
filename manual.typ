@@ -219,18 +219,20 @@ Draws an arc to the canvas.
 ```typ
 #circle(center, radius: 1, name: none, anchor: none)
 ```
-Draws a circle to the canvas.
+Draws an approximated circle to the canvas.
   / center: The coordinate of the circle's origin.
-  / radius: The circle's radius.
+  / radius: The circle's radius or xy radius pair.
 
 #example({
     import "draw.typ": *
-    circle((0,0))
+    circle((0,1.5))
+    circle((0,0), radius: (1, .25))
   },
   [```typ
   #canvas({
     import "typst-canvas/draw.typ": *
-    circle((0,0))
+    circle((0,1.5))
+    circle((0,0), radius: (1, .25))
   })
   ```]
 )
@@ -303,8 +305,7 @@ current fill color.
   import "draw.typ": *
   stroke((paint: gray, dash: "dotted"))
   line((1,-1), (1, 5))
-  stroke(black)
-  fill(black)
+  stroke(black); fill(black)
   line((0, 0), (1, 0), mark-end: ">", mark-size: .5)
   line((0, 1), (1, 1), mark-end: "<", mark-size: .5)
   line((0, 2), (1, 2), mark-end: "|", mark-size: .5)
