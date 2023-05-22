@@ -18,25 +18,65 @@
   },
 ),)
 
-#let path(ctx, close: false, fill: auto, stroke: auto, ..vertices) = {
+#let path(ctx, close: false, fill: auto, stroke: auto, ctrl: 0,
+          ..vertices) = {
   if fill == auto { fill = ctx.fill }
   if stroke == auto { stroke = ctx.stroke }
   ((
     fill: if fill == auto { ctx.fill } else { fill },
     stroke: if stroke == auto { ctx.stroke } else { stroke },
     close: close,
+    ctrl: ctrl,
     coordinates: vertices.pos(),
     draw: (self) => {
+      let pts = ()
+      let relative = (orig, c) => {
+        return vector.sub(c, orig)
+      }
+      if self.ctrl == 0 {
+        pts = self.coordinates
+      } else if self.ctrl == 1 {
+        for i in range(0, int(self.coordinates.len() / 2)) {
+          i *= 2
+          let pt = self.coordinates.at(i)
+          pts.push((pt, relative(pt, self.coordinates.at(i + 1))))
+        }
+      } else if self.ctrl == 2 {
+        for i in range(0, int(self.coordinates.len() / 3)) {
+          i *= 3
+          let pt = self.coordinates.at(i)
+          pts.push((pt,
+                    relative(pt, self.coordinates.at(i + 1)),
+                    relative(pt, self.coordinates.at(i + 2))))
+        }
+      }
+
       place(
         typst-path(
           stroke: self.stroke, 
           fill: self.fill,
           closed: self.close, 
-          ..self.coordinates
+          ..pts
           )
         )
     },
   ),)
+}
+
+// Approximate ellipse using 4 quadratic bezier curves
+#let ellipse(ctx, x, y, z, rx, ry) = {
+  let m = 0.551784
+  let mx = m * rx
+  let my = m * ry
+  let left = x - rx
+  let right = x + rx
+  let top = y + ry
+  let bottom = y - ry
+  path(ctx, close: true, ctrl: 2,
+       (x, top, z), (x - m * rx, top, z), (x + m * rx, top, z),
+       (right, y, z), (right, y + m * ry, z), (right, y - m * ry, z),
+       (x, bottom, z), (x + m * rx, bottom, z), (x - m * rx, bottom, z),
+       (left, y, z), (left, y - m * ry, z), (left, y + m * ry, z),)
 }
 
 #let arc(ctx, x, y, z, start, stop, radius, mode: "OPEN") = {

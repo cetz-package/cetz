@@ -214,6 +214,9 @@
   ),)
 }
 
+// Render ellipse
+// @param center  Center coordinate
+// @param radius  Radius or array of x and y radius
 #let circle(center, radius: 1, name: none, anchor: none) = {
   ((
     name: name,
@@ -222,7 +225,8 @@
     anchor: anchor,
     render: (ctx, center) => {
       let (x, y, z) = center
-      cmd.arc(ctx, x, y + radius, z, 0deg, 360deg, radius, mode: "CLOSE")
+      let (rx, ry) = if type(radius) == "array" {radius} else {(radius, radius)}
+      cmd.ellipse(ctx, x, y, z, rx, ry)
     }
   ),)
 }
@@ -310,6 +314,7 @@
     let pos = none
     while children.len() > 0 {
       let child = children.remove(0)
+      assert(child.ctrl == 0, message: "FIXME: Bezier paths can not be merged!")
 
       // Revert path order, if end < start
       if merged.len() > 0 {
