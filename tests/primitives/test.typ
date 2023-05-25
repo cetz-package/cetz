@@ -7,7 +7,7 @@
     line((0, 0), (1, 0))
     rect((0, 1), (1, 2))
     circle((.5, 3.5), radius: .5)
-    arc((.5, 5), 0deg, 90deg, radius: .5)
+    arc((1, 4.5), 0deg, 90deg, radius: .5)
     bezier((0, 6), (1, 6), (.5, 5))
     bezier((0, 7), (1, 7), (.25, 6), (.75, 8))
 }))
