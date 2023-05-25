@@ -86,12 +86,12 @@
     ..range(0, samples+1).map(i => {
       let angle = start + (stop - start) * i / samples
       (
-        x - radius*calc.sin(start) + radius*calc.sin(angle),
-        y - radius*calc.cos(start) + radius*calc.cos(angle),
+        x - radius*calc.cos(start) + radius*calc.cos(angle),
+        y - radius*calc.sin(start) + radius*calc.sin(angle),
         z
       )
     }) + if mode == "PIE" {
-      ((x - radius*calc.sin(start), y - radius*calc.cos(start), z),)
+      ((x - radius*calc.cos(start), y - radius*calc.sin(start), z),)
     } else {
       ()
     }

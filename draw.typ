@@ -196,13 +196,13 @@
       (
         start: position,
         end: (
-          x - radius*calc.sin(start) + radius*calc.sin(stop),
-          y - radius*calc.cos(start) + radius*calc.cos(stop),
+          x - radius*calc.cos(start) + radius*calc.cos(stop),
+          y - radius*calc.sin(start) + radius*calc.sin(stop),
           z,
         ),
         origin: (
-          x - radius*calc.sin(start),
-          y - radius*calc.cos(start),
+          x - radius*calc.cos(start),
+          y - radius*calc.sin(start),
           z,
         )
       )

@@ -5,7 +5,7 @@
     import "../../draw.typ": *
 
     circle((0,0), radius: 0.5)
-    arc((0, 1), 0deg, 180deg, name: "c", anchor: "end")
+    arc((0, 1), -90deg, 90deg, name: "c", anchor: "start")
     stroke(blue)
-    circle("c.end", radius: 0.1)
+    circle("c.start", radius: 0.1)
 }))
