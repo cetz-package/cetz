@@ -77,7 +77,6 @@
       if c.first() == false {
         // the format here is `(false, x, y, z)` so get rid of the boolean
         c = c.slice(1)
-        // panic(c)
       } else {
         ctx.prev.pt = c
       }
@@ -175,11 +174,12 @@
       element.name, 
       (
         anchors: anchors,
-        paths: for drawable in drawables {
-          if drawable.type == "path" {
-            (drawable.coordinates + if drawable.close {(drawable.coordinates.first(),)},)
-          }
-        }
+        // Part of intersections
+        // paths: for drawable in drawables {
+        //   if drawable.type == "path" {
+        //     (drawable.coordinates + if drawable.close {(drawable.coordinates.first(),)},)
+        //   }
+        // }
       )
     )
   }

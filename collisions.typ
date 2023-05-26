@@ -1,3 +1,5 @@
+// NOTE: this file is to be used for finding intersections of paths. It is currently not in use but could be fully implemented at a later date.
+
 #import "vector.typ"
 
 // http://paulbourke.net/geometry/pointlineplane/ Intersection point of two line segments in 2 dimensions

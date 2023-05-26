@@ -4,14 +4,6 @@
 #box(stroke: 2pt + red, canvas({
     import "../../draw.typ": *
 
-    let between(k, a, b) = {
-      let (x, y, z) = a
-      let (x2, y2, z2) = b
-      return (x + (x2 - x) * k,
-              y + (y2 - y) * k,
-              z + (z2 - z) * k)
-    }
-
     content((0,0), image("image.png", width: 2cm),
             anchor: "top-left", name: "i")
 
@@ -20,5 +12,6 @@
         fill(blue); circle("i." + k, radius: .1)
     }
 
-    fill(red); circle((between.with(0.75), "i.top-left", "i.top-right"), radius: .1)
+    fill(red); 
+    circle(("i.top-left", 0.75, "i.top-right"), radius: .1)
 }))
