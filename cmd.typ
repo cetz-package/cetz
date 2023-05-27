@@ -3,26 +3,28 @@
 
 #let typst-path = path
 
-#let content(ctx, x, y, w, h, c) = ((
-  coordinates: ((x,y),),
-  bounds: (
-    (x + w/2, y - h/2),
-    (x - w/2, y + h/2)
-  ),
-  draw: (self) => {
-    let (x, y) = self.coordinates.first()
-    place(
-      dx: x, dy: y, 
-      c
-    )
-  },
-),)
+#let content(ctx, x, y, w, h, c) = {
+  ((
+    type: "content",
+    coordinates: ((x,y),),
+    bounds: (
+      (x + w/2, y - h/2),
+      (x - w/2, y + h/2)
+    ),
+    draw: (self) => {
+      let (x, y) = self.coordinates.first()
+      place(
+        dx: x, dy: y, 
+        c
+      )
+    },
+  ),)
+}
 
 #let path(ctx, close: false, fill: auto, stroke: auto, ctrl: 0,
           ..vertices) = {
-  if fill == auto { fill = ctx.fill }
-  if stroke == auto { stroke = ctx.stroke }
   ((
+    type: "path",
     fill: if fill == auto { ctx.fill } else { fill },
     stroke: if stroke == auto { ctx.stroke } else { stroke },
     close: close,

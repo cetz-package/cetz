@@ -14,7 +14,7 @@
   }
 
   fill(green)
-  arc((0,0), 60deg, 90deg, radius: 0.25, mode: "PIE", anchor: "origin", name: "arc")
+  arc((0,0), 0deg, 30deg, radius: 0.25, mode: "PIE", anchor: "origin", name: "arc")
 
   stroke(black + .5pt)
   fill(black)
@@ -26,7 +26,7 @@
   stroke(red + 2pt)
   line((30deg, 1), (rel: (0, -0.5)), name: "red line")
   stroke(blue + 2pt)
-  line((node: "red line", at: "end"), (0,0))
+  line("red line.end", (0,0))
   stroke(orange + 2pt)
   line((1, 0), (rel: (0, calc.tan(30deg))), name: "orange line")
 

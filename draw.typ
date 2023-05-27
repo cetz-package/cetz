@@ -2,6 +2,8 @@
 #import "matrix.typ"
 #import "cmd.typ"
 #import "util.typ"
+#import "coordinate.typ"
+// #import "collisions.typ"
 
 #let typst-rotate = rotate
 
@@ -25,10 +27,13 @@
 
 // Move to coordinate `pt`
 // @param pt coordinate
-#let move-to(pt) = ((
-   coordinates: (pt, ),
-   render: (ctx, pt) => (),
-),)
+#let move-to(pt) = {
+  let t = coordinate.resolve-system(pt)
+  ((
+    coordinates: (pt, ),
+    render: (ctx, pt) => (),
+  ),)
+}
 
 // Rotate on z-axis (default) or specified axes if `angle` is of type
 // dictionary
@@ -38,7 +43,7 @@
       let angle = angle
       if type(angle) == "array" {
         if type(angle.first()) == "function" {
-          angle = util.resolve-coordinate(ctx, angle)
+          angle = coordinate.resolve(ctx, angle)
         }
       }
       if type(angle) == "angle" {
@@ -78,7 +83,7 @@
 #let translate(vec) = {
   ((
     before: ctx => {
-      let (x,y,z) = util.resolve-coordinate(ctx, vec)
+      let (x,y,z) = coordinate.resolve(ctx, vec)
       ctx.transform.do.push(matrix.transform-translate(x, -y, z))
       ctx.transform.undo.push(matrix.transform-translate(-x, y, -z))
       return ctx
@@ -88,6 +93,7 @@
 
 // Register anchor `name` at position.
 #let anchor(name, position) = {
+  let t = coordinate.resolve-system(position)
   ((
     name: name,
     coordinates: (position,),
@@ -117,29 +123,33 @@
     custom-anchors-ctx: (ctx) => ctx.groups.last().anchors,
     after: (ctx) => {
       let self = ctx.groups.pop()
-      let anchors = ctx.anchors
+      let nodes = ctx.nodes
       ctx = self.ctx
       // panic(self)
       if name != none {
-        ctx.anchors.insert(name, anchors.at(name))
+        ctx.nodes.insert(name, nodes.at(name))
       }
       return ctx
     }
   ),)
 }
 
-#let arrow-head(from, to, symbol: ">") = ((
-  coordinates: (from, to),
-  render: (ctx, from, to) => {
-    cmd.arrow-head(ctx, from, to, symbol)
-  }
-),)
+#let arrow-head(from, to, symbol: ">") = {
+  let t = (from, to).map(coordinate.resolve-system)
+  ((
+    coordinates: (from, to),
+    render: (ctx, from, to) => {
+      cmd.arrow-head(ctx, from, to, symbol)
+    }
+  ),)
+}
 
 #let line(..pts, close: false,
           mark-begin: none,
           mark-end: none,
           mark-size: auto,
           name: none) = {
+  let t = pts.pos().map(coordinate.resolve-system)
   ((
     name: name,
     coordinates: pts.pos(),
@@ -171,8 +181,9 @@
   ),)
 }
 
-#let rect(a, b, name: none, anchor: none) = ((
-  (
+#let rect(a, b, name: none, anchor: none) = {
+  let t = (a, b).map(coordinate.resolve-system)
+  ((
     name: name,
     default-anchor: "center",
     anchor: anchor,
@@ -182,10 +193,11 @@
       let (x2, y2, z2) = b
       cmd.path(ctx, close: true, (x1, y1, z1), (x2, y1, z2), (x2, y2, z2), (x1, y2, z1))
     },
-  )
-),)
+  ),)
+}
 
 #let arc(position, start, stop, radius: 1, mode: "OPEN", name: none, anchor: none) = {
+  let t = coordinate.resolve-system(position)
   ((
     name: name,
     anchor: anchor,
@@ -218,14 +230,14 @@
 // @param center  Center coordinate
 // @param radius  Radius or array of x and y radius
 #let circle(center, radius: 1, name: none, anchor: none) = {
+  let t = coordinate.resolve-system(center)
   ((
     name: name,
     coordinates: (center, ),
-    default-anchor: "center",
     anchor: anchor,
     render: (ctx, center) => {
       let (x, y, z) = center
-      let (rx, ry) = if type(radius) == "array" {radius} else {(radius, radius)}
+      let (rx, ry) = if type(radius) == "array" {radius} else {(radius, radius)}.map(util.resolve-number.with(ctx))
       cmd.ellipse(ctx, x, y, z, rx, ry)
     }
   ),)
@@ -240,8 +252,9 @@
   angle: 0deg,
   anchor: none,
   name: none
-  ) = {(
-  (
+  ) = {
+  let t = coordinate.resolve-system(pt)
+  ((
     name: name,
     coordinates: (pt,),
     anchor: anchor,
@@ -275,11 +288,12 @@
 
 #let bezier(start, end, ..ctrl, samples: 100, name: none) = {
   let len = ctrl.pos().len()
-  assert(len >= 1 and len <= 2,
-         message: "Bezier curve expects 1 or 2 control points. Got " + str(len))
+  assert(len in (1, 2), message: "Bezier curve expects 1 or 2 control points. Got " + str(len))
+  let coordinates = (start, end, ..ctrl.pos())
+  let t = coordinates.map(coordinate.resolve-system)
   return ((
     name: name,
-    coordinates: (start, end, ..ctrl.pos()),
+    coordinates: coordinates,
     custom-anchors: (start, end, ..ctrl) => {
       let a = (start: start, end: end)
       for (i, c) in ctrl.pos().enumerate() {
@@ -352,3 +366,64 @@
     ..body,
   ),
 ),)
+
+// Calculate the intersections of two named paths
+// #let intersections(path-1, path-2, name: "intersection") = {
+//   ((
+//     name: name,
+//     custom-anchors-ctx: (ctx) => {
+//       let (ps1, ps2) = (path-1, path-2).map(x => ctx.nodes.at(x).paths)
+//       let anchors = (:)
+//       for p1 in ps1 {
+//         for p2 in ps2 {
+//           let cs = collisions.poly-poly(p1, p2)
+//           if cs != none {
+//             for c in cs {
+//               anchors.insert(str(anchors.len()+1), util.revert-transform(ctx.transform, c))
+//             }
+//           }
+//         }
+//       }
+//       anchors
+//     },
+//   ),)
+// }
+
+#let grid(from, to, step: 1, name: none, help-lines: false) = {
+  let t = (from, to).map(coordinate.resolve-system)
+  ((
+    name: name,
+    coordinates: (from, to),
+    render: (ctx, from, to) => {
+      let stroke = if help-lines {
+        0.2pt + gray
+      } else {
+        auto
+      }
+      let (x-step, y-step) = if type(step) == "dictionary" {
+        (
+          if "x" in step {step.x} else {1},
+          if "y" in step {step.y} else {1},
+        )
+      } else {
+        (step, step)
+      }.map(util.resolve-number.with(ctx))
+
+      if x-step != 0 {
+        for x in range(int((to.at(0) - from.at(0)) / x-step)+1) {
+          x *= x-step
+          x += from.at(0)
+          cmd.path(ctx, (x, from.at(1)), (x, to.at(1)), stroke: stroke)
+        }
+      }
+
+      if y-step != 0 {
+        for y in range(int((to.at(1) - from.at(1)) / y-step)+1) {
+          y *= y-step
+          y += from.at(1)
+          cmd.path(ctx, (from.at(0), y), (to.at(0), y), stroke: stroke)
+        }
+      }
+    }
+  ),)
+}

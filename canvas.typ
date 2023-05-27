@@ -3,6 +3,7 @@
 #import "draw.typ"
 #import "cmd.typ"
 #import "util.typ"
+#import "coordinate.typ"
 
 // Compute bounding box of points
 #let bounding-box(pts, init: none) = {
@@ -70,8 +71,15 @@
   let coordinates = ()
   if "coordinates" in element {
     for c in element.coordinates {
-      c = util.resolve-coordinate(ctx, c)
-      ctx.prev.pt = c
+      c = coordinate.resolve(ctx, c)
+
+      // if the first element is `false` don't update the previous point
+      if c.first() == false {
+        // the format here is `(false, x, y, z)` so get rid of the boolean
+        c = c.slice(1)
+      } else {
+        ctx.prev.pt = c
+      }
       coordinates.push(c)
     }
   }
@@ -128,11 +136,16 @@
     anchors.below = anchors.bottom
   }
 
+  anchors.default = if "default-anchor" in element {
+    anchors.at(element.default-anchor)
+  } else if "center" in anchors {
+    anchors.center
+  }
+
   if "anchor" in element and element.anchor != none {
     assert(element.anchor in anchors,
           message: "Anchor '" + element.anchor + "' not found in " + repr(anchors))
-    let translate = vector.sub(anchors.at(element.default-anchor),
-                              anchors.at(element.anchor))
+    let translate = vector.sub(anchors.default, anchors.at(element.anchor))
     for (i, d) in drawables.enumerate() {
         drawables.at(i).coordinates = d.coordinates.map(
           c => vector.add(translate, c))
@@ -145,7 +158,7 @@
     bounds = bounding-box(
       (
         vector.add(
-          translate, 
+          translate,
           (bounds.l, bounds.t)
         ),
         vector.add(
@@ -157,7 +170,18 @@
   }
 
   if "name" in element and type(element.name) == "string" {
-    ctx.anchors.insert(element.name, anchors)
+    ctx.nodes.insert(
+      element.name, 
+      (
+        anchors: anchors,
+        // Part of intersections
+        // paths: for drawable in drawables {
+        //   if drawable.type == "path" {
+        //     (drawable.coordinates + if drawable.close {(drawable.coordinates.first(),)},)
+        //   }
+        // }
+      )
+    )
   }
 
   if ctx.debug and bounds != none {
@@ -191,8 +215,6 @@
     return []
   }
 
-  let em-size = measure(box(width: 1em, height: 1em), st)
-
   let length = length
   assert(type(length) in ("length", "ratio"),
          message: "length: Expected length, got " + type(length) + ".")
@@ -212,12 +234,13 @@
     debug: debug,
 
     // Previous element position & bbox
-    prev: (pt: (0, 0)),
+    prev: (pt: (0, 0, 0)),
 
     // Current draw attributes
     mark-size: .15,
     fill: none,
     stroke: black + 1pt,
+    em-size: measure(box(width: 1em, height: 1em), st),
 
     // Current transform
     transform: (
@@ -231,8 +254,8 @@
       )
     ),
 
-    // Saved anchors
-    anchors: (:),
+    // Nodes, stores anchors and paths
+    nodes: (:),
 
     // group stack
     groups: (),
