@@ -106,7 +106,14 @@
 #let resolve-relative(resolve, ctx, c) = {
   // (rel: <coordinate>, update: <bool> or <none>, to: <coordinate>)
   let update = c.at("update", default: true)
-  c = vector.add(resolve(ctx, c.rel), c.at("to", default: ctx.prev.pt))
+  c = vector.add(
+    resolve(ctx, c.rel), 
+    if "to" in c {
+      resolve(ctx, c.to)
+    } else {
+      ctx.prev.pt
+    }
+  )
   if not update {
     c.insert(0, false)
   }

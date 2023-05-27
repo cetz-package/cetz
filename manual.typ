@@ -682,7 +682,7 @@ You can use the implicit syntax of `(horizontal, "-|", vertical)` or `(vertical,
 )
 
 == Interpolation
-Use this to interpolate between two coordinates `a` and `b` with a given factor `number`. If `number` is a `<length>` the position will be at the given distance away from `a` towards `b`. 
+Use this to linearly interpolate between two coordinates `a` and `b` with a given factor `number`. If `number` is a `<length>` the position will be at the given distance away from `a` towards `b`. 
 An angle can also be given for the general meaning: "First consider the line from `a` to `b`. Then rotate this line by `angle` around point `a`. Then the two endpoints of this line will be `a` and some point `c`. Use this point `c` for the subsequent computation."
 
 #def-arg("a", `<coordinate>`, [The coordinate to interpolate from.])
