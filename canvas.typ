@@ -46,6 +46,13 @@
     ctx = (element.before)(ctx)
   }
 
+  if "push-transform" in element {
+    ctx.transform = matrix.mul-mat(
+      if type(element.push-transform) == "function" { (element.push-transform)(ctx) } else { element.push-transform }, 
+      ctx.transform
+    )
+  }
+
   // Render children
   if "children" in element {
     let child-drawables = ()
@@ -243,15 +250,9 @@
     em-size: measure(box(width: 1em, height: 1em), st),
 
     // Current transform
-    transform: (
-      do: (
-        matrix.transform-scale((x: 1, y: -1, z: 1)),
-        matrix.transform-shear-z(.5),
-      ),
-      undo: (
-        matrix.transform-scale((x: 1, y: -1, z: 1)),
-        matrix.transform-shear-z(-.5),
-      )
+    transform: matrix.mul-mat(
+      matrix.transform-shear-z(.5),
+      matrix.transform-scale((x: 1, y: -1, z: 1)),
     ),
 
     // Nodes, stores anchors and paths
@@ -293,8 +294,7 @@
   box(stroke: if debug {green}, width: width, height: height, fill: background, {
     for d in draw-cmds {
       d.coordinates = d.coordinates.map(v => 
-        util.apply-transform(
-          (do: (translate,)), v
+        util.apply-transform(translate, v
           ).slice(0,2).map(x => ctx.length * x)
         )
       (d.draw)(d)

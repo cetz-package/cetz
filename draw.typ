@@ -38,55 +38,42 @@
 // Rotate on z-axis (default) or specified axes if `angle` is of type
 // dictionary
 #let rotate(angle) = {
-  ((
-    before: ctx => {
-      let angle = angle
-      if type(angle) == "array" {
-        if type(angle.first()) == "function" {
-          angle = coordinate.resolve(ctx, angle)
-        }
-      }
-      if type(angle) == "angle" {
-        ctx.transform.do.push(matrix.transform-rotate-z(angle))
-        ctx.transform.undo.push(matrix.transform-rotate-z(-angle))
-      } else if type(angle) == "dictionary" {
-        let (x, y, z) = (0deg, 0deg, 0deg)
-        if "x" in angle { x = angle.x }
-        if "y" in angle { y = angle.y }
-        if "z" in angle { z = angle.z }
-        ctx.transform.do.push(matrix.transform-rotate-xyz(x, y, z))
-        ctx.transform.undo.push(matrix.transform-rotate-xyz(-x, -y, -z))
-      } else {
-        panic("Invalid angle format '" + repr(angle) + "'")
-      }
-      return ctx
+  let resolve-angle(angle) = {
+    return if type(angle) == "angle" {
+      matrix.transform-rotate-z(angle)
+    } else if type(angle) == "dictionary" {
+      matrix.transform-rotate-xyz(
+          angle.at("x", 0deg),
+          angle.at("y", 0deg),
+          angle.at("z", 0deg),
+        )
+    } else {
+      panic("Invalid angle format '" + repr(angle) + "'")
+    }
+  }
+  return ((
+    push-transform: if type(angle) == "array" and type(angle.first()) == "function" { 
+      ctx => resolve-angle(coordinate.resolve(ctx, angle))
+    } else {
+      resolve-angle(angle)
     }
   ),)
 }
 
 // Scale canvas
 // @param factor float
-#let scale(f) = ((
-  before: ctx => {
-    let inv = if type(f) == "dictionary" {
-      (x: 1/f.x, y: 1/f.y, z: 1/f.z)
-    } else {
-      1/f
-    }
-    ctx.transform.do.push(matrix.transform-scale(f))
-    ctx.transform.undo.push(matrix.transform-scale(inv))
-    return ctx
-  }
-),)
+#let scale(f) = {
+  ((
+    push-transform: matrix.transform-scale(f)
+  ),)
+}
 
 // Translate
 #let translate(vec) = {
   ((
-    before: ctx => {
+    push-transform: ctx => {
       let (x,y,z) = coordinate.resolve(ctx, vec)
-      ctx.transform.do.push(matrix.transform-translate(x, -y, z))
-      ctx.transform.undo.push(matrix.transform-translate(-x, y, -z))
-      return ctx
+      return matrix.transform-translate(x, -y, z)
     }
   ),)
 }
