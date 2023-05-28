@@ -97,7 +97,20 @@
 
 // Multiply matrix with matrix
 #let mul-mat(a, b) = {
-  panic("Not implemented!")
+  let (dim-a, dim-b) = (a, b).map(dim)
+  let (m, n, p) = (
+    ..dim-a,
+    dim-b.last()
+  )
+  (
+    for i in range(m) {
+      (
+        for j in range(p) {
+          (range(n).map(k => a.at(i).at(k) * b.at(k).at(j)).sum(),)
+        }
+      ,)
+    }
+  )
 }
 
 // Multiply matrix with vector
@@ -114,4 +127,42 @@
     new.at(m) = v
   }
   return new
+}
+
+#let inverse(matrix) = {
+  let n = {
+    let size = dim(matrix)
+    assert.eq(size.first(), size.last(), message: "Matrix must be square to perform inversion.")
+    size.first()
+  }
+
+  let N = range(n)
+  let inverted = ident(m: n, n: n)
+  let p
+  for j in N {
+    for i in range(j, n) {
+      if matrix.at(i).at(j) != 0 {
+        (matrix.at(j), matrix.at(i)) = (matrix.at(i), matrix.at(j))
+        (inverted.at(j), inverted.at(i)) = (inverted.at(i), inverted.at(j))
+        
+        p = 1 / matrix.at(j).at(j)
+        for k in N {
+          matrix.at(j).at(k) *= p
+          inverted.at(j).at(k) *= p
+        }
+
+        for L in N {
+          if L != j {
+            p = -matrix.at(L).at(j)
+            for k in N {
+              matrix.at(L).at(k) += p * matrix.at(j).at(k)
+              inverted.at(L).at(k) += p * inverted.at(j).at(k)
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return inverted
 }
