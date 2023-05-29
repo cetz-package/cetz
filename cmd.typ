@@ -66,7 +66,7 @@
 }
 
 // Approximate ellipse using 4 quadratic bezier curves
-#let ellipse(ctx, x, y, z, rx, ry) = {
+#let ellipse(ctx, x, y, z, rx, ry, fill: auto, stroke: auto) = {
   let m = 0.551784
   let mx = m * rx
   let my = m * ry
@@ -74,16 +74,17 @@
   let right = x + rx
   let top = y + ry
   let bottom = y - ry
-  path(ctx, close: true, ctrl: 2,
+  path(ctx, close: true, ctrl: 2, fill: fill, stroke: stroke,
        (x, top, z), (x - m * rx, top, z), (x + m * rx, top, z),
        (right, y, z), (right, y + m * ry, z), (right, y - m * ry, z),
        (x, bottom, z), (x + m * rx, bottom, z), (x - m * rx, bottom, z),
        (left, y, z), (left, y - m * ry, z), (left, y + m * ry, z),)
 }
 
-#let arc(ctx, x, y, z, start, stop, radius, mode: "OPEN") = {
+#let arc(ctx, x, y, z, start, stop, radius, mode: "OPEN", fill: auto, stroke: auto) = {
   let samples = int((stop - start) / 1deg)
   path(ctx,
+    fill: fill, stroke: stroke,
     close: mode == "CLOSE",
     ..range(0, samples+1).map(i => {
       let angle = start + (stop - start) * i / samples
@@ -100,7 +101,8 @@
   )
 }
 
-#let arrow-head(ctx, from, to, symbol) = {
+#let arrow-head(ctx, from, to, symbol, fill: auto, stroke: auto) = {
+  assert(symbol in (">", "<", "|", "<>", "o"), message: "Unknown arrow head: " + symbol)
   let dir = vector.sub(to, from)
   let odir = (-dir.at(1), dir.at(0), dir.at(2))
 
@@ -144,19 +146,22 @@
       }
       return pts
   }
-
-  if symbol == ">" {
-    path(ctx, ..triangle(), close: true, fill: ctx.fill)
+  path(
+    ctx,
+    ..if symbol == ">" {
+    triangle()
   } else if symbol == "<" {
-    path(ctx, ..triangle(reverse: true), close: true, fill: ctx.fill)
+    triangle(reverse: true)
   } else if symbol == "|" {
-    path(ctx, ..bar())
+    bar()
   } else if symbol == "<>" {
-    path(ctx, ..diamond(), close: true, fill: ctx.fill)
+    diamond()
   } else if symbol == "o" {
-    path(ctx, ..circle(), close: true, fill: ctx.fill)
-  } else {
-    panic("Unknown arrow head: " + symbol)
-  }
+    circle()
+  },
+  close: symbol != "|",
+  fill: fill,
+  stroke: stroke,
+  )
 }
 

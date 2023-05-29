@@ -134,21 +134,26 @@
   ),)
 }
 
-#let arrow-head(from, to, symbol: ">") = {
+#let arrow-head(from, to, symbol: ">", fill: auto, stroke: auto) = {
   let t = (from, to).map(coordinate.resolve-system)
   ((
     coordinates: (from, to),
     render: (ctx, from, to) => {
-      cmd.arrow-head(ctx, from, to, symbol)
+      cmd.arrow-head(ctx, from, to, symbol, fill: fill, stroke: stroke)
     }
   ),)
 }
 
 #let line(..pts, close: false,
+          name: none,
+          fill: auto,
+          stroke: auto,
           mark-begin: none,
           mark-end: none,
           mark-size: auto,
-          name: none) = {
+          mark-fill: auto,
+          mark-stroke: auto
+        ) = {
   let t = pts.pos().map(coordinate.resolve-system)
   ((
     name: name,
@@ -160,7 +165,7 @@
       )
     },
     render: (ctx, ..pts) => {
-      cmd.path(ctx, close: close, ..pts)
+      cmd.path(ctx, close: close, ..pts, fill: fill, stroke: stroke)
 
       let mark-size = if mark-size != auto {mark-size} else {ctx.mark-size}
       if mark-begin != none {
@@ -168,20 +173,20 @@
         let n = vector.scale(vector.norm(vector.sub(end, start)),
                              mark-size)
         start = vector.sub(end, n)
-        cmd.arrow-head(ctx, start, end, mark-begin)
+        cmd.arrow-head(ctx, start, end, mark-begin, fill: mark-fill, stroke: mark-stroke)
       }
       if mark-end != none {
         let (start, end) = (pts.pos().at(-2), pts.pos().at(-1))
         let n = vector.scale(vector.norm(vector.sub(end, start)),
                              mark-size)
         start = vector.sub(end, n)
-        cmd.arrow-head(ctx, start, end, mark-end)
+        cmd.arrow-head(ctx, start, end, mark-end, fill: mark-fill, stroke: mark-stroke)
       }
     }
   ),)
 }
 
-#let rect(a, b, name: none, anchor: none) = {
+#let rect(a, b, name: none, anchor: none, fill: auto, stroke: auto) = {
   let t = (a, b).map(coordinate.resolve-system)
   ((
     name: name,
@@ -191,12 +196,12 @@
     render: (ctx, a, b) => {
       let (x1, y1, z1) = a
       let (x2, y2, z2) = b
-      cmd.path(ctx, close: true, (x1, y1, z1), (x2, y1, z2), (x2, y2, z2), (x1, y2, z1))
+      cmd.path(ctx, close: true, (x1, y1, z1), (x2, y1, z2), (x2, y2, z2), (x1, y2, z1), fill: fill, stroke: stroke)
     },
   ),)
 }
 
-#let arc(position, start, stop, radius: 1, mode: "OPEN", name: none, anchor: none) = {
+#let arc(position, start, stop, radius: 1, mode: "OPEN", name: none, anchor: none, fill: auto, stroke: auto) = {
   let t = coordinate.resolve-system(position)
   ((
     name: name,
@@ -221,7 +226,7 @@
     },
     render: (ctx, position) => {
       let (x, y, z) = position
-      cmd.arc(ctx, x, y, z, start, stop, radius, mode: mode)
+      cmd.arc(ctx, x, y, z, start, stop, radius, mode: mode, fill: fill, stroke: stroke)
     }
   ),)
 }
@@ -229,7 +234,7 @@
 // Render ellipse
 // @param center  Center coordinate
 // @param radius  Radius or array of x and y radius
-#let circle(center, radius: 1, name: none, anchor: none) = {
+#let circle(center, radius: 1, name: none, anchor: none, fill: auto, stroke: auto) = {
   let t = coordinate.resolve-system(center)
   ((
     name: name,
@@ -238,7 +243,7 @@
     render: (ctx, center) => {
       let (x, y, z) = center
       let (rx, ry) = if type(radius) == "array" {radius} else {(radius, radius)}.map(util.resolve-number.with(ctx))
-      cmd.ellipse(ctx, x, y, z, rx, ry)
+      cmd.ellipse(ctx, x, y, z, rx, ry, fill: fill, stroke: stroke)
     }
   ),)
 }
@@ -286,7 +291,7 @@
   ),)
 }
 
-#let bezier(start, end, ..ctrl, samples: 100, name: none) = {
+#let bezier(start, end, ..ctrl, samples: 100, name: none, fill: auto, stroke: auto) = {
   let len = ctrl.pos().len()
   assert(len in (1, 2), message: "Bezier curve expects 1 or 2 control points. Got " + str(len))
   let coordinates = (start, end, ..ctrl.pos())
@@ -314,7 +319,8 @@
           start,
           ..range(1, samples).map(i => f(i/samples)),
           end
-        )
+        ), 
+        fill: fill, stroke: stroke
       )
     }
   ),)
@@ -389,7 +395,7 @@
 //   ),)
 // }
 
-#let grid(from, to, step: 1, name: none, help-lines: false) = {
+#let grid(from, to, step: 1, name: none, help-lines: false, fill: auto, stroke: auto) = {
   let t = (from, to).map(coordinate.resolve-system)
   ((
     name: name,
@@ -398,7 +404,7 @@
       let stroke = if help-lines {
         0.2pt + gray
       } else {
-        auto
+        stroke
       }
       let (x-step, y-step) = if type(step) == "dictionary" {
         (
@@ -413,7 +419,7 @@
         for x in range(int((to.at(0) - from.at(0)) / x-step)+1) {
           x *= x-step
           x += from.at(0)
-          cmd.path(ctx, (x, from.at(1)), (x, to.at(1)), stroke: stroke)
+          cmd.path(ctx, (x, from.at(1)), (x, to.at(1)), fill: fill, stroke: stroke)
         }
       }
 
@@ -421,7 +427,7 @@
         for y in range(int((to.at(1) - from.at(1)) / y-step)+1) {
           y *= y-step
           y += from.at(1)
-          cmd.path(ctx, (from.at(0), y), (to.at(0), y), stroke: stroke)
+          cmd.path(ctx, (from.at(0), y), (to.at(0), y), fill: fill, stroke: stroke)
         }
       }
     }
