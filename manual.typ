@@ -138,15 +138,46 @@ Elements can be placed relative to their own anchors.
 
 = Draw Function Reference
 
-== `canvas`
+== Canvas
 ```typ
 #canvas(background: none, length: 1cm, debug: false, body)
 ```
 #def-arg("background", `<color>`, default: "none", "A color to be used for the background of the canvas.")
 #def-arg("length", `<length>`, default: "1cm", "Used to specify what 1 coordinate unit is.")
 #def-arg("debug", `<bool>`, default: "false", "Shows the bounding boxes of each element when `true`.")
-#def-arg("body", none, default: "false", [A code block in which functions from `draw.typ` have been called.])
+#def-arg("body", none, [A code block in which functions from `draw.typ` have been called.])
 
+== Styling <styling>
+The fill and stroke of drawn elements can be set globally by using the `fill(color)` and `stroke(stroke)` functions. See the fill and stroke parameters of Typst's path function to see the types accepted (#text(blue)[https://typst.app/docs/reference/visualize/path/]). You can set the fill and stroke of individual elements by using their `fill` and `stroke` arguments.
+
+#example({
+    import "draw.typ": *
+
+    fill(red)
+    stroke(none)
+    rect((0,0), (1,1))
+
+    line((0, -1.5), (0.5, -0.5), (1, -1.5), close: true, fill: blue, stroke: (dash: "dashed"))
+
+    circle((0.5, -2.5), radius: 0.5, fill: green)
+  },
+  [
+  ```typ
+  #canvas({
+    import "typst-canvas/draw.typ": *
+    // Set the global fill to red
+    fill(red)
+    // Set no global stroke
+    stroke(none)
+    // Draws a red rectangle
+    rect((0,0), (1,1))
+    // Draws a blue triangle with dashed edges
+    line((0, -1.5), (0.5, -0.5), (1, -1.5), 
+      close: true, fill: blue, stroke: (dash: "dashed"))
+    // Draws a green circle
+    circle((0.5, -2.5), radius: 0.5, fill: green)
+  })
+  ```])
 
 == Elements
 
@@ -154,13 +185,15 @@ Elements can be placed relative to their own anchors.
 Draws a line (a direct path between two points) to the canvas. If multiplie coordinates are given, a line is drawn between each consecutive one.
 
 ```typ
-#line(..pts, mark-begin: none, mark-end: none, mark-size: auto, name: none)
+#line(..pts, mark-begin: none, mark-end: none, mark-size: auto, name: none, fill: auto, stroke: auto)
 ```
 #def-arg("..pts", `<arguments of coordinates>`, [Coordinates to draw the lines between. A minimum of two must be given.])
 #def-arg("mark-begin", `<string>`, [The type of arrow to draw at the start of the line. See @arrow-heads.])
 #def-arg("mark-end", `<string>`, [The type of arrow to draw at the end of the line.])
 #def-arg("mark-size", `<number>`, default: "0.15", [The size of the marks.])
 #def-arg("name", `<string>`, [Sets the name of element for use with anchors.])
+#def-arg("fill", [`none` or `auto` or `<color>`], default: auto, [Sets the fill of the path of lines. If `auto` the global fill is used. See @styling.])
+#def-arg("stroke", [`none` or `auto` or `<length>` or `<color>` or `<color>` or `<dictionary>` \ or `<stroke>`], default: auto, [Sets the stroke of the lines. If `auto` the global stroke is used. See @styling.])
 
 #example({
     import "draw.typ": *
@@ -180,7 +213,7 @@ Draws a line (a direct path between two points) to the canvas. If multiplie coor
 Draws a rectangle to the canvas.
 
 ```typ
-#rect(a, b, name: none)
+#rect(a, b, name: none, fill: auto, stroke: auto)
 ```
 #def-arg("a", `<coordinate>`, [The top left coordinate of the rectangle.])
 #def-arg("b", `<coordinate>`, [The bottom right coordinate of the rectangle.])
@@ -199,7 +232,7 @@ Draws a rectangle to the canvas.
 === Arc
 Draws an arc to the canvas.
 ```typ
-#arc(position, start, stop, radius: 1, name: none, anchor: none)
+#arc(position, start, stop, radius: 1, name: none, anchor: none, fill: auto, stroke: auto)
 ```
 #def-arg("position", `<coordinate>`, [The coordinate to start drawing the arc from.])
 #def-arg("start", `<angle>`, [The angle to start the arc.])
@@ -222,7 +255,7 @@ Draws an arc to the canvas.
 Draws a circle to the canvas. An ellipse can be drawn by passing an array of length two to the `radius` argument to specify its `x` and `y` radii.
 
 ```typ
-#circle(center, radius: 1, name: none, anchor: none)
+#circle(center, radius: 1, name: none, anchor: none, fill: auto, stroke: auto)
 ```
 #def-arg("center", `<coordinate>`, [The coordinate of the circle's origin.])
 #def-arg("radius", `<number> or <length> or <array of <number> or <length>>`, default: "1", [The circle's radius. If an array is given an ellipse will be drawn where the first item is the `x` radius and the second item is the `y` radius.])
@@ -246,7 +279,7 @@ Draws a circle to the canvas. An ellipse can be drawn by passing an array of len
 Draws a bezier curve with 1 or 2 control points to the canvas.
 
 ```typ
-#bezier(start, end, ..ctrl, samples: 100, name: none)
+#bezier(start, end, ..ctrl, samples: 100, name: none, fill: auto, stroke: auto)
 ```
 #def-arg("start", `<coordinate>`, "The coordinate to start drawing the bezier curve from.")
 #def-arg("end", `<coordinate>`, "The coordinate to draw the bezier curve to.")
@@ -293,7 +326,7 @@ Draws a content block to the canvas.
 Draws a grid to the canavas.
 
 ```typ
-#grid(from, to, step: 1, help-lines: false, name: none)
+#grid(from, to, step: 1, help-lines: false, name: none, fill: auto, stroke: auto)
 ```
 #def-arg("from", `<coordinate>`, "Specifies the bottom left position of the grid.")
 #def-arg("to", `<coordinate>`, "Specifies the top right position of the grid.")
@@ -311,17 +344,6 @@ Draws a grid to the canavas.
   })
   ```]
 )
-
-
-== Styles
-
-```typst fill(color) ```
-
-Set current fill color or none.
-
-```typst stroke(stroke) ```
-
-Set current stroke style or none.
 
 == Arrow Heads <arrow-heads>
 Arrow heads -- _marks_ -- can be drawn using the `arrow-head` function
