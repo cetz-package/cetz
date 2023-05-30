@@ -256,6 +256,7 @@
   ct,
   angle: 0deg,
   anchor: none,
+  padding: 0.5em,
   name: none
   ) = {
   let t = coordinate.resolve-system(pt)
@@ -264,14 +265,16 @@
     coordinates: (pt,),
     anchor: anchor,
     default-anchor: "center",
+    padding: padding,
     render: (ctx, pt) => {
       let (x, y, ..) = pt
 
+      let padding = util.resolve-number(ctx, padding)
       let size = measure(ct, ctx.style)
-      let tw = size.width / ctx.length
+      let tw = size.width / ctx.length 
       let th = size.height / ctx.length
-      let w = (calc.abs(calc.sin(angle) * th) + calc.abs(calc.cos(angle) * tw))
-      let h = (calc.abs(calc.cos(angle) * th) + calc.abs(calc.sin(angle) * tw))
+      let w = (calc.abs(calc.sin(angle) * th) + calc.abs(calc.cos(angle) * tw)) + padding
+      let h = (calc.abs(calc.cos(angle) * th) + calc.abs(calc.sin(angle) * tw)) + padding
 
       // x += w/2
       // y -= h/2
