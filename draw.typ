@@ -338,7 +338,7 @@
 }
 
 // Merge multiple paths
-#let merge-path(body, close: false) = ((
+#let merge-path(body, close: false, fill: auto, stroke: auto) = ((
   children: body,
   finalize-children: (ctx, children) => {
     let merged = ()
@@ -368,7 +368,7 @@
       })
     }
 
-    return cmd.path(ctx, ..merged, close: close)
+    return cmd.path(ctx, ..merged, close: close, stroke: stroke, fill: fill)
   }
 ),)
 
