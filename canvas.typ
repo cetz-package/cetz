@@ -116,16 +116,6 @@
     }
   }
 
-  // Query element for anchors
-  if "custom-anchors-ctx" in element {
-    anchors += (element.custom-anchors-ctx)(ctx, ..coordinates)
-  } else if "custom-anchors" in element {
-    anchors += (element.custom-anchors)(..coordinates)
-  }
-  for (k, a) in anchors {
-    a = util.apply-transform(ctx.transform, a) // Anchors are absolute!
-    anchors.at(k) = a
-  }
 
   // Add default anchors
   if bounds != none {
@@ -146,6 +136,19 @@
     // Add alternate names
     anchors.above = anchors.top
     anchors.below = anchors.bottom
+  }
+
+  
+  // Query element for anchors
+  let custom-anchors = if "custom-anchors-ctx" in element {
+    (element.custom-anchors-ctx)(ctx, ..coordinates)
+  } else if "custom-anchors" in element {
+    (element.custom-anchors)(..coordinates)
+  }
+  if custom-anchors != none {
+    for (k, a) in custom-anchors {
+      anchors.insert(k, util.apply-transform(ctx.transform, a)) // Anchors are absolute!
+    }
   }
 
   if "default" not in anchors {
