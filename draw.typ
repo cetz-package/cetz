@@ -273,8 +273,8 @@
       let size = measure(ct, ctx.style)
       let tw = size.width / ctx.length 
       let th = size.height / ctx.length
-      let w = (calc.abs(calc.sin(angle) * th) + calc.abs(calc.cos(angle) * tw)) + padding
-      let h = (calc.abs(calc.cos(angle) * th) + calc.abs(calc.sin(angle) * tw)) + padding
+      let w = (calc.abs(calc.sin(angle) * th) + calc.abs(calc.cos(angle) * tw)) + padding * 2
+      let h = (calc.abs(calc.cos(angle) * th) + calc.abs(calc.sin(angle) * tw)) + padding * 2
 
       // x += w/2
       // y -= h/2
