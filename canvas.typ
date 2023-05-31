@@ -148,10 +148,12 @@
     anchors.below = anchors.bottom
   }
 
-  anchors.default = if "default-anchor" in element {
-    anchors.at(element.default-anchor)
-  } else if "center" in anchors {
-    anchors.center
+  if "default" not in anchors {
+    anchors.default = if "default-anchor" in element {
+      anchors.at(element.default-anchor)
+    } else if "center" in anchors {
+      anchors.center
+    }
   }
 
   if "anchor" in element and element.anchor != none {
