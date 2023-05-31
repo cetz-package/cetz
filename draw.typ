@@ -97,6 +97,16 @@
   ),)
 }
 
+// Sets the given position as the origin
+#let set-origin(origin) = {
+  return ((
+    push-transform: ctx => {
+      let (x,y,z) = vector.sub(util.apply-transform(ctx.transform, coordinate.resolve(ctx, origin)), util.apply-transform(ctx.transform, (0,0,0)))
+      return matrix.transform-translate(x, y, z)
+    }
+  ),)
+}
+
 // Register anchor `name` at position.
 #let anchor(name, position) = {
   let t = coordinate.resolve-system(position)
