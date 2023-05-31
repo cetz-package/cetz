@@ -56,7 +56,12 @@
   // Render children
   if "children" in element {
     let child-drawables = ()
-    for child in element.children {
+    let children = if type(element.children) == "function" {
+      (element.children)(ctx)
+    } else {
+      element.children
+    }
+    for child in children {
       let r = process-element(child, ctx)
       if r != none {
         if r.bounds != none {
