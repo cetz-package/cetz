@@ -2,26 +2,28 @@
 #import "vector.typ"
 
 // Apply all transformation matrices `queue` in order on `vec`.
-#let apply-transform(queue, vec) = {
-  vec = vector.as-vec(vec, init: (0, 0, 0, 1))
-  for m in queue.do {
-    if m != none {
-      vec = matrix.mul-vec(m, vec)
-    }
-  }
-  return vec.slice(0, 3)
+#let apply-transform(transform, vec) = {
+  // vec = vector.as-vec(vec, init: (0, 0, 0, 1))
+  // for m in queue.do {
+  //   if m != none {
+  //     vec = matrix.mul-vec(m, vec)
+  //   }
+  // }
+  // return vec.slice(0, 3)
+  matrix.mul-vec(transform, vector.as-vec(vec, init: (0, 0, 0, 1))).slice(0, 3)
 }
 
 // Revert all transformation matrices `queue` in
 // reverse order on `vec`.
-#let revert-transform(queue, vec) = {
-  vec = vector.as-vec(vec, init: (0, 0, 0, 1))
-  for m in queue.undo.rev() {
-    if m != none {
-      vec = matrix.mul-vec(m, vec)
-    }
-  }
-  return vec.slice(0, 3)
+#let revert-transform(transform, vec) = {
+  // vec = vector.as-vec(vec, init: (0, 0, 0, 1))
+  // for m in queue.undo.rev() {
+  //   if m != none {
+  //     vec = matrix.mul-vec(m, vec)
+  //   }
+  // }
+  // return vec.slice(0, 3)
+  apply-transform(matrix.inverse(transform), vec)
 }
 
 #let bezier-quadratic-pt(a, b, c, t) = {
