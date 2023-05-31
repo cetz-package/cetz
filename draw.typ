@@ -43,9 +43,9 @@
       matrix.transform-rotate-z(angle)
     } else if type(angle) == "dictionary" {
       matrix.transform-rotate-xyz(
-          angle.at("x", 0deg),
-          angle.at("y", 0deg),
-          angle.at("z", 0deg),
+          angle.at("x", default: 0deg),
+          angle.at("y", default: 0deg),
+          angle.at("z", default: 0deg),
         )
     } else {
       panic("Invalid angle format '" + repr(angle) + "'")
@@ -53,7 +53,7 @@
   }
   return ((
     push-transform: if type(angle) == "array" and type(angle.first()) == "function" { 
-      ctx => resolve-angle(coordinate.resolve(ctx, angle))
+      ctx => resolve-angle(coordinate.resolve-function(coordinate.resolve, ctx, angle))
     } else {
       resolve-angle(angle)
     }
@@ -70,11 +70,30 @@
 
 // Translate
 #let translate(vec) = {
-  ((
-    push-transform: ctx => {
-      let (x,y,z) = coordinate.resolve(ctx, vec)
-      return matrix.transform-translate(x, -y, z)
+  let resolve-vec(vec) = {
+    let (x,y,z) = if type(vec) == "dictionary" {
+      (
+        vec.at("x", default: 0),
+        vec.at("y", default: 0),
+        vec.at("z", default: 0),
+      )
+    } else if type(vec) == "array" {
+      if vec.len() == 2 {
+        vec + (0,)
+      } else {
+        vec
+      }
+    } else {
+      panic("Invalid angle format '" + repr(vec) + "'")
     }
+    return matrix.transform-translate(x, -y, z)
+  }
+  ((
+    push-transform: if type(vec) == "array" and type(vec.first()) == "function" {
+      ctx => resolve-vec(coordinate.resolve-function(coordinate.resolve, ctx, vec))
+    } else {
+      resolve-vec(vec)
+    },
   ),)
 }
 
