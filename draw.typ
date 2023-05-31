@@ -106,7 +106,7 @@
     custom-anchors: (position) => (default: position),
     after: (ctx, position) => {
       assert(ctx.groups.len() > 0, message: "Anchor '" + name + "' created outside of group!")
-      ctx.groups.last().anchors.insert(name, position)
+      ctx.groups.last().anchors.insert(name, ctx.nodes.at(name).anchors.default)
       return ctx
     }
   ),)
@@ -126,12 +126,17 @@
       return ctx
     },
     children: body,
-    custom-anchors-ctx: (ctx) => ctx.groups.last().anchors,
+    custom-anchors-ctx: ctx => {
+      let anchors = ctx.groups.last().anchors
+      for (k,v) in anchors {
+        anchors.insert(k, util.revert-transform(ctx.transform, v))
+      }
+      return anchors
+    },
     after: (ctx) => {
       let self = ctx.groups.pop()
       let nodes = ctx.nodes
       ctx = self.ctx
-      // panic(self)
       if name != none {
         ctx.nodes.insert(name, nodes.at(name))
       }
