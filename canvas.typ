@@ -287,24 +287,22 @@
 
   if bounds == none {
     return []
-  } else {
-    for (k, v) in bounds {
-      bounds.insert(k, v * length)
-    }
   }
 
   // Final canvas size
-  let width = calc.abs(bounds.r - bounds.l)
-  let height = calc.abs(bounds.t - bounds.b)
+  let width = calc.abs(bounds.r - bounds.l) * length
+  let height = calc.abs(bounds.t - bounds.b) * length
   
-  // Offset all element by canvas grow to the top/left
-  let translate = matrix.transform-translate(
-    (0cm - bounds.l) / length, (0cm - bounds.t) / length, 0)
-  
+  // Offset all element by canvas grow to the bottom/left
+  let transform = matrix.transform-translate(
+    -bounds.l, 
+    -bounds.t, 
+    0
+  )
   box(stroke: if debug {green}, width: width, height: height, fill: background, {
     for d in draw-cmds {
       d.coordinates = d.coordinates.map(v => 
-        util.apply-transform(translate, v
+        util.apply-transform(transform, v
           ).slice(0,2).map(x => ctx.length * x)
         )
       (d.draw)(d)
