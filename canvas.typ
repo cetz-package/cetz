@@ -243,6 +243,9 @@
     // Previous element position & bbox
     prev: (pt: (0, 0, 0)),
 
+    // Current content padding size (added around content boxes)
+    content-padding: 0em,
+
     // Current draw attributes
     mark-size: .15,
     fill: none,

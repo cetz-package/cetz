@@ -25,6 +25,15 @@
   ),)
 }
 
+#let content-padding(padding) = {
+  ((
+    before: ctx => {
+        ctx.content-padding = padding
+        return ctx
+      }
+  ),)
+}
+
 // Move to coordinate `pt`
 // @param pt coordinate
 #let move-to(pt) = {
@@ -243,6 +252,7 @@
   ct,
   angle: 0deg,
   anchor: none,
+  padding: auto,
   name: none
   ) = {
   let t = coordinate.resolve-system(pt)
@@ -254,11 +264,12 @@
     render: (ctx, pt) => {
       let (x, y, ..) = pt
 
+      let padding = util.resolve-number(ctx, if padding == auto { ctx.content-padding } else { padding })
       let size = measure(ct, ctx.style)
-      let tw = size.width / ctx.length
+      let tw = size.width / ctx.length 
       let th = size.height / ctx.length
-      let w = (calc.abs(calc.sin(angle) * th) + calc.abs(calc.cos(angle) * tw))
-      let h = (calc.abs(calc.cos(angle) * th) + calc.abs(calc.sin(angle) * tw))
+      let w = (calc.abs(calc.sin(angle) * th) + calc.abs(calc.cos(angle) * tw)) + padding * 2
+      let h = (calc.abs(calc.cos(angle) * th) + calc.abs(calc.sin(angle) * tw)) + padding * 2
 
       // x += w/2
       // y -= h/2
