@@ -52,9 +52,9 @@
       matrix.transform-rotate-z(angle)
     } else if type(angle) == "dictionary" {
       matrix.transform-rotate-xyz(
-          angle.at("x", 0deg),
-          angle.at("y", 0deg),
-          angle.at("z", 0deg),
+          angle.at("x", default: 0deg),
+          angle.at("y", default: 0deg),
+          angle.at("z", default: 0deg),
         )
     } else {
       panic("Invalid angle format '" + repr(angle) + "'")
@@ -62,7 +62,7 @@
   }
   return ((
     push-transform: if type(angle) == "array" and type(angle.first()) == "function" { 
-      ctx => resolve-angle(coordinate.resolve(ctx, angle))
+      ctx => resolve-angle(coordinate.resolve-function(coordinate.resolve, ctx, angle))
     } else {
       resolve-angle(angle)
     }
@@ -79,10 +79,39 @@
 
 // Translate
 #let translate(vec) = {
+  let resolve-vec(vec) = {
+    let (x,y,z) = if type(vec) == "dictionary" {
+      (
+        vec.at("x", default: 0),
+        vec.at("y", default: 0),
+        vec.at("z", default: 0),
+      )
+    } else if type(vec) == "array" {
+      if vec.len() == 2 {
+        vec + (0,)
+      } else {
+        vec
+      }
+    } else {
+      panic("Invalid angle format '" + repr(vec) + "'")
+    }
+    return matrix.transform-translate(x, -y, z)
+  }
   ((
+    push-transform: if type(vec) == "array" and type(vec.first()) == "function" {
+      ctx => resolve-vec(coordinate.resolve-function(coordinate.resolve, ctx, vec))
+    } else {
+      resolve-vec(vec)
+    },
+  ),)
+}
+
+// Sets the given position as the origin
+#let set-origin(origin) = {
+  return ((
     push-transform: ctx => {
-      let (x,y,z) = coordinate.resolve(ctx, vec)
-      return matrix.transform-translate(x, -y, z)
+      let (x,y,z) = vector.sub(util.apply-transform(ctx.transform, coordinate.resolve(ctx, origin)), util.apply-transform(ctx.transform, (0,0,0)))
+      return matrix.transform-translate(x, y, z)
     }
   ),)
 }
@@ -96,7 +125,7 @@
     custom-anchors: (position) => (default: position),
     after: (ctx, position) => {
       assert(ctx.groups.len() > 0, message: "Anchor '" + name + "' created outside of group!")
-      ctx.groups.last().anchors.insert(name, position)
+      ctx.groups.last().anchors.insert(name, ctx.nodes.at(name).anchors.default)
       return ctx
     }
   ),)
@@ -116,12 +145,17 @@
       return ctx
     },
     children: body,
-    custom-anchors-ctx: (ctx) => ctx.groups.last().anchors,
+    custom-anchors-ctx: ctx => {
+      let anchors = ctx.groups.last().anchors
+      for (k,v) in anchors {
+        anchors.insert(k, util.revert-transform(ctx.transform, v))
+      }
+      return anchors
+    },
     after: (ctx) => {
       let self = ctx.groups.pop()
       let nodes = ctx.nodes
       ctx = self.ctx
-      // panic(self)
       if name != none {
         ctx.nodes.insert(name, nodes.at(name))
       }
@@ -325,7 +359,7 @@
 }
 
 // Merge multiple paths
-#let merge-path(body, close: false) = ((
+#let merge-path(body, close: false, fill: auto, stroke: auto) = ((
   children: body,
   finalize-children: (ctx, children) => {
     let merged = ()
@@ -355,7 +389,7 @@
       })
     }
 
-    return cmd.path(ctx, ..merged, close: close)
+    return cmd.path(ctx, ..merged, close: close, stroke: stroke, fill: fill)
   }
 ),)
 

@@ -56,7 +56,12 @@
   // Render children
   if "children" in element {
     let child-drawables = ()
-    for child in element.children {
+    let children = if type(element.children) == "function" {
+      (element.children)(ctx)
+    } else {
+      element.children
+    }
+    for child in children {
       let r = process-element(child, ctx)
       if r != none {
         if r.bounds != none {
@@ -111,16 +116,6 @@
     }
   }
 
-  // Query element for anchors
-  if "custom-anchors-ctx" in element {
-    anchors += (element.custom-anchors-ctx)(ctx, ..coordinates)
-  } else if "custom-anchors" in element {
-    anchors += (element.custom-anchors)(..coordinates)
-  }
-  for (k, a) in anchors {
-    a = util.apply-transform(ctx.transform, a) // Anchors are absolute!
-    anchors.at(k) = a
-  }
 
   // Add default anchors
   if bounds != none {
@@ -143,10 +138,25 @@
     anchors.below = anchors.bottom
   }
 
-  anchors.default = if "default-anchor" in element {
-    anchors.at(element.default-anchor)
-  } else if "center" in anchors {
-    anchors.center
+  
+  // Query element for anchors
+  let custom-anchors = if "custom-anchors-ctx" in element {
+    (element.custom-anchors-ctx)(ctx, ..coordinates)
+  } else if "custom-anchors" in element {
+    (element.custom-anchors)(..coordinates)
+  }
+  if custom-anchors != none {
+    for (k, a) in custom-anchors {
+      anchors.insert(k, util.apply-transform(ctx.transform, a)) // Anchors are absolute!
+    }
+  }
+
+  if "default" not in anchors {
+    anchors.default = if "default-anchor" in element {
+      anchors.at(element.default-anchor)
+    } else if "center" in anchors {
+      anchors.center
+    }
   }
 
   if "anchor" in element and element.anchor != none {
@@ -280,24 +290,22 @@
 
   if bounds == none {
     return []
-  } else {
-    for (k, v) in bounds {
-      bounds.insert(k, v * length)
-    }
   }
 
   // Final canvas size
-  let width = calc.abs(bounds.r - bounds.l)
-  let height = calc.abs(bounds.t - bounds.b)
+  let width = calc.abs(bounds.r - bounds.l) * length
+  let height = calc.abs(bounds.t - bounds.b) * length
   
-  // Offset all element by canvas grow to the top/left
-  let translate = matrix.transform-translate(
-    (0cm - bounds.l) / length, (0cm - bounds.t) / length, 0)
-  
+  // Offset all element by canvas grow to the bottom/left
+  let transform = matrix.transform-translate(
+    -bounds.l, 
+    -bounds.t, 
+    0
+  )
   box(stroke: if debug {green}, width: width, height: height, fill: background, {
     for d in draw-cmds {
       d.coordinates = d.coordinates.map(v => 
-        util.apply-transform(translate, v
+        util.apply-transform(transform, v
           ).slice(0,2).map(x => ctx.length * x)
         )
       (d.draw)(d)

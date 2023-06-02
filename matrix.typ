@@ -1,5 +1,13 @@
 #import "vector.typ"
 
+#let cos(angle) = {
+  return calc.round(calc.cos(angle), digits: 10)
+}
+
+#let sin = calc.sin
+
+#let pi = calc.pi
+
 // Create identity matrix with dim `m`, `n`
 #let ident(m: 4, n: 4, one: 1, zero: 0) = {
   ({for m in range(0, m) {
@@ -46,7 +54,7 @@
 
 // Return 4x4 rotate x matrix
 #let transform-rotate-x(angle) = {
-  let (cos, sin) = (calc.cos, calc.sin)
+  // let (cos, sin) = (calc.cos, calc.sin)
   ((1, 0, 0, 0),
    (0, cos(angle), -sin(angle), 0),
    (0, sin(angle), cos(angle), 0),
@@ -55,7 +63,7 @@
 
 // Return 4x4 rotate y matrix
 #let transform-rotate-y(angle) = {
-  let (cos, sin) = (calc.cos, calc.sin)
+  // let (cos, sin) = (calc.cos, calc.sin)
   ((cos(angle), 0, -sin(angle), 0),
    (0, 1, 0, 0),
    (sin(angle), 0, cos(angle), 0),
@@ -64,7 +72,7 @@
 
 // Return 4x4 rotate z matrix
 #let transform-rotate-z(angle) = {
-  let (cos, sin) = (calc.cos, calc.sin)
+  // let (cos, sin) = (calc.cos, calc.sin)
   ((cos(angle), -sin(angle), 0, 0),
    (sin(angle), cos(angle), 0, 0),
    (0, 0, 1, 0),
@@ -73,7 +81,7 @@
 
 // Return 4x4 rotate xz matrix
 #let transform-rotate-xz(x, z) = {
-  let (pi, cos, sin) = (calc.pi, calc.cos, calc.sin)
+  // let (pi, cos, sin) = (calc.pi, calc.cos, calc.sin)
   ((cos(z), sin(z), 0, 0),
    (-cos(x)*sin(z), cos(x)*cos(z), -sin(x), 0),
    (sin(x)*sin(z), -sin(x)*cos(z), cos(x), 1),
@@ -82,7 +90,7 @@
 
 // Return 4x4 rotate xyz matrix
 #let transform-rotate-xyz(x, y, z) = {
-  let (pi, cos, sin) = (calc.pi, calc.cos, calc.sin)
+  // let (pi, cos, sin) = (calc.pi, calc.cos, calc.sin)
   ((cos(x)*cos(y)*cos(z)-sin(x)*sin(z),
     -cos(x)*cos(y)*sin(z)-sin(x)*cos(z),
     cos(x)*sin(y), 0),

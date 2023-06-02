@@ -91,7 +91,7 @@
 
 /// Calculate angle between three points 
 #let angle(v1, c, v2) = {
-  assert(dim(v1) == dim(v2))
+  assert(dim(v1) == dim(v2), message: "Vectors " + repr(v1) + " and " + repr(v2) + " do not have the same dimensions.")
   if dim(v1) == 2 or dim(v1) == 3 {
     v1 = sub(v1, c)
     v2 = sub(v2, c)
