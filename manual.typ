@@ -82,7 +82,7 @@ Note that draw functions are imported inside the scope of the `canvas` block. Th
 
 == Argument Types
 Argument types in this document are formatted in `monospace` and encased in angle brackets `<>`. Types such as `<integer>` and `<content>` are the same as Typst but additional are required:
-  / `<coorindate>`: Any coordinate system. See @coordinate-systems.
+  / `<coordinate>`: Any coordinate system. See @coordinate-systems.
   / `<number>`: `<integer> or <float>`
 
 == Anchors <anchors>
@@ -230,23 +230,25 @@ Draws a rectangle to the canvas.
   ```])
 
 === Arc
-Draws an arc to the canvas.
+Draws an arc to the canvas. Exactly two of the three values `start`, `stop`, and `delta` should be defined.
 ```typ
-#arc(position, start, stop, radius: 1, name: none, anchor: none, fill: auto, stroke: auto)
+#arc(position, start: auto, stop: auto, delta: auto, radius: 1, name: none, anchor: none, fill: auto, stroke: auto, mode: "OPEN")
 ```
 #def-arg("position", `<coordinate>`, [The coordinate to start drawing the arc from.])
 #def-arg("start", `<angle>`, [The angle to start the arc.])
 #def-arg("stop", `<angle>`, [The angle to stop the arc.])
-#def-arg("radius", `<number>`, [The angle to stop the arc.])
+#def-arg("delta", `<angle>`, [The angle that is added to start or removed from stop.])
+#def-arg("radius", `<number>`, [The radius of the arc.])
+#def-arg("mode", `<string>`, [The options are "OPEN" (the default, just the arc), "CLOSE" (a circular segment) and "PIE" (a circular sector). The filling will depend whether the local `fill` variable is set to other that `none`, or if set to `auto`, the global context variable `fill` is set to other than `none`.])
 
 #example({
     import "draw.typ": *
-    arc((0,0), 45deg, 135deg)
+    arc((0,0), start: 45deg, stop: 135deg)
   },
   [```typ
   #canvas({
     import "typst-canvas/draw.typ": *
-    arc((0,0), 45deg, 135deg)
+    arc((0,0), start: 45deg, stop: 135deg)
   })
   ```]
 )
