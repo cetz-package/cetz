@@ -54,6 +54,8 @@
 #let resolve-style(current, new) = {
   if new == auto {
     return current
+  } else if type(current) != "dictionary" and type(new) != "dictionary" {
+    return new
   }
   for (k, v) in new {
     current.insert(

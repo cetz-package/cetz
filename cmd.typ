@@ -183,7 +183,6 @@
     return ellipse(ctx, c.at(0), c.at(1), c.at(2), r, r).first().segments
   }
   path(
-    ctx,
     ..if symbol == ">" {
       triangle()
     } else if symbol == "<" {

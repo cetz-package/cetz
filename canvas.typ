@@ -273,17 +273,17 @@
     // Current content padding size (added around content boxes)
     content-padding: 0em,
 
-    // Current draw attributes
-    mark-size: .15,
-    fill: none,
-    stroke: black + 1pt,
     em-size: measure(box(width: 1em, height: 1em), st),
 
     style: (
       fill: none,
       stroke: black + 1pt,
       mark: (
-        size: .15
+        size: .15,
+        begin: none,
+        end: none,
+        fill: auto,
+        stroke: auto
       ),
       content-padding: 0em
     ),

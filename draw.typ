@@ -165,15 +165,7 @@
   ),)
 }
 
-#let line(..pts, close: false,
-          name: none,
-          mark-begin: none,
-          mark-end: none,
-          mark-size: auto,
-          mark-fill: auto,
-          mark-stroke: auto,
-          style: auto
-        ) = {
+#let line(..pts, close: false, name: none, style: auto) = {
   let t = pts.pos().map(coordinate.resolve-system)
   ((
     name: name,
@@ -189,20 +181,22 @@
       cmd.path(close: close, ("line", ..pts.pos()),
                fill: style.fill, stroke: style.stroke)
 
-      let mark-size = if mark-size != auto {mark-size} else {ctx.mark-size}
-      if mark-begin != none {
-        let (start, end) = (pts.pos().at(1), pts.pos().at(0))
-        let n = vector.scale(vector.norm(vector.sub(end, start)),
-                             mark-size)
-        start = vector.sub(end, n)
-        cmd.arrow-head(start, end, mark-begin, fill: mark-fill, stroke: mark-stroke)
-      }
-      if mark-end != none {
-        let (start, end) = (pts.pos().at(-2), pts.pos().at(-1))
-        let n = vector.scale(vector.norm(vector.sub(end, start)),
-                             mark-size)
-        start = vector.sub(end, n)
-        cmd.arrow-head(start, end, mark-end, fill: mark-fill, stroke: mark-stroke)
+      if style.mark.begin != none or style.mark.end != none {
+        let (fill, stroke) = (util.resolve-style(style.fill, style.mark.fill), util.resolve-style(style.stroke, style.mark.stroke))
+        if style.mark.begin != none {
+          let (start, end) = (pts.pos().at(1), pts.pos().at(0))
+          let n = vector.scale(vector.norm(vector.sub(end, start)),
+                              style.mark.size)
+          start = vector.sub(end, n)
+          cmd.arrow-head(start, end, style.mark.begin, fill: fill, stroke: stroke)  
+        }
+        if style.mark.end != none {
+          let (start, end) = (pts.pos().at(-2), pts.pos().at(-1))
+          let n = vector.scale(vector.norm(vector.sub(end, start)),
+                              mark-size)
+          start = vector.sub(end, n)
+          cmd.arrow-head(start, end, mark-end, fill: mark-fill, stroke: mark-stroke)
+        }
       }
     }
   ),)
@@ -226,7 +220,7 @@
   ),)
 }
 
-#let arc(position, start: auto, stop: auto, delta: auto, radius: 1, mode: "OPEN", name: none, anchor: none, fill: auto, stroke: auto) = {
+#let arc(position, start: auto, stop: auto, delta: auto, radius: 1, mode: "OPEN", name: none, anchor: none, style: auto) = {
   assert((start,stop,delta).filter(it=>{it == auto}).len() == 1, message: "Exactly two of three options start, stop and delta should be defined.")
   let t = coordinate.resolve-system(position)
   let start-angle = if start == auto {stop - delta} else {start}
@@ -253,8 +247,9 @@
       )
     },
     render: (ctx, position) => {
+      let style = util.resolve-style(ctx.style, style)
       let (x, y, z) = position
-      cmd.arc(ctx, x, y, z, start-angle, stop-angle, radius, mode: mode, fill: fill, stroke: stroke)
+      cmd.arc(x, y, z, start-angle, stop-angle, radius, mode: mode, fill: style.fill, stroke: style.stroke)
     }
   ),)
 }
