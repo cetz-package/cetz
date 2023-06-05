@@ -8,30 +8,22 @@
 
 #let typst-rotate = rotate
 
-#let fill(color) = {
+#let set-style(..style) = {
+  assert.eq(style.pos().len(), 0, message: "set-style takes no positional arguments" )
   ((
-    before: ctx => {
-      ctx.fill = color
-      return ctx
-    }
+    style: style.named()
   ),)
 }
 
-#let stroke(color) = {
+#let fill(fill) = {
   ((
-    before: ctx => {
-      ctx.stroke = color
-      return ctx
-    }
+    style: (fill: fill)
   ),)
 }
 
-#let content-padding(padding) = {
+#let stroke(stroke) = {
   ((
-    before: ctx => {
-        ctx.content-padding = padding
-        return ctx
-      }
+    style: (stroke: stroke)
   ),)
 }
 
@@ -175,13 +167,12 @@
 
 #let line(..pts, close: false,
           name: none,
-          fill: auto,
-          stroke: auto,
           mark-begin: none,
           mark-end: none,
           mark-size: auto,
           mark-fill: auto,
-          mark-stroke: auto
+          mark-stroke: auto,
+          style: auto
         ) = {
   let t = pts.pos().map(coordinate.resolve-system)
   ((
@@ -194,8 +185,9 @@
       )
     },
     render: (ctx, ..pts) => {
-      cmd.path(ctx, close: close, ("line", ..pts.pos()),
-               fill: fill, stroke: stroke)
+      let style = util.resolve-style(ctx.style, style)
+      cmd.path(close: close, ("line", ..pts.pos()),
+               fill: style.fill, stroke: style.stroke)
 
       let mark-size = if mark-size != auto {mark-size} else {ctx.mark-size}
       if mark-begin != none {
@@ -203,20 +195,20 @@
         let n = vector.scale(vector.norm(vector.sub(end, start)),
                              mark-size)
         start = vector.sub(end, n)
-        cmd.arrow-head(ctx, start, end, mark-begin, fill: mark-fill, stroke: mark-stroke)
+        cmd.arrow-head(start, end, mark-begin, fill: mark-fill, stroke: mark-stroke)
       }
       if mark-end != none {
         let (start, end) = (pts.pos().at(-2), pts.pos().at(-1))
         let n = vector.scale(vector.norm(vector.sub(end, start)),
                              mark-size)
         start = vector.sub(end, n)
-        cmd.arrow-head(ctx, start, end, mark-end, fill: mark-fill, stroke: mark-stroke)
+        cmd.arrow-head(start, end, mark-end, fill: mark-fill, stroke: mark-stroke)
       }
     }
   ),)
 }
 
-#let rect(a, b, name: none, anchor: none, fill: auto, stroke: auto) = {
+#let rect(a, b, name: none, anchor: none, style: auto) = {
   let t = (a, b).map(coordinate.resolve-system)
   ((
     name: name,
@@ -224,9 +216,10 @@
     anchor: anchor,
     coordinates: (a, b),
     render: (ctx, a, b) => {
+      let style = util.resolve-style(ctx.style, style)
       let (x1, y1, z1) = a
       let (x2, y2, z2) = b
-      cmd.path(ctx, close: true, fill: fill, stroke: stroke,
+      cmd.path(close: true, fill: style.fill, stroke: style.stroke,
               ("line", (x1, y1, z1), (x2, y1, z2),
                        (x2, y2, z2), (x1, y2, z1)))
     },
@@ -269,16 +262,17 @@
 // Render ellipse
 // @param center  Center coordinate
 // @param radius  Radius or array of x and y radius
-#let circle(center, radius: 1, name: none, anchor: none, fill: auto, stroke: auto) = {
+#let circle(center, radius: 1, name: none, anchor: none, style: auto) = {
   let t = coordinate.resolve-system(center)
   ((
     name: name,
     coordinates: (center, ),
     anchor: anchor,
     render: (ctx, center) => {
+      let style = util.resolve-style(ctx.style, style)
       let (x, y, z) = center
       let (rx, ry) = if type(radius) == "array" {radius} else {(radius, radius)}.map(util.resolve-number.with(ctx))
-      cmd.ellipse(ctx, x, y, z, rx, ry, fill: fill, stroke: stroke)
+      cmd.ellipse(x, y, z, rx, ry, fill: style.fill, stroke: style.stroke)
     }
   ),)
 }
@@ -303,8 +297,8 @@
     render: (ctx, pt) => {
       let (x, y, ..) = pt
 
-      let padding = util.resolve-number(ctx, if padding == auto { ctx.content-padding } else { padding })
-      let size = measure(ct, ctx.style)
+      let padding = util.resolve-number(ctx, if padding == auto { ctx.style.content-padding } else { padding })
+      let size = measure(ct, ctx.typst-style)
       let tw = size.width / ctx.length 
       let th = size.height / ctx.length
       let w = (calc.abs(calc.sin(angle) * th) + calc.abs(calc.cos(angle) * tw)) + padding * 2
@@ -313,7 +307,6 @@
       // x += w/2
       // y -= h/2
       cmd.content(
-        ctx,
         x,
         y,
         w,
@@ -350,7 +343,6 @@
     render: (ctx, start, end, ..ctrl) => {
       ctrl = ctrl.pos()
       cmd.path(
-        ctx,
         (if len == 1 { "quadratic" } else { "cubic" }, start, end, ..ctrl),
         fill: fill, stroke: stroke
       )
@@ -508,7 +500,7 @@
       })
     }
 
-    cmd.path(ctx, ..segments,
+    cmd.path(..segments,
              close: close, stroke: stroke, fill: fill)
   }
 ),)
@@ -571,7 +563,7 @@
         for x in range(int((to.at(0) - from.at(0)) / x-step)+1) {
           x *= x-step
           x += from.at(0)
-          cmd.path(ctx, ("line", (x, from.at(1)), (x, to.at(1))), fill: fill, stroke: stroke)
+          cmd.path(("line", (x, from.at(1)), (x, to.at(1))), fill: fill, stroke: stroke)
         }
       }
 
@@ -579,7 +571,7 @@
         for y in range(int((to.at(1) - from.at(1)) / y-step)+1) {
           y *= y-step
           y += from.at(1)
-          cmd.path(ctx, ("line", (from.at(0), y), (to.at(0), y)), fill: fill, stroke: stroke)
+          cmd.path(("line", (from.at(0), y), (to.at(0), y)), fill: fill, stroke: stroke)
         }
       }
     }

@@ -46,6 +46,17 @@
     ctx = (element.before)(ctx)
   }
 
+  if "style" in element {
+    ctx.style = util.resolve-style(
+      ctx.style,
+      if type(element.style) == "function" {
+        (element.style)(ctx)
+      } else {
+        element.style
+      }
+    )
+  }
+
   if "push-transform" in element {
     ctx.transform = matrix.mul-mat(
       if type(element.push-transform) == "function" { (element.push-transform)(ctx) } else { element.push-transform }, 
@@ -251,7 +262,7 @@
 
   // Canvas context object
   let ctx = (
-    style: st,
+    typst-style: st,
     length: length,
 
     debug: debug,
@@ -267,6 +278,15 @@
     fill: none,
     stroke: black + 1pt,
     em-size: measure(box(width: 1em, height: 1em), st),
+
+    style: (
+      fill: none,
+      stroke: black + 1pt,
+      mark: (
+        size: .15
+      ),
+      content-padding: 0em
+    ),
 
     // Current transform
     transform: matrix.mul-mat(
