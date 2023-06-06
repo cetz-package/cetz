@@ -85,7 +85,7 @@
   let samples = calc.abs(int((stop - start) / 1deg))
   path(ctx,
     fill: fill, stroke: stroke,
-    close: mode == "CLOSE",
+    close: mode != "OPEN",
     ..range(0, samples+1).map(i => {
       let angle = start + (stop - start) * i / samples
       (

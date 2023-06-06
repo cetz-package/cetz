@@ -239,16 +239,20 @@ Draws an arc to the canvas. Exactly two of the three values `start`, `stop`, and
 #def-arg("stop", `<angle>`, [The angle to stop the arc.])
 #def-arg("delta", `<angle>`, [The angle that is added to start or removed from stop.])
 #def-arg("radius", `<number>`, [The radius of the arc.])
-#def-arg("mode", `<string>`, [The options are "OPEN" (the default, just the arc), "CLOSE" (a circular segment) and "PIE" (a circular sector). The filling will depend whether the local `fill` variable is set to other that `none`, or if set to `auto`, the global context variable `fill` is set to other than `none`.])
+#def-arg("mode", `<string>`, [The options are "OPEN" (the default, just the arc), "CLOSE" (a circular segment) and "PIE" (a circular sector).])
 
 #example({
     import "draw.typ": *
     arc((0,0), start: 45deg, stop: 135deg)
+    arc((0,-0.5), start: 45deg, delta: 90deg, mode: "CLOSE")
+    arc((0,-1), stop: 135deg, delta: 90deg, mode: "PIE")
   },
   [```typ
   #canvas({
     import "typst-canvas/draw.typ": *
     arc((0,0), start: 45deg, stop: 135deg)
+    arc((0,-0.5), start: 45deg, delta: 90deg, mode: "CLOSE")
+    arc((0,-1), stop: 135deg, delta: 90deg, mode: "PIE")
   })
   ```]
 )

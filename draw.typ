@@ -232,7 +232,7 @@
 }
 
 #let arc(position, start: auto, stop: auto, delta: auto, radius: 1, mode: "OPEN", name: none, anchor: none, fill: auto, stroke: auto) = {
-  assert( ((start != auto and (stop != auto or delta != auto)) or (stop != auto and delta != auto)) and (start == auto or stop == auto or delta == auto), message: "Exactly two of three options start, auto and delta should be defined")
+  assert((start,stop,delta).filter(it=>{it == auto}).len() == 1, message: "Exactly two of three options start, stop and delta should be defined.")
   let t = coordinate.resolve-system(position)
   let start-angle = if start == auto {stop - delta} else {start}
   let stop-angle = if stop == auto {start + delta} else {stop}
