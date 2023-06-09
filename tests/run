@@ -28,7 +28,7 @@ function install_typst()
 
 function img_compare()
 {
-  compare -metric rmse "$1" "$2" null: 2>&1 | cut -d\  -f1
+  magick compare -metric rmse "$1" "$2" null: 2>&1 | cut -d\  -f1
 }
 
 function update_test_ref()
@@ -62,7 +62,7 @@ function run_test()
     pdftoppm test.pdf res -png -singlefile
 
     if [[ $(img_compare res.png ref.png) != 0 ]] ; then
-      compare -compose src res.png ref.png diff.png || true
+      magick compare -compose src res.png ref.png diff.png || true
       echo "[FAIL] see $(pwd)/diff.png for differences"
       exit 1
     fi
@@ -71,7 +71,7 @@ function run_test()
   )
 }
 
-install_typst
+# install_typst
 echo "Typst: $(typst --version)"
 
 MODE="${1:-test}"

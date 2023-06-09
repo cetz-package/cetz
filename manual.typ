@@ -358,26 +358,24 @@ current fill color.
 
 #example({
   import "draw.typ": *
-  stroke((paint: gray, dash: "dotted"))
-  line((1,-1), (1, 5))
-  stroke(black); fill(black)
-  line((0, 0), (1, 0), mark-end: ">", mark-size: .5)
-  line((0, 1), (1, 1), mark-end: "<", mark-size: .5)
-  line((0, 2), (1, 2), mark-end: "|", mark-size: .5)
-  line((0, 3), (1, 3), mark-end: "o", mark-size: .5)
-  line((0, 4), (1, 4), mark-end: "<>", mark-size: .5)
+  line((1, -1), (1, 5), stroke: (paint: gray, dash: "dotted"))
+  set-style(mark: (fill: black))
+  line((0, 4), (1, 4), mark: (end: "<>"))
+  line((0, 3), (1, 3), mark: (end: "o"))
+  line((0, 2), (1, 2), mark: (end: "|"))
+  line((0, 1), (1, 1), mark: (end: "<"))
+  line((0, 0), (1, 0), mark: (end: ">"))
 },
 [```typ
   #canvas({
     import "typst-canvas/draw.typ": *
-    stroke((paint: gray, dash: "dotted"))
-    line((1,-1), (1, 5))
-    stroke(black); fill(black)
-    line((0, 4), (1, 4), mark-end: "<>")
-    line((0, 3), (1, 3), mark-end: "o")
-    line((0, 2), (1, 2), mark-end: "|")
-    line((0, 1), (1, 1), mark-end: "<")
-    line((0, 0), (1, 0), mark-end: ">")
+    line((1, -1), (1, 5), stroke: (paint: gray, dash: "dotted"))
+    set-style(mark: (fill: black))
+    line((0, 4), (1, 4), mark: (end: "<>"))
+    line((0, 3), (1, 3), mark: (end: "o"))
+    line((0, 2), (1, 2), mark: (end: "|"))
+    line((0, 1), (1, 1), mark: (end: "<"))
+    line((0, 0), (1, 0), mark: (end: ">"))
   })
   ```]
 )
@@ -482,19 +480,15 @@ In the example below, the red circle is placed one unit below the blue circle. I
 
 #example({
   import "draw.typ": *
-  stroke(blue)
-  circle(())
-  stroke(red)
-  circle((rel: (0, -1)))
+  circle((0, 0), stroke: blue)
+  circle((rel: (0, -1)), stroke: red)
   },
   [```typ
   #import "typst-canvas/canvas.typ": canvas
   #canvas({
     import "typst-canvas/draw.typ": *
-    stroke(blue)
-    circle((0,0))
-    stroke(red)
-    circle((rel: (0, -1)))
+    circle((0, 0), stroke: blue)
+    circle((rel: (0, -1)), stroke: red)
   })
   ```]
 )
