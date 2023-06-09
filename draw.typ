@@ -165,44 +165,47 @@
   ),)
 }
 
-#let line(..pts, close: false, name: none, style: auto) = {
-  let t = pts.pos().map(coordinate.resolve-system)
+#let line(..pts-style, close: false, name: none) = {
+  let (pts, style) = (pts-style.pos(), pts-style.named())
+  let t = pts.map(coordinate.resolve-system)
   ((
     name: name,
-    coordinates: pts.pos(),
+    coordinates: pts,
     custom-anchors: (..pts) => {
+      let pts = pts.pos()
       (
-        start: pts.pos().first(),
-        end: pts.pos().last(),
+        start: pts.first(),
+        end: pts.last(),
       )
     },
     render: (ctx, ..pts) => {
+      let pts = pts.pos()
       let style = util.resolve-style(ctx.style, style)
       cmd.path(close: close, ("line", ..pts.pos()),
                fill: style.fill, stroke: style.stroke)
 
-      if style.mark.begin != none or style.mark.end != none {
+      if style.mark.start != none or style.mark.end != none {
         let (fill, stroke) = (util.resolve-style(style.fill, style.mark.fill), util.resolve-style(style.stroke, style.mark.stroke))
-        if style.mark.begin != none {
-          let (start, end) = (pts.pos().at(1), pts.pos().at(0))
+        if style.mark.start != none {
+          let (start, end) = (pts.at(1), pts.at(0))
           let n = vector.scale(vector.norm(vector.sub(end, start)),
                               style.mark.size)
           start = vector.sub(end, n)
-          cmd.arrow-head(start, end, style.mark.begin, fill: fill, stroke: stroke)  
+          cmd.arrow-head(start, end, style.mark.start, fill: fill, stroke: stroke)  
         }
         if style.mark.end != none {
-          let (start, end) = (pts.pos().at(-2), pts.pos().at(-1))
+          let (start, end) = (pts.at(-2), pts.at(-1))
           let n = vector.scale(vector.norm(vector.sub(end, start)),
-                              mark-size)
+                              style.mark.size)
           start = vector.sub(end, n)
-          cmd.arrow-head(start, end, mark-end, fill: mark-fill, stroke: mark-stroke)
+          cmd.arrow-head(start, end, style.mark.end, fill: fill, stroke: stroke)
         }
       }
     }
   ),)
 }
 
-#let rect(a, b, name: none, anchor: none, style: auto) = {
+#let rect(a, b, name: none, anchor: none, ..style) = {
   let t = (a, b).map(coordinate.resolve-system)
   ((
     name: name,
@@ -210,7 +213,7 @@
     anchor: anchor,
     coordinates: (a, b),
     render: (ctx, a, b) => {
-      let style = util.resolve-style(ctx.style, style)
+      let style = util.resolve-style(ctx.style, style.named())
       let (x1, y1, z1) = a
       let (x2, y2, z2) = b
       cmd.path(close: true, fill: style.fill, stroke: style.stroke,
@@ -220,7 +223,7 @@
   ),)
 }
 
-#let arc(position, start: auto, stop: auto, delta: auto, radius: 1, mode: "OPEN", name: none, anchor: none, style: auto) = {
+#let arc(position, start: auto, stop: auto, delta: auto, mode: "OPEN", name: none, anchor: none, ..style) = {
   assert((start,stop,delta).filter(it=>{it == auto}).len() == 1, message: "Exactly two of three options start, stop and delta should be defined.")
   let t = coordinate.resolve-system(position)
   let start-angle = if start == auto {stop - delta} else {start}
@@ -230,26 +233,29 @@
     anchor: anchor,
     default-anchor: "start",
     coordinates: (position,),
-    custom-anchors: (position) => {
+    custom-anchors-ctx: (ctx, position) => {
+      let style = util.resolve-style(ctx.style, style.named())
       let (x, y, z) = position
+      let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
       (
         start: position,
         end: (
-          x - radius*calc.cos(start-angle) + radius*calc.cos(stop-angle),
-          y - radius*calc.sin(start-angle) + radius*calc.sin(stop-angle),
+          x - rx*calc.cos(start-angle) + rx*calc.cos(stop-angle),
+          y - ry*calc.sin(start-angle) + ry*calc.sin(stop-angle),
           z,
         ),
         origin: (
-          x - radius*calc.cos(start-angle),
-          y - radius*calc.sin(start-angle),
+          x - rx*calc.cos(start-angle),
+          y - ry*calc.sin(start-angle),
           z,
         )
       )
     },
     render: (ctx, position) => {
-      let style = util.resolve-style(ctx.style, style)
+      let style = util.resolve-style(ctx.style, style.named())
       let (x, y, z) = position
-      cmd.arc(x, y, z, start-angle, stop-angle, radius, mode: mode, fill: style.fill, stroke: style.stroke)
+      let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
+      cmd.arc(x, y, z, start-angle, stop-angle, rx, ry, mode: mode, fill: style.fill, stroke: style.stroke)
     }
   ),)
 }
@@ -257,16 +263,16 @@
 // Render ellipse
 // @param center  Center coordinate
 // @param radius  Radius or array of x and y radius
-#let circle(center, radius: 1, name: none, anchor: none, style: auto) = {
+#let circle(center, name: none, anchor: none, ..style) = {
   let t = coordinate.resolve-system(center)
   ((
     name: name,
     coordinates: (center, ),
     anchor: anchor,
     render: (ctx, center) => {
-      let style = util.resolve-style(ctx.style, style)
+      let style = util.resolve-style(ctx.style, style.named())
       let (x, y, z) = center
-      let (rx, ry) = if type(radius) == "array" {radius} else {(radius, radius)}.map(util.resolve-number.with(ctx))
+      let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
       cmd.ellipse(x, y, z, rx, ry, fill: style.fill, stroke: style.stroke)
     }
   ),)
@@ -280,8 +286,8 @@
   ct,
   angle: 0deg,
   anchor: none,
-  padding: auto,
-  name: none
+  name: none,
+  ..style
   ) = {
   let t = coordinate.resolve-system(pt)
   ((
@@ -291,8 +297,9 @@
     default-anchor: "center",
     render: (ctx, pt) => {
       let (x, y, ..) = pt
-
-      let padding = util.resolve-number(ctx, if padding == auto { ctx.style.content-padding } else { padding })
+      let style = util.resolve-style(ctx.style, style.named())
+      // let padding = util.resolve-number(ctx, if padding == auto { ctx.style.content-padding } else { padding })
+      let padding = util.resolve-number(ctx, style.content-padding)
       let size = measure(ct, ctx.typst-style)
       let tw = size.width / ctx.length 
       let th = size.height / ctx.length
@@ -321,10 +328,12 @@
 /// - start (coordinate): Start point
 /// - end (coordinate): End point
 /// - ..ctrl (coordinate): Control points
-#let bezier(start, end, ..ctrl, name: none, fill: auto, stroke: auto) = {
-  let len = ctrl.pos().len()
+#let bezier(start, end, ..ctrl-style, name: none) = {
+  let (ctrl, style) = (ctrl-style.pos(), ctrl-style.named())
+  let len = ctrl.len()
   assert(len in (1, 2), message: "Bezier curve expects 1 or 2 control points. Got " + str(len))
-
+  let coordinates = (start, end, ..ctrl)
+  let t = coordinates.map(coordinate.resolve-system)
   return ((
     name: name,
     coordinates: (start, end, ..ctrl.pos()),
@@ -336,10 +345,11 @@
       return a
     },
     render: (ctx, start, end, ..ctrl) => {
+      let style = util.resolve-style(ctx.style, style)
       ctrl = ctrl.pos()
       cmd.path(
         (if len == 1 { "quadratic" } else { "cubic" }, start, end, ..ctrl),
-        fill: fill, stroke: stroke
+        fill: style.fill, stroke: style.stroke
       )
     }
   ),)
@@ -437,11 +447,7 @@
 /// - body (any): Body
 /// - close (bool): If true, the path is automatically closed
 /// - name (string): Element name
-#let merge-path(body,
-                close: false,
-                name: none,
-                fill: auto,
-                stroke: auto) = ((
+#let merge-path(body, close: false, name: none, ..style) = ((
   name: name,
   children: body,
   finalize-children: (ctx, children) => {
@@ -462,6 +468,7 @@
     }
 
     while children.len() > 0 {
+      
       let child = children.remove(0)
       assert("segments" in child,
              message: "Object must contain path segments")
@@ -495,8 +502,8 @@
       })
     }
 
-    cmd.path(..segments,
-             close: close, stroke: stroke, fill: fill)
+    let style = util.resolve-style(ctx.style, style.named())
+    cmd.path(..segments, close: close, stroke: style.stroke, fill: style.fill)
   }
 ),)
 
@@ -534,16 +541,17 @@
 //   ),)
 // }
 
-#let grid(from, to, step: 1, name: none, help-lines: false, fill: auto, stroke: auto) = {
+#let grid(from, to, step: 1, name: none, help-lines: false, ..style) = {
   let t = (from, to).map(coordinate.resolve-system)
   ((
     name: name,
     coordinates: (from, to),
     render: (ctx, from, to) => {
+      let style = util.resolve-style(ctx.style, style.named())
       let stroke = if help-lines {
         0.2pt + gray
       } else {
-        stroke
+        style.stroke
       }
       let (x-step, y-step) = if type(step) == "dictionary" {
         (
@@ -558,7 +566,7 @@
         for x in range(int((to.at(0) - from.at(0)) / x-step)+1) {
           x *= x-step
           x += from.at(0)
-          cmd.path(("line", (x, from.at(1)), (x, to.at(1))), fill: fill, stroke: stroke)
+          cmd.path(("line", (x, from.at(1)), (x, to.at(1))), fill: style.fill, stroke: style.stroke)
         }
       }
 
@@ -566,7 +574,7 @@
         for y in range(int((to.at(1) - from.at(1)) / y-step)+1) {
           y *= y-step
           y += from.at(1)
-          cmd.path(("line", (from.at(0), y), (to.at(0), y)), fill: fill, stroke: stroke)
+          cmd.path(("line", (from.at(0), y), (to.at(0), y)), fill: style.fill, stroke: style.stroke)
         }
       }
     }

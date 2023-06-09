@@ -118,20 +118,20 @@
                  (left, y + m * ry, z), (x - m * rx, top, z)))
 }
 
-#let arc(x, y, z, start, stop, radius, mode: "OPEN", fill: none, stroke: none) = {
+#let arc(x, y, z, start, stop, rx, ry, mode: "OPEN", fill: none, stroke: none) = {
   let samples = calc.abs(int((stop - start) / 1deg))
-  path(ctx,
+  path(
     fill: fill, stroke: stroke,
     close: mode != "OPEN",
     ("line", ..range(0, samples+1).map(i => {
       let angle = start + (stop - start) * i / samples
       (
-        x - radius*calc.cos(start) + radius*calc.cos(angle),
-        y - radius*calc.sin(start) + radius*calc.sin(angle),
+        x - rx*calc.cos(start) + rx*calc.cos(angle),
+        y - ry*calc.sin(start) + ry*calc.sin(angle),
         z
       )
     }) + if mode == "PIE" {
-      ((x - radius*calc.cos(start), y - radius*calc.sin(start), z),
+      ((x - rx*calc.cos(start), y - ry*calc.sin(start), z),
        (x, y, z),)
     } else {
       ()

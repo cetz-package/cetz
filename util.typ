@@ -69,3 +69,7 @@
   }
   return current
 }
+
+#let resolve-radius(radius) = {
+  return if type(radius) == "array" {radius} else {(radius, radius)}
+}

@@ -280,12 +280,13 @@
       stroke: black + 1pt,
       mark: (
         size: .15,
-        begin: none,
+        start: none,
         end: none,
         fill: auto,
         stroke: auto
       ),
-      content-padding: 0em
+      content-padding: 0em,
+      radius: 1
     ),
 
     // Current transform
