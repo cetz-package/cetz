@@ -82,10 +82,10 @@
 }
 
 #let arc(ctx, x, y, z, start, stop, radius, mode: "OPEN", fill: auto, stroke: auto) = {
-  let samples = int((stop - start) / 1deg)
+  let samples = calc.abs(int((stop - start) / 1deg))
   path(ctx,
     fill: fill, stroke: stroke,
-    close: mode == "CLOSE",
+    close: mode != "OPEN",
     ..range(0, samples+1).map(i => {
       let angle = start + (stop - start) * i / samples
       (
@@ -94,7 +94,8 @@
         z
       )
     }) + if mode == "PIE" {
-      ((x - radius*calc.cos(start), y - radius*calc.sin(start), z),)
+      ((x - radius*calc.cos(start), y - radius*calc.sin(start), z),
+       (x, y, z),)
     } else {
       ()
     }

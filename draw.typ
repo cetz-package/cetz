@@ -231,8 +231,11 @@
   ),)
 }
 
-#let arc(position, start, stop, radius: 1, mode: "OPEN", name: none, anchor: none, fill: auto, stroke: auto) = {
+#let arc(position, start: auto, stop: auto, delta: auto, radius: 1, mode: "OPEN", name: none, anchor: none, fill: auto, stroke: auto) = {
+  assert((start,stop,delta).filter(it=>{it == auto}).len() == 1, message: "Exactly two of three options start, stop and delta should be defined.")
   let t = coordinate.resolve-system(position)
+  let start-angle = if start == auto {stop - delta} else {start}
+  let stop-angle = if stop == auto {start + delta} else {stop}
   ((
     name: name,
     anchor: anchor,
@@ -243,20 +246,20 @@
       (
         start: position,
         end: (
-          x - radius*calc.cos(start) + radius*calc.cos(stop),
-          y - radius*calc.sin(start) + radius*calc.sin(stop),
+          x - radius*calc.cos(start-angle) + radius*calc.cos(stop-angle),
+          y - radius*calc.sin(start-angle) + radius*calc.sin(stop-angle),
           z,
         ),
         origin: (
-          x - radius*calc.cos(start),
-          y - radius*calc.sin(start),
+          x - radius*calc.cos(start-angle),
+          y - radius*calc.sin(start-angle),
           z,
         )
       )
     },
     render: (ctx, position) => {
       let (x, y, z) = position
-      cmd.arc(ctx, x, y, z, start, stop, radius, mode: mode, fill: fill, stroke: stroke)
+      cmd.arc(ctx, x, y, z, start-angle, stop-angle, radius, mode: mode, fill: fill, stroke: stroke)
     }
   ),)
 }
