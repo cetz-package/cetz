@@ -100,13 +100,22 @@
   if "render" in element {
     for drawable in (element.render)(ctx, ..coordinates) {
       // Transform position to absolute
-      drawable.coordinates = drawable.coordinates.map(x =>
-        util.apply-transform(ctx.transform, x))
+      drawable.segments = drawable.segments.map(s => {
+        return (s.at(0),) + s.slice(1).map(x => {
+          util.apply-transform(ctx.transform, x)
+        })
+      })
 
       if "bounds" not in drawable {
-        drawable.bounds = drawable.coordinates
+        let collected-coordinates = ()
+        for s in drawable.segments {
+          collected-coordinates += s.slice(1)
+        }
+        drawable.bounds = collected-coordinates
       } else {
-        drawable.bounds = drawable.bounds.map(x => util.apply-transform(ctx.transform, x))
+        drawable.bounds = drawable.bounds.map(x => {
+          return util.apply-transform(ctx.transform, x)
+        })
       }
 
       bounds = bounding-box(drawable.bounds, init: bounds)
@@ -164,8 +173,8 @@
           message: "Anchor '" + element.anchor + "' not found in " + repr(anchors))
     let translate = vector.sub(anchors.default, anchors.at(element.anchor))
     for (i, d) in drawables.enumerate() {
-        drawables.at(i).coordinates = d.coordinates.map(
-          c => vector.add(translate, c))
+        drawables.at(i).segments = d.segments.map(
+          s => (s.at(0),) + s.slice(1).map(c => vector.add(translate, c)))
     }
 
     for (k, a) in anchors {
@@ -208,12 +217,11 @@
         stroke: red, 
         fill: none, 
         close: true, 
-        
-        (bounds.l, bounds.t),
-        (bounds.r, bounds.t),
-        (bounds.r, bounds.b),
-        (bounds.l, bounds.b),
-        ).first()
+        ("line", (bounds.l, bounds.t),
+                 (bounds.r, bounds.t),
+                 (bounds.r, bounds.b),
+                 (bounds.l, bounds.b))
+      ).first()
     )
   }
 
@@ -304,10 +312,12 @@
   )
   box(stroke: if debug {green}, width: width, height: height, fill: background, {
     for d in draw-cmds {
-      d.coordinates = d.coordinates.map(v => 
-        util.apply-transform(transform, v
-          ).slice(0,2).map(x => ctx.length * x)
-        )
+      d.segments = d.segments.map(s => {
+        return (s.at(0),) + s.slice(1).map(v => {
+          return util.apply-transform(transform, v)
+            .slice(0,2).map(x => ctx.length * x)
+        })
+      })
       (d.draw)(d)
     }
   })
