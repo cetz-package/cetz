@@ -195,7 +195,8 @@
       )
     },
     render: (ctx, ..pts) => {
-      cmd.path(ctx, close: close, ..pts, fill: fill, stroke: stroke)
+      cmd.path(ctx, close: close, ("line", ..pts.pos()),
+               fill: fill, stroke: stroke)
 
       let mark-size = if mark-size != auto {mark-size} else {ctx.mark-size}
       if mark-begin != none {
@@ -226,7 +227,9 @@
     render: (ctx, a, b) => {
       let (x1, y1, z1) = a
       let (x2, y2, z2) = b
-      cmd.path(ctx, close: true, (x1, y1, z1), (x2, y1, z2), (x2, y2, z2), (x1, y2, z1), fill: fill, stroke: stroke)
+      cmd.path(ctx, close: true, fill: fill, stroke: stroke,
+              ("line", (x1, y1, z1), (x2, y1, z2),
+                       (x2, y2, z2), (x1, y2, z1)))
     },
   ),)
 }
@@ -326,11 +329,17 @@
   ),)
 }
 
-#let bezier(start, end, ..ctrl, samples: 100, name: none, fill: auto, stroke: auto) = {
+#let bezier(start, end, ..ctrl, name: none, fill: auto, stroke: auto) = {
   let len = ctrl.pos().len()
   assert(len in (1, 2), message: "Bezier curve expects 1 or 2 control points. Got " + str(len))
   let coordinates = (start, end, ..ctrl.pos())
   let t = coordinates.map(coordinate.resolve-system)
+  let f = if len == 1 {
+    t => util.bezier-quadratic-pt(start, end, ctrl.pos().first(), t)
+  } else {
+    t => util.bezier-cubic-pt(start, end, ctrl.pos().first(), ctrl.pos().last(), t)
+  }
+
   return ((
     name: name,
     coordinates: coordinates,
@@ -343,18 +352,9 @@
     },
     render: (ctx, start, end, ..ctrl) => {
       ctrl = ctrl.pos()
-      let f = if len == 1 {
-        t => util.bezier-quadratic-pt(start, end, ctrl.first(), t)
-      } else {
-        t => util.bezier-cubic-pt(start, end, ctrl.first(), ctrl.last(), t)
-      }
       cmd.path(
         ctx,
-        ..(
-          start,
-          ..range(1, samples).map(i => f(i/samples)),
-          end
-        ), 
+        (if len == 1 { "quad" } else { "cube" }, start, end, ..ctrl),
         fill: fill, stroke: stroke
       )
     }
@@ -365,33 +365,62 @@
 #let merge-path(body, close: false, fill: auto, stroke: auto) = ((
   children: body,
   finalize-children: (ctx, children) => {
-    let merged = ()
+    let segments = ()
     let pos = none
+
+    let segment-begin = (s) => {
+      return s.at(1)
+    }
+
+    let segment-end = (s) => {
+      let type = s.at(0)
+      if type == "line" {
+        return s.last()
+      } else {
+        return s.at(1)
+      }
+    }
+
+    let dist = (a, b) => {
+      vector.len(vector.sub(a, b))
+    }
+
     while children.len() > 0 {
       let child = children.remove(0)
+      assert("segments" in child,
+             message: "Object must contain path segments")
+      if child.segments.len() == 0 { continue }
 
       // Revert path order, if end < start
-      if merged.len() > 0 {
-        if (vector.len(vector.sub(child.coordinates.last(), pos)) <
-            vector.len(vector.sub(child.coordinates.first(), pos))) {
-           child.coordinates = child.coordinates.rev()
+      //if segments.len() > 0 {
+      //  if (dist(segment-end(child.segments.last()), pos) <
+      //      dist(segment-begin(child.segments.first()), pos)) {
+      //     child.segments = child.segments.rev()
+      //  }
+      //}
+
+      // Connect "jumps" with linear lines to prevent typsts path impl.
+      // from using weird cubic ones.
+      if segments.len() > 0 {
+        let end = segment-end(segments.last())
+        let begin = segment-begin(child.segments.first())
+        if dist(end, begin) > 0 {
+          segments.push(("line", segment-begin(child.segments.first())))
         }
       }
 
       // Append child
-      merged += child.coordinates
+      segments += child.segments
 
       // Sort next children by distance
-      pos = merged.last()
+      pos = segment-end(segments.last())
       children = children.sorted(key: a => {
-        calc.min(
-          vector.len(vector.sub(a.coordinates.first(), pos)),
-          vector.len(vector.sub(a.coordinates.last(), pos))
-        )
+        return vector.len(vector.sub(segment-begin(a.segments.first()), pos))
       })
     }
 
-    return cmd.path(ctx, ..merged, close: close, stroke: stroke, fill: fill)
+    return cmd.path(ctx, ..segments,
+                    close: close, stroke: stroke, fill: fill)
   }
 ),)
 
