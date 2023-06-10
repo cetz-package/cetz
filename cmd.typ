@@ -4,6 +4,11 @@
 
 #let typst-path = path
 
+#let default-samples = 25
+#let ctx-samples(ctx) = {
+  if "samples" in ctx { ctx.samples } else { default-samples }
+}
+
 #let content(ctx, x, y, w, h, c) = {
   ((
     type: "content",
@@ -23,7 +28,8 @@
 }
 
 // Calculate bounding points for a list of path segments
-#let path-bounds(segments, samples: 25) = {
+#let path-bounds(segments) = {
+  let samples = default-samples
   let bounds = ()
 
   for s in segments {
@@ -71,13 +77,24 @@
                message: "Path segments must be of type line, quad or cube")
         
         if type == "quad" {
+          // TODO: Typst path implementation does not support quadratic
+          //       curves.
+          // let a = coordinates.at(0)
+          // let b = coordinates.at(1)
+          // let ctrla = relative(a, coordinates.at(2))
+          // let ctrlb = relative(b, coordinates.at(2))
+          // vertices.push((a, (0em, 0em), ctrla))
+          // vertices.push((b, (0em, 0em), (0em, 0em)))
           let a = coordinates.at(0)
           let b = coordinates.at(1)
-          let ctrla = relative(a, coordinates.at(2))
-          let ctrlb = relative(b, coordinates.at(2))
+          let c = coordinates.at(2)
 
-          vertices.push((a, (0em, 0em), ctrla))
-          vertices.push((b, (0em, 0em), (0em, 0em)))
+          let samples = ctx-samples(ctx)
+          vertices.push(a)
+          for i in range(0, samples) {
+            vertices.push(util.bezier-quadratic-pt(a, b, c, i / samples))
+          }
+          vertices.push(b)
         } else if type == "cube" {
           let a = coordinates.at(0)
           let b = coordinates.at(1)
