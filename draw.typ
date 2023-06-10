@@ -367,7 +367,6 @@
     let pos = none
     while children.len() > 0 {
       let child = children.remove(0)
-      assert(child.ctrl == 0, message: "FIXME: Bezier paths can not be merged!")
 
       // Revert path order, if end < start
       if merged.len() > 0 {
