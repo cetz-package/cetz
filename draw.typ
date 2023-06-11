@@ -331,17 +331,10 @@
 #let bezier(start, end, ..ctrl, name: none, fill: auto, stroke: auto) = {
   let len = ctrl.pos().len()
   assert(len in (1, 2), message: "Bezier curve expects 1 or 2 control points. Got " + str(len))
-  let coordinates = (start, end, ..ctrl.pos())
-  let t = coordinates.map(coordinate.resolve-system)
-  let f = if len == 1 {
-    t => util.bezier-quadratic-pt(start, end, ctrl.pos().first(), t)
-  } else {
-    t => util.bezier-cubic-pt(start, end, ctrl.pos().first(), ctrl.pos().last(), t)
-  }
 
   return ((
     name: name,
-    coordinates: coordinates,
+    coordinates: (start, end, ..ctrl.pos()),
     custom-anchors: (start, end, ..ctrl) => {
       let a = (start: start, end: end)
       for (i, c) in ctrl.pos().enumerate() {
