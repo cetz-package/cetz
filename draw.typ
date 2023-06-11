@@ -517,7 +517,7 @@
         for x in range(int((to.at(0) - from.at(0)) / x-step)+1) {
           x *= x-step
           x += from.at(0)
-          cmd.path(ctx, (x, from.at(1)), (x, to.at(1)), fill: fill, stroke: stroke)
+          cmd.path(ctx, ("line", (x, from.at(1)), (x, to.at(1))), fill: fill, stroke: stroke)
         }
       }
 
@@ -525,7 +525,7 @@
         for y in range(int((to.at(1) - from.at(1)) / y-step)+1) {
           y *= y-step
           y += from.at(1)
-          cmd.path(ctx, (from.at(0), y), (to.at(0), y), fill: fill, stroke: stroke)
+          cmd.path(ctx, ("line", (from.at(0), y), (to.at(0), y)), fill: fill, stroke: stroke)
         }
       }
     }
