@@ -146,9 +146,8 @@
     anchors.above = anchors.top
     anchors.below = anchors.bottom
   }
-
   
-  // Query element for anchors
+  // Query element for (relative) anchors
   let custom-anchors = if "custom-anchors-ctx" in element {
     (element.custom-anchors-ctx)(ctx, ..coordinates)
   } else if "custom-anchors" in element {
@@ -157,6 +156,13 @@
   if custom-anchors != none {
     for (k, a) in custom-anchors {
       anchors.insert(k, util.apply-transform(ctx.transform, a)) // Anchors are absolute!
+    }
+  }
+
+  // Query (already absolute) anchors depending on drawable
+  if "custom-anchors-drawables" in element {
+    for (k, a) in (element.custom-anchors-drawables)(drawables) {
+      anchors.insert(k, a)
     }
   }
 

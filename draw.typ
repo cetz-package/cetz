@@ -353,22 +353,65 @@
   ),)
 }
 
+/// Create anchors along a path
+///
+/// - path (path): Path
+/// - anchors (positional): Dictionaries of the format:
+///     (name: string, pos: float)
+/// - name (string): Element name, uses paths name, if auto
+#let place-anchors(path, ..anchors, name: auto) = {
+  let name = name
+  if name == auto and "name" in path.first() {
+    name = path.first().name
+  }
+  ((
+    name: name,
+    children: path,
+    custom-anchors-drawables: (drawables) => {
+      if drawables.len() == 0 { return () }
+
+      let list = (:)
+      let s = drawables.first().segments
+      for a in anchors.pos() {
+        if "name" in a {
+          list.insert(a.name, path-util.point-on-path(s, a.pos))
+        }
+      }
+      return list
+    },
+  ),)
+}
+
 /// Put marks on a path
 ///
 /// - path (path): Path
-/// - marks (array): Array of dictionaries of the format:
-///                  (mark: string,
-///                   pos: float,
-///                   scale: float,
-///                   stroke: stroke,
-///                   fill: fill)
+/// - marks (positional): Array of dictionaries of the format:
+///     (mark: string,
+///      pos: float,
+///      scale: float,
+///      stroke: stroke,
+///      fill: fill)
 #let place-marks(path,
                  ..marks,
                  size: auto,
                  fill: auto,
-                 stroke: auto) = {
+                 stroke: auto,
+                 name: none) = {
 ((
-  children: (path),
+  name: name,
+  children: path,
+  custom-anchors-drawables: (drawables) => {
+    if drawables.len() == 0 { return () }
+
+    let anchors = (:)
+    let s = drawables.first().segments
+    for m in marks.pos() {
+      if "name" in m {
+        anchors.insert(m.name, path-util.point-on-path(s, m.pos))
+      }
+    }
+    return anchors
+  },
   finalize-children: (ctx, children) => {
     let size = if size != auto { size } else { ctx.mark-size }
 
@@ -394,10 +437,13 @@
 ///
 /// - body (any): Body
 /// - close (bool): If true, the path is automatically closed
+/// - name (string): Element name
 #let merge-path(body,
                 close: false,
+                name: none,
                 fill: auto,
                 stroke: auto) = ((
+  name: name,
   children: body,
   finalize-children: (ctx, children) => {
     let segments = ()
