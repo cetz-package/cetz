@@ -8,6 +8,9 @@
 
 #let typst-rotate = rotate
 
+/// Set paint style
+///
+/// - color (paint): Paint style
 #let fill(color) = {
   ((
     before: ctx => {
@@ -17,6 +20,9 @@
   ),)
 }
 
+/// Set stroke style
+///
+/// - color (stroke): Stroke style
 #let stroke(color) = {
   ((
     before: ctx => {
@@ -26,6 +32,9 @@
   ),)
 }
 
+/// Set default content padding
+///
+/// - padding (float): Default content padding
 #let content-padding(padding) = {
   ((
     before: ctx => {
@@ -35,8 +44,9 @@
   ),)
 }
 
-// Move to coordinate `pt`
-// @param pt coordinate
+/// Move to coordinate `pt`
+///
+/// - pt (vector): Position to move to
 #let move-to(pt) = {
   let t = coordinate.resolve-system(pt)
   ((
@@ -45,8 +55,10 @@
   ),)
 }
 
-// Rotate on z-axis (default) or specified axes if `angle` is of type
-// dictionary
+/// Rotate on z-axis (default) or specified axes if `angle` is of type
+/// dictionary
+///
+/// - angle (angle, dictionary): Rotation angle(s)
 #let rotate(angle) = {
   let resolve-angle(angle) = {
     return if type(angle) == "angle" {
@@ -70,15 +82,20 @@
   ),)
 }
 
-// Scale canvas
-// @param factor float
+/// Scale objects
+///
+/// - f (float): Scale factor
 #let scale(f) = {
   ((
     push-transform: matrix.transform-scale(f)
   ),)
 }
 
-// Translate
+/// Translate objects
+///
+/// Push translation matrix to the tranformation stack
+///
+/// - vec (vector): Translation vector
 #let translate(vec) = {
   let resolve-vec(vec) = {
     let (x,y,z) = if type(vec) == "dictionary" {
@@ -94,7 +111,7 @@
         vec
       }
     } else {
-      panic("Invalid angle format '" + repr(vec) + "'")
+      panic("Invalid translate format '" + repr(vec) + "'")
     }
     return matrix.transform-translate(x, -y, z)
   }
@@ -107,7 +124,9 @@
   ),)
 }
 
-// Sets the given position as the origin
+/// Sets the given position as the origin
+///
+/// - origin (position): Position to set as new origin (0, 0, 0)
 #let set-origin(origin) = {
   return ((
     push-transform: ctx => {
@@ -117,7 +136,12 @@
   ),)
 }
 
-// Register anchor `name` at position.
+/// Register anchor `name` at position
+///
+/// Anchors can only be registered from within groups!
+///
+/// - name (string): Anchor name
+/// - position (position): Position
 #let anchor(name, position) = {
   let t = coordinate.resolve-system(position)
   ((
@@ -132,7 +156,15 @@
   ),)
 }
 
-// Group
+/// Group multiple operations
+///
+/// A group has its own style and transformation state that is not leaked
+/// outsides.
+///
+/// - name (string): Group name. Anchors of this group are referenceable by
+///                  `<group-name>.<anchor-name>`
+/// - anchor (string): Anchor used as origin
+/// - body (body): Body
 #let group(name: none, anchor: none, body) = {
   ((
     name: name,
@@ -165,6 +197,11 @@
   ),)
 }
 
+/// Render arrow head
+///
+/// - from (vector): Start position
+/// - to (vector): End position
+/// - symbol (string): Symbol of ">", "<", "<>", "o" or "|"
 #let arrow-head(from, to, symbol: ">", fill: auto, stroke: auto) = {
   let t = (from, to).map(coordinate.resolve-system)
   ((
@@ -175,6 +212,10 @@
   ),)
 }
 
+/// Render a (poly) line
+///
+/// - pts (vector): List of points
+/// - name (string): Element name
 #let line(..pts, close: false,
           name: none,
           fill: auto,
@@ -218,6 +259,11 @@
   ),)
 }
 
+/// Render rectangle between two points
+///
+/// - a (vector): Position a
+/// - b (vector): Position b
+/// - name (string): Element name
 #let rect(a, b, name: none, anchor: none, fill: auto, stroke: auto) = {
   let t = (a, b).map(coordinate.resolve-system)
   ((
@@ -235,6 +281,16 @@
   ),)
 }
 
+/// Render arc
+///
+/// - position (vector): Position
+/// - start (angle): Start angle
+/// - stop (angle): Stop angle
+/// - delta (angle): Angle offset from either start or stop
+/// - radius (float): Radius
+/// - mode (string): Angle mode, either "OPEN", "PIE"
+/// - anchor (string): Anchor to use as origin
+/// - name (string): Element name
 #let arc(position, start: auto, stop: auto, delta: auto, radius: 1, mode: "OPEN", name: none, anchor: none, fill: auto, stroke: auto) = {
   assert((start,stop,delta).filter(it=>{it == auto}).len() == 1, message: "Exactly two of three options start, stop and delta should be defined.")
   let t = coordinate.resolve-system(position)
@@ -268,9 +324,10 @@
   ),)
 }
 
-// Render ellipse
-// @param center  Center coordinate
-// @param radius  Radius or array of x and y radius
+/// Render ellipse
+///
+/// - center (vector):  Center coordinate
+/// - radius (float, array): Radius or array of x and y radius
 #let circle(center, radius: 1, name: none, anchor: none, fill: auto, stroke: auto) = {
   let t = coordinate.resolve-system(center)
   ((
@@ -285,9 +342,16 @@
   ),)
 }
 
-// Render content
-// NOTE: Content itself is not transformed by the canvas transformations!
-//       native transformation matrix support from typst would be required.
+/// Render content
+///
+/// *NOTE:* Content itself is not transformed by the canvas transformations!
+///         native transformation matrix support from typst would be required.
+///
+/// - pt (vector): Position
+/// - ct (content): Content
+/// - anchor (string): Anchor to use as origin
+/// - padding (float): Padding
+/// - name (string): Element name
 #let content(
   pt,
   ct,
@@ -330,6 +394,12 @@
   ),)
 }
 
+/// Draw a quadratic or cubic bezier curve
+///
+/// - start (vector): Start position
+/// - end (vector): End position
+/// - ctrl (vector): Control points (absolute)
+/// - name (string): Element name
 #let bezier(start, end, ..ctrl, name: none, fill: auto, stroke: auto) = {
   let len = ctrl.pos().len()
   assert(len in (1, 2), message: "Bezier curve expects 1 or 2 control points. Got " + str(len))
@@ -480,7 +550,7 @@
   ),
 ),)
 
-// Calculate the intersections of two named paths
+/// Calculate the intersections of two named paths
 // #let intersections(path-1, path-2, name: "intersection") = {
 //   ((
 //     name: name,

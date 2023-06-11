@@ -232,9 +232,14 @@
   return (bounds: bounds, ctx: ctx, drawables: drawables)
 }
 
-
-#let canvas(length: 1cm,        /* Length of 1.0 canvas units */
-            background: none,   /* Background paint */
+/// Canvas
+///
+/// - length (length): Length of one canvas unit
+/// - background (paint): Background fill
+/// - debug (boolean): If true, draw bounding boxes around objects
+/// - body (any): Body
+#let canvas(length: 1cm,
+            background: none,
             debug: false, body) = layout(ly => style(st => {
   if body == none {
     return []
