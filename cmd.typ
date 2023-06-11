@@ -1,13 +1,9 @@
 #import "matrix.typ"
 #import "vector.typ"
 #import "util.typ"
+#import "path-util.typ"
 
 #let typst-path = path
-
-#let default-samples = 25
-#let ctx-samples(ctx) = {
-  if "samples" in ctx { ctx.samples } else { default-samples }
-}
 
 #let content(ctx, x, y, w, h, c) = {
   ((
@@ -27,42 +23,26 @@
   ),)
 }
 
-// Calculate bounding points for a list of path segments
-#let path-bounds(segments) = {
-  let samples = default-samples
-  let bounds = ()
-
-  for s in segments {
-    let type = s.at(0)
-    if type == "line" {
-      bounds += s.slice(1)
-    } else if type == "quad" {
-      let (a, b, c) = s.slice(1)
-      bounds.push(a)
-      bounds.push(b)
-      bounds += range(1, samples).map(x =>
-        util.bezier-quadratic-pt(a, b, c, x / samples))
-    } else if type == "cube" {
-      let (a, b, c, d) = s.slice(1)
-      bounds.push(a)
-      bounds.push(b)
-      bounds += range(1, samples).map(x =>
-        util.bezier-cubic-pt(a, b, c, d, x / samples))
-    }
-  }
-
-  return bounds
-}
-
 #let path(ctx, close: false, fill: auto, stroke: auto,
            ..segments) = {
+  let segments = segments.pos()
+
+  // Add a closing segment to make path calculations
+  // consider it.
+  if close == true {
+    let (s0, sn) = (segments.first(), segments.last())
+    segments.push(("line",
+                   path-util.segment-end(sn),
+                   path-util.segment-begin(s0)))
+  }
+
   ((
     type: "path",
     fill: if fill == auto { ctx.fill } else { fill },
     stroke: if stroke == auto { ctx.stroke } else { stroke },
     close: close,
-    segments: segments.pos(),
-    bounds: path-bounds(segments.pos()),
+    segments: segments,
+    bounds: path-util.bounds(segments),
     draw: (self) => {
       let relative = (orig, c) => {
         return vector.sub(c, orig)
@@ -89,7 +69,7 @@
           let b = coordinates.at(1)
           let c = coordinates.at(2)
 
-          let samples = ctx-samples(ctx)
+          let samples = path-util.ctx-samples(ctx)
           vertices.push(a)
           for i in range(0, samples) {
             vertices.push(util.bezier-quadratic-pt(a, b, c, i / samples))

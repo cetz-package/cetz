@@ -2,6 +2,7 @@
 #import "matrix.typ"
 #import "cmd.typ"
 #import "util.typ"
+#import "path-util.typ"
 #import "coordinate.typ"
 // #import "collisions.typ"
 
@@ -361,8 +362,51 @@
   ),)
 }
 
-// Merge multiple paths
-#let merge-path(body, close: false, fill: auto, stroke: auto) = ((
+/// Put marks on a path
+///
+/// - path (path): Path
+/// - marks (array): Array of dictionaries of the format:
+///                  (mark: string,
+///                   pos: float,
+///                   scale: float,
+///                   stroke: stroke,
+///                   fill: fill)
+#let place-marks(path,
+                 ..marks,
+                 size: auto,
+                 fill: auto,
+                 stroke: auto) = {
+((
+  children: (path),
+  finalize-children: (ctx, children) => {
+    let size = if size != auto { size } else { ctx.mark-size }
+
+    let p = children.first()
+    (p,);
+
+    for m in marks.pos() {
+      let scale = m.at("scale", default: size)
+      let fill = m.at("fill", default: fill)
+      let stroke = m.at("stroke", default: stroke)
+
+      let (pt, dir) = path-util.direction(p.segments, m.pos, scale: scale)
+      if pt != none {
+        cmd.arrow-head(
+          ctx, vector.add(pt, dir), pt, m.mark, fill: fill, stroke: stroke)
+      }
+    }
+  }
+),)
+}
+
+/// Merge multiple paths
+///
+/// - body (any): Body
+/// - close (bool): If true, the path is automatically closed
+#let merge-path(body,
+                close: false,
+                fill: auto,
+                stroke: auto) = ((
   children: body,
   finalize-children: (ctx, children) => {
     let segments = ()
@@ -377,7 +421,7 @@
       if type == "line" {
         return s.last()
       } else {
-        return s.at(1)
+        return s.at(2)
       }
     }
 
@@ -419,8 +463,8 @@
       })
     }
 
-    return cmd.path(ctx, ..segments,
-                    close: close, stroke: stroke, fill: fill)
+    cmd.path(ctx, ..segments,
+             close: close, stroke: stroke, fill: fill)
   }
 ),)
 
