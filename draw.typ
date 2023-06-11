@@ -71,11 +71,9 @@
 
 // Scale canvas
 // @param factor float
-#let scale(f) = {
-  ((
-    push-transform: matrix.transform-scale(f)
-  ),)
-}
+#let scale(f) = ((
+  push-transform: matrix.transform-scale(f)
+),)
 
 // Translate
 #let translate(vec) = {

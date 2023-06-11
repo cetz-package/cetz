@@ -382,6 +382,31 @@ current fill color.
   ```]
 )
 
+= Groups <groups>
+Groups allow scoping context changes such as setting stroke-style, fill and transformations.
+```typ
+#group(content, name: none)
+```
+
+#example({
+import "draw.typ": *
+group({
+  stroke(5pt)
+  scale(.5); rotate(45deg)
+  rect((-1,-1),(1,1))
+})
+rect((-1,-1),(1,1))
+}, ```typ
+// Create group
+group({
+  stroke(5pt)
+  scale(.5); rotate(45deg)
+  rect((-1,-1),(1,1))
+})
+rect((-1,-1),(1,1))
+```)
+
+
 = Coordinate Systems <coordinate-systems>
 A _coordinate_ is a position on the canvas on which the picture is drawn. They take the form of dictionaries and the following sub-sections define the key value pairs for each system. Some systems have a more implicit form as an array of values and `typst-canvas` attempts to infer the system based on the element types.
 
@@ -886,3 +911,80 @@ The example below shows how to use this system to create an offset from an ancho
   })
   ```]
 )
+
+== Transformations
+All transformation functions push a transformation matrix onto the current transform-stack.
+To apply transformations scoped use a `group(...)` object.
+
+=== Translate
+```typ
+#translate(coordinate)
+```
+
+#example({
+import "draw.typ": *
+rect((0,0), (2,2))
+translate((.5,.5,0))
+rect((0,0), (1,1))
+}, ```typ
+// Outer rect
+rect((0,0), (2,2))
+// Inner rect
+translate((.5,.5,0))
+rect((0,0), (1,1))
+```)
+
+=== Set Origin
+```typ
+#set-origin(position)
+```
+
+#example({
+import "draw.typ": *
+rect((0,0), (2,2), name: "r")
+set-origin("r.above")
+circle((0, 0), radius: .1)
+}, ```typ
+// Outer rect
+rect((0,0), (2,2), name: "r")
+// Move origin to top edge
+set-origin("r.above")
+circle((0, 0), radius: .1)
+```)
+
+=== Rotate
+```typ
+#rotate(axis-dictionary)
+#rotate(z-angle)
+```
+
+#example({
+  import "draw.typ": *
+  rotate((z: 45deg))
+  rect((-1,-1), (1,1))
+  rotate((y: 80deg))
+  circle((0,0))
+}, ```typ
+// Rotate on z-axis
+rotate((z: 45deg))
+rect((-1,-1), (1,1))
+// Rotate on y-axis
+rotate((y: 80deg))
+circle((0,0))
+```)
+
+=== Scale
+```typ
+#scale(axis-dictionary)
+#scale(factor)
+```
+
+#example({
+  import "draw.typ": *
+  scale((x: 1.8))
+  circle((0,0))
+}, ```typ
+// Scale x-axis
+scale((x: 1.8))
+circle((0,0))
+```)

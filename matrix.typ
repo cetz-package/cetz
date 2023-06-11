@@ -43,7 +43,9 @@
   let (x, y, z) = if type(f) != "dictionary" {
     (f, f, f)
   } else {
-    (f.x, f.y, f.z)
+    (f.at("x", default: 1),
+     f.at("y", default: 1),
+     f.at("z", default: 1))
   }
   return(
    (x, 0, 0, 0),
