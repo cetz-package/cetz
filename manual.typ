@@ -150,6 +150,8 @@ Elements can be placed relative to their own anchors.
 == Styling <styling>
 The fill and stroke of drawn elements can be set globally by using the `fill(color)` and `stroke(stroke)` functions. See the fill and stroke parameters of Typst's path function to see the types accepted (#text(blue)[https://typst.app/docs/reference/visualize/path/]). You can set the fill and stroke of individual elements by using their `fill` and `stroke` arguments.
 
+Styling options of drawn elements can be set globally by using the `set-style()` function. 
+
 #example({
     import "draw.typ": *
 
@@ -351,7 +353,7 @@ Draws a grid to the canavas.
   ```]
 )
 
-== Arrow Heads <arrow-heads>
+=== Arrow Heads <arrow-heads>
 Arrow heads -- _marks_ -- can be drawn using the `arrow-head` function
 or as start/end marks of paths (`line`). Arrow heads are filled using the
 current fill color.
@@ -380,7 +382,7 @@ current fill color.
   ```]
 )
 
-= Groups <groups>
+== Groups <groups>
 Groups allow scoping context changes such as setting stroke-style, fill and transformations.
 ```typ
 #group(content, name: none)
@@ -403,6 +405,84 @@ group({
 })
 rect((-1,-1),(1,1))
 ```)
+
+== Transformations
+All transformation functions push a transformation matrix onto the current transform stack.
+To apply transformations scoped use a `group(...)` object.
+
+=== Translate
+```typ
+#translate(coordinate)
+```
+
+#example({
+import "draw.typ": *
+rect((0,0), (2,2))
+translate((.5,.5,0))
+rect((0,0), (1,1))
+}, ```typ
+// Outer rect
+rect((0,0), (2,2))
+// Inner rect
+translate((.5,.5,0))
+rect((0,0), (1,1))
+```)
+
+=== Set Origin
+```typ
+#set-origin(position)
+```
+
+#example({
+import "draw.typ": *
+rect((0,0), (2,2), name: "r")
+set-origin("r.above")
+circle((0, 0), radius: .1)
+}, ```typ
+// Outer rect
+rect((0,0), (2,2), name: "r")
+// Move origin to top edge
+set-origin("r.above")
+circle((0, 0), radius: .1)
+```)
+
+=== Rotate
+```typ
+#rotate(axis-dictionary)
+#rotate(z-angle)
+```
+
+#example({
+  import "draw.typ": *
+  rotate((z: 45deg))
+  rect((-1,-1), (1,1))
+  rotate((y: 80deg))
+  circle((0,0))
+}, ```typ
+// Rotate on z-axis
+rotate((z: 45deg))
+rect((-1,-1), (1,1))
+// Rotate on y-axis
+rotate((y: 80deg))
+circle((0,0))
+```)
+
+=== Scale
+```typ
+#scale(axis-dictionary)
+#scale(factor)
+```
+
+#example({
+  import "draw.typ": *
+  scale((x: 1.8))
+  circle((0,0))
+}, ```typ
+// Scale x-axis
+scale((x: 1.8))
+circle((0,0))
+```)
+
 
 
 = Coordinate Systems <coordinate-systems>
@@ -906,79 +986,3 @@ The example below shows how to use this system to create an offset from an ancho
   ```]
 )
 
-== Transformations
-All transformation functions push a transformation matrix onto the current transform-stack.
-To apply transformations scoped use a `group(...)` object.
-
-=== Translate
-```typ
-#translate(coordinate)
-```
-
-#example({
-import "draw.typ": *
-rect((0,0), (2,2))
-translate((.5,.5,0))
-rect((0,0), (1,1))
-}, ```typ
-// Outer rect
-rect((0,0), (2,2))
-// Inner rect
-translate((.5,.5,0))
-rect((0,0), (1,1))
-```)
-
-=== Set Origin
-```typ
-#set-origin(position)
-```
-
-#example({
-import "draw.typ": *
-rect((0,0), (2,2), name: "r")
-set-origin("r.above")
-circle((0, 0), radius: .1)
-}, ```typ
-// Outer rect
-rect((0,0), (2,2), name: "r")
-// Move origin to top edge
-set-origin("r.above")
-circle((0, 0), radius: .1)
-```)
-
-=== Rotate
-```typ
-#rotate(axis-dictionary)
-#rotate(z-angle)
-```
-
-#example({
-  import "draw.typ": *
-  rotate((z: 45deg))
-  rect((-1,-1), (1,1))
-  rotate((y: 80deg))
-  circle((0,0))
-}, ```typ
-// Rotate on z-axis
-rotate((z: 45deg))
-rect((-1,-1), (1,1))
-// Rotate on y-axis
-rotate((y: 80deg))
-circle((0,0))
-```)
-
-=== Scale
-```typ
-#scale(axis-dictionary)
-#scale(factor)
-```
-
-#example({
-  import "draw.typ": *
-  scale((x: 1.8))
-  circle((0,0))
-}, ```typ
-// Scale x-axis
-scale((x: 1.8))
-circle((0,0))
-```)

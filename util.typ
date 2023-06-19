@@ -51,25 +51,6 @@
   }
 }
 
-#let resolve-style(current, new) = {
-  if new == auto {
-    return current
-  } else if type(current) != "dictionary" and type(new) != "dictionary" {
-    return new
-  }
-  for (k, v) in new {
-    current.insert(
-      k,
-      if k in current and type(current.at(k)) == "dictionary" and type(v) == "dictionary" {
-        resolve-style(current.at(k), v)
-      } else {
-        v
-      }
-    )
-  }
-  return current
-}
-
 #let resolve-radius(radius) = {
   return if type(radius) == "array" {radius} else {(radius, radius)}
 }

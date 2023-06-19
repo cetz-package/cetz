@@ -4,6 +4,7 @@
 #import "cmd.typ"
 #import "util.typ"
 #import "coordinate.typ"
+#import "styles.typ"
 
 // Compute bounding box of points
 #let bounding-box(pts, init: none) = {
@@ -47,7 +48,7 @@
   }
 
   if "style" in element {
-    ctx.style = util.resolve-style(
+    ctx.style = styles.resolve(
       ctx.style,
       if type(element.style) == "function" {
         (element.style)(ctx)
@@ -128,7 +129,6 @@
     }
   }
 
-
   // Add default anchors
   if bounds != none {
     let mid-x = (bounds.l + bounds.r) / 2
@@ -149,7 +149,7 @@
     anchors.above = anchors.top
     anchors.below = anchors.bottom
   }
-  
+
   // Query element for (relative) anchors
   let custom-anchors = if "custom-anchors-ctx" in element {
     (element.custom-anchors-ctx)(ctx, ..coordinates)
@@ -275,19 +275,7 @@
 
     em-size: measure(box(width: 1em, height: 1em), st),
 
-    style: (
-      fill: none,
-      stroke: black + 1pt,
-      mark: (
-        size: .15,
-        start: none,
-        end: none,
-        fill: auto,
-        stroke: auto
-      ),
-      content-padding: 0em,
-      radius: 1
-    ),
+    style: styles.default,
 
     // Current transform
     transform: matrix.mul-mat(

@@ -5,6 +5,7 @@
 #import "path-util.typ"
 #import "coordinate.typ"
 // #import "collisions.typ"
+#import "styles.typ"
 
 #let typst-rotate = rotate
 
@@ -166,7 +167,11 @@
 }
 
 #let line(..pts-style, close: false, name: none) = {
+
+  // Extra positional arguments from the pts-style sink are interpreted as coordinates.
   let (pts, style) = (pts-style.pos(), pts-style.named())
+
+  // Coordinate check
   let t = pts.map(coordinate.resolve-system)
   ((
     name: name,
@@ -180,25 +185,23 @@
     },
     render: (ctx, ..pts) => {
       let pts = pts.pos()
-      let style = util.resolve-style(ctx.style, style)
-      cmd.path(close: close, ("line", ..pts.pos()),
-               fill: style.fill, stroke: style.stroke)
+      let style = styles.resolve(ctx.style, style, root: "line")
+      cmd.path(close: close, ("line", ..pts.pos()), fill: style.fill, stroke: style.stroke)
 
       if style.mark.start != none or style.mark.end != none {
-        let (fill, stroke) = (util.resolve-style(style.fill, style.mark.fill), util.resolve-style(style.stroke, style.mark.stroke))
-        if style.mark.start != none {
+        let style = style.mark
+        if style.start != none {
           let (start, end) = (pts.at(1), pts.at(0))
           let n = vector.scale(vector.norm(vector.sub(end, start)),
-                              style.mark.size)
+                              style.size)
           start = vector.sub(end, n)
-          cmd.arrow-head(start, end, style.mark.start, fill: fill, stroke: stroke)  
+          cmd.arrow-head(start, end, style.start, fill: style.fill, stroke: style.stroke)  
         }
-        if style.mark.end != none {
+        if style.end != none {
           let (start, end) = (pts.at(-2), pts.at(-1))
-          let n = vector.scale(vector.norm(vector.sub(end, start)),
-                              style.mark.size)
+          let n = vector.scale(vector.norm(vector.sub(end, start)), style.size)
           start = vector.sub(end, n)
-          cmd.arrow-head(start, end, style.mark.end, fill: fill, stroke: stroke)
+          cmd.arrow-head(start, end, style.end, fill: style.fill, stroke: style.stroke)
         }
       }
     }
@@ -206,14 +209,19 @@
 }
 
 #let rect(a, b, name: none, anchor: none, ..style) = {
+  // Coordinate check
   let t = (a, b).map(coordinate.resolve-system)
+
+  // No extra positional arguments from the style sink
+  assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
+  let style = style.named()
   ((
     name: name,
     default-anchor: "center",
     anchor: anchor,
     coordinates: (a, b),
     render: (ctx, a, b) => {
-      let style = util.resolve-style(ctx.style, style.named())
+      let style = styles.resolve(ctx.style, style, root: "rect")
       let (x1, y1, z1) = a
       let (x2, y2, z2) = b
       cmd.path(close: true, fill: style.fill, stroke: style.stroke,
@@ -223,9 +231,17 @@
   ),)
 }
 
-#let arc(position, start: auto, stop: auto, delta: auto, mode: "OPEN", name: none, anchor: none, ..style) = {
+#let arc(position, start: auto, stop: auto, delta: auto, name: none, anchor: none, ..style) = {
+  // Start, stop, delta check
   assert((start,stop,delta).filter(it=>{it == auto}).len() == 1, message: "Exactly two of three options start, stop and delta should be defined.")
+
+  // No extra positional arguments from the style sink
+  assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
+  let style = style.named()
+
+  // Coordinate check
   let t = coordinate.resolve-system(position)
+
   let start-angle = if start == auto {stop - delta} else {start}
   let stop-angle = if stop == auto {start + delta} else {stop}
   ((
@@ -234,7 +250,7 @@
     default-anchor: "start",
     coordinates: (position,),
     custom-anchors-ctx: (ctx, position) => {
-      let style = util.resolve-style(ctx.style, style.named())
+      let style = styles.resolve(ctx.style, style, root: "arc")
       let (x, y, z) = position
       let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
       (
@@ -252,25 +268,28 @@
       )
     },
     render: (ctx, position) => {
-      let style = util.resolve-style(ctx.style, style.named())
+      let style = styles.resolve(ctx.style, style, root: "arc")
       let (x, y, z) = position
       let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
-      cmd.arc(x, y, z, start-angle, stop-angle, rx, ry, mode: mode, fill: style.fill, stroke: style.stroke)
+      cmd.arc(x, y, z, start-angle, stop-angle, rx, ry, mode: style.mode, fill: style.fill, stroke: style.stroke)
     }
   ),)
 }
 
 // Render ellipse
-// @param center  Center coordinate
-// @param radius  Radius or array of x and y radius
 #let circle(center, name: none, anchor: none, ..style) = {
+  // No extra positional arguments from the style sink
+  assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
+  let style = style.named()
+
+  // Coordinate check
   let t = coordinate.resolve-system(center)
   ((
     name: name,
     coordinates: (center, ),
     anchor: anchor,
     render: (ctx, center) => {
-      let style = util.resolve-style(ctx.style, style.named())
+      let style = styles.resolve(ctx.style, style, root: "circle")
       let (x, y, z) = center
       let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
       cmd.ellipse(x, y, z, rx, ry, fill: style.fill, stroke: style.stroke)
@@ -289,6 +308,11 @@
   name: none,
   ..style
   ) = {
+  // No extra positional arguments from the style sink
+  assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
+  let style = style.named()
+
+  // Coordinate check
   let t = coordinate.resolve-system(pt)
   ((
     name: name,
@@ -297,9 +321,8 @@
     default-anchor: "center",
     render: (ctx, pt) => {
       let (x, y, ..) = pt
-      let style = util.resolve-style(ctx.style, style.named())
-      // let padding = util.resolve-number(ctx, if padding == auto { ctx.style.content-padding } else { padding })
-      let padding = util.resolve-number(ctx, style.content-padding)
+      let style = styles.resolve(ctx.style, style, root: "content")
+      let padding = util.resolve-number(ctx, style.padding)
       let size = measure(ct, ctx.typst-style)
       let tw = size.width / ctx.length 
       let th = size.height / ctx.length
@@ -329,10 +352,15 @@
 /// - end (coordinate): End point
 /// - ..ctrl (coordinate): Control points
 #let bezier(start, end, ..ctrl-style, name: none) = {
+  // Extra positional arguments are treated like control points.
   let (ctrl, style) = (ctrl-style.pos(), ctrl-style.named())
+
+  // Control point check
   let len = ctrl.len()
   assert(len in (1, 2), message: "Bezier curve expects 1 or 2 control points. Got " + str(len))
   let coordinates = (start, end, ..ctrl)
+
+  // Coordiantes check
   let t = coordinates.map(coordinate.resolve-system)
   return ((
     name: name,
@@ -345,7 +373,7 @@
       return a
     },
     render: (ctx, start, end, ..ctrl) => {
-      let style = util.resolve-style(ctx.style, style)
+      let style = styles.resolve(ctx.style, style, root: "bezier")
       ctrl = ctrl.pos()
       cmd.path(
         (if len == 1 { "quadratic" } else { "cubic" }, start, end, ..ctrl),
@@ -447,77 +475,101 @@
 /// - body (any): Body
 /// - close (bool): If true, the path is automatically closed
 /// - name (string): Element name
-#let merge-path(body, close: false, name: none, ..style) = ((
-  name: name,
-  children: body,
-  finalize-children: (ctx, children) => {
-    let segments = ()
-    let pos = none
+#let merge-path(body, close: false, name: none, ..style) = {
+  // No extra positional arguments from the style sink
+  assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
+  let style = style.named()
+  ((
+    name: name,
+    children: body,
+    finalize-children: (ctx, children) => {
+      let segments = ()
+      let pos = none
 
-    let segment-begin = (s) => {
-      return s.at(1)
-    }
-
-    let segment-end = (s) => {
-      let type = s.at(0)
-      if type == "line" {
-        return s.last()
-      } else {
-        return s.at(2)
+      let segment-begin = (s) => {
+        return s.at(1)
       }
-    }
 
-    while children.len() > 0 {
-      
-      let child = children.remove(0)
-      assert("segments" in child,
-             message: "Object must contain path segments")
-      if child.segments.len() == 0 { continue }
-
-      // Revert path order, if end < start
-      //if segments.len() > 0 {
-      //  if (vector.dist(segment-end(child.segments.last()), pos) <
-      //      vector.dist(segment-begin(child.segments.first()), pos)) {
-      //     child.segments = child.segments.rev()
-      //  }
-      //}
-
-      // Connect "jumps" with linear lines to prevent typsts path impl.
-      // from using weird cubic ones.
-      if segments.len() > 0 {
-        let end = segment-end(segments.last())
-        let begin = segment-begin(child.segments.first())
-        if vector.dist(end, begin) > 0 {
-          segments.push(("line", segment-begin(child.segments.first())))
+      let segment-end = (s) => {
+        let type = s.at(0)
+        if type == "line" {
+          return s.last()
+        } else {
+          return s.at(2)
         }
       }
 
-      // Append child
-      segments += child.segments
+      while children.len() > 0 {
+        
+        let child = children.remove(0)
+        assert("segments" in child,
+                message: "Object must contain path segments")
+        if child.segments.len() == 0 { continue }
 
-      // Sort next children by distance
-      pos = segment-end(segments.last())
-      children = children.sorted(key: a => {
-        return vector.len(vector.sub(segment-begin(a.segments.first()), pos))
-      })
-    }
+        // Revert path order, if end < start
+        //if segments.len() > 0 {
+        //  if (vector.dist(segment-end(child.segments.last()), pos) <
+        //      vector.dist(segment-begin(child.segments.first()), pos)) {
+        //     child.segments = child.segments.rev()
+        //  }
+        //}
 
-    let style = util.resolve-style(ctx.style, style.named())
-    cmd.path(..segments, close: close, stroke: style.stroke, fill: style.fill)
-  }
-),)
+        // Connect "jumps" with linear lines to prevent typsts path impl.
+        // from using weird cubic ones.
+        if segments.len() > 0 {
+          let end = segment-end(segments.last())
+          let begin = segment-begin(child.segments.first())
+          if vector.dist(end, begin) > 0 {
+            segments.push(("line", segment-begin(child.segments.first())))
+          }
+
+          // Append child
+          merged += child.coordinates
+
+          // Sort next children by distance
+          pos = merged.last()
+          children = children.sorted(key: a => {
+            calc.min(
+              vector.len(vector.sub(a.coordinates.first(), pos)),
+              vector.len(vector.sub(a.coordinates.last(), pos))
+            )
+          })
+        }
+
+        // Append child
+        segments += child.segments
+
+        // Sort next children by distance
+        pos = segment-end(segments.last())
+        children = children.sorted(key: a => {
+          return vector.len(vector.sub(segment-begin(a.segments.first()), pos))
+        })
+      }
+      
+      let style = styles.resolve(ctx.style, style)
+      cmd.path(..segments, close: close, stroke: style.stroke, fill: style.fill)
+  ),)
+}
 
 // Render shadow of children by rendering them twice
-#let shadow(color: gray, offset-x: .1, offset-y: -.1, body) = ((
-  children: (
-    ..group({
-      fill(color); stroke(color)
-      translate((offset-x, offset-y, 0))
-      body
-    }),
-    ..body,
-  ),
-),)
+#let shadow(body, ..style) = {
+  // No extra positional arguments from the style sink
+  assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
+  let style = style.named()
+  ((
+    children: ctx => {
+      let style = styles.resolve(ctx.style, style, root: "shadow")
+      return (
+      ..group({
+        set-style(fill: style.color, stroke: style.color)
+        translate((style.offset-x, style.offset-y, 0))
+        body
+      }),
+      ..body,
+      )
+    },
+  ),)
+}
 
 // Calculate the intersections of two named paths
 // #let intersections(path-1, path-2, name: "intersection") = {
@@ -547,7 +599,7 @@
     name: name,
     coordinates: (from, to),
     render: (ctx, from, to) => {
-      let style = util.resolve-style(ctx.style, style.named())
+      let style = styles.resolve(ctx.style, style.named())
       let stroke = if help-lines {
         0.2pt + gray
       } else {
