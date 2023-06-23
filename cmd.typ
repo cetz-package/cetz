@@ -29,7 +29,7 @@
 
   // Add a closing segment to make path calculations
   // consider it.
-  if close == true {
+  if close {
     let (s0, sn) = (segments.first(), segments.last())
     segments.push(("line",
                    path-util.segment-end(sn),
@@ -53,10 +53,10 @@
         let type = s.at(0)
         let coordinates = s.slice(1)
         
-        assert(type in ("line", "quad", "cube"),
+        assert(type in ("line", "quadratic", "cubic"),
                message: "Path segments must be of type line, quad or cube")
         
-        if type == "quad" {
+        if type == "quadratic" {
           // TODO: Typst path implementation does not support quadratic
           //       curves.
           // let a = coordinates.at(0)
@@ -75,7 +75,7 @@
             vertices.push(util.bezier-quadratic-pt(a, b, c, i / samples))
           }
           vertices.push(b)
-        } else if type == "cube" {
+        } else if type == "cubic" {
           let a = coordinates.at(0)
           let b = coordinates.at(1)
           let ctrla = relative(a, coordinates.at(2))
@@ -111,14 +111,14 @@
   let bottom = y - ry
 
   path(ctx, fill: fill, stroke: stroke,
-       ("cube", (x, top, z), (right, y, z),
-                (x + m * rx, top, z), (right, y + m * ry, z)),
-       ("cube", (right, y, z), (x, bottom, z),
-                (right, y - m * ry), (x + m * rx, bottom, z)),
-       ("cube", (x, bottom, z), (left, y, z),
-                (x - m * rx, bottom, z), (left, y - m * ry, z)),
-       ("cube", (left, y, z), (x, top, z),
-                (left, y + m * ry, z), (x - m * rx, top, z)))
+       ("cubic", (x, top, z), (right, y, z),
+                 (x + m * rx, top, z), (right, y + m * ry, z)),
+       ("cubic", (right, y, z), (x, bottom, z),
+                 (right, y - m * ry), (x + m * rx, bottom, z)),
+       ("cubic", (x, bottom, z), (left, y, z),
+                 (x - m * rx, bottom, z), (left, y - m * ry, z)),
+       ("cubic", (left, y, z), (x, top, z),
+                 (left, y + m * ry, z), (x - m * rx, top, z)))
 }
 
 #let arc(ctx, x, y, z, start, stop, radius, mode: "OPEN", fill: auto, stroke: auto) = {

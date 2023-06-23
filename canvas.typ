@@ -101,21 +101,13 @@
     for drawable in (element.render)(ctx, ..coordinates) {
       // Transform position to absolute
       drawable.segments = drawable.segments.map(s => {
-        return (s.at(0),) + s.slice(1).map(x => {
-          util.apply-transform(ctx.transform, x)
-        })
+        return (s.at(0),) + s.slice(1).map(util.apply-transform.with(ctx.transform))
       })
 
       if "bounds" not in drawable {
-        let collected-coordinates = ()
-        for s in drawable.segments {
-          collected-coordinates += s.slice(1)
-        }
-        drawable.bounds = collected-coordinates
+        drawable.bounds = drawable.segments.map(s => s.slice(1)).flatten()
       } else {
-        drawable.bounds = drawable.bounds.map(x => {
-          return util.apply-transform(ctx.transform, x)
-        })
+        drawable.bounds = drawable.bounds.map(util.apply-transform.with(ctx.transform));
       }
 
       bounds = bounding-box(drawable.bounds, init: bounds)

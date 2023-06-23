@@ -346,7 +346,7 @@
       ctrl = ctrl.pos()
       cmd.path(
         ctx,
-        (if len == 1 { "quad" } else { "cube" }, start, end, ..ctrl),
+        (if len == 1 { "quadratic" } else { "cubic" }, start, end, ..ctrl),
         fill: fill, stroke: stroke
       )
     }
@@ -360,24 +360,26 @@
 ///     (name: string, pos: float)
 /// - name (string): Element name, uses paths name, if auto
 #let place-anchors(path, ..anchors, name: auto) = {
-  let name = name
-  if name == auto and "name" in path.first() {
-    name = path.first().name
+  let name = if name == auto and "name" in path.first() {
+    path.first().name
+  } else {
+    name
   }
+  assert(type(name) == "string", message: "Name must be of type string")
+
   ((
     name: name,
     children: path,
     custom-anchors-drawables: (drawables) => {
       if drawables.len() == 0 { return () }
 
-      let list = (:)
+      let out = (:)
       let s = drawables.first().segments
       for a in anchors.pos() {
-        if "name" in a {
-          list.insert(a.name, path-util.point-on-path(s, a.pos))
-        }
+        assert("name" in a, message: "Anchor must have a name set")
+        out.insert(a.name, path-util.point-on-path(s, a.pos))
       }
-      return list
+      return out
     },
   ),)
 }
@@ -462,10 +464,6 @@
       }
     }
 
-    let dist = (a, b) => {
-      vector.len(vector.sub(a, b))
-    }
-
     while children.len() > 0 {
       let child = children.remove(0)
       assert("segments" in child,
@@ -474,8 +472,8 @@
 
       // Revert path order, if end < start
       //if segments.len() > 0 {
-      //  if (dist(segment-end(child.segments.last()), pos) <
-      //      dist(segment-begin(child.segments.first()), pos)) {
+      //  if (vector.dist(segment-end(child.segments.last()), pos) <
+      //      vector.dist(segment-begin(child.segments.first()), pos)) {
       //     child.segments = child.segments.rev()
       //  }
       //}
@@ -485,7 +483,7 @@
       if segments.len() > 0 {
         let end = segment-end(segments.last())
         let begin = segment-begin(child.segments.first())
-        if dist(end, begin) > 0 {
+        if vector.dist(end, begin) > 0 {
           segments.push(("line", segment-begin(child.segments.first())))
         }
       }

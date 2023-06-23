@@ -54,6 +54,11 @@
   return v1.enumerate().map(t => t.at(1) - v2.at(t.at(0)))
 }
 
+/// Return distance of vector a and b
+/// - a (vector): Vector a
+/// - b (vector): Vector b
+#let dist(a, b) = len(sub(b, a))
+
 /// Multiply each vector field with number `x`
 #let scale(v, x) = {
   return v.map(c => c * x)

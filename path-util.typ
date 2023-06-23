@@ -4,9 +4,7 @@
 #import "vector.typ"
 
 #let default-samples = 25
-#let ctx-samples(ctx) = {
-  if "samples" in ctx { ctx.samples } else { default-samples }
-}
+#let ctx-samples(ctx) = ctx.at("samples", default: default-samples)
 
 /// Get first position vector of a path segment
 ///
@@ -39,13 +37,13 @@
     let type = s.at(0)
     if type == "line" {
       bounds += s.slice(1)
-    } else if type == "quad" {
+    } else if type == "quadratic" {
       let (a, b, c) = s.slice(1)
       bounds.push(a)
       bounds.push(b)
       bounds += range(1, samples).map(x =>
         util.bezier-quadratic-pt(a, b, c, x / samples))
-    } else if type == "cube" {
+    } else if type == "cubic" {
       let (a, b, c, d) = s.slice(1)
       bounds.push(a)
       bounds.push(b)
@@ -67,13 +65,13 @@
   let pts = ()
   if type == "line" {
     pts = s.slice(1)
-  } else if type == "quad" {
+  } else if type == "quadratic" {
     let (a, b, c) = s.slice(1)
     pts.push(a)
     pts = range(1, samples).map(t =>
       util.bezier-quadratic-pt(a, b, c, t / samples))
     pts.push(b)
-  } else if type == "cube" {
+  } else if type == "cubic" {
     let (a, b, c, d) = s.slice(1)
     pts.push(a)
     pts = range(1, samples).map(t =>
@@ -142,10 +140,10 @@
   let type = s.at(0)
   if type == "line" {
     return point-on-polyline(s, t)
-  } else if type == "quad" {
+  } else if type == "quadratic" {
     let (a, b, c) = s.slice(1)
     return util.bezier-quadratic-pt(a, b, c, t)
-  } else if type == "cube" {
+  } else if type == "cubic" {
     let (a, b, c, d) = s.slice(1)
     return util.bezier-cubic-pt(a, b, c, d, t)
   }
