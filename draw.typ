@@ -328,6 +328,11 @@
   ),)
 }
 
+/// Draw a quadratic or cubic bezier line
+///
+/// - start (coordinate): Start point
+/// - end (coordinate): End point
+/// - ..ctrl (coordinate): Control points
 #let bezier(start, end, ..ctrl, name: none, fill: auto, stroke: auto) = {
   let len = ctrl.pos().len()
   assert(len in (1, 2), message: "Bezier curve expects 1 or 2 control points. Got " + str(len))
@@ -353,6 +358,9 @@
   ),)
 }
 
+/// NOTE: This function is supposed to be REPLACED by a
+///       new coordinate syntax!
+///
 /// Create anchors along a path
 ///
 /// - path (path): Path
@@ -384,6 +392,8 @@
   ),)
 }
 
+/// NOTE: This function is supposed to be removed!
+///
 /// Put marks on a path
 ///
 /// - path (path): Path
