@@ -100,13 +100,14 @@
   if "render" in element {
     for drawable in (element.render)(ctx, ..coordinates) {
       // Transform position to absolute
-      drawable.coordinates = drawable.coordinates.map(x =>
-        util.apply-transform(ctx.transform, x))
+      drawable.segments = drawable.segments.map(s => {
+        return (s.at(0),) + s.slice(1).map(util.apply-transform.with(ctx.transform))
+      })
 
       if "bounds" not in drawable {
-        drawable.bounds = drawable.coordinates
+        drawable.bounds = drawable.segments.map(s => s.slice(1)).flatten()
       } else {
-        drawable.bounds = drawable.bounds.map(x => util.apply-transform(ctx.transform, x))
+        drawable.bounds = drawable.bounds.map(util.apply-transform.with(ctx.transform));
       }
 
       bounds = bounding-box(drawable.bounds, init: bounds)
@@ -137,9 +138,8 @@
     anchors.above = anchors.top
     anchors.below = anchors.bottom
   }
-
   
-  // Query element for anchors
+  // Query element for (relative) anchors
   let custom-anchors = if "custom-anchors-ctx" in element {
     (element.custom-anchors-ctx)(ctx, ..coordinates)
   } else if "custom-anchors" in element {
@@ -148,6 +148,13 @@
   if custom-anchors != none {
     for (k, a) in custom-anchors {
       anchors.insert(k, util.apply-transform(ctx.transform, a)) // Anchors are absolute!
+    }
+  }
+
+  // Query (already absolute) anchors depending on drawable
+  if "custom-anchors-drawables" in element {
+    for (k, a) in (element.custom-anchors-drawables)(drawables) {
+      anchors.insert(k, a)
     }
   }
 
@@ -164,8 +171,8 @@
           message: "Anchor '" + element.anchor + "' not found in " + repr(anchors))
     let translate = vector.sub(anchors.default, anchors.at(element.anchor))
     for (i, d) in drawables.enumerate() {
-        drawables.at(i).coordinates = d.coordinates.map(
-          c => vector.add(translate, c))
+        drawables.at(i).segments = d.segments.map(
+          s => (s.at(0),) + s.slice(1).map(c => vector.add(translate, c)))
     }
 
     for (k, a) in anchors {
@@ -208,12 +215,11 @@
         stroke: red, 
         fill: none, 
         close: true, 
-        
-        (bounds.l, bounds.t),
-        (bounds.r, bounds.t),
-        (bounds.r, bounds.b),
-        (bounds.l, bounds.b),
-        ).first()
+        ("line", (bounds.l, bounds.t),
+                 (bounds.r, bounds.t),
+                 (bounds.r, bounds.b),
+                 (bounds.l, bounds.b))
+      ).first()
     )
   }
 
@@ -304,10 +310,12 @@
   )
   box(stroke: if debug {green}, width: width, height: height, fill: background, {
     for d in draw-cmds {
-      d.coordinates = d.coordinates.map(v => 
-        util.apply-transform(transform, v
-          ).slice(0,2).map(x => ctx.length * x)
-        )
+      d.segments = d.segments.map(s => {
+        return (s.at(0),) + s.slice(1).map(v => {
+          return util.apply-transform(transform, v)
+            .slice(0,2).map(x => ctx.length * x)
+        })
+      })
       (d.draw)(d)
     }
   })

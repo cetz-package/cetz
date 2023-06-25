@@ -41,7 +41,7 @@
     v2 = as-vec(v2)
   }
   assert(dim(v1) == dim(v2), message: "Cannot add vectors, " + repr(v1) + " and " + repr(v2) + " are not of the same dimensions.")
-  return v1.enumerate().map(t => t.at(1) + v2.at(t.at(0)))
+  return v1.zip(v2).map(((a, b)) => a + b)
 }
 
 /// Substract two vectors of the same dimension
@@ -51,28 +51,25 @@
     v2 = as-vec(v2)
   }
   assert(dim(v1) == dim(v2), message: "Cannot subtract vectors, " + repr(v1) + " and " + repr(v2) + " are not of the same dimensions.")
-  return v1.enumerate().map(t => t.at(1) - v2.at(t.at(0)))
+  return v1.zip(v2).map(((a, b)) => a - b)
 }
+
+/// Return distance of vector a and b
+/// - a (vector): Vector a
+/// - b (vector): Vector b
+#let dist(a, b) = len(sub(b, a))
 
 /// Multiply each vector field with number `x`
-#let scale(v, x) = {
-  return v.map(c => c * x)
-}
+#let scale(v, x) = v.map(s => s * x)
 
 /// Divide each vector field by number `x`
-#let div(v, x) = {
-  return v.map(c => c / x)
-}
+#let div(v, x) = v.map(s => s / x)
 
 /// Negate each vector field
-#let neg(v) = {
-  return scale(v, -1)
-}
+#let neg(v) = scale(v, -1)
 
 /// Normalize vector (divide by its length)
-#let norm(v) = {
-  return div(v, len(v))
-}
+#let norm(v) = div(v, len(v))
 
 /// Calculate dot product between two vectors `v1` and `v2`
 #let dot(v1, v2) = {

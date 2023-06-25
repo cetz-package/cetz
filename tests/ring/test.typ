@@ -7,9 +7,11 @@
     let ring(start, end, radius) = merge-path({
       arc((0, 0), start: start, stop: end, radius: radius,
           anchor: "origin", name: "outer")
-      arc("outer.origin", start: start, stop: end, radius: radius - .2,
+
+      arc("outer.origin", start: end, delta: -(end - start), radius: radius - .2,
           anchor: "origin", name: "inner")
-      line("outer.end", "inner.end")
+
+      line("outer.end", "inner.start")
     }, close: true)
 
     stroke(black)

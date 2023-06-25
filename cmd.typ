@@ -1,18 +1,20 @@
 #import "matrix.typ"
 #import "vector.typ"
+#import "util.typ"
+#import "path-util.typ"
 
 #let typst-path = path
 
 #let content(ctx, x, y, w, h, c) = {
   ((
     type: "content",
-    coordinates: ((x,y),),
+    segments: (("pt", (x,y)),),
     bounds: (
       (x + w/2, y - h/2),
       (x - w/2, y + h/2)
     ),
     draw: (self) => {
-      let (x, y) = self.coordinates.first()
+      let (x, y) = self.segments.first().at(1)
       place(
         dx: x, dy: y, 
         c
@@ -21,35 +23,68 @@
   ),)
 }
 
-#let path(ctx, close: false, fill: auto, stroke: auto, ctrl: 0,
-          ..vertices) = {
+#let path(ctx, close: false, fill: auto, stroke: auto,
+           ..segments) = {
+  let segments = segments.pos()
+
+  // Add a closing segment to make path calculations
+  // consider it.
+  if close {
+    let (s0, sn) = (segments.first(), segments.last())
+    segments.push(("line",
+                   path-util.segment-end(sn),
+                   path-util.segment-begin(s0)))
+  }
+
   ((
     type: "path",
     fill: if fill == auto { ctx.fill } else { fill },
     stroke: if stroke == auto { ctx.stroke } else { stroke },
     close: close,
-    ctrl: ctrl,
-    coordinates: vertices.pos(),
+    segments: segments,
+    bounds: path-util.bounds(segments),
     draw: (self) => {
-      let pts = ()
       let relative = (orig, c) => {
         return vector.sub(c, orig)
       }
-      if self.ctrl == 0 {
-        pts = self.coordinates
-      } else if self.ctrl == 1 {
-        for i in range(0, int(self.coordinates.len() / 2)) {
-          i *= 2
-          let pt = self.coordinates.at(i)
-          pts.push((pt, relative(pt, self.coordinates.at(i + 1))))
-        }
-      } else if self.ctrl == 2 {
-        for i in range(0, int(self.coordinates.len() / 3)) {
-          i *= 3
-          let pt = self.coordinates.at(i)
-          pts.push((pt,
-                    relative(pt, self.coordinates.at(i + 1)),
-                    relative(pt, self.coordinates.at(i + 2))))
+
+      let vertices = ()
+      for s in self.segments {
+        let type = s.at(0)
+        let coordinates = s.slice(1)
+        
+        assert(type in ("line", "quadratic", "cubic"),
+               message: "Path segments must be of type line, quad or cube")
+        
+        if type == "quadratic" {
+          // TODO: Typst path implementation does not support quadratic
+          //       curves.
+          // let a = coordinates.at(0)
+          // let b = coordinates.at(1)
+          // let ctrla = relative(a, coordinates.at(2))
+          // let ctrlb = relative(b, coordinates.at(2))
+          // vertices.push((a, (0em, 0em), ctrla))
+          // vertices.push((b, (0em, 0em), (0em, 0em)))
+          let a = coordinates.at(0)
+          let b = coordinates.at(1)
+          let c = coordinates.at(2)
+
+          let samples = path-util.ctx-samples(ctx)
+          vertices.push(a)
+          for i in range(0, samples) {
+            vertices.push(util.bezier-quadratic-pt(a, b, c, i / samples))
+          }
+          vertices.push(b)
+        } else if type == "cubic" {
+          let a = coordinates.at(0)
+          let b = coordinates.at(1)
+          let ctrla = relative(a, coordinates.at(2))
+          let ctrlb = relative(b, coordinates.at(3))
+
+          vertices.push((a, (0em, 0em), ctrla))
+          vertices.push((b, ctrlb, (0em, 0em)))
+        } else {
+          vertices += coordinates
         }
       }
 
@@ -58,7 +93,7 @@
           stroke: self.stroke, 
           fill: self.fill,
           closed: self.close, 
-          ..pts
+          ..vertices
           )
         )
     },
@@ -74,11 +109,16 @@
   let right = x + rx
   let top = y + ry
   let bottom = y - ry
-  path(ctx, close: true, ctrl: 2, fill: fill, stroke: stroke,
-       (x, top, z), (x - m * rx, top, z), (x + m * rx, top, z),
-       (right, y, z), (right, y + m * ry, z), (right, y - m * ry, z),
-       (x, bottom, z), (x + m * rx, bottom, z), (x - m * rx, bottom, z),
-       (left, y, z), (left, y - m * ry, z), (left, y + m * ry, z),)
+
+  path(ctx, fill: fill, stroke: stroke,
+       ("cubic", (x, top, z), (right, y, z),
+                 (x + m * rx, top, z), (right, y + m * ry, z)),
+       ("cubic", (right, y, z), (x, bottom, z),
+                 (right, y - m * ry), (x + m * rx, bottom, z)),
+       ("cubic", (x, bottom, z), (left, y, z),
+                 (x - m * rx, bottom, z), (left, y - m * ry, z)),
+       ("cubic", (left, y, z), (x, top, z),
+                 (left, y + m * ry, z), (x - m * rx, top, z)))
 }
 
 #let arc(ctx, x, y, z, start, stop, radius, mode: "OPEN", fill: auto, stroke: auto) = {
@@ -86,7 +126,7 @@
   path(ctx,
     fill: fill, stroke: stroke,
     close: mode != "OPEN",
-    ..range(0, samples+1).map(i => {
+    ("line", ..range(0, samples+1).map(i => {
       let angle = start + (stop - start) * i / samples
       (
         x - radius*calc.cos(start) + radius*calc.cos(angle),
@@ -98,7 +138,7 @@
        (x, y, z),)
     } else {
       ()
-    }
+    })
   )
 }
 
@@ -118,12 +158,13 @@
       let from = vector.add(from, vector.scale(dir, outset))
       let to = vector.add(to, vector.scale(dir, outset))
       let n = vector.scale(odir, .4)
-      (from, (vector.add(from, n)), to, (vector.add(from, vector.neg(n))))
+      (("line", from, (vector.add(from, n)),
+                to, (vector.add(from, vector.neg(n)))),)
   }
 
   let bar() = {
       let n = vector.scale(odir, .5)
-      (vector.add(to, n), vector.sub(to, n))
+      (("line", vector.add(to, n), vector.sub(to, n)),)
   }
 
   let diamond() = {
@@ -131,38 +172,35 @@
       let to = vector.add(to, vector.scale(dir, .5))
       let n = vector.add(vector.scale(dir, .5),
                          vector.scale(odir, .5))
-      (from, (vector.add(from, n)), to, (vector.add(to, vector.neg(n))))
+      (("line", from, (vector.add(from, n)),
+                to, (vector.add(to, vector.neg(n)))),)
   }
 
   let circle() = {
-      let from = vector.add(from, vector.scale(dir, .5))
-      let to = vector.add(to, vector.scale(dir, .5))
-      let c = vector.add(from, vector.scale(dir, .5))
-      let pts = ()
-      let r = vector.len(dir) / 2
-      for a in range(0, 360, step: 20) {
-          pts.push((c.at(0) + calc.cos(a * 1deg) * r,
-                    c.at(1) + calc.sin(a * 1deg) * r,
-                    c.at(2)))
-      }
-      return pts
+    let from = vector.add(from, vector.scale(dir, .5))
+    let to = vector.add(to, vector.scale(dir, .5))
+    let c = vector.add(from, vector.scale(dir, .5))
+    let pts = ()
+    let r = vector.len(dir) / 2
+
+    return ellipse(ctx, c.at(0), c.at(1), c.at(2), r, r).first().segments
   }
   path(
     ctx,
     ..if symbol == ">" {
-    triangle()
-  } else if symbol == "<" {
-    triangle(reverse: true)
-  } else if symbol == "|" {
-    bar()
-  } else if symbol == "<>" {
-    diamond()
-  } else if symbol == "o" {
-    circle()
-  },
-  close: symbol != "|",
-  fill: fill,
-  stroke: stroke,
+      triangle()
+    } else if symbol == "<" {
+      triangle(reverse: true)
+    } else if symbol == "|" {
+      bar()
+    } else if symbol == "<>" {
+      diamond()
+    } else if symbol == "o" {
+      circle()
+    },
+    close: symbol != "|",
+    fill: fill,
+    stroke: stroke,
   )
 }
 

@@ -2,6 +2,7 @@
 #import "matrix.typ"
 #import "cmd.typ"
 #import "util.typ"
+#import "path-util.typ"
 #import "coordinate.typ"
 // #import "collisions.typ"
 
@@ -193,7 +194,8 @@
       )
     },
     render: (ctx, ..pts) => {
-      cmd.path(ctx, close: close, ..pts, fill: fill, stroke: stroke)
+      cmd.path(ctx, close: close, ("line", ..pts.pos()),
+               fill: fill, stroke: stroke)
 
       let mark-size = if mark-size != auto {mark-size} else {ctx.mark-size}
       if mark-begin != none {
@@ -224,7 +226,9 @@
     render: (ctx, a, b) => {
       let (x1, y1, z1) = a
       let (x2, y2, z2) = b
-      cmd.path(ctx, close: true, (x1, y1, z1), (x2, y1, z2), (x2, y2, z2), (x1, y2, z1), fill: fill, stroke: stroke)
+      cmd.path(ctx, close: true, fill: fill, stroke: stroke,
+              ("line", (x1, y1, z1), (x2, y1, z2),
+                       (x2, y2, z2), (x1, y2, z1)))
     },
   ),)
 }
@@ -324,14 +328,18 @@
   ),)
 }
 
-#let bezier(start, end, ..ctrl, samples: 100, name: none, fill: auto, stroke: auto) = {
+/// Draw a quadratic or cubic bezier line
+///
+/// - start (coordinate): Start point
+/// - end (coordinate): End point
+/// - ..ctrl (coordinate): Control points
+#let bezier(start, end, ..ctrl, name: none, fill: auto, stroke: auto) = {
   let len = ctrl.pos().len()
   assert(len in (1, 2), message: "Bezier curve expects 1 or 2 control points. Got " + str(len))
-  let coordinates = (start, end, ..ctrl.pos())
-  let t = coordinates.map(coordinate.resolve-system)
+
   return ((
     name: name,
-    coordinates: coordinates,
+    coordinates: (start, end, ..ctrl.pos()),
     custom-anchors: (start, end, ..ctrl) => {
       let a = (start: start, end: end)
       for (i, c) in ctrl.pos().enumerate() {
@@ -341,56 +349,167 @@
     },
     render: (ctx, start, end, ..ctrl) => {
       ctrl = ctrl.pos()
-      let f = if len == 1 {
-        t => util.bezier-quadratic-pt(start, end, ctrl.first(), t)
-      } else {
-        t => util.bezier-cubic-pt(start, end, ctrl.first(), ctrl.last(), t)
-      }
       cmd.path(
         ctx,
-        ..(
-          start,
-          ..range(1, samples).map(i => f(i/samples)),
-          end
-        ), 
+        (if len == 1 { "quadratic" } else { "cubic" }, start, end, ..ctrl),
         fill: fill, stroke: stroke
       )
     }
   ),)
 }
 
-// Merge multiple paths
-#let merge-path(body, close: false, fill: auto, stroke: auto) = ((
+/// NOTE: This function is supposed to be REPLACED by a
+///       new coordinate syntax!
+///
+/// Create anchors along a path
+///
+/// - path (path): Path
+/// - anchors (positional): Dictionaries of the format:
+///     (name: string, pos: float)
+/// - name (string): Element name, uses paths name, if auto
+#let place-anchors(path, ..anchors, name: auto) = {
+  let name = if name == auto and "name" in path.first() {
+    path.first().name
+  } else {
+    name
+  }
+  assert(type(name) == "string", message: "Name must be of type string")
+
+  ((
+    name: name,
+    children: path,
+    custom-anchors-drawables: (drawables) => {
+      if drawables.len() == 0 { return () }
+
+      let out = (:)
+      let s = drawables.first().segments
+      for a in anchors.pos() {
+        assert("name" in a, message: "Anchor must have a name set")
+        out.insert(a.name, path-util.point-on-path(s, a.pos))
+      }
+      return out
+    },
+  ),)
+}
+
+/// NOTE: This function is supposed to be removed!
+///
+/// Put marks on a path
+///
+/// - path (path): Path
+/// - marks (positional): Array of dictionaries of the format:
+///     (mark: string,
+///      pos: float,
+///      scale: float,
+///      stroke: stroke,
+///      fill: fill)
+#let place-marks(path,
+                 ..marks,
+                 size: auto,
+                 fill: auto,
+                 stroke: auto,
+                 name: none) = {
+((
+  name: name,
+  children: path,
+  custom-anchors-drawables: (drawables) => {
+    if drawables.len() == 0 { return () }
+
+    let anchors = (:)
+    let s = drawables.first().segments
+    for m in marks.pos() {
+      if "name" in m {
+        anchors.insert(m.name, path-util.point-on-path(s, m.pos))
+      }
+    }
+    return anchors
+  },
+  finalize-children: (ctx, children) => {
+    let size = if size != auto { size } else { ctx.mark-size }
+
+    let p = children.first()
+    (p,);
+
+    for m in marks.pos() {
+      let scale = m.at("scale", default: size)
+      let fill = m.at("fill", default: fill)
+      let stroke = m.at("stroke", default: stroke)
+
+      let (pt, dir) = path-util.direction(p.segments, m.pos, scale: scale)
+      if pt != none {
+        cmd.arrow-head(
+          ctx, vector.add(pt, dir), pt, m.mark, fill: fill, stroke: stroke)
+      }
+    }
+  }
+),)
+}
+
+/// Merge multiple paths
+///
+/// - body (any): Body
+/// - close (bool): If true, the path is automatically closed
+/// - name (string): Element name
+#let merge-path(body,
+                close: false,
+                name: none,
+                fill: auto,
+                stroke: auto) = ((
+  name: name,
   children: body,
   finalize-children: (ctx, children) => {
-    let merged = ()
+    let segments = ()
     let pos = none
+
+    let segment-begin = (s) => {
+      return s.at(1)
+    }
+
+    let segment-end = (s) => {
+      let type = s.at(0)
+      if type == "line" {
+        return s.last()
+      } else {
+        return s.at(2)
+      }
+    }
+
     while children.len() > 0 {
       let child = children.remove(0)
-      assert(child.ctrl == 0, message: "FIXME: Bezier paths can not be merged!")
+      assert("segments" in child,
+             message: "Object must contain path segments")
+      if child.segments.len() == 0 { continue }
 
       // Revert path order, if end < start
-      if merged.len() > 0 {
-        if (vector.len(vector.sub(child.coordinates.last(), pos)) <
-            vector.len(vector.sub(child.coordinates.first(), pos))) {
-           child.coordinates = child.coordinates.rev()
+      //if segments.len() > 0 {
+      //  if (vector.dist(segment-end(child.segments.last()), pos) <
+      //      vector.dist(segment-begin(child.segments.first()), pos)) {
+      //     child.segments = child.segments.rev()
+      //  }
+      //}
+
+      // Connect "jumps" with linear lines to prevent typsts path impl.
+      // from using weird cubic ones.
+      if segments.len() > 0 {
+        let end = segment-end(segments.last())
+        let begin = segment-begin(child.segments.first())
+        if vector.dist(end, begin) > 0 {
+          segments.push(("line", segment-begin(child.segments.first())))
         }
       }
 
       // Append child
-      merged += child.coordinates
+      segments += child.segments
 
       // Sort next children by distance
-      pos = merged.last()
+      pos = segment-end(segments.last())
       children = children.sorted(key: a => {
-        calc.min(
-          vector.len(vector.sub(a.coordinates.first(), pos)),
-          vector.len(vector.sub(a.coordinates.last(), pos))
-        )
+        return vector.len(vector.sub(segment-begin(a.segments.first()), pos))
       })
     }
 
-    return cmd.path(ctx, ..merged, close: close, stroke: stroke, fill: fill)
+    cmd.path(ctx, ..segments,
+             close: close, stroke: stroke, fill: fill)
   }
 ),)
 
@@ -452,7 +571,7 @@
         for x in range(int((to.at(0) - from.at(0)) / x-step)+1) {
           x *= x-step
           x += from.at(0)
-          cmd.path(ctx, (x, from.at(1)), (x, to.at(1)), fill: fill, stroke: stroke)
+          cmd.path(ctx, ("line", (x, from.at(1)), (x, to.at(1))), fill: fill, stroke: stroke)
         }
       }
 
@@ -460,7 +579,7 @@
         for y in range(int((to.at(1) - from.at(1)) / y-step)+1) {
           y *= y-step
           y += from.at(1)
-          cmd.path(ctx, (from.at(0), y), (to.at(0), y), fill: fill, stroke: stroke)
+          cmd.path(ctx, ("line", (from.at(0), y), (to.at(0), y)), fill: fill, stroke: stroke)
         }
       }
     }
