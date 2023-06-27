@@ -8,6 +8,8 @@
 #let content(ctx, x, y, w, h, c) = {
   ((
     type: "content",
+    // pass: "pass",
+    // children : c.at("children", default : ()),
     segments: (("pt", (x,y)),),
     bounds: (
       (x + w/2, y - h/2),
