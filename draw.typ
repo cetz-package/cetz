@@ -283,6 +283,57 @@
   ),)
 }
 
+// this is used to retrieve content from
+// it's representation (repr(ct))
+#let parse_eval(str) = {
+  let res = str.replace("body: ","")
+  if str.contains("sequence") {
+    panic("parsing of sequence is not supported yet")
+  }
+  eval(res)
+}
+
+// this is meant to be called inside of content blocks, meaning it's going to get coerced in content and retrieved later with parse_eval
+// Todo check here for what cannot be parsed later for better errors
+#let node(ct, name : none) = {
+  if name == none {
+    if not ct.has("text") {
+      panic("name must be specified in node call")
+    }
+    name = ct.text
+  }
+  (
+    type: "node", 
+    name : name, 
+    ct : ct
+    //TODO this is why it's useful, this should be used later to modify the context adding the name as an anchor with bounds
+    // bounds : measure(...)
+    )
+}
+
+
+#let is_node(ct) =  {
+  ct.has("text") and ct.text.replace(" ","").replace("\n","").starts-with("(type:\"node\"")
+}
+
+// this takes a content possibly containing nodes and shows the content with the nodes simply displayed
+// not every kind of content can be accepted, see parse_eval
+#let hide_nodes(ct) = {
+  if not ct.has("children") {
+    return ct
+  }
+
+  ct.children.map( 
+    x => if is_node(x) {
+      parse_eval(x.text).ct
+    } else { x }
+    ).join()
+}
+
+// returns a list of the nodes that were included in the content
+#let get_nodes(ct) = {
+  ct.at("children", default : ()).filter(x => is_node(x)).map(x => parse_eval(x.text))
+}
 // Render content
 // NOTE: Content itself is not transformed by the canvas transformations!
 //       native transformation matrix support from typst would be required.
@@ -295,12 +346,13 @@
   name: none
   ) = {
   let t = coordinate.resolve-system(pt)
+  let save_ct = if ct.at("children", default : ()).any(x => is_node(x)) {ct} // we don't want to store the content for nothing, it's used only if there are nodes
   ((
     name: name,
     coordinates: (pt,),
     anchor: anchor,
     default-anchor: "center",
-    // children : ct.at("children", default : ()),
+    ct : save_ct,
     render: (ctx, pt) => {
       let (x, y, ..) = pt
 
