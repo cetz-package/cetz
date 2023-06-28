@@ -66,7 +66,7 @@
           let b = coordinates.at(1)
           let c = coordinates.at(2)
 
-          let samples = path-util.ctx-samples(ctx)
+          let samples = path-util.ctx-samples((:)) //(ctx)
           vertices.push(a)
           for i in range(0, samples) {
             vertices.push(util.bezier-quadratic-pt(a, b, c, i / samples))
@@ -180,7 +180,7 @@
     let pts = ()
     let r = vector.len(dir) / 2
 
-    return ellipse(ctx, c.at(0), c.at(1), c.at(2), r, r).first().segments
+    return ellipse(c.at(0), c.at(1), c.at(2), r, r).first().segments
   }
   path(
     ..if symbol == ">" {

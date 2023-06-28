@@ -186,7 +186,7 @@
     render: (ctx, ..pts) => {
       let pts = pts.pos()
       let style = styles.resolve(ctx.style, style, root: "line")
-      cmd.path(close: close, ("line", ..pts.pos()), fill: style.fill, stroke: style.stroke)
+      cmd.path(close: close, ("line", ..pts), fill: style.fill, stroke: style.stroke)
 
       if style.mark.start != none or style.mark.end != none {
         let style = style.mark
@@ -364,7 +364,7 @@
   let t = coordinates.map(coordinate.resolve-system)
   return ((
     name: name,
-    coordinates: (start, end, ..ctrl.pos()),
+    coordinates: (start, end, ..ctrl),
     custom-anchors: (start, end, ..ctrl) => {
       let a = (start: start, end: end)
       for (i, c) in ctrl.pos().enumerate() {
@@ -450,7 +450,7 @@
     return anchors
   },
   finalize-children: (ctx, children) => {
-    let size = if size != auto { size } else { ctx.mark-size }
+    let size = if size != auto { size } else { ctx.style.mark.size }
 
     let p = children.first()
     (p,);
@@ -462,8 +462,7 @@
 
       let (pt, dir) = path-util.direction(p.segments, m.pos, scale: scale)
       if pt != none {
-        cmd.arrow-head(
-          ctx, vector.add(pt, dir), pt, m.mark, fill: fill, stroke: stroke)
+        cmd.arrow-head(vector.add(pt, dir), pt, m.mark, fill: fill, stroke: stroke)
       }
     }
   }
@@ -522,18 +521,6 @@
           if vector.dist(end, begin) > 0 {
             segments.push(("line", segment-begin(child.segments.first())))
           }
-
-          // Append child
-          merged += child.coordinates
-
-          // Sort next children by distance
-          pos = merged.last()
-          children = children.sorted(key: a => {
-            calc.min(
-              vector.len(vector.sub(a.coordinates.first(), pos)),
-              vector.len(vector.sub(a.coordinates.last(), pos))
-            )
-          })
         }
 
         // Append child
@@ -548,6 +535,7 @@
       
       let style = styles.resolve(ctx.style, style)
       cmd.path(..segments, close: close, stroke: style.stroke, fill: style.fill)
+    }
   ),)
 }
 
