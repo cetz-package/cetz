@@ -1,4 +1,5 @@
 #import "canvas.typ": canvas
+#import "styles.typ"
 
 #let canvas-background = gray.lighten(75%)
 
@@ -34,11 +35,6 @@
   
 }
 
-#let br() = {
-  v(0.5cm)
-  line(length: 100%)
-}
-
 #set page(
   numbering: "1/1",
   header: align(right)[The `canvas` package],
@@ -46,16 +42,15 @@
 
 #set heading(numbering: "1.")
 #set terms(indent: 1em)
+#show link: set text(blue)
+
+#let STYLING = heading(level: 4, numbering: none)[Styling]
 
 #align(center, text(16pt)[*The `canvas` package*])
 
-#let linkurl(url, t) = {
-  link(url)[#underline(text(fill: blue, t))]
-}
-
 #align(center)[
-  #linkurl("https://github.com/johannes-wolf", "Johannes Wolf") and #linkurl("https://github.com/fenjalien","fenjalien") \
-  #linkurl("https://github.com/johannes-wolf/typst-canvas", "https://github.com/johannes-wolf/typst-canvas")
+  #link("https://github.com/johannes-wolf")[Johannes Wolf] and #link("https://github.com/fenjalien")[fenjalien] \
+  https://github.com/johannes-wolf/typst-canvas
 ]
 
 #set par(justify: true)
@@ -65,7 +60,7 @@
 
 = Introduction
 
-This package provides a way to draw stuff using a similar API to #linkurl("https://processing.org/", "Processing") but with relative coordinates and anchors from #linkurl("https://tikz.dev/", "Tikz"). You also won't have to worry about accidentally drawing over other content as the canvas will automatically resize. And remember: up is positive!
+This package provides a way to draw stuff using a similar API to #link("https://processing.org/")[Processing] but with relative coordinates and anchors from #link("https://tikz.dev/")[Ti#[_k_]Z]. You also won't have to worry about accidentally drawing over other content as the canvas will automatically resize. And remember: up is positive!
 
 = Usage
 
@@ -148,35 +143,149 @@ Elements can be placed relative to their own anchors.
 #def-arg("body", none, [A code block in which functions from `draw.typ` have been called.])
 
 == Styling <styling>
-The fill and stroke of drawn elements can be set globally by using the `fill(color)` and `stroke(stroke)` functions. See the fill and stroke parameters of Typst's path function to see the types accepted (#text(blue)[https://typst.app/docs/reference/visualize/path/]). You can set the fill and stroke of individual elements by using their `fill` and `stroke` arguments.
+You can style draw elements by passing the relevent named arguments to their draw functions. All elements have stroke and fill styling unless said otherwise.
 
-Styling options of drawn elements can be set globally by using the `set-style()` function. 
+#def-arg("fill", [`<color>` or `<none>`], default: "none", [How to fill the draw element.])
+#def-arg("stroke", [`<none>` or `<auto>` or `<length>` \ or `<color>` or `<dicitionary>` or `<stroke>`], default: "black + 1pt", [How to stroke the border or the path of the draw element. See Typst's line documentation for more details: https://typst.app/docs/reference/visualize/line/#parameters-stroke])
 
 #example({
     import "draw.typ": *
+    // Draws a red circle with a blue border
+    circle((), fill: red, stroke: blue)
+    // Draws a green line
+    line((), (1,1), stroke: green)
+  },
+  [```typ
+  #canvas({
+    import "typst-canvas/draw.typ": *
+    // Draws a red circle with a blue border
+    circle((0, 0), fill: red, stroke: blue)
+    // Draws a green line
+    line((0, 0), (1, 1), stroke: green)
+  })
+  ```]
+)
 
-    fill(red)
-    stroke(none)
+Instead of having to specify the same styling for each time you want to draw an element, you can use the `set-style` function to change the style for all elements after it. You can still pass styling to a draw function to override what has been set with `set-style`. You can also use the `fill()` and `stroke()` functions as a shorthand to set the fill and stroke respectively.
+
+#example({
+    import "draw.typ": *
+    // Shows styling is applied after
+    rect((-1, -1), (1, 1))
+    // Shows how `set-style` works
+    set-style(stroke: blue, fill: red)
+    circle((0,0))
+
+    // Shows that styling can be overridden
+    line((), (1,1), stroke: green)
+  },
+  [```typ
+  #canvas({
+    import "typst-canvas/draw.typ": *
+    // Draws an empty square with a black border
+    rect((-1, -1), (1, 1))
+
+    // Sets the global style to have a fill of red and a stroke of blue
+    set-style(stroke: blue, fill: red)
+    circle((0,0))
+
+    // Draws a green line despite the global stroke is blue
+    line((), (1,1), stroke: green)
+  })
+  ```]
+)
+
+When using a dictionary for a style, it is important to note that they update each other instead of overriding the entire option like a non-dictionary value would do. For example, if the stroke is set to `(paint: red, thickness: 5pt)` and you pass `(paint: blue)`, the stroke would become `(paint: blue, thickness: 5pt)`.
+
+#example({
+    import "draw.typ": *
+    set-style(stroke: (paint: red, thickness: 5pt))
+    line((0,0), (1,0))
+    line((0,0), (1,1), stroke: (paint: blue))
+    line((0,0), (0,1), stroke: yellow)
+  },
+  [```typ
+  #canvas({
+    import "typst-canvas/draw.typ": *
+    // Sets the stroke to red with a thickness of 5pt
+    set-style(stroke: (paint: red, thickness: 5pt))
+    // Draws a line with the global stroke
+    line((0,0), (1,0))
+    // Draws a blue line with a thickness of 5pt because dictionaries update the style
+    line((0,0), (1,1), stroke: (paint: blue))
+    // Draws a yellow line with a thickness of 1pt because other values override the style
+    line((0,0), (0,1), stroke: yellow)
+  })
+  ```]
+)
+
+You can also specify styling for each type of element. Note that dictionary values will still update with its global value, the full hierarchy is `function > element type > global`. When the value of a style is `auto`, it will become exactly its parent style.
+
+#example({
+    import "draw.typ": *
+    set-style(
+      fill: green,
+      stroke: (thickness: 5pt),
+      rect: (stroke: (dash: "dashed"), fill: blue), 
+    )
     rect((0,0), (1,1))
-
-    line((0, -1.5), (0.5, -0.5), (1, -1.5), close: true, fill: blue, stroke: (dash: "dashed"))
-
-    circle((0.5, -2.5), radius: 0.5, fill: green)
+    circle((0.5, -1.5))
+    rect((0,-3), (1, -4), stroke: (thickness: 1pt))
   },
   [
   ```typ
   #canvas({
     import "typst-canvas/draw.typ": *
-    // Set the global fill to red
-    fill(red)
-    // Set no global stroke
-    stroke(none)
-    // Draws a red rectangle
+    set-style(
+      // Global fill and stroke
+      fill: green,
+      stroke: (thickness: 5pt),
+      // Stroke and fill for only rectangles
+      rect: (stroke: (dash: "dashed"), fill: blue), 
+    )
     rect((0,0), (1,1))
-    // Draws a blue triangle with dashed edges
-    line((0, -1.5), (0.5, -0.5), (1, -1.5), 
-      close: true, fill: blue, stroke: (dash: "dashed"))
-    // Draws a green circle
+    circle((0.5, -1.5))
+    rect((0,-3), (1, -4), stroke: (thickness: 1pt))
+  })
+  ```])
+
+#example({
+    import "draw.typ": *
+    set-style(
+      rect: (
+        fill: red,
+        stroke: none
+      ),
+      line: (
+        fill: blue,
+        stroke: (dash: "dashed")
+      ),
+    )
+    rect((0,0), (1,1))
+
+    line((0, -1.5), (0.5, -0.5), (1, -1.5), close: true)
+
+    circle((0.5, -2.5), radius: 0.5, fill: green)
+  },
+  [
+  ```typ
+  // Its a nice drawing okay
+  #canvas({
+    import "typst-canvas/draw.typ": *
+    set-style(
+      rect: (
+        fill: red,
+        stroke: none
+      ),
+      line: (
+        fill: blue,
+        stroke: (dash: "dashed")
+      ),
+    )
+    rect((0,0), (1,1))
+
+    line((0, -1.5), (0.5, -0.5), (1, -1.5), close: true)
+
     circle((0.5, -2.5), radius: 0.5, fill: green)
   })
   ```])
@@ -187,15 +296,11 @@ Styling options of drawn elements can be set globally by using the `set-style()`
 Draws a line (a direct path between two points) to the canvas. If multiplie coordinates are given, a line is drawn between each consecutive one.
 
 ```typ
-#line(..pts, mark-begin: none, mark-end: none, mark-size: auto, name: none, fill: auto, stroke: auto)
+#line(..pts, name: none, close: false, ..styling)
 ```
 #def-arg("..pts", `<arguments of coordinates>`, [Coordinates to draw the lines between. A minimum of two must be given.])
-#def-arg("mark-begin", `<string>`, [The type of arrow to draw at the start of the line. See @arrow-heads.])
-#def-arg("mark-end", `<string>`, [The type of arrow to draw at the end of the line.])
-#def-arg("mark-size", `<number>`, default: "0.15", [The size of the marks.])
 #def-arg("name", `<string>`, [Sets the name of element for use with anchors.])
-#def-arg("fill", [`none` or `auto` or `<color>`], default: auto, [Sets the fill of the path of lines. If `auto` the global fill is used. See @styling.])
-#def-arg("stroke", [`none` or `auto` or `<length>` or `<color>` or `<color>` or `<dictionary>` \ or `<stroke>`], default: auto, [Sets the stroke of the lines. If `auto` the global stroke is used. See @styling.])
+#def-arg("close", `<bool>`, default: false, [When `true` a straight line is drawn from the last coordinate to the first coordinate, essentially "closing" the shape.])
 
 #example({
     import "draw.typ": *
@@ -211,11 +316,15 @@ Draws a line (a direct path between two points) to the canvas. If multiplie coor
   })
   ```])
 
+#STYLING
+
+#def-arg("mark", `<dictionary> or <auto>`, default: auto, [The styling to apply to marks on the line, see @marks.])
+
 === Rectangle
 Draws a rectangle to the canvas.
 
 ```typ
-#rect(a, b, name: none, fill: auto, stroke: auto)
+#rect(a, b, name: none, anchor: none, ..styling)
 ```
 #def-arg("a", `<coordinate>`, [The top left coordinate of the rectangle.])
 #def-arg("b", `<coordinate>`, [The bottom right coordinate of the rectangle.])
@@ -232,16 +341,15 @@ Draws a rectangle to the canvas.
   ```])
 
 === Arc
-Draws an arc to the canvas. Exactly two of the three values `start`, `stop`, and `delta` should be defined.
+Draws an arc to the canvas. Exactly two of the three values `start`, `stop`, and `delta` should be defined. You can set the radius of the arc by setting the `radius` style option. You can also draw an ellpitical arc by passing an array where the first number is the radius in the x direction and the second number is the radius in the y direction.
+
 ```typ
-#arc(position, start: auto, stop: auto, delta: auto, radius: 1, name: none, anchor: none, fill: auto, stroke: auto, mode: "OPEN")
+#arc(position, start: auto, stop: auto, delta: auto, name: none, anchor: none,)
 ```
 #def-arg("position", `<coordinate>`, [The coordinate to start drawing the arc from.])
 #def-arg("start", `<angle>`, [The angle to start the arc.])
 #def-arg("stop", `<angle>`, [The angle to stop the arc.])
 #def-arg("delta", `<angle>`, [The angle that is added to start or removed from stop.])
-#def-arg("radius", `<number>`, [The radius of the arc.])
-#def-arg("mode", `<string>`, [The options are "OPEN" (the default, just the arc), "CLOSE" (a circular segment) and "PIE" (a circular sector).])
 
 #example({
     import "draw.typ": *
@@ -259,14 +367,19 @@ Draws an arc to the canvas. Exactly two of the three values `start`, `stop`, and
   ```]
 )
 
+#STYLING
+
+#def-arg("radius", `<number> or <array>`, default: 1, [The radius of the arc. This is also a global style shared with circle!])
+#def-arg("mode", `<string>`, default: `"OPEN"`, [The options are "OPEN" (the default, just the arc), "CLOSE" (a circular segment) and "PIE" (a circular sector).])
+
+
 === Circle
 Draws a circle to the canvas. An ellipse can be drawn by passing an array of length two to the `radius` argument to specify its `x` and `y` radii.
 
 ```typ
-#circle(center, radius: 1, name: none, anchor: none, fill: auto, stroke: auto)
+#circle(center, name: none, anchor: none)
 ```
 #def-arg("center", `<coordinate>`, [The coordinate of the circle's origin.])
-#def-arg("radius", `<number> or <length> or <array of <number> or <length>>`, default: "1", [The circle's radius. If an array is given an ellipse will be drawn where the first item is the `x` radius and the second item is the `y` radius.])
 
 #example({
     import "draw.typ": *
@@ -283,16 +396,19 @@ Draws a circle to the canvas. An ellipse can be drawn by passing an array of len
   ```]
 )
 
+#STYLING
+
+#def-arg("radius", `<number> or <length> or <array of <number> or <length>>`, default: "1", [The circle's radius. If an array is given an ellipse will be drawn where the first item is the `x` radius and the second item is the `y` radius. This is also a global style shared with arc!])
+
 === Bezier
 Draws a bezier curve with 1 or 2 control points to the canvas.
 
 ```typ
-#bezier(start, end, ..ctrl, samples: 100, name: none, fill: auto, stroke: auto)
+#bezier(start, end, ..ctrl-style)
 ```
 #def-arg("start", `<coordinate>`, "The coordinate to start drawing the bezier curve from.")
 #def-arg("end", `<coordinate>`, "The coordinate to draw the bezier curve to.")
-#def-arg("..ctrl", `<coordinate>`, "An array of one or two coordinates to specify the contorl points of the bezier curve.")
-#def-arg("samples", `<integer>`, "The number of lines used to construct the curve.")
+#def-arg("..ctrl-style", `<coordinates>`, "An argument sink for the control points and styles. Its positional part should be of one or two coordinates to specify the contorl points of the bezier curve.")
 
 #example({
     import "draw.typ": *
@@ -330,11 +446,16 @@ Draws a content block to the canvas.
   ```]
 )
 
+#STYLING
+This draw element is not affected by fill or stroke styling.
+
+#def-arg("padding", `<length>`, default: 0em, "")
+
 === Grid
 Draws a grid to the canavas.
 
 ```typ
-#grid(from, to, step: 1, help-lines: false, name: none, fill: auto, stroke: auto)
+#grid(from, to, step: 1, help-lines: false, name: none)
 ```
 #def-arg("from", `<coordinate>`, "Specifies the bottom left position of the grid.")
 #def-arg("to", `<coordinate>`, "Specifies the top right position of the grid.")
@@ -353,10 +474,12 @@ Draws a grid to the canavas.
   ```]
 )
 
-=== Arrow Heads <arrow-heads>
-Arrow heads -- _marks_ -- can be drawn using the `arrow-head` function
-or as start/end marks of paths (`line`). Arrow heads are filled using the
-current fill color.
+=== Mark <marks>
+Draws a mark or "arrow head", its styling influences marks being drawn on paths (e.g. lines).
+
+```
+#mark(from, to, ..style)
+```
 
 #example({
   import "draw.typ": *
@@ -381,6 +504,13 @@ current fill color.
   })
   ```]
 )
+
+#STYLING
+
+#def-arg("symbol", `<string>`, default: ">", [The type of mark to draw when using the `mark` function.])
+#def-arg("start", `<string>`, [The type of mark to draw at the start of a path.])
+#def-arg("end", `<string>`, [The type of mark to draw at the end of a path.])
+#def-arg("size", `<number>`, default: "0.15", [The size of the marks.])
 
 == Groups <groups>
 Groups allow scoping context changes such as setting stroke-style, fill and transformations.
