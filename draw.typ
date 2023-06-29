@@ -156,12 +156,15 @@
   ),)
 }
 
-#let arrow-head(from, to, symbol: ">", fill: auto, stroke: auto) = {
+#let mark(from, to, ..style) = {
+  assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
+  let style = style.named()
   let t = (from, to).map(coordinate.resolve-system)
   ((
     coordinates: (from, to),
     render: (ctx, from, to) => {
-      cmd.arrow-head(ctx, from, to, symbol, fill: fill, stroke: stroke)
+      let style = styles.resolve(ctx.style, style, root: "mark")
+      cmd.mark(from, to, style.symbol, fill: style.fill, stroke: style.stroke)
     }
   ),)
 }
@@ -195,13 +198,13 @@
           let n = vector.scale(vector.norm(vector.sub(end, start)),
                               style.size)
           start = vector.sub(end, n)
-          cmd.arrow-head(start, end, style.start, fill: style.fill, stroke: style.stroke)  
+          cmd.mark(start, end, style.start, fill: style.fill, stroke: style.stroke)  
         }
         if style.end != none {
           let (start, end) = (pts.at(-2), pts.at(-1))
           let n = vector.scale(vector.norm(vector.sub(end, start)), style.size)
           start = vector.sub(end, n)
-          cmd.arrow-head(start, end, style.end, fill: style.fill, stroke: style.stroke)
+          cmd.mark(start, end, style.end, fill: style.fill, stroke: style.stroke)
         }
       }
     }

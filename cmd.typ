@@ -139,7 +139,7 @@
   )
 }
 
-#let arrow-head(from, to, symbol, fill: none, stroke: none) = {
+#let mark(from, to, symbol, fill: none, stroke: none) = {
   assert(symbol in (">", "<", "|", "<>", "o"), message: "Unknown arrow head: " + symbol)
   let dir = vector.sub(to, from)
   let odir = (-dir.at(1), dir.at(0), dir.at(2))
