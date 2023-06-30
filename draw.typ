@@ -434,8 +434,8 @@
 #let place-marks(path,
                  ..marks,
                  size: auto,
-                 fill: auto,
-                 stroke: auto,
+                 fill: none,
+                 stroke: black + 1pt,
                  name: none) = {
 ((
   name: name,
@@ -465,7 +465,7 @@
 
       let (pt, dir) = path-util.direction(p.segments, m.pos, scale: scale)
       if pt != none {
-        cmd.arrow-head(vector.add(pt, dir), pt, m.mark, fill: fill, stroke: stroke)
+        cmd.mark(vector.add(pt, dir), pt, m.mark, fill: fill, stroke: stroke)
       }
     }
   }
