@@ -1,8 +1,59 @@
-# Typst-Canvas
-A simple [Typst](https://typst.app) library for drawing stuff.
+# Canvas
 
-For more information, see the [manual](manual.pdf).
+Canvas is a library for drawing with [Typst](https://typst.app) with an API inspired by Tikz and Processing.
 
-## Demos
-### Chart - [PDF](demo/3d-diagram.pdf) - [TYP](demo/3d-diagram.typ)
-[![Bar Chart](demo/3d-diagram.pdf.png)](demo/3d-diagram.typ)
+## Usage
+
+For information, see the [manual](manual.pdf).
+
+*Note: this package has not been submitted to the typst preview package repo yet! The following example wont work.*
+
+To use this package, simply add the following code to your document:
+```
+#import "@preview/canvas:0.0.1"
+
+#canvas.canvas({
+  import canvas.draw: *
+  // Your drawing code goes here
+})
+```
+
+## Installing
+
+To install the canvas package under your local typst package dir you can use the `install` script from the repository.
+
+```bash
+just install
+```
+
+The installed version can be imported by prefixing the package name with `@local`.
+
+```typ
+#import "@local/canvas:0.0.1"
+
+#canvas.canvas({
+  import canvas.draw: *
+  // Your drawing...
+})
+```
+
+### Just
+
+This project uses [just](https://github.com/casey/just), a handy command runner.
+
+You can run all commands without having `just` installed, just have a look into the `justfile`.
+To install `just` on your system, use your systems package manager. On Windows, [Cargo](cargo install just) (`cargo install just`), [Chocolatey](https://chocolatey.org/) (`choco install just`) and [some other sources](https://just.systems/man/en/chapter_4.html) can be used. You need to run it from a `sh` compatible shell on Windows (e.g git-bash).
+
+## Testing
+
+This package comes with some unit tests under the `tests` directory.
+To run all tests you can run the `just test` target.
+
+You need to have ImageMagick installed on your system, which is needed for image comparison.
+
+### Windows
+If you are using the [Chocolatey](https://chocolatey.org/) package manager, you can install imagemagick using `choco install imagemagick`.
+Otherwise download and install a matching package from the [ImageMagick](https://imagemagick.org/script/download.php) website.
+
+## Projects using Canvas
+- [circuitypst](https://github.com/fenjalien/circuitypst) A port of [circuitikz](https://github.com/circuitikz/circuitikz) to Typst
