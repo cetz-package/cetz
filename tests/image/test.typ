@@ -7,11 +7,12 @@
     content((0,0), image("image.png", width: 2cm),
             anchor: "top-left", name: "i")
 
+    set-style(radius: .1)
     for k in ("top-left", "top", "top-right", "left", "center", "right",
               "bottom-left", "bottom", "bottom-right") {
-        fill(blue); circle("i." + k, radius: .1)
+        fill(blue); circle("i." + k)
     }
 
     fill(red); 
-    circle(("i.top-left", 0.75, "i.top-right"), radius: .1)
+    circle(("i.top-left", 0.75, "i.top-right"))
 }))

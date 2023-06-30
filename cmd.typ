@@ -5,7 +5,7 @@
 
 #let typst-path = path
 
-#let content(ctx, x, y, w, h, c) = {
+#let content(x, y, w, h, c) = {
   ((
     type: "content",
     segments: (("pt", (x,y)),),
@@ -23,7 +23,7 @@
   ),)
 }
 
-#let path(ctx, close: false, fill: auto, stroke: auto,
+#let path(close: false, fill: none, stroke: none,
            ..segments) = {
   let segments = segments.pos()
 
@@ -35,11 +35,8 @@
                    path-util.segment-end(sn),
                    path-util.segment-begin(s0)))
   }
-
   ((
     type: "path",
-    fill: if fill == auto { ctx.fill } else { fill },
-    stroke: if stroke == auto { ctx.stroke } else { stroke },
     close: close,
     segments: segments,
     bounds: path-util.bounds(segments),
@@ -69,7 +66,7 @@
           let b = coordinates.at(1)
           let c = coordinates.at(2)
 
-          let samples = path-util.ctx-samples(ctx)
+          let samples = path-util.ctx-samples((:)) //(ctx)
           vertices.push(a)
           for i in range(0, samples) {
             vertices.push(util.bezier-quadratic-pt(a, b, c, i / samples))
@@ -90,8 +87,8 @@
 
       place(
         typst-path(
-          stroke: self.stroke, 
-          fill: self.fill,
+          stroke: stroke, 
+          fill: fill,
           closed: self.close, 
           ..vertices
           )
@@ -101,7 +98,7 @@
 }
 
 // Approximate ellipse using 4 quadratic bezier curves
-#let ellipse(ctx, x, y, z, rx, ry, fill: auto, stroke: auto) = {
+#let ellipse(x, y, z, rx, ry, fill: none, stroke: none) = {
   let m = 0.551784
   let mx = m * rx
   let my = m * ry
@@ -110,7 +107,7 @@
   let top = y + ry
   let bottom = y - ry
 
-  path(ctx, fill: fill, stroke: stroke,
+  path(fill: fill, stroke: stroke,
        ("cubic", (x, top, z), (right, y, z),
                  (x + m * rx, top, z), (right, y + m * ry, z)),
        ("cubic", (right, y, z), (x, bottom, z),
@@ -121,20 +118,20 @@
                  (left, y + m * ry, z), (x - m * rx, top, z)))
 }
 
-#let arc(ctx, x, y, z, start, stop, radius, mode: "OPEN", fill: auto, stroke: auto) = {
+#let arc(x, y, z, start, stop, rx, ry, mode: "OPEN", fill: none, stroke: none) = {
   let samples = calc.abs(int((stop - start) / 1deg))
-  path(ctx,
+  path(
     fill: fill, stroke: stroke,
     close: mode != "OPEN",
     ("line", ..range(0, samples+1).map(i => {
       let angle = start + (stop - start) * i / samples
       (
-        x - radius*calc.cos(start) + radius*calc.cos(angle),
-        y - radius*calc.sin(start) + radius*calc.sin(angle),
+        x - rx*calc.cos(start) + rx*calc.cos(angle),
+        y - ry*calc.sin(start) + ry*calc.sin(angle),
         z
       )
     }) + if mode == "PIE" {
-      ((x - radius*calc.cos(start), y - radius*calc.sin(start), z),
+      ((x - rx*calc.cos(start), y - ry*calc.sin(start), z),
        (x, y, z),)
     } else {
       ()
@@ -142,7 +139,7 @@
   )
 }
 
-#let arrow-head(ctx, from, to, symbol, fill: auto, stroke: auto) = {
+#let mark(from, to, symbol, fill: none, stroke: none) = {
   assert(symbol in (">", "<", "|", "<>", "o"), message: "Unknown arrow head: " + symbol)
   let dir = vector.sub(to, from)
   let odir = (-dir.at(1), dir.at(0), dir.at(2))
@@ -183,10 +180,9 @@
     let pts = ()
     let r = vector.len(dir) / 2
 
-    return ellipse(ctx, c.at(0), c.at(1), c.at(2), r, r).first().segments
+    return ellipse(c.at(0), c.at(1), c.at(2), r, r).first().segments
   }
   path(
-    ctx,
     ..if symbol == ">" {
       triangle()
     } else if symbol == "<" {

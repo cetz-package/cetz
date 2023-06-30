@@ -4,6 +4,7 @@
 #import "cmd.typ"
 #import "util.typ"
 #import "coordinate.typ"
+#import "styles.typ"
 
 // Compute bounding box of points
 #let bounding-box(pts, init: none) = {
@@ -44,6 +45,17 @@
   // Allow to modify the context
   if "before" in element {
     ctx = (element.before)(ctx)
+  }
+
+  if "style" in element {
+    ctx.style = styles.resolve(
+      ctx.style,
+      if type(element.style) == "function" {
+        (element.style)(ctx)
+      } else {
+        element.style
+      }
+    )
   }
 
   if "push-transform" in element {
@@ -117,7 +129,6 @@
     }
   }
 
-
   // Add default anchors
   if bounds != none {
     let mid-x = (bounds.l + bounds.r) / 2
@@ -138,7 +149,7 @@
     anchors.above = anchors.top
     anchors.below = anchors.bottom
   }
-  
+
   // Query element for (relative) anchors
   let custom-anchors = if "custom-anchors-ctx" in element {
     (element.custom-anchors-ctx)(ctx, ..coordinates)
@@ -251,7 +262,7 @@
 
   // Canvas context object
   let ctx = (
-    style: st,
+    typst-style: st,
     length: length,
 
     debug: debug,
@@ -262,11 +273,9 @@
     // Current content padding size (added around content boxes)
     content-padding: 0em,
 
-    // Current draw attributes
-    mark-size: .15,
-    fill: none,
-    stroke: black + 1pt,
     em-size: measure(box(width: 1em, height: 1em), st),
+
+    style: styles.default,
 
     // Current transform
     transform: matrix.mul-mat(

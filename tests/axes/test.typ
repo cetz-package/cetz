@@ -4,20 +4,18 @@
 #box(stroke: 2pt + red, canvas({
     import "../../draw.typ": *
 
-    stroke(black)
-    circle((0, 0), radius: .05)
+    set-style(radius: .05)
 
-    stroke(green)
-    circle((1, 1), radius: .05)
+    circle((0, 0), stroke: black)
 
-    stroke(yellow)
-    circle((0, 1), radius: .05)
+    circle((1, 1), stroke: green)
 
-    stroke(blue)
-    circle((1, 0), radius: .05)
+    circle((0, 1), stroke: yellow)
 
-    fill(blue)
-    line((0, 0, 0), ( 0deg, .5), mark-end: ">")
-    line((0, 0, 0), (45deg, .5), mark-end: ">")
-    line((0, 0, 0), (90deg, .5), mark-end: ">")
+    circle((1, 0), stroke: blue)
+
+    set-style(stroke: blue, mark: (end: ">", fill: blue, stroke: blue))
+    line((0, 0, 0), ( 0deg, .5))
+    line((0, 0, 0), (45deg, .5))
+    line((0, 0, 0), (90deg, .5))
 }))

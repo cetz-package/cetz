@@ -1,28 +1,16 @@
 #import "matrix.typ"
 #import "vector.typ"
 
-// Apply all transformation matrices `queue` in order on `vec`.
+// Multiplies the vector by the transform matrix
 #let apply-transform(transform, vec) = {
-  // vec = vector.as-vec(vec, init: (0, 0, 0, 1))
-  // for m in queue.do {
-  //   if m != none {
-  //     vec = matrix.mul-vec(m, vec)
-  //   }
-  // }
-  // return vec.slice(0, 3)
-  matrix.mul-vec(transform, vector.as-vec(vec, init: (0, 0, 0, 1))).slice(0, 3)
+  matrix.mul-vec(
+    transform, 
+    vector.as-vec(vec, init: (0, 0, 0, 1))
+  ).slice(0, 3)
 }
 
-// Revert all transformation matrices `queue` in
-// reverse order on `vec`.
+// Reverts the transform of the given vector
 #let revert-transform(transform, vec) = {
-  // vec = vector.as-vec(vec, init: (0, 0, 0, 1))
-  // for m in queue.undo.rev() {
-  //   if m != none {
-  //     vec = matrix.mul-vec(m, vec)
-  //   }
-  // }
-  // return vec.slice(0, 3)
   apply-transform(matrix.inverse(transform), vec)
 }
 
@@ -61,4 +49,8 @@
   } else {
     float(num)
   }
+}
+
+#let resolve-radius(radius) = {
+  return if type(radius) == "array" {radius} else {(radius, radius)}
 }
