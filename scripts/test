@@ -4,31 +4,74 @@ set -o pipefail
 
 DIR="$(dirname "${BASH_SOURCE[0]}")"
 
+MODE="${1:-test}";
+if (( $# > 1)); then shift; fi
+
+FLAG_INSTALL=0
+
+while :; do
+  case "${1:-}" in
+    '--install') FLAG_INSTALL=1 ;;
+    *) break
+  esac
+  shift
+done
+
+
 TYPST_VERSION="v0.5.0"
 TYPST_BASE_URL="https://github.com/typst/typst/releases/download"
 TYPST_ARCHIVE="typst-x86_64-unknown-linux-musl.tar.xz"
 
+TYPST_ROOT="$(realpath "$DIR/..")"
+TEST_ROOT="$(realpath "$DIR/../tests")"
+
+if hash magick 2>/dev/null; then
+  MAGICK_COMPARE="magick compare"
+elif hash compare 2>/dev/null; then
+  MAGICK_COMPARE="compare"
+else
+  >&2 echo "Could not find 'magick' nor 'compare' binary. Make sure you have image magick installed and in your PATH."
+  exit 1
+fi
+
+
 function install_typst()
 {
+  if [[ "$OSTYPE" != "linux"* ]]; then
+    >&2 echo "Automatic installation of typst on a non linux system is currently unsupported."
+    exit 1
+  fi
+
   #TMP="$(mktemp -d)"
   TMP="${TMP:-/tmp}/typst-${TYPST_VERSION}"
-  if mkdir "$TMP" 2> /dev/null ; then
+  if mkdir -p "$TMP" 2> /dev/null ; then
     local PKG="${TMP}/typst.tar.xz"
 
+    echo "Installing typst from $TYPST_BASE_URL/$TYPST_ARCHIVE"
     wget "${TYPST_BASE_URL}/${TYPST_VERSION}/${TYPST_ARCHIVE}" \
          --quiet \
          -O "$PKG"
-    mkdir "${TMP}/typst"
+    mkdir -p "${TMP}/typst"
     tar -xf "$PKG" -C "${TMP}/typst" --strip-components=1
     rm "$PKG"
   fi
 
   PATH="${TMP}/typst/:$PATH"
+  export PATH
 }
+
+if [[ "$FLAG_INSTALL" == "1" ]]; then
+  install_typst
+fi
+
+if ! hash typst; then
+  >&2 echo "Could not find 'typst' binary. Run this script with the --install argument to temporarily install typst."
+  exit 1
+fi
 
 function img_compare()
 {
-  compare -metric rmse "$1" "$2" null: 2>&1 | cut -d\  -f1
+  $MAGICK_COMPARE -metric rmse "$1" "$2" null: 2>&1 | cut -d\  -f1
 }
 
 function update_test_ref()
@@ -40,8 +83,7 @@ function update_test_ref()
 
     echo "[UPDATING] ${NAME}"
 
-    typst --root . compile test.typ
-    pdftoppm test.pdf res -png -singlefile
+    typst --root "$TYPST_ROOT" compile test.typ res.png
     
     cp "res.png" "ref.png"
   )
@@ -58,11 +100,10 @@ function run_test()
 
     if [[ ! -f test.typ ]]; then echo "Missing file 'test.typ'!"; exit 1; fi
 
-    typst --root . compile test.typ
-    pdftoppm test.pdf res -png -singlefile
+    typst --root "$TYPST_ROOT" compile test.typ res.png
 
     if [[ $(img_compare res.png ref.png) != 0 ]] ; then
-      compare -compose src res.png ref.png diff.png || true
+      $MAGICK_COMPARE -compose src res.png ref.png diff.png || true
       echo "[FAIL] see $(pwd)/diff.png for differences"
       exit 1
     fi
@@ -71,15 +112,12 @@ function run_test()
   )
 }
 
-install_typst
 echo "Typst: $(typst --version)"
 
-MODE="${1:-test}"
-
-find "$DIR" -type d | \
+find "$TEST_ROOT" -type d | \
   while read -r test
   do
-    if [[ "$test" == "." || "$test" == ".." ]]; then continue; fi
+    if [[ "$test" == "$TEST_ROOT" ]]; then continue; fi
 
     if [[ "$MODE" == "test" ]]; then
       run_test "$test"
