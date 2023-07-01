@@ -63,5 +63,8 @@ for f in "${files[@]}"; do
 done
 
 echo "Packaged to: $TARGET/canvas-$VERSION"
-mkdir -p "$TARGET"
+if rm -rf "$TARGET/canvas-$VERSION" 2>/dev/null; then
+  echo "Overwriting existing version."
+fi
+mkdir -p "$TARGET/"
 mv "$TMP" "$TARGET/canvas-$VERSION"
