@@ -5,10 +5,10 @@ demo_dir := "./demo"
 test_dir := "./tests"
 
 test:
-  cd {{test_dir}} && ./run test
+  ./scripts/test test
 
 update-test:
-  cd {{test_dir}} && ./run update
+  ./scripts/test update
 
 demo:
   find "{{demo_dir}}" -iname "*.typ" -exec typst compile {} \;
