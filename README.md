@@ -2,6 +2,31 @@
 
 Canvas is a library for drawing with [Typst](https://typst.app) with an API inspired by Tikz and Processing.
 
+## Examples
+<!-- img width is set so the table gets evenly spaced by GitHubs css -->
+<table><tr>
+  <td>
+    <a href="gallery/karls-picture.typ">
+      <img src="gallery/karls-picture.png" width="250px">
+    </a>
+  </td>
+  <td>
+    <a href="gallery/pie-chart.typ">
+      <img src="gallery/pie-chart.png" width="250px">
+    </a>
+  </td>
+  <td>
+    <a href="gallery/3d-chart.typ">
+      <img src="gallery/3d-chart.png" width="250px">
+    </a>
+  </td>
+</tr><tr>
+  <td>Karls Picture</td>
+  <td>Pie Chart</td>
+  <td>3D Chart</td>
+</tr></table>
+*Click on the example image to jump to the code.*
+
 ## Usage
 
 For information, see the [manual](manual.pdf).
