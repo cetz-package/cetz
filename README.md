@@ -21,7 +21,7 @@ Canvas is a library for drawing with [Typst](https://typst.app) with an API insp
     </a>
   </td>
 </tr><tr>
-  <td>Karls Picture</td>
+  <td>Karl's Picture</td>
   <td>Pie Chart</td>
   <td>3D Chart</td>
 </tr></table>
