@@ -1,0 +1,70 @@
+#!/bin/env bash
+set -eu
+
+# List of all files that get packaged
+files=(
+  canvas.typ
+  cmd.typ
+  draw.typ
+  util.typ
+  path-util.typ
+  vector.typ
+  matrix.typ
+  lib.typ
+  collisions.typ
+  coordinate.typ
+  styles.typ
+  LICENSE
+  typst.toml
+)
+
+# Local package directories per platform
+if [[ "$OSTYPE" == "linux"* ]]; then
+  DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+  DATA_DIR="$HOME/Library/Application Support"
+else
+  DATA_DIR="${APPDATA}"
+fi
+
+if (( $# < 1 )) || [[ "${1:-}" == "help" ]]; then
+  echo "package TARGET"
+  echo ""
+  echo "Packages all relevant files into a directory named 'canvas-<version>'"
+  echo "at TARGET. If TARGET is set to @local, the local Typst package directory"
+  echo "will be used so that the package gets installed for local use."
+  echo "The version is read from 'typst.toml' in the project root."
+  echo ""
+  echo "Local package prefix: $DATA_DIR/typst/package/local"
+  exit 1
+fi
+
+function read-toml() {
+  local file="$1"
+  local key="$2"
+  # Read a key value pair in the format: <key> = "<value>"
+  # stripping surrounding quotes.
+  awk -F= "/^${key}/ { sub(/^\\s*\"/, \"\", \$2); sub(/\"\\s*$/, \"\", \$2); print(\$2); }" "$file"
+}
+
+SOURCE="$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")"
+TARGET="${1:?Missing target path or @local}"
+VERSION="$(read-toml "$SOURCE/typst.toml" "version")"
+
+if [[ "$TARGET" == "@local" ]] || [[ "$TARGET" == "install" ]]; then
+  TARGET="${DATA_DIR}/typst/packages/local/"
+  echo "Install dir: $TARGET"
+fi
+
+TMP="$(mktemp -d)"
+
+for f in "${files[@]}"; do
+  cp "$SOURCE/$f" "$TMP/$f"
+done
+
+echo "Packaged to: $TARGET/canvas-$VERSION"
+if rm -rf "$TARGET/canvas-$VERSION" 2>/dev/null; then
+  echo "Overwriting existing version."
+fi
+mkdir -p "$TARGET/"
+mv "$TMP" "$TARGET/canvas-$VERSION"

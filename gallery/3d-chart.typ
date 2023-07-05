@@ -1,9 +1,9 @@
-#import "../canvas.typ": *
+#import "@local/canvas:0.0.1": canvas, draw 
 
 #set page(width: auto, height: auto)
 
 #canvas(length: 1cm, {
-  import "../draw.typ": *
+  import draw: *
 
   // Draw grid
   stroke((paint: black, dash: "dashed", thickness: .5pt)) // not on release yet
@@ -11,7 +11,7 @@
     line((0, i, 0), (0, i, 1), (7, i, 1))
     content((-.1, i, 0), [$#{i*20}$], anchor: "right")
   }
-  stroke((paint: black, thickness: .5pt))
+  stroke((paint: black, thickness: .5pt, dash: none, join: "round"))
   line((0, 0, 1), (0, 6, 1))
   line((0, 6, 0), (0, 0, 0), (7, 0, 0))
 
@@ -38,5 +38,5 @@
   draw-box(2, 30)[good]
   draw-box(3, 40)[ok]
   draw-box(4, 30)[bad]
-  draw-box(5, 0)[very bad]
+  draw-box(5,  0)[very bad]
 })

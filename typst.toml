@@ -1,0 +1,11 @@
+[package]
+name = "canvas"
+version = "0.0.1"
+repository = "https://github.com/johannes-wolf/typst-canvas"
+entrypoint = "lib.typ"
+authors = [
+  "Johannes Wolf <https://github.com/johannes-wolf>",
+  "fenjalien <https://github.com/fenjalien>"
+]
+license = "Apache-2.0"
+description = "A library for drawing with Typst with an API inspired by Tikz and Processing."
