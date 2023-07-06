@@ -16,8 +16,9 @@ files=(
   collisions.typ
   coordinate.typ
   styles.typ
-  LICENSE
   typst.toml
+  LICENSE
+  README.md
 )
 
 # Local package directories per platform
