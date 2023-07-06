@@ -5,7 +5,7 @@ demo_dir := "./demo"
 test_dir := "./tests"
 
 package target:
-  ./scripts/package "$target"
+  ./scripts/package "{{target}}"
 
 install:
   ./scripts/package "@local"

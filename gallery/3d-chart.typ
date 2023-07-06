@@ -1,4 +1,4 @@
-#import "@local/canvas:0.0.1": canvas, draw 
+#import "@local/cetz:0.0.1": canvas, draw 
 
 #set page(width: auto, height: auto)
 

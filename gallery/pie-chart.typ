@@ -1,9 +1,9 @@
-#import "@local/canvas:0.0.1"
+#import "@local/cetz:0.0.1"
 
 #set page(width: auto, height: auto)
 
-#canvas.canvas({
-  import canvas.draw: *
+#cetz.canvas({
+  import cetz.draw: *
 
   let chart(..values, name: none) = {
     let values = values.pos()
