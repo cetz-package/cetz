@@ -10,5 +10,5 @@
 //   #import "@.../canvas": canvas, canvas-draw
 #let canvas-draw = draw
 #let canvas-vector = vector
-#lte canvas-matrix = matrix
+#let canvas-matrix = matrix
 
