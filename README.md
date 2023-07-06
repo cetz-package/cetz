@@ -25,13 +25,12 @@ CeTZ (CeTZ, ein Typst Zeichenpacket) is a library for drawing with [Typst](https
   <td>Pie Chart</td>
   <td>3D Chart</td>
 </tr></table>
+
 *Click on the example image to jump to the code.*
 
 ## Usage
 
-For information, see the [manual](manual.pdf).
-
-*Note: this package has not been submitted to the typst preview package repo yet! The following example wont work.*
+For information, see the [manual](https://github.com/johannes-wolf/typst-canvas/blob/master/manual.pdf).
 
 To use this package, simply add the following code to your document:
 ```
@@ -58,7 +57,7 @@ The installed version can be imported by prefixing the package name with `@local
 
 #cetz.canvas({
   import cetz.draw: *
-  // Your drawing...
+  // Your drawing code goes here
 })
 ```
 
@@ -67,7 +66,7 @@ The installed version can be imported by prefixing the package name with `@local
 This project uses [just](https://github.com/casey/just), a handy command runner.
 
 You can run all commands without having `just` installed, just have a look into the `justfile`.
-To install `just` on your system, use your systems package manager. On Windows, [Cargo](cargo install just) (`cargo install just`), [Chocolatey](https://chocolatey.org/) (`choco install just`) and [some other sources](https://just.systems/man/en/chapter_4.html) can be used. You need to run it from a `sh` compatible shell on Windows (e.g git-bash).
+To install `just` on your system, use your systems package manager. On Windows, [Cargo](https://doc.rust-lang.org/cargo/) (`cargo install just`), [Chocolatey](https://chocolatey.org/) (`choco install just`) and [some other sources](https://just.systems/man/en/chapter_4.html) can be used. You need to run it from a `sh` compatible shell on Windows (e.g git-bash).
 
 ## Testing
 
