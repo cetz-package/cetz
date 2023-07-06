@@ -1,6 +1,8 @@
 #!/bin/env bash
 set -eu
 
+PKG_PREFIX="cetz"
+
 # List of all files that get packaged
 files=(
   canvas.typ
@@ -30,7 +32,7 @@ fi
 if (( $# < 1 )) || [[ "${1:-}" == "help" ]]; then
   echo "package TARGET"
   echo ""
-  echo "Packages all relevant files into a directory named 'canvas-<version>'"
+  echo "Packages all relevant files into a directory named '${PKG_PREFIX}-<version>'"
   echo "at TARGET. If TARGET is set to @local, the local Typst package directory"
   echo "will be used so that the package gets installed for local use."
   echo "The version is read from 'typst.toml' in the project root."
@@ -62,9 +64,9 @@ for f in "${files[@]}"; do
   cp "$SOURCE/$f" "$TMP/$f"
 done
 
-echo "Packaged to: $TARGET/canvas-$VERSION"
-if rm -rf "$TARGET/canvas-$VERSION" 2>/dev/null; then
+echo "Packaged to: $TARGET/$PKG_PREFIX-$VERSION"
+if rm -rf "$TARGET/$PKG_PREFIX-$VERSION" 2>/dev/null; then
   echo "Overwriting existing version."
 fi
 mkdir -p "$TARGET/"
-mv "$TMP" "$TARGET/canvas-$VERSION"
+mv "$TMP" "$TARGET/$PKG_PREFIX-$VERSION"

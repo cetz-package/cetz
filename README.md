@@ -1,6 +1,6 @@
-# Canvas
+# CeTZ
 
-Canvas is a library for drawing with [Typst](https://typst.app) with an API inspired by Tikz and Processing.
+CeTZ (CeTZ, ein Typst Zeichenpacket) is a library for drawing with [Typst](https://typst.app) with an API inspired by TikZ and [Processing](https://processing.org/).
 
 ## Examples
 <!-- img width is set so the table gets evenly spaced by GitHubs css -->
@@ -35,17 +35,17 @@ For information, see the [manual](manual.pdf).
 
 To use this package, simply add the following code to your document:
 ```
-#import "@preview/canvas:0.0.1"
+#import "@preview/cetz:0.0.1"
 
-#canvas.canvas({
-  import canvas.draw: *
+#cetz.canvas({
+  import cetz.draw: *
   // Your drawing code goes here
 })
 ```
 
 ## Installing
 
-To install the canvas package under your local typst package dir you can use the `install` script from the repository.
+To install the CeTZ package under your local typst package dir you can use the `install` script from the repository.
 
 ```bash
 just install
@@ -54,10 +54,10 @@ just install
 The installed version can be imported by prefixing the package name with `@local`.
 
 ```typ
-#import "@local/canvas:0.0.1"
+#import "@local/cetz:0.0.1"
 
-#canvas.canvas({
-  import canvas.draw: *
+#cetz.canvas({
+  import cetz.draw: *
   // Your drawing...
 })
 ```
@@ -80,5 +80,5 @@ You need to have ImageMagick installed on your system, which is needed for image
 If you are using the [Chocolatey](https://chocolatey.org/) package manager, you can install imagemagick using `choco install imagemagick`.
 Otherwise download and install a matching package from the [ImageMagick](https://imagemagick.org/script/download.php) website.
 
-## Projects using Canvas
+## Projects using CeTZ
 - [circuitypst](https://github.com/fenjalien/circuitypst) A port of [circuitikz](https://github.com/circuitikz/circuitikz) to Typst

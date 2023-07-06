@@ -1,5 +1,5 @@
 [package]
-name = "canvas"
+name = "cetz"
 version = "0.0.1"
 repository = "https://github.com/johannes-wolf/typst-canvas"
 entrypoint = "lib.typ"
@@ -8,4 +8,4 @@ authors = [
   "fenjalien <https://github.com/fenjalien>"
 ]
 license = "Apache-2.0"
-description = "A library for drawing with Typst with an API inspired by Tikz and Processing."
+description = "Drawing with Typst made easy, providing an API inspired by TikZ and Processing."

@@ -37,7 +37,7 @@
 
 #set page(
   numbering: "1/1",
-  header: align(right)[The `canvas` package],
+  header: align(right)[The `CeTZ` package],
 )
 
 #set heading(numbering: "1.")
@@ -46,7 +46,7 @@
 
 #let STYLING = heading(level: 4, numbering: none)[Styling]
 
-#align(center, text(16pt)[*The `canvas` package*])
+#align(center, text(16pt)[*The `CeTZ` package*])
 
 #align(center)[
   #link("https://github.com/johannes-wolf")[Johannes Wolf] and #link("https://github.com/fenjalien")[fenjalien] \
@@ -62,14 +62,15 @@
 
 This package provides a way to draw stuff using a similar API to #link("https://processing.org/")[Processing] but with relative coordinates and anchors from #link("https://tikz.dev/")[Ti#[_k_]Z]. You also won't have to worry about accidentally drawing over other content as the canvas will automatically resize. And remember: up is positive!
 
+The name CeTZ is a recursive acronym for "CeTZ, ein Typst Zeichenpacket" (german for "CeTZ, a Typst drawing package") and is pronounced like the word "Cats".
+
 = Usage
 
 This is the minimal starting point:
   ```typ
-  #import "typst-canvas/canvas.typ": canvas
-
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #import "@local/cetz:0.0.1"
+  #cetz.canvas({
+    import cetz.draw: *
     ...
   })
   ```
@@ -156,8 +157,8 @@ You can style draw elements by passing the relevent named arguments to their dra
     line((), (1,1), stroke: green)
   },
   [```typ
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #cetz.canvas({
+    import cetz.draw: *
     // Draws a red circle with a blue border
     circle((0, 0), fill: red, stroke: blue)
     // Draws a green line
@@ -180,8 +181,8 @@ Instead of having to specify the same styling for each time you want to draw an 
     line((), (1,1), stroke: green)
   },
   [```typ
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #cetz.canvas({
+    import cetz.draw: *
     // Draws an empty square with a black border
     rect((-1, -1), (1, 1))
 
@@ -206,7 +207,7 @@ When using a dictionary for a style, it is important to note that they update ea
   },
   [```typ
   #canvas({
-    import "typst-canvas/draw.typ": *
+    import cetz.draw: *
     // Sets the stroke to red with a thickness of 5pt
     set-style(stroke: (paint: red, thickness: 5pt))
     // Draws a line with the global stroke
@@ -235,7 +236,7 @@ You can also specify styling for each type of element. Note that dictionary valu
   [
   ```typ
   #canvas({
-    import "typst-canvas/draw.typ": *
+    import cetz.draw: *
     set-style(
       // Global fill and stroke
       fill: green,
@@ -270,8 +271,8 @@ You can also specify styling for each type of element. Note that dictionary valu
   [
   ```typ
   // Its a nice drawing okay
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #cetz.canvas({
+    import cetz.draw: *
     set-style(
       rect: (
         fill: red,
@@ -310,7 +311,7 @@ Draws a line (a direct path between two points) to the canvas. If multiplie coor
   [
   ```typ
   #canvas({
-    import "typst-canvas/draw.typ": *
+    import cetz.draw: *
     line((-1.5, 0), (1.5, 0))
     line((0, -1.5), (0, 1.5))
   })
@@ -335,7 +336,7 @@ Draws a rectangle to the canvas.
   },
   [```typ
   #canvas({
-    import "typst-canvas/draw.typ": *
+    import cetz.draw: *
     rect((-1.5, 1.5), (1.5, -1.5))
   })
   ```])
@@ -358,8 +359,8 @@ Draws an arc to the canvas. Exactly two of the three values `start`, `stop`, and
     arc((0,-1), stop: 135deg, delta: 90deg, mode: "PIE")
   },
   [```typ
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #cetz.canvas({
+    import cetz.draw: *
     arc((0,0), start: 45deg, stop: 135deg)
     arc((0,-0.5), start: 45deg, delta: 90deg, mode: "CLOSE")
     arc((0,-1), stop: 135deg, delta: 90deg, mode: "PIE")
@@ -387,8 +388,8 @@ Draws a circle to the canvas. An ellipse can be drawn by passing an array of len
     circle((0,-2), radius: (0.75, 0.5))
   },
   [```typ
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #cetz.canvas({
+    import cetz.draw: *
     circle((0,0))
     // Draws an ellipse
     circle((0,-2), radius: (0.75, 0.5))
@@ -416,8 +417,8 @@ Draws a bezier curve with 1 or 2 control points to the canvas.
     bezier((0, -1), (2, -1), (.5, -2), (1.5, 0))
   },
   [```typ
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #cetz.canvas({
+    import cetz.draw: *
     bezier((0, 0), (2, 0), (1, 1))
     bezier((0, -1), (2, -1), (.5, -2), (1.5, 0))
   })
@@ -439,8 +440,8 @@ Draws a content block to the canvas.
     content((0,0), [Hello World!])
   },
   [```typ
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #cetz.canvas({
+    import cetz.draw: *
     content((0,0), [Hello World!])
   })
   ```]
@@ -467,8 +468,8 @@ Draws a grid to the canavas.
     grid((0,0), (3,3), help-lines: true)
   },
   [```typ
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #cetz.canvas({
+    import cetz.draw: *
     grid((0,0), (3,2), help-lines: true)
   })
   ```]
@@ -492,8 +493,8 @@ Draws a mark or "arrow head", its styling influences marks being drawn on paths 
   line((0, 0), (1, 0), mark: (end: ">"))
 },
 [```typ
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #cetz.canvas({
+    import cetz.draw: *
     line((1, -1), (1, 5), stroke: (paint: gray, dash: "dotted"))
     set-style(mark: (fill: black))
     line((0, 4), (1, 4), mark: (end: "<>"))
@@ -616,7 +617,7 @@ circle((0,0))
 
 
 = Coordinate Systems <coordinate-systems>
-A _coordinate_ is a position on the canvas on which the picture is drawn. They take the form of dictionaries and the following sub-sections define the key value pairs for each system. Some systems have a more implicit form as an array of values and `typst-canvas` attempts to infer the system based on the element types.
+A _coordinate_ is a position on the canvas on which the picture is drawn. They take the form of dictionaries and the following sub-sections define the key value pairs for each system. Some systems have a more implicit form as an array of values and `CeTZ` attempts to infer the system based on the element types.
 
 
 == XYZ <coordinate-xyz>
@@ -641,9 +642,9 @@ The implicit form can be given as an array of two or three `<number>` or `<lengt
     line((0, -2), (0, -2, 1))
   },
   [```typ
-  #import "typst-canvas/canvas.typ": canvas
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #import "@local/cetz:0.0.1"
+  #cetz.canvas({
+    import cetz.draw: *
 
     line((0,0), (x: 1))
     line((0,0), (y: 1))
@@ -668,9 +669,9 @@ Use this to reference the position of the previous coordinate passed to a draw f
     circle(())
   },
   [```typ
-  #import "typst-canvas/canvas.typ": canvas
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #import "@local/cetz:0.0.1"
+  #cetz.canvas({
+    import cetz.draw: *
     line((0,0), (1, 1))
 
     // Draws a circle at (1,1)
@@ -694,9 +695,9 @@ In the example below, the red circle is placed one unit below the blue circle. I
   circle((rel: (0, -1)), stroke: red)
   },
   [```typ
-  #import "typst-canvas/canvas.typ": canvas
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #import "@local/cetz:0.0.1"
+  #cetz.canvas({
+    import cetz.draw: *
     circle((0, 0), stroke: blue)
     circle((rel: (0, -1)), stroke: red)
   })
@@ -715,9 +716,9 @@ Defines a point a `radius` distance away from the origin at the given `angle`. A
     line((0,0), (angle: 30deg, radius: 1cm))
   },
   [```typ
-  #import "typst-canvas/canvas.typ": canvas
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #import "@local/cetz:0.0.1"
+  #cetz.canvas({
+    import cetz.draw: *
     line((0,0), (angle: 30deg, radius: 1cm))
   })
   ```]
@@ -731,9 +732,9 @@ The implicit form is an array of the angle then the radius `(angle, radius)` or 
     line((0,0), (30deg, 1), (60deg, 1), (90deg, 1), (120deg, 1), (150deg, 1), (180deg, 1),)
   },
   [```typ
-  #import "typst-canvas/canvas.typ": canvas
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #import "@local/cetz:0.0.1"
+  #cetz.canvas({
+    import cetz.draw: *
     line((0,0), (30deg, 1), (60deg, 1), 
       (90deg, 1), (120deg, 1), (150deg, 1), (180deg, 1))
   })
@@ -776,9 +777,9 @@ In the barycentric coordinate system a point is expressed as the linear combinat
     }
   },
   [```typ
-  #import "typst-canvas/canvas.typ": canvas
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #import "@local/cetz:0.0.1"
+  #cetz.canvas({
+    import cetz.draw: *
     circle((90deg, 3), radius: 0, name: "content")
     circle((210deg, 3), radius: 0, name: "structure")
     circle((-30deg, 3), radius: 0, name: "form")
@@ -829,10 +830,9 @@ You can also use implicit syntax of a dot seperated string in the form `"name.an
     rect("line.start", "circle.left")
   },
   [```typ
-  #import "typst-canvas/canvas.typ": canvas
-
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #import "@local/cetz:0.0.1"
+  #cetz.canvas({
+    import cetz.draw: *
     line((0,0), (3,2), name: "line")
     circle("line.end", name: "circle")
     rect("line.start", "circle.left")
@@ -869,10 +869,9 @@ A special algorithm is needed in order to compute the tangent for a given shape.
     )
   },
   [```typ
-  #import "typst-canvas/canvas.typ": canvas
-
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #import "@local/cetz:0.0.1"
+  #cetz.canvas({
+    import cetz.draw: *
     grid((0,0), (3,2), help-lines: true)
 
     circle((3,2), name: "a", radius: 2pt)
@@ -918,10 +917,9 @@ You can use the implicit syntax of `(horizontal, "-|", vertical)` or `(vertical,
     line("p2", ((), "-|", "yline"))
   },
   [```typ
-  #import "typst-canvas/canvas.typ": canvas
-
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #import "@local/cetz:0.0.1"
+  #cetz.canvas({
+    import cetz.draw: *
     content((30deg, 1), $ p_1 $, name: "p1")
     content((75deg, 1), $ p_2 $, name: "p2")
 
@@ -959,9 +957,9 @@ Can be used implicitly as an array in the form `(a, number, b)` or `(a, number, 
     }
   },
   [```typ
-  #import "typst-canvas/canvas.typ": canvas
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #import "@local/cetz:0.0.1"
+  #cetz.canvas({
+    import cetz.draw: *
     grid((0,0), (3,3), help-lines: true)
     
     line((0,0), (2,2))
@@ -985,9 +983,9 @@ Can be used implicitly as an array in the form `(a, number, b)` or `(a, number, 
     circle(((1, 0), 0.5, 10deg, (3, 2)), radius: 2pt)
   },
   [```typ
-  #import "typst-canvas/canvas.typ": canvas
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #import "@local/cetz:0.0.1"
+  #cetz.canvas({
+    import cetz.draw: *
     grid((0,0), (3,3), help-lines: true)
     line((1,0), (3,2))
     line((1,0), ((1, 0), 1, 10deg, (3,2)))
@@ -1011,9 +1009,9 @@ Can be used implicitly as an array in the form `(a, number, b)` or `(a, number, 
     }
   },
   [```typ
-  #import "typst-canvas/canvas.typ": canvas
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #import "@local/cetz:0.0.1"
+  #cetz.canvas({
+    import cetz.draw: *
     grid((0,0), (4,4), help-lines: true)
 
     fill(black)
@@ -1048,9 +1046,9 @@ You can even chain them together!
     )
  },
   [```typ
-  #import "typst-canvas/canvas.typ": canvas
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #import "@local/cetz:0.0.1"
+  #cetz.canvas({
+    import cetz.draw: *
     grid((0,0), (3, 2), help-lines: true)
     line((0,0), (3,2))
     stroke(red)
@@ -1080,9 +1078,9 @@ You can even chain them together!
     }
  },
   [```typ
-  #import "typst-canvas/canvas.typ": canvas
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #import "@local/cetz:0.0.1"
+  #cetz.canvas({
+    import cetz.draw: *
     grid((0,0), (3, 2), help-lines: true)
     line((1,0), (3,2))
     for (l, c) in ((0cm, "0cm"), (1cm, "1cm"), (15mm, "15mm")) {
@@ -1105,13 +1103,12 @@ The example below shows how to use this system to create an offset from an ancho
     circle((v => vector.add(v, (0, -1)), "c.right"), radius: 0.3)
  },
   [```typ
-  #import "typst-canvas/canvas.typ": canvas
-  #import "typst-canvas/vector.typ"
-  #canvas({
-    import "typst-canvas/draw.typ": *
+  #import "@local/cetz:0.0.1"
+  #cetz.canvas({
+    import cetz.draw: *
     circle((0, 0), name: "c")
     fill(red)
-    circle((v => vector.add(v, (0, -1)), "c.right"), radius: 0.3)
+    circle((v => cetz.vector.add(v, (0, -1)), "c.right"), radius: 0.3)
   })
   ```]
 )

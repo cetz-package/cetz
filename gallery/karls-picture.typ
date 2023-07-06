@@ -1,11 +1,11 @@
-#import "@local/canvas:0.0.1"
+#import "@local/cetz:0.0.1"
 
 #set page(width: auto, height: auto)
 
 #show math.equation: block.with(fill: white, inset: 1pt)
 
-#canvas.canvas(length: 3cm, {
-  import canvas.draw: *
+#cetz.canvas(length: 3cm, {
+  import cetz.draw: *
 
   set-style(
     mark: (fill: black),
