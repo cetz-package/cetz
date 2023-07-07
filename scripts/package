@@ -19,6 +19,14 @@ files=(
   typst.toml
   LICENSE
   README.md
+  gallery/3d-chart.typ
+  gallery/3d-chart.png
+  gallery/pie-chart.typ
+  gallery/pie-chart.png
+  gallery/karls-picture.typ
+  gallery/karls-picture.png
+  manual.typ
+  manual.pdf
 )
 
 # Local package directories per platform
@@ -62,6 +70,7 @@ fi
 TMP="$(mktemp -d)"
 
 for f in "${files[@]}"; do
+  mkdir -p "$TMP/$(dirname "$f")" 2>/dev/null
   cp "$SOURCE/$f" "$TMP/$f"
 done
 

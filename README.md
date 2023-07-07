@@ -30,7 +30,7 @@ CeTZ (CeTZ, ein Typst Zeichenpacket) is a library for drawing with [Typst](https
 
 ## Usage
 
-For information, see the [manual](https://github.com/johannes-wolf/typst-canvas/blob/master/manual.pdf).
+For information, see the [manual](manual.pdf).
 
 To use this package, simply add the following code to your document:
 ```
