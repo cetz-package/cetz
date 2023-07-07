@@ -9,4 +9,4 @@ authors = [
 ]
 license = "Apache-2.0"
 description = "Drawing with Typst made easy, providing an API inspired by TikZ and Processing."
-exclude = [ "*.png", "manual.pdf", "manual.typ" ]
+exclude = [ "/gallery/*", "manual.pdf", "manual.typ" ]
