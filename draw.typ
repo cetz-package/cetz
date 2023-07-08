@@ -363,7 +363,7 @@
   assert(len in (1, 2), message: "Bezier curve expects 1 or 2 control points. Got " + str(len))
   let coordinates = (start, end, ..ctrl)
 
-  // Coordiantes check
+  // Coordinates check
   let t = coordinates.map(coordinate.resolve-system)
   return ((
     name: name,

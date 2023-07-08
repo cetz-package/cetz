@@ -44,7 +44,7 @@
   return v1.zip(v2).map(((a, b)) => a + b)
 }
 
-/// Substract two vectors of the same dimension
+/// Subtract two vectors of the same dimension
 #let sub(v1, v2) = {
   if dim(v1) != dim(v2) {
     v1 = as-vec(v1)

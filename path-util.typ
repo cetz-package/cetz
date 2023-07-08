@@ -160,7 +160,7 @@
 /// Get position on path
 ///
 /// - segments (array): List of path segments
-/// - t (float): Poisition (from 0 to 1)
+/// - t (float): Position (from 0 to 1)
 /// -> vector: Position on path
 #let point-on-path(segments, t) = {
   if segments.len() == 1 {
