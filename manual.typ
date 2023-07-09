@@ -342,7 +342,7 @@ Draws a rectangle to the canvas.
   ```])
 
 === Arc
-Draws an arc to the canvas. Exactly two of the three values `start`, `stop`, and `delta` should be defined. You can set the radius of the arc by setting the `radius` style option. You can also draw an ellpitical arc by passing an array where the first number is the radius in the x direction and the second number is the radius in the y direction.
+Draws an arc to the canvas. Exactly two of the three values `start`, `stop`, and `delta` should be defined. You can set the radius of the arc by setting the `radius` style option. You can also draw an elliptical arc by passing an array where the first number is the radius in the x direction and the second number is the radius in the y direction.
 
 ```typ
 #arc(position, start: auto, stop: auto, delta: auto, name: none, anchor: none,)

@@ -18,7 +18,7 @@ while :; do
 done
 
 
-TYPST_VERSION="v0.5.0"
+TYPST_VERSION="v0.6.0"
 TYPST_BASE_URL="https://github.com/typst/typst/releases/download"
 TYPST_ARCHIVE="typst-x86_64-unknown-linux-musl.tar.xz"
 
@@ -127,3 +127,16 @@ find "$TEST_ROOT" -type d | \
       echo "Unknown mode '$MODE'"; exit 1
     fi
   done
+
+# Optional tests
+if hash typos 2>/dev/null; then
+  echo "[TEST] typos"
+  if typos --format brief --exclude "/deps/*"; then
+    echo "[  OK]"
+  else
+    echo "[FAIL]"
+  fi
+else
+  echo "[SKIP] typos"
+  echo "[    ] You can install 'typos' via 'cargo install typos-cli'."
+fi
