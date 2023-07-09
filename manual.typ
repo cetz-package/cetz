@@ -144,7 +144,7 @@ Elements can be placed relative to their own anchors.
 #def-arg("body", none, [A code block in which functions from `draw.typ` have been called.])
 
 == Styling <styling>
-You can style draw elements by passing the relevent named arguments to their draw functions. All elements have stroke and fill styling unless said otherwise.
+You can style draw elements by passing the relevant named arguments to their draw functions. All elements have stroke and fill styling unless said otherwise.
 
 #def-arg("fill", [`<color>` or `<none>`], default: "none", [How to fill the draw element.])
 #def-arg("stroke", [`<none>` or `<auto>` or `<length>` \ or `<color>` or `<dicitionary>` or `<stroke>`], default: "black + 1pt", [How to stroke the border or the path of the draw element. See Typst's line documentation for more details: https://typst.app/docs/reference/visualize/line/#parameters-stroke])
@@ -409,7 +409,7 @@ Draws a bezier curve with 1 or 2 control points to the canvas.
 ```
 #def-arg("start", `<coordinate>`, "The coordinate to start drawing the bezier curve from.")
 #def-arg("end", `<coordinate>`, "The coordinate to draw the bezier curve to.")
-#def-arg("..ctrl-style", `<coordinates>`, "An argument sink for the control points and styles. Its positional part should be of one or two coordinates to specify the contorl points of the bezier curve.")
+#def-arg("..ctrl-style", `<coordinates>`, "An argument sink for the control points and styles. Its positional part should be of one or two coordinates to specify the control points of the bezier curve.")
 
 #example({
     import "draw.typ": *
@@ -771,7 +771,7 @@ In the barycentric coordinate system a point is expressed as the linear combinat
       (1, 0.2, 0.8, "LaTeX"),
       (1, 0.6, 0.8, "TeX"),
       (0.8, 0.8, 1, "Word"),
-      (1, 0.05, 0.05, "ACII")
+      (1, 0.05, 0.05, "ASCII")
     ) {
       content((bary: (content: c, structure: s, form: f)), cont)
     }
@@ -805,7 +805,7 @@ In the barycentric coordinate system a point is expressed as the linear combinat
       (1, 0.2, 0.8, "LaTeX"),
       (1, 0.6, 0.8, "TeX"),
       (0.8, 0.8, 1, "Word"),
-      (1, 0.05, 0.05, "ACII")
+      (1, 0.05, 0.05, "ASCII")
     ) {
       content((bary: (content: c, structure: s, form: f)), cont)
     }
@@ -819,7 +819,7 @@ Defines a point relative to a named element using anchors, see @anchors.
 #def-arg("name", `<string>`, [The name of the element that you wish to use to specify a coordinate.])
 #def-arg("anchor", `<string>`, [An anchor of the element. If one is not given a default anchor will be used. On most elements this is `center` but it can be different.])
 
-You can also use implicit syntax of a dot seperated string in the form `"name.anchor"`.
+You can also use implicit syntax of a dot separated string in the form `"name.anchor"`.
 
 #example(
   {
