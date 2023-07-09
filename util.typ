@@ -54,3 +54,13 @@
 #let resolve-radius(radius) = {
   return if type(radius) == "array" {radius} else {(radius, radius)}
 }
+
+#let min(a, b) = {
+  if a == none { return b }; if b == none { return a }
+  return calc.min(a, b)
+}
+
+#let max(a, b) = {
+  if a == none { return b }; if b == none { return a }
+  return calc.max(a, b)
+}
