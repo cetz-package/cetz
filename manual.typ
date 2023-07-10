@@ -1168,3 +1168,38 @@ The example below shows how to use this system to create an offset from an ancho
   ```]
 )
 
+= Utility
+
+== For-Each-Anchor
+
+```typ
+#for-each-anchor(node-name, callback)
+```
+#def-arg("node-name", `<string>`, [
+  Target node name
+])
+#def-arg("callback", `<function>`, [
+  Callback function acception the anchor name
+])
+
+#example({
+  import "draw.typ": *
+  rect((0, 0), (2,2), name: "my-rect")
+  for-each-anchor("my-rect", (name) => {
+    if not name in ("above", "below", "default") {
+
+    content((), box(inset: 1pt, fill: white, text(8pt, [#name])),
+            angle: -45deg)
+    }
+  })
+}, ```typ
+// Label nodes anchors
+rect((0, 0), (2,2), name: "my-rect")
+for-each-anchor("my-rect", (name) => {
+  if not name in ("above", "below", "default") {
+
+  content((), box(inset: 1pt, fill: white, text(8pt, [#name])),
+          angle: -45deg)
+  }
+})
+```)

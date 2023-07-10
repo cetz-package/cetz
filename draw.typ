@@ -300,6 +300,27 @@
   ),)
 }
 
+// Execute callback for each anchor with the name of the anchor
+//
+// The position of the anchor is set as the current position.
+//
+// - node-prefix (string): Anchor node name
+// - callback (function): Callback (achor-name) => cmd
+//
+// Example:
+//   for-each-anchor("my-node", (name) => { content((), [#name]) })
+#let for-each-anchor(node-prefix, callback) = {
+  ((
+    children: (ctx) => {
+      let names = ctx.nodes.at(node-prefix).at("anchors", default: (:))
+      for (name, _) in names {
+        move-to(node-prefix + "." + name)
+        callback(name)
+      }
+    },
+  ),)
+}
+
 // Render content
 //
 // NOTE: Content itself is not transformed by the canvas transformations!
