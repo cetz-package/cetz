@@ -537,6 +537,37 @@ Draws a mark or "arrow head", its styling influences marks being drawn on paths 
 #def-arg("end", `<string>`, [The type of mark to draw at the end of a path.])
 #def-arg("size", `<number>`, default: "0.15", [The size of the marks.])
 
+== Path Transformations <path-transform>
+
+=== Merge-Path
+
+```typ
+#merge-path(body, ..style, close: false, name: none)
+```
+#def-arg("body", `<objects>`, [
+  Elements to merge as one path
+])
+#def-arg("close", `<bool>`, [
+  Auto close the path using a straight line
+])
+#def-arg("name", `<string>`, [
+  Element name
+])
+
+#example({
+import "draw.typ": *
+merge-path({
+  line((0, 0), (1, 0))
+  bezier((), (0, 0), (1,1), (0,1))
+}, fill: white)
+}, ```typ
+// Merge two different paths into one
+merge-path({
+  line((0, 0), (1, 0))
+  bezier((), (0, 0), (1,1), (0,1))
+}, fill: white)
+```)
+
 == Groups <groups>
 Groups allow scoping context changes such as setting stroke-style, fill and transformations.
 ```typ
