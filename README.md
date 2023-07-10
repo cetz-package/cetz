@@ -81,3 +81,4 @@ Otherwise download and install a matching package from the [ImageMagick](https:/
 
 ## Projects using CeTZ
 - [circuitypst](https://github.com/fenjalien/circuitypst) A port of [circuitikz](https://github.com/circuitikz/circuitikz) to Typst
+- [typst-chords](https://github.com/ljgago/typst-chords) A library to write song lyrics with chord diagrams in Typst
