@@ -16,6 +16,7 @@ files=(
   collisions.typ
   coordinate.typ
   styles.typ
+  tree.typ
   typst.toml
   LICENSE
   README.md
