@@ -158,6 +158,21 @@
     }
   }
 
+  let anchors(node, parent-path) = {
+    if parent-path != none {
+      parent-path += "-"
+    } else {
+      parent-path = ""
+    }
+
+    let d = (:)
+    d.insert(parent-path + str(node.n), node-position(node))
+    for child in node.children {
+      d += anchors(child, parent-path + str(node.n))
+    }
+    return d
+  }
+
   let render(node, parent-name) = {
     let name = "node-" + str(node.depth) + "-" + str(node.n)
 
@@ -184,9 +199,30 @@
   ((
     name: name,
     style: style.named(),
+    before: ctx => {
+      ctx.groups.push((
+        ctx: ctx,
+        anchors: (:),
+        tree-root: layout(root, ctx)
+      ))
+      return ctx
+    },
+    after: ctx => {
+      let self = ctx.groups.pop()
+      let nodes = ctx.nodes
+      ctx = self.ctx
+      if name != none {
+        ctx.nodes.insert(name, nodes.at(name))
+      }
+      return ctx
+    },
+    custom-anchors-ctx: (ctx) => {
+      let self = ctx.groups.last()
+      return anchors(self.tree-root, none)
+    },
     children: (ctx) => {
-      let root = layout(root, ctx)
-      render(root, none)
+      let self = ctx.groups.last()
+      render(self.tree-root, none)
     },
   ),)
 }
