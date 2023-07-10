@@ -942,8 +942,13 @@ An angle can also be given for the general meaning: "First consider the line fro
 
 #def-arg("a", `<coordinate>`, [The coordinate to interpolate from.])
 #def-arg("b", `<coordinate>`, [The coordinate to interpolate to.])
-#def-arg("number", [`<number>` or `<length>`], [The factor to interpolate by or the distance away from `a` towards `b`.])
+#def-arg("number", [`<number>` or `<length>`], [
+  The factor to interpolate by or the distance away from `a` towards `b`.
+])
 #def-arg("angle", `<angle>`, default: 0deg, "")
+#def-arg("abs", `<bool>`, default: false, [
+  Interpret `number` as absolute distance, instead of a factor.
+])
 
 Can be used implicitly as an array in the form `(a, number, b)` or `(a, number, angle, b)`.
 
@@ -952,8 +957,14 @@ Can be used implicitly as an array in the form `(a, number, b)` or `(a, number, 
     import "draw.typ": *
     grid((0,0), (3,3), help-lines: true)
     line((0,0), (2,2))
-    for i in (0, 0.2, 0.5, 0.9, 1, 1.5) {
-      content(((0,0), i, (2,2)), [#i])
+    for i in (0, 0.2, 0.5, 0.8, 1, 1.5) {
+      content(((0,0), i, (2,2)),
+              box(fill: white, inset: 1pt, [#i]))
+    }
+    line((1,0), (3,2))
+    for i in (0, 0.5, 1, 2) {
+      content((a: (1,0), number: i, abs: true, b: (3,2)),
+              box(fill: white, inset: 1pt, text(red, [#i])))
     }
   },
   [```typ
@@ -963,9 +974,15 @@ Can be used implicitly as an array in the form `(a, number, b)` or `(a, number, 
     grid((0,0), (3,3), help-lines: true)
     
     line((0,0), (2,2))
-    
-    for i in (0, 0.2, 0.5, 0.9, 1, 1.5) {
-      content(((0,0), i, (2,2)), [#i])
+    for i in (0, 0.2, 0.5, 0.8, 1, 1.5) { /* Relative distance */
+      content(((0,0), i, (2,2)),
+              box(fill: white, inset: 1pt, [#i]))
+    }
+
+    line((1,0), (3,2))
+    for i in (0, 0.5, 1, 2) { /* Absolute distance */
+      content((a: (1,0), number: i, abs: true, b: (3,2)),
+              box(fill: white, inset: 1pt, text(red, [#i])))
     }
   })
   ```]
