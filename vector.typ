@@ -86,6 +86,11 @@
   return (x, y, z)
 }
 
+/// Calculate angle between two points and the x-axis in 2d space
+#let angle2(a, b) = {
+  return calc.atan2(a.at(1) - b.at(1), a.at(0) - b.at(0)) + 90deg
+}
+
 /// Calculate angle between three points 
 #let angle(v1, c, v2) = {
   assert(dim(v1) == dim(v2), message: "Vectors " + repr(v1) + " and " + repr(v2) + " do not have the same dimensions.")

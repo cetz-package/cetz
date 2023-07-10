@@ -433,7 +433,7 @@ Draws a content block to the canvas.
 ```
 #def-arg("pt", `<coordinate>`, "The coordinate of the center of the content block.")
 #def-arg("ct", `<content>`, "The content block.")
-#def-arg("angle", `<angle>`, [The angle to rotate the content block by. Uses Typst's `rotate` function.])
+#def-arg("angle", `<angle|coordinate>`, [The angle to rotate the content block by. Uses Typst's `rotate` function. If passed a coordinate, the angle between `pt` and `angle` is used.])
 
 #example({
     import "draw.typ": *
@@ -443,6 +443,24 @@ Draws a content block to the canvas.
   #cetz.canvas({
     import cetz.draw: *
     content((0,0), [Hello World!])
+  })
+  ```]
+)
+
+#example({
+    import "draw.typ": *
+    let (a, b) = ((1,0), (3,1))
+
+    line(a, b)
+    content((a, .5, b), angle: b, [Text on a line], anchor: "bottom")
+  },
+  [```typ
+  #cetz.canvas({
+    import cetz.draw: *
+    let (a, b) = ((1,0), (3,1))
+
+    line(a, b)
+    content((a, .5, b), angle: b, [Text on a line], anchor: "bottom")
   })
   ```]
 )

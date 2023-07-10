@@ -301,8 +301,15 @@
 }
 
 // Render content
+//
 // NOTE: Content itself is not transformed by the canvas transformations!
 //       native transformation matrix support from typst would be required.
+// - pt (coordinate): Content coordinate
+// - ct (content): Content
+// - angle (angle|coordinate): Rotation angle or second coordinate to use for
+//                             angle calculation
+// - anchor (string): Anchor to use as origin
+// - name (string): Node name
 #let content(
   pt,
   ct,
@@ -311,29 +318,74 @@
   name: none,
   ..style
   ) = {
+  // Angle can be either an angle or a second coordinate
+  assert(type(angle) in ("angle", "array"))
+
   // No extra positional arguments from the style sink
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
   let style = style.named()
 
   // Coordinate check
   let t = coordinate.resolve-system(pt)
+
+  let pt2 = pt
+  if type(angle) != "angle" {
+    pt2 = angle
+    let t = coordinate.resolve-system(pt2)
+  }
+
+  let get-angle(a, b) = {
+    if type(angle) != "angle" {
+      return vector.angle2(a, b)
+    }
+    return angle
+  }
+
   ((
     name: name,
-    coordinates: (pt,),
+    coordinates: (pt, pt2,),
     anchor: anchor,
     default-anchor: "center",
-    render: (ctx, pt) => {
+    custom-anchors-ctx: (ctx, pt, pt2) => {
+      let style = styles.resolve(ctx.style, style, root: "content")
+      let padding = util.resolve-number(ctx, style.padding)
+      let angle = get-angle(pt, pt2)
+      let size = measure(ct, ctx.typst-style)
+      let w = size.width / ctx.length + padding * 2
+      let h = size.height / ctx.length + padding * 2
+
+      let x-dir = vector.scale((calc.cos(angle), -calc.sin(angle), 0), w/2)
+      let y-dir = vector.scale((calc.sin(angle), calc.cos(angle), 0), h/2)
+      let tr-dir = vector.add(x-dir, y-dir)
+      let tl-dir = vector.sub(x-dir, y-dir)
+
+      return (
+        center:       pt,
+        bottom:       vector.sub(pt, y-dir),
+        below:        vector.sub(pt, y-dir),
+        top:          vector.add(pt, y-dir),
+        above:        vector.add(pt, y-dir),
+        left:         vector.sub(pt, x-dir),
+        right:        vector.add(pt, x-dir),
+        bottom-left:  vector.sub(pt, tr-dir),
+        top-right:    vector.add(pt, tr-dir),
+        bottom-right: vector.add(pt, tl-dir),
+        top-left:     vector.sub(pt, tl-dir),
+      )
+    },
+    render: (ctx, pt, pt2) => {
       let (x, y, ..) = pt
       let style = styles.resolve(ctx.style, style, root: "content")
       let padding = util.resolve-number(ctx, style.padding)
+      let angle = get-angle(pt, pt2)
       let size = measure(ct, ctx.typst-style)
       let tw = size.width / ctx.length 
       let th = size.height / ctx.length
-      let w = (calc.abs(calc.sin(angle) * th) + calc.abs(calc.cos(angle) * tw)) + padding * 2
-      let h = (calc.abs(calc.cos(angle) * th) + calc.abs(calc.sin(angle) * tw)) + padding * 2
+      let w = (calc.abs(calc.sin(angle) * th) +
+               calc.abs(calc.cos(angle) * tw)) + padding * 2
+      let h = (calc.abs(calc.cos(angle) * th) +
+               calc.abs(calc.sin(angle) * tw)) + padding * 2
 
-      // x += w/2
-      // y -= h/2
       cmd.content(
         x,
         y,
