@@ -14,10 +14,15 @@ jobs:
         uses: baptiste0928/cargo-install@v2
         with:
           crate: typos-cli
+      - name: Install just from crates.io
+        uses: baptiste0928/cargo-install@v2
+        with:
+          crate: just
       - uses: yusancky/setup-typst@v2
         id: setup-typst
         with:
           version: 'v0.6.0'
       - run: |
-          ./scripts/package @local
-          ./scripts/test test
+          just install
+          just test
+          just manual

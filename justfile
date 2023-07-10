@@ -1,7 +1,7 @@
 # Local Variables:
 # mode: makefile
 # End:
-demo_dir := "./demo"
+gallery_dir := "./gallery"
 test_dir := "./tests"
 
 package target:
@@ -16,6 +16,8 @@ test:
 update-test:
   ./scripts/test update
 
-demo:
-  find "{{demo_dir}}" -iname "*.typ" -exec typst compile {} \;
-  find "{{demo_dir}}" -iname "*.pdf" -exec convert {} {}.png \;
+manual:
+  typst c manual.typ manual.pdf
+
+gallery:
+  for f in "{{gallery_dir}}"/*.typ; do typst c "$f" "${f/typ/png}"; done
