@@ -1,6 +1,6 @@
 #import "@local/cetz:0.0.1": canvas, draw 
 
-#set page(width: auto, height: auto)
+#set page(width: auto, height: auto, margin: .5cm)
 
 #canvas(length: 1cm, {
   import draw: *

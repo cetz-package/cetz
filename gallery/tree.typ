@@ -1,6 +1,6 @@
 #import "@local/cetz:0.0.1": canvas, draw, tree
 
-#set page(width: auto, height: auto)
+#set page(width: auto, height: auto, margin: .5cm)
 
 #let data = (
   [A], ([B], [C], [D]), ([E], [F])

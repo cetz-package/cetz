@@ -1,6 +1,6 @@
 #import "@local/cetz:0.0.1"
 
-#set page(width: auto, height: auto)
+#set page(width: auto, height: auto, margin: .5cm)
 
 #show math.equation: block.with(fill: white, inset: 1pt)
 
