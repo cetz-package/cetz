@@ -5,6 +5,31 @@
 
 #let typst-path = path
 
+#let push-clip(a, b, num-cmds) = ((
+  type: "push-clip",
+  segments: (("pt", a), ("pt", b)),
+  bounds: (a, b),
+  num-cmds: num-cmds,
+  clip: (self, body) => {
+    let (x1, y1) = self.segments.at(0).at(1)
+    let (x2, y2) = self.segments.at(1).at(1)
+    let (x, y) = (calc.min(x1,x2), calc.min(y1,y2))
+    let (w, h) = (calc.max(x1,x2) - calc.min(x1,x2),
+                  calc.max(y1,y2) - calc.min(y1,y2))
+    y -= h
+    place(dx: x, dy: y,
+      box(clip: true,
+          width: w,
+          height: h,
+          place(dx: -x, dy: -y, body())))
+  }
+),)
+
+#let pop-clip() = ((
+  type: "pop-clip",
+  segments: (("pt", (0,0)),),
+),)
+
 #let content(x, y, w, h, c) = {
   ((
     type: "content",

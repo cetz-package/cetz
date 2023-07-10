@@ -76,7 +76,7 @@
     for child in children {
       let r = process-element(child, ctx)
       if r != none {
-        if r.bounds != none {
+        if r.bounds != none and not element.at("force-bounds", default: false) {
           bounds = bounding-box(r.bounds, init: bounds)
         }
         ctx = r.ctx
@@ -318,14 +318,31 @@
     0
   )
   box(stroke: if debug {green}, width: width, height: height, fill: background, {
-    for d in draw-cmds {
-      d.segments = d.segments.map(s => {
+    for i in range(0, draw-cmds.len()) {
+      draw-cmds.at(i).segments = draw-cmds.at(i).segments.map(s => {
         return (s.at(0),) + s.slice(1).map(v => {
           return util.apply-transform(transform, v)
             .slice(0,2).map(x => ctx.length * x)
         })
       })
-      (d.draw)(d)
     }
+
+    let execute-draw(n) = {
+      let i = n
+      while i < draw-cmds.len() {
+        let d = draw-cmds.at(i)
+        if d.type == "push-clip" {
+          (d.clip)(d, () => {execute-draw(i + 1)})
+          i += d.num-cmds // Skip already drawn elements
+        } else if d.type == "pop-clip" {
+          return // Early return from scope
+        } else {
+          (d.draw)(d)
+        }
+        i += 1
+      }
+    }
+
+    execute-draw(0)
   })
 }))

@@ -123,6 +123,31 @@
   ),)
 }
 
+// Clip all children insides a rect
+//
+// - a (coordinate): Start
+// - b (coordinate): Stop
+// - body (objects): Drawables to clip
+#let clip(a, b, body) = {
+  ((
+    coordinates: (a, b),
+    bounds: (a, b),
+    force-bounds: true,
+    render: (ctx, a, b) => (
+      // Render an invisible line to generate bounds
+      cmd.path(("line", a, b), fill: none, stroke: none)
+    ),
+    children: body,
+    finalize-children: (ctx, children) => {
+      let (a, b) = (coordinate.resolve(ctx, a),
+                    coordinate.resolve(ctx, b))
+      cmd.push-clip(a, b, children.len())
+      children
+      cmd.pop-clip()
+    }
+  ),)
+}
+
 // Group
 #let group(name: none, anchor: none, body) = {
   ((
