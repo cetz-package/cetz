@@ -484,7 +484,10 @@ Draws a mark or "arrow head", its styling influences marks being drawn on paths 
 
 #example({
   import "draw.typ": *
-  line((1, -1), (1, 5), stroke: (paint: gray, dash: "dotted"))
+  line((1, 0), (1, 6), stroke: (paint: gray, dash: "dotted"))
+  set-style(mark: (fill: none))
+  line((0, 6), (1, 6), mark: (end: "<"))
+  line((0, 5), (1, 5), mark: (end: ">"))
   set-style(mark: (fill: black))
   line((0, 4), (1, 4), mark: (end: "<>"))
   line((0, 3), (1, 3), mark: (end: "o"))
@@ -495,7 +498,10 @@ Draws a mark or "arrow head", its styling influences marks being drawn on paths 
 [```typ
   #cetz.canvas({
     import cetz.draw: *
-    line((1, -1), (1, 5), stroke: (paint: gray, dash: "dotted"))
+    line((1, 0), (1, 6), stroke: (paint: gray, dash: "dotted"))
+    set-style(mark: (fill: none))
+    line((0, 6), (1, 6), mark: (end: "<"))
+    line((0, 5), (1, 5), mark: (end: ">"))
     set-style(mark: (fill: black))
     line((0, 4), (1, 4), mark: (end: "<>"))
     line((0, 3), (1, 3), mark: (end: "o"))
