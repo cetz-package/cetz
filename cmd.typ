@@ -150,18 +150,36 @@
     from = tmp
   }
 
+  let style = (
+    fill: fill,
+    stroke: stroke
+  )
+
   let triangle(reverse: false) = {
       let outset = if reverse { 1 } else { 0 }
       let from = vector.add(from, vector.scale(dir, outset))
       let to = vector.add(to, vector.scale(dir, outset))
       let n = vector.scale(odir, .4)
-      (("line", from, (vector.add(from, n)),
-                to, (vector.add(from, vector.neg(n)))),)
+
+      if fill != none {
+        // Draw a filled triangle
+        path(("line", from, (vector.add(from, n)),
+                        to, (vector.add(from, vector.neg(n)))),
+              close: true,
+              ..style)
+      } else {
+        // Draw open arrow
+        path(("line", (vector.add(from, n)), to,
+                      (vector.add(from, vector.neg(n)))),
+              close: false,
+              ..style)
+      }
   }
 
   let bar() = {
       let n = vector.scale(odir, .5)
-      (("line", vector.add(to, n), vector.sub(to, n)),)
+      path(("line", vector.add(to, n), vector.sub(to, n)),
+           ..style)
   }
 
   let diamond() = {
@@ -169,8 +187,10 @@
       let to = vector.add(to, vector.scale(dir, .5))
       let n = vector.add(vector.scale(dir, .5),
                          vector.scale(odir, .5))
-      (("line", from, (vector.add(from, n)),
-                to, (vector.add(to, vector.neg(n)))),)
+      path(("line", from, (vector.add(from, n)),
+                      to, (vector.add(to, vector.neg(n)))),
+           close: true,
+           ..style)
   }
 
   let circle() = {
@@ -180,23 +200,19 @@
     let pts = ()
     let r = vector.len(dir) / 2
 
-    return ellipse(c.at(0), c.at(1), c.at(2), r, r).first().segments
+    ellipse(c.at(0), c.at(1), c.at(2), r, r, ..style)
   }
-  path(
-    ..if symbol == ">" {
-      triangle()
-    } else if symbol == "<" {
-      triangle(reverse: true)
-    } else if symbol == "|" {
-      bar()
-    } else if symbol == "<>" {
-      diamond()
-    } else if symbol == "o" {
-      circle()
-    },
-    close: symbol != "|",
-    fill: fill,
-    stroke: stroke,
-  )
+
+  if symbol == ">" {
+    triangle()
+  } else if symbol == "<" {
+    triangle(reverse: true)
+  } else if symbol == "|" {
+    bar()
+  } else if symbol == "<>" {
+    diamond()
+  } else if symbol == "o" {
+    circle()
+  }
 }
 

@@ -16,18 +16,19 @@
     for m in marks {
         next((end: m))
     }
+
     for m in marks {
         next((start: m))
     }
-    // next((mark: (end: ">")))
-    // next((mark: (end: "<")))
-    // next((mark: (end: "|")))
-    // next((mark: (end: "<>")))
-    // next((mark: (end: "o")))
 
-    // next(">", none)
-    // next("<", none)
-    // next("|", none)
-    // next("<>", none)
-    // next("o", none)
+    fill(none)
+
+    let marks = (">", "<")
+    for m in marks {
+        next((end: m))
+    }
+
+    for m in marks {
+        next((start: m))
+    }
 }))
