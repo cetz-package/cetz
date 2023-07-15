@@ -22,7 +22,7 @@ CeTZ (CeTZ, ein Typst Zeichenpacket) is a library for drawing with [Typst](https
   </td>
 </tr><tr>
   <td>Karl's Picture</td>
-  <td>Tree</td>
+  <td>Tree Layout</td>
   <td>3D Chart</td>
 </tr><tr>
   <td>
