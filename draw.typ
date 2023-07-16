@@ -305,15 +305,20 @@
 //       native transformation matrix support from typst would be required.
 #let content(
   pt,
-  ct,
   angle: 0deg,
   anchor: none,
   name: none,
-  ..style
+  ..style-ct
   ) = {
   // No extra positional arguments from the style sink
-  assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
-  let style = style.named()
+  let style = style-ct.named()
+
+  let ct = style-ct.pos().map(ct => {
+    if type(ct) == "dictionary" {
+      return ct.content
+    }
+    return ct
+  }).sum()
 
   // Coordinate check
   let t = coordinate.resolve-system(pt)
@@ -322,6 +327,30 @@
     coordinates: (pt,),
     anchor: anchor,
     default-anchor: "center",
+    custom-anchors-ctx: (ctx, pt) => {
+      let anchors = (:)
+
+      let size = measure(ct, ctx.typst-style)
+      let x-offset = pt.at(0) - size.width / ctx.length / 2
+      let y-offset = pt.at(1) - size.height / ctx.length / 2
+      for node in style-ct.pos() {
+        let size = measure(if type(node) == "dictionary" {
+          node.content
+        } else {
+          node
+        }, ctx.typst-style)
+
+        let width = size.width / ctx.length
+        let height = size.height / ctx.length
+        if type(node) == "dictionary" {
+          anchors.insert(node.name, (x-offset + width / 2,
+                                     y-offset))
+        }
+        x-offset += width
+      }
+
+      return anchors
+    },
     render: (ctx, pt) => {
       let (x, y, ..) = pt
       let style = styles.resolve(ctx.style, style, root: "content")
