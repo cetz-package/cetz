@@ -416,6 +416,34 @@ circle(center, name: none, anchor: none)
   ```]
 )
 
+==== Circle-Through
+Draws a circle through 3 points by determining the center.
+
+```typ
+#circle-through(a, b, c, name: none, ..style)
+```
+#def-arg("a", `<coordinate>`, [Coordinate 1.])
+#def-arg("b", `<coordinate>`, [Coordinate 2.])
+#def-arg("c", `<coordinate>`, [Coordinate 3.])
+
+#example({
+    import "draw.typ": *
+    let (a, b, c) = ((0,0), (2,-.5), (1,1))
+    line(a, b, c, close: true, stroke: gray)
+    circle-through(a, b, c, name: "c")
+    circle("c.center", radius: .05, fill: red)
+  },
+  [```typ
+  #cetz.canvas({
+    import cetz.draw: *
+    let (a, b, c) = ((0,0), (2,-.5), (1,1))
+    line(a, b, c, close: true, stroke: gray)
+    circle-through(a, b, c, name: "c")
+    circle("c.center", radius: .05, fill: red)
+  })
+  ```]
+)
+
 #STYLING
 
 #def-arg("radius", `<number> or <length> or <array of <number> or <length>>`, default: "1", [The circle's radius. If an array is given an ellipse will be drawn where the first item is the `x` radius and the second item is the `y` radius. This is also a global style shared with arc!])
@@ -432,17 +460,56 @@ bezier(start, end, ..ctrl-style)
 
 #example({
     import "draw.typ": *
-    bezier((0, 0), (2, 0), (1, 1))
-    bezier((0, -1), (2, -1), (.5, -2), (1.5, 0))
+    let (a, b, c) = ((0, 0), (2, 0), (1, 1))
+    line(a, c,  b, stroke: gray)
+    bezier(a, b, c)
+
+    let (a, b, c, d) = ((0, -1), (2, -1), (.5, -2), (1.5, 0))
+    line(a, c, d, b, stroke: gray)
+    bezier(a, b, c, d)
   },
   [```typc
   cetz.canvas({
     import cetz.draw: *
-    bezier((0, 0), (2, 0), (1, 1))
-    bezier((0, -1), (2, -1), (.5, -2), (1.5, 0))
+    let (a, b, c) = ((0, 0), (2, 0), (1, 1))
+    line(a, c,  b, stroke: gray)
+    bezier(a, b, c)
+
+    let (a, b, c, d) = ((0, -1), (2, -1), (.5, -2), (1.5, 0))
+    line(a, c, d, b, stroke: gray)
+    bezier(a, b, c, d)
   })
   ```]
 )
+
+==== Bezier-Through
+Draw a bezier curve through 3 coordinates.
+
+*NOTE:* Currently only quadratic curves are generated, which can slow down rendering!
+
+```typ
+#bezier-through(a, b, c, ..style)
+```
+#def-arg("a", `<coordinate>`, "The coordinate to start drawing the bezier curve from.")
+#def-arg("b", `<coordinate>`, "The coordinate to draw the bezier curve through.")
+#def-arg("c", `<coordinate>`, "The coordinate to draw the bezier curve to.")
+
+#example({
+    import "draw.typ": *
+    let (a, b, c) = ((0, 0), (1, 1), (2, -1))
+    line(a, b, c, stroke: gray)
+    bezier-through(a, b, c)
+  },
+  [```typ
+  #cetz.canvas({
+    import cetz.draw: *
+    let (a, b, c) = ((0, 0), (1, 1), (2, -1))
+    line(a, b, c, stroke: gray)
+    bezier-through(a, b, c)
+  })
+  ```]
+)
+
 
 === Content
 Draws a content block to the canvas.
