@@ -39,21 +39,6 @@
   return (0 - v.at(1), v.at(0), v.at(2, default: 0))
 }
 
-// Find intersection point of two 2d lines
-// L1: a*x + c
-// L2: b*x + d
-#let line-intersection-2d(a, c, b, d) = {
-  if a - b == 0 {
-    if c == d {
-      return (0, c, 0)
-    }
-    return none
-  }
-  let x = (d - c)/(a - b)
-  let y = a * x + c
-  return (x, y, 0)
-}
-
 #let ellipse-pt(center, radius, angle) = {
   let (rx, ry) = if type(radius) == "array" {
     radius
@@ -106,6 +91,21 @@
 
     // We need only 2 lines
     if args.len() == 4 { break }
+  }
+
+  // Find intersection point of two 2d lines
+  // L1: a*x + c
+  // L2: b*x + d
+  let line-intersection-2d(a, c, b, d) = {
+    if a - b == 0 {
+      if c == d {
+        return (0, c, 0)
+      }
+      return none
+    }
+    let x = (d - c)/(a - b)
+    let y = a * x + c
+    return (x, y, 0)
   }
 
   assert(args.len() == 4, message: "Could not find circle center")
