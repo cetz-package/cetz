@@ -433,7 +433,7 @@ Draws a content block to the canvas.
 ```
 #def-arg("pt", `<coordinate>`, "The coordinate of the center of the content block.")
 #def-arg("ct", `<content>`, "The content block.")
-#def-arg("angle", `<angle>`, [The angle to rotate the content block by. Uses Typst's `rotate` function.])
+#def-arg("angle", `<angle|coordinate>`, [The angle to rotate the content block by. Uses Typst's `rotate` function. If passed a coordinate, the angle between `pt` and `angle` is used.])
 
 #example({
     import "draw.typ": *
@@ -443,6 +443,24 @@ Draws a content block to the canvas.
   #cetz.canvas({
     import cetz.draw: *
     content((0,0), [Hello World!])
+  })
+  ```]
+)
+
+#example({
+    import "draw.typ": *
+    let (a, b) = ((1,0), (3,1))
+
+    line(a, b)
+    content((a, .5, b), angle: b, [Text on a line], anchor: "bottom")
+  },
+  [```typ
+  #cetz.canvas({
+    import cetz.draw: *
+    let (a, b) = ((1,0), (3,1))
+
+    line(a, b)
+    content((a, .5, b), angle: b, [Text on a line], anchor: "bottom")
   })
   ```]
 )
@@ -518,6 +536,37 @@ Draws a mark or "arrow head", its styling influences marks being drawn on paths 
 #def-arg("start", `<string>`, [The type of mark to draw at the start of a path.])
 #def-arg("end", `<string>`, [The type of mark to draw at the end of a path.])
 #def-arg("size", `<number>`, default: "0.15", [The size of the marks.])
+
+== Path Transformations <path-transform>
+
+=== Merge-Path
+
+```typ
+#merge-path(body, ..style, close: false, name: none)
+```
+#def-arg("body", `<objects>`, [
+  Elements to merge as one path
+])
+#def-arg("close", `<bool>`, [
+  Auto close the path using a straight line
+])
+#def-arg("name", `<string>`, [
+  Element name
+])
+
+#example({
+import "draw.typ": *
+merge-path({
+  line((0, 0), (1, 0))
+  bezier((), (0, 0), (1,1), (0,1))
+}, fill: white)
+}, ```typ
+// Merge two different paths into one
+merge-path({
+  line((0, 0), (1, 0))
+  bezier((), (0, 0), (1,1), (0,1))
+}, fill: white)
+```)
 
 == Groups <groups>
 Groups allow scoping context changes such as setting stroke-style, fill and transformations.
@@ -1119,3 +1168,38 @@ The example below shows how to use this system to create an offset from an ancho
   ```]
 )
 
+= Utility
+
+== For-Each-Anchor
+
+```typ
+#for-each-anchor(node-name, callback)
+```
+#def-arg("node-name", `<string>`, [
+  Target node name
+])
+#def-arg("callback", `<function>`, [
+  Callback function acception the anchor name
+])
+
+#example({
+  import "draw.typ": *
+  rect((0, 0), (2,2), name: "my-rect")
+  for-each-anchor("my-rect", (name) => {
+    if not name in ("above", "below", "default") {
+
+    content((), box(inset: 1pt, fill: white, text(8pt, [#name])),
+            angle: -45deg)
+    }
+  })
+}, ```typ
+// Label nodes anchors
+rect((0, 0), (2,2), name: "my-rect")
+for-each-anchor("my-rect", (name) => {
+  if not name in ("above", "below", "default") {
+
+  content((), box(inset: 1pt, fill: white, text(8pt, [#name])),
+          angle: -45deg)
+  }
+})
+```)
