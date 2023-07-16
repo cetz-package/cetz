@@ -11,8 +11,8 @@ CeTZ (CeTZ, ein Typst Zeichenpacket) is a library for drawing with [Typst](https
     </a>
   </td>
   <td>
-    <a href="gallery/pie-chart.typ">
-      <img src="gallery/pie-chart.png" width="250px">
+    <a href="gallery/tree.typ">
+      <img src="gallery/tree.png" width="250px">
     </a>
   </td>
   <td>
@@ -22,9 +22,25 @@ CeTZ (CeTZ, ein Typst Zeichenpacket) is a library for drawing with [Typst](https
   </td>
 </tr><tr>
   <td>Karl's Picture</td>
-  <td>Pie Chart</td>
+  <td>Tree Layout</td>
   <td>3D Chart</td>
-</tr></table>
+</tr><tr>
+  <td>
+    <a href="gallery/pie-chart.typ">
+      <img src="gallery/pie-chart.png" width="250px">
+    </a>
+  </td>
+  <td>
+  </td>
+  <td>
+  </td>
+</tr><tr>
+  <td>Pie Chart</td>
+  <td></td>
+  <td></td>
+</tr>
+
+</table>
 
 *Click on the example image to jump to the code.*
 

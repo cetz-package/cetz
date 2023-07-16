@@ -177,26 +177,32 @@
 }
 
 #let resolve-lerp(resolve, ctx, c) = {
-  // (a: <coordinate>, number: <number>, angle?: <angle>, b: <coordinate>)
+  // (a: <coordinate>, number: <number>,
+  //  abs?: <bool>, angle?: <angle>, b: <coordinate>)
   // (a, number, b)
   // (a, number, angle, b)
 
-  let (a, number, angle, b) = if type(c) == "array" {
+  let (a, number, angle, b, abs) = if type(c) == "array" {
     if c.len() == 3 {
       (
         ..c.slice(0, 2),
         none, // angle
-        c.last()
+        c.last(),
+        false,
       )
     } else {
-      c
+      (
+        ..c,
+        false
+      )
     }
   } else {
     (
       c.a,
       c.number,
-      c.angle,
-      c.b
+      c.at("angle", default: 0deg),
+      c.b,
+      c.at("abs", default: false),
     )
   }
 
@@ -218,6 +224,9 @@
     number = util.resolve-number(ctx, number) / vector.len(vector.sub(b,a))
   }
 
+  if abs {
+    number = number / vector.dist(a, b)
+  }
 
   return vector.add(
     vector.scale(
@@ -254,7 +263,7 @@
       "perpendicular"
     } else if len in (1, 2, 3) and keys.all(k => k in ("rel", "to", "update")) {
       "relative"
-    } else if len in (3, 4) and keys.all(k => k in ("a", "number", "angle", "b")) {
+    } else if len in (3, 4) and keys.all(k => k in ("a", "number", "angle", "abs", "b")) {
       "lerp"
     }
   } else if type(c) == "array" {
