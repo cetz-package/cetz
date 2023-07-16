@@ -441,6 +441,33 @@
   ),)
 }
 
+// Draw circle through three points
+//
+// - a (coordinate): Point 1
+// - b (coordinate): Point 2
+// - c (coordinate): Point 3
+#let circle-through(a, b, c, name: none, ..style) = {
+  ((
+    name: name,
+    coordinates: (a, b, c),
+    custom-anchors: (a, b, c) => {
+      (a: a, b: b, c: c,
+       center: util.calculate-circle-center-3pt(a, b, c))
+    },
+    render: (ctx, a, b, c) => {
+      let style = styles.resolve(ctx.style, style.named(), root: "circle")
+
+      let center = util.calculate-circle-center-3pt(a, b, c)
+      assert(center != none, message: "Could not calculate circle center")
+
+      let (x, y, ..) = center
+      let r = vector.dist(a, (x, y, 0))
+
+      cmd.ellipse(x, y, 0, r, r, fill: style.fill, stroke: style.stroke)
+    }
+  ),)
+}
+
 // Render content
 //
 // NOTE: Content itself is not transformed by the canvas transformations!
@@ -575,6 +602,36 @@
         (if len == 1 { "quadratic" } else { "cubic" }, start, end, ..ctrl),
         fill: style.fill, stroke: style.stroke
       )
+    }
+  ),)
+}
+
+/// Draw a quadratic bezier from a to c through b
+///
+/// - a (coordinate): Start point
+/// - b (coordinate): Passthrough point
+/// - c (coordinate): End point
+/// - name (string): Element name
+#let bezier-through(a, b, c, order: 2, name: none, ..style) = {
+  ((
+    name: name,
+    coordinates: (a, b, c),
+    render: (ctx, a, b, c) => {
+      let d1 = vector.dist(a, b)
+      let d2 = vector.dist(c, b)
+      let t = d1 / (d1 + d2)
+
+      let (A, B, C) = util.bezier-ABC(a, c, b, t, order: order)
+
+      let style = styles.resolve(ctx.style, style.named(), root: "bezier")
+
+      if order == 2 {
+        cmd.path(("quadratic", a, c, A),
+                 fill: style.fill,
+                 stroke: style.stroke)
+      } else {
+        panic("Cubic bezier curves through 3 points are not supported yet")
+      }
     }
   ),)
 }

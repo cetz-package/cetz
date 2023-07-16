@@ -20,7 +20,7 @@
 // - b (vector): End point
 // - t (float):  Position on line [0, 1]
 #let line-pt(a, b, t) = {
-  return vector.scale(vector.sub(b, a), t)
+  return vector.add(a, vector.scale(vector.sub(b, a), t))
 }
 
 // First derivative of a line
@@ -37,6 +37,79 @@
 #let line-normal(a, b) = {
   let v = line-tangent(a, b)
   return (0 - v.at(1), v.at(0), v.at(2, default: 0))
+}
+
+// Find intersection point of two 2d lines
+// L1: a*x + c
+// L2: b*x + d
+#let line-intersection-2d(a, c, b, d) = {
+  if a - b == 0 {
+    if c == d {
+      return (0, c, 0)
+    }
+    return none
+  }
+  let x = (d - c)/(a - b)
+  let y = a * x + c
+  return (x, y, 0)
+}
+
+#let ellipse-pt(center, radius, angle) = {
+  let (rx, ry) = if type(radius) == "array" {
+    radius
+  } else {
+    (radius, radius)
+  }
+
+  let (x, y, z) = center
+  return (calc.cos(angle) * rx + x, calc.sin(angle) * ry + y, z)
+}
+
+#let ellipse-tangent(center, radius, angle) = {
+  let (rx, ry) = if type(radius) == "array" {
+    radius
+  } else {
+    (radius, radius)
+  }
+
+  return vector.norm((-calc.sin(angle) * rx, calc.cos(angle) * ry, 0))
+}
+
+#let ellipse-normal(center, radius, angle) = {
+  let t = ellipse-tangent(center, radius, angle)
+  return (0 - t.at(1), t.at(0), t.at(2, default: 0))
+}
+
+// Calculate circle center from 3 points
+//
+// - a (vector): Point 1
+// - b (vector): Point 2
+// - c (vector): Point 3
+#let calculate-circle-center-3pt(a, b, c) = {
+  let m-ab = line-pt(a, b, .5)
+  let m-bc = line-pt(b, c, .5)
+  let m-cd = line-pt(c, a, .5)
+
+  let args = () // a, c, b, d
+  for i in range(0, 3) {
+    let (p1, p2) = ((a,b,c).at(calc.rem(i,3)),
+                    (b,c,a).at(calc.rem(i,3)))
+    let m = line-pt(p1, p2, .5)
+    let n = line-normal(p1, p2)
+
+    // Find a line with a non upwards normal
+    if n.at(0) == 0 { continue }
+
+    let la = n.at(1) / n.at(0)
+    args.push(la)
+    args.push(m.at(1) - la * m.at(0))
+
+    // We need only 2 lines
+    if args.len() == 4 { break }
+  }
+
+  assert(args.len() == 4, message: "Could not find circle center")
+  return line-intersection-2d(..args)
 }
 
 // Get point on quadratic bezier curve
@@ -79,6 +152,27 @@
 #let bezier-quadratic-normal(a, b, c, t) = {
   let v = bezier-quadratic-tangent(a, b, c, t)
   return (0 - v.at(1), v.at(0), v.at(2, default: 0))
+}
+
+// Get bezier curves ABC coordinates
+//
+// - s (vector): Curve start
+// - e (vector): Curve end
+// - B (vector): Point on curve
+// - t (fload): Ratio on curve
+// - order (int): Bezier order
+//
+// => (A, B, C)
+#let bezier-ABC(s, e, B, t, order: 2) = {
+  let tt = calc.pow(t, order)
+  let u(t) = { calc.pow(1 - t, order) / (tt + calc.pow(1 - t, order)) }
+  let ratio(t) = { calc.abs((tt + calc.pow(1 - t, order) - 1) /
+                            (tt + calc.pow(1 - t, order))) }
+
+  let C = vector.add(vector.scale(s, u(t)), vector.scale(e, 1 - u(t)))
+  let A = vector.sub(B, vector.scale(vector.sub(C, B), 1 / ratio(t)))
+
+  return (A, B, C)
 }
 
 // Get point on a cubic bezier curve
