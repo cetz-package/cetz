@@ -1415,3 +1415,164 @@ tree.tree(data, content: (padding: .1), direction: "right",
 A tree node is an array of nodes. The first array item represents the
 current node, all following items are direct children of that node.
 The node itselfes can be ot type `content` or `dictionary` with a key `content`.
+
+== Plot
+
+The plotting library `plot` of CeTZ allows drawing line charts of data points.
+All data is expected to be in `(x, y)` format.
+
+=== Data <plot-data>
+
+Data can be passed as array of data points or dictionary to provide further information. The data dictionary allows for the following keys:
+#def-arg("data", "a|function",
+  [The data point array or callback function])
+#def-arg("style", "style",
+  [Style dictionary used for drawing (same as for `set-style`)])
+#def-arg("epigraph", "b",
+  [If true, fill the epigraph of the function (style key: `epigraph`)])
+#def-arg("hypograph", "b",
+  [If true, fill the hypograph of the function (style key: `hypograph`)])
+#def-arg("fill", "b",
+  [If true, fill the function (style key: `fill`)])
+#def-arg("samples", "i",
+  [Number of samples to use for the data callback.])
+
+=== Tics <plot-tics>
+
+The tics option dictionary supports the following keys:
+#def-arg("step", "n?",
+  [Draw a major tick every $n$ steps])
+#def-arg("minor-step", "n?",
+  [Draw a minor tick every $n$ steps])
+
+=== Axis
+
+Defines an axis object.
+
+```typ
+#axis(min: -1, max: 1, tics: (step: 1, minor-step: none), label: none)
+```
+#def-arg("min", "n", [
+  Axis minimum value
+])
+#def-arg("max", "n", [
+  Axis maximum value
+])
+#def-arg("tics", "tics", [
+  Tick options dictionary, see @plot-tics.
+])
+#def-arg("label", "content", [
+  Axis label
+])
+
+=== Scientific Axes
+
+Plot data with an "scientific" axis style.
+```typ
+#scientific-axes(size: (1, 1),
+  left: none, bottom: none, right: none, top: none,
+  name: none, ..style-data)
+```
+#def-arg("size", "a", [
+  Array of width and height
+])
+#def-arg("left", "axis?", [
+  Left (y) axis
+])
+#def-arg("bottom", "axis?", [
+  Bottom (x) axis
+])
+#def-arg("left", "axis?", [
+  Right axis
+])
+#def-arg("top", "axis?", [
+  Top axis
+])
+#def-arg("name", "s?", [
+  Object name
+])
+#def-arg("..style", "style", [
+  Style options
+])
+#def-arg("..data", "data", [
+  One or more data objects
+])
+
+#example({
+  import "draw.typ": *
+  import "plot.typ"
+  let data = (x) => calc.sin(x * 1deg)
+  let (x, y) = (
+    plot.axis(min: 0, max: 360, tics: (step: 90)),
+    plot.axis(min: -1.5, max: 1.5),
+  )
+  plot.scientific-axes(size: (4, 3),
+    left: y, bottom: x, (data: data, style: (stroke: blue)))
+}, ```typc
+let data = (x) => calc.sin(x * 1deg)
+let (x, y) = (
+  plot.axis(min: 0, max: 360),
+  plot.axis(min: -1.5, max: 1.5),
+)
+plot.scientific-axes(size: (4, 3),
+  left: y, bottom: x, (data: data, style: (stroke: blue)))
+```)
+
+=== School-Book Axes
+
+Plot data with an "school book" axis style.
+
+```typ
+#school-book-axes(size: (1, 1),
+  x-axis, y-axis,
+  name: none, ..style-data)
+```
+#def-arg("size", "a", [
+  Array of width and height
+])
+#def-arg("x-axis", "axis", [
+  X axis
+])
+#def-arg("y-axis", "axis", [
+  Y axis
+])
+#def-arg("x-position", "n", [
+  Y position of the x axis
+])
+#def-arg("y-position", "n", [
+  X position of the y axis
+])
+#def-arg("name", "s?", [
+  Object name
+])
+#def-arg("..style", "style", [
+  Style options
+])
+#def-arg("..data", "data", [
+  One or more data objects
+])
+
+#example({
+  import "draw.typ": *
+  import "plot.typ"
+  let data = (x) => calc.sin(x * 1deg)
+  let (x, y) = (
+    plot.axis(min: 0, max: 360, tics: (step: 90)),
+    plot.axis(min: -1.5, max: 1.5),
+  )
+  plot.school-book-axes(size: (4, 3), x, y,
+    (data: x => calc.sin(x * 1deg),
+     style: (stroke: blue)),
+    (data: x => calc.cos(x * 1deg),
+     style: (stroke: red)))
+}, ```typc
+let (x, y) = (
+  plot.axis(min: 0, max: 360),
+  plot.axis(min: -1.5, max: 1.5),
+)
+plot.school-book-axes(size: (4, 3), x, y,
+  (data: x => calc.sin(x * 1deg),
+   style: (stroke: blue)),
+  (data: x => calc.cos(x * 1deg),
+   style: (stroke: red)))
+```)
