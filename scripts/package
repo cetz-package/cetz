@@ -17,6 +17,7 @@ files=(
   coordinate.typ
   styles.typ
   tree.typ
+  plot.typ
   typst.toml
   LICENSE
   README.md
