@@ -1253,3 +1253,88 @@ for-each-anchor("my-rect", (name) => {
   }
 })
 ```)
+
+= Libraries
+
+== Tree
+
+With the tree library, CeTZ provides a simple tree layout algorithm.
+
+```typc
+tree(root-node, draw-node: auto, draw-edge: auto,
+  direction: "down", parent-position: "center", grow: 1,
+  spread: 1, name: none, ..style)
+```
+
+#def-arg("root-node", "node",
+  [Tree root node, see @tree-node])
+#def-arg("draw-node", "function?",
+  [Node render callback `(node, parent-name) => (draw, ..)`])
+#def-arg("draw-edge", "function?",
+  [Edge render callback `(source-name, target-name, target-node) => (draw, ..)`])
+#def-arg("direction", "s",
+  [Tree grow direction: "top", "bottom", "left" or "right"])
+#def-arg("parent-position", "s",
+  [Positioning of parent nodes: "begin", "center" or "end"])
+#def-arg("grow", "f",
+  [Direction grow factor])
+#def-arg("spread", "f",
+  [Sibling spread factor])
+#def-arg("name", "s?",
+  [Object name])
+#def-arg("..style", "style",
+  [Draw style])
+
+#example({
+  import "draw.typ": *
+  import "tree.typ"
+  let data = ([Root], ([A], [AA], [AB]), ([B], [BA]))
+  tree.tree(data, content: (padding: .1), line: (stroke: blue))
+}, ```typc
+import "tree.typ"
+
+let data = ([Root], ([A], [AA], [AB]), ([B], [BA]))
+tree.tree(data, content: (padding: .1), line: (stroke: blue))
+```)
+
+#example({
+  import "draw.typ": *
+  import "tree.typ"
+  let data = ([\*], ([A], [AA], [AB]), ([B], [BA]))
+  tree.tree(data, content: (padding: .1), direction: "right",
+          mark: (end: ">", fill: none),
+          draw-node: (node, ..) => {
+            circle((), radius: .35, fill: blue, stroke: none)
+            content((), text(white, [#node.content]))
+          },
+          draw-edge: (from, to, ..) => {
+            let (a, b) = (from + ".center",
+                          to + ".center")
+
+             line((a: a, b: b, abs: true, number: .35),
+                  (a: b, b: a, abs: true, number: .35))
+ })
+}, ```typc
+import "tree.typ"
+
+let data = ([Root], ([\*], [AA], [AB]), ([B], [BA]))
+tree.tree(data, content: (padding: .1), direction: "right",
+          mark: (end: ">", fill: none),
+          draw-node: (node, ..) => {
+            circle((), radius: .35, fill: blue, stroke: none)
+            content((), text(white, [#node.content]))
+          },
+          draw-edge: (from, to, ..) => {
+            let (a, b) = (from + ".center",
+                          to + ".center")
+
+             draw.line((a: a, b: b, abs: true, number: .35),
+                       (a: b, b: a, abs: true, number: .35))
+          })
+```)
+
+=== Node <tree-node>
+
+A tree node is an array of nodes. The first array item represents the
+current node, all following items are direct children of that node.
+The node itselfes can be ot type `content` or `dictionary` with a key `content`.
