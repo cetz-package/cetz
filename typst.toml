@@ -8,5 +8,5 @@ authors = [
   "fenjalien <https://github.com/fenjalien>"
 ]
 license = "Apache-2.0"
-description = "Drawing with Typst made easy, providing an API inspired by TikZ and Processing."
+description = "Drawing with Typst made easy, providing an API inspired by TikZ and Processing. Includes libraries for plotting and tree layout."
 exclude = [ "/gallery/*", "manual.pdf", "manual.typ" ]
