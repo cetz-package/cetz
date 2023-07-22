@@ -184,7 +184,7 @@
 // - axes (array): Array of x and y axis
 // - w (number): Width
 // - h (number): Height
-#let draw-data-path(data, axes, w, h) = {
+#let draw-data-path(data, axes) = {
   let style = (stroke: black + 1pt)
   let fill = false
   let epigraph = false
@@ -211,12 +211,10 @@
   let segments = paths-for-points(data.map(((x, y, ..)) => {
     (value-on-axis(axes.at(0), x),
      value-on-axis(axes.at(1), y))
-  })).map(l => l.map(((x, y)) => {
-    (x * w, y * h)
   }))
 
   let fill-graph-to(to, style) = {
-    to = value-on-axis(axes.at(1), to) * h
+    to = value-on-axis(axes.at(1), to)
 
     if not "stroke" in style { style.stroke = none }
     if not "mark" in style { style.mark = (begin: none, end: none) }
@@ -294,7 +292,10 @@
           axes = data.axes
         }
       }
-      draw-data-path(data, axes, w, h)
+      group({
+        scale((x: w, y: h))
+        draw-data-path(data, axes)
+      })
     }
 
     group(name: "axes", {
@@ -372,13 +373,16 @@
       (y-axis, "right", (y-x, auto), (1, 0)),
     )
 
-    translate((axis-padding, axis-padding, 0))
-
     for data in style-data.pos() {
       let axes = (x-axis, y-axis)
-      draw-data-path(data, axes, w, h)
+      group({
+        scale((x: w, y: h))
+        translate((axis-padding, axis-padding, 0))
+        draw-data-path(data, axes)
+      })
     }
 
+    translate((axis-padding, axis-padding, 0))
     line((-axis-padding, x-y), (w + axis-padding, x-y), mark: (end: ">"),
          name: "x-axis")
     if "label" in x-axis and x-axis.label != none {
