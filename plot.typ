@@ -16,8 +16,9 @@
 // - tics (dictionary): Tick settings:
 //     - step (number): Major tic step
 //     - minor-step (number): Minor tic step
-#let axis(min: -1, max: 1, tics: (step: 1, minor-step: none)) = (
-  min: min, max: max, tics: tics
+// - label (content): Axis label
+#let axis(min: -1, max: 1, tics: (step: 1, minor-step: none), label: none) = (
+  min: min, max: max, tics: tics, label: label,
 )
 
 // Get value on axis
@@ -267,8 +268,8 @@
                      ..style-data) = {
   import draw: *
 
-  if right == auto and left != none {right = left; right.tic-labels = false}
-  if top == auto and bottom != none {top = bottom; top.tic-labels = false}
+  if right == auto and left != none {right = left; right.is-mirror = true}
+  if top == auto and bottom != none {top = bottom; top.is-mirror = true}
 
   group(name: name, {
     let (w, h) = size
@@ -280,10 +281,10 @@
     }
 
     let axis-settings = (
-      (left, "right", (0, auto), (1, 0)),
-      (right, "left", (w, auto), (1, 0)),
-      (bottom, "top", (auto, 0), (0, 1)),
-      (top, "bottom", (auto, h), (0, 1)),
+      (left, "left", "right", (0, auto), (1, 0)),
+      (right, "right", "left", (w, auto), (1, 0)),
+      (bottom, "bottom", "top", (auto, 0), (0, 1)),
+      (top, "top", "bottom", (auto, h), (0, 1)),
     )
 
     for data in style-data.pos() {
@@ -296,24 +297,37 @@
       draw-data-path(data, axes, w, h)
     }
 
-    rect((0, 0), size)
-    for (axis, anchor, placement, mark-dir) in axis-settings {
-      if axis != none {
-        for (pos, label) in compute-linear-tics(axis) {
-          let (x, y) = placement
-          if x == auto { x = pos * w }
-          if y == auto { y = pos * h }
+    group(name: "axes", {
+      rect((0, 0), size)
+      for (axis, _, anchor, placement, mark-dir) in axis-settings {
+        if axis != none {
+          for (pos, label) in compute-linear-tics(axis) {
+            let (x, y) = placement
+            if x == auto { x = pos * w }
+            if y == auto { y = pos * h }
 
-          if label != none and axis.at("tic-labels", default: true) {
-            content((x, y), [#label], anchor: anchor)
+            if label != none and not axis.at("is-mirror", default: false) {
+              content((x, y), [#label], anchor: anchor)
+            }
+
+            let major = label != none
+            let dir = vector.scale(mark-dir,
+              if major {major-mark-size} else {minor-mark-size})
+            line(vector.sub((x, y), dir),
+                 vector.add((x, y), dir))
           }
-
-          let major = label != none
-          let dir = vector.scale(mark-dir,
-            if major {major-mark-size} else {minor-mark-size})
-          line(vector.sub((x, y), dir),
-               vector.add((x, y), dir))
         }
+      }
+    })
+    for (axis, side, anchor, ..) in axis-settings {
+      if "label" in axis and axis.label != none and not axis.at("is-mirror", default: false) {
+        let angle = if side in ("left", "right") {
+          -90deg
+        } else { 0deg }
+
+        // Use a group to get non-rotated anchors
+        group(content("axes." + side, axis.label,
+                      angle: angle), anchor: anchor)
       }
     }
   })
@@ -333,7 +347,7 @@
                       size: (1, 1),
                       x-position: 0,
                       y-position: 0,
-                      axis-padding: .25,
+                      axis-padding: .4,
                       name: none,
                       ..style-data) = {
   import draw: *
@@ -365,8 +379,17 @@
       draw-data-path(data, axes, w, h)
     }
 
-    line((-axis-padding, x-y), (w + axis-padding, x-y), mark: (end: ">"))
-    line((y-x, -axis-padding), (y-x, h + axis-padding), mark: (end: ">"))
+    line((-axis-padding, x-y), (w + axis-padding, x-y), mark: (end: ">"),
+         name: "x-axis")
+    if "label" in x-axis and x-axis.label != none {
+      content("x-axis.end", anchor: "top", x-axis.label)
+    }
+
+    line((y-x, -axis-padding), (y-x, h + axis-padding), mark: (end: ">"),
+         name: "y-axis")
+    if "label" in y-axis and y-axis.label != none {
+      content("y-axis.end", anchor: "right", y-axis.label)
+    }
 
     let origin-drawn = false
     for (axis, anchor, placement, mark-dir) in axis-settings {

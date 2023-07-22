@@ -64,8 +64,8 @@
     import "../../draw.typ": *
 
     let (x, y) = (
-      plot.axis(min: -360, max: 360, tics: (step: 180)),
-      plot.axis(min: -1.5, max: .5)
+      plot.axis(min: -360, max: 360, tics: (step: 180), label: $x$),
+      plot.axis(min: -1.5, max: .5, label: $y$)
     )
 
     plot.school-book-axes(x, y, size: (5, 4),
@@ -80,8 +80,8 @@
     import "../../draw.typ": *
 
     let (x, y) = (
-      plot.axis(min: -3, max: 5, tics: (step: 1)),
-      plot.axis(min: -1, max: 5)
+      plot.axis(min: -3, max: 5, tics: (step: 1), label: $x$),
+      plot.axis(min: -1, max: 5, label: $y$)
     )
 
     plot.scientific-axes(size: (5, 4), left: y, bottom: x,
