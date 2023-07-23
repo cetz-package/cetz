@@ -31,8 +31,7 @@
 
     plot.scientific-axes(size: (5, 4), left: y, right: y2, bottom: x, top: x2,
       (data: data),
-      (data: data, style: (stroke: blue), axes: (x2, y2)),
-      content: (padding: .2))
+      (data: data, style: (stroke: blue), axes: (x2, y2)))
 }))
 
 /* School-Book Style */

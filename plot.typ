@@ -6,8 +6,6 @@
 // Global defaults
 #let num-samples = 50
 #let tic-limit = 100
-#let major-mark-size = .08
-#let minor-mark-size = .05
 
 // Construct Axis Object
 //
@@ -184,7 +182,7 @@
 // - axes (array): Array of x and y axis
 // - w (number): Width
 // - h (number): Height
-#let draw-data-path(data, axes) = {
+#let draw-data-path(data, axes, offset: (0,0), scale: (1,1)) = {
   let style = (stroke: black + 1pt)
   let fill = false
   let epigraph = false
@@ -211,10 +209,12 @@
   let segments = paths-for-points(data.map(((x, y, ..)) => {
     (value-on-axis(axes.at(0), x),
      value-on-axis(axes.at(1), y))
-  }))
+  })).map(s => s.map(((x, y)) => (
+    offset.at(0) + x * scale.at(0),
+    offset.at(1) + y * scale.at(1))))
 
   let fill-graph-to(to, style) = {
-    to = value-on-axis(axes.at(1), to)
+    to = value-on-axis(axes.at(1), to) * scale.at(1) + offset.at(1)
 
     if not "stroke" in style { style.stroke = none }
     if not "mark" in style { style.mark = (begin: none, end: none) }
@@ -261,7 +261,14 @@
 // - ..style (any): Style
 // - ..data (array|dictionary): Data
 #let scientific-axes(size: (1, 1),
-                     left: none, right: auto, bottom: none, top: auto,
+                     left: none,
+                     right: auto,
+                     bottom: none,
+                     top: auto,
+                     tic-offset: 0,
+                     tic-length: .1,
+                     minor-tic-length: .08,
+                     label-offset: .2,
                      name: none,
                      ..style-data) = {
   import draw: *
@@ -272,17 +279,16 @@
   group(name: name, {
     let (w, h) = size
 
-    set-style(content: (padding: .1))
     let style = style-data.named()
     if style.len() > 0 {
       set-style(..style)
     }
 
     let axis-settings = (
-      (left, "left", "right", (0, auto), (1, 0)),
-      (right, "right", "left", (w, auto), (1, 0)),
-      (bottom, "bottom", "top", (auto, 0), (0, 1)),
-      (top, "top", "bottom", (auto, h), (0, 1)),
+      (left,   "left",   "right",  (0, auto), ( 1, 0)),
+      (right,  "right",  "left",   (w, auto), (-1, 0)),
+      (bottom, "bottom", "top",    (auto, 0), (0,  1)),
+      (top,    "top",    "bottom", (auto, h), (0, -1)),
     )
 
     for data in style-data.pos() {
@@ -293,14 +299,15 @@
         }
       }
       group({
-        scale((x: w, y: h))
-        draw-data-path(data, axes)
+        draw-data-path(data, axes,
+          offset: (0,0),
+          scale: (w, h))
       })
     }
 
     group(name: "axes", {
       rect((0, 0), size)
-      for (axis, _, anchor, placement, mark-dir) in axis-settings {
+      for (axis, _, anchor, placement, tic-dir) in axis-settings {
         if axis != none {
           for (pos, label) in compute-linear-tics(axis) {
             let (x, y) = placement
@@ -308,14 +315,15 @@
             if y == auto { y = pos * h }
 
             if label != none and not axis.at("is-mirror", default: false) {
-              content((x, y), [#label], anchor: anchor)
+              let label-pos = vector.add((x, y),
+                vector.scale(tic-dir, -label-offset))
+              content(label-pos, [#label], anchor: anchor)
             }
 
             let major = label != none
-            let dir = vector.scale(mark-dir,
-              if major {major-mark-size} else {minor-mark-size})
-            line(vector.sub((x, y), dir),
-                 vector.add((x, y), dir))
+            let length = if major {tic-length} else {minor-tic-length}
+            line(vector.sub((x, y), vector.scale(tic-dir, tic-offset)),
+                 vector.add((x, y), vector.scale(tic-dir, tic-length)))
           }
         }
       }
@@ -349,13 +357,14 @@
                       x-position: 0,
                       y-position: 0,
                       axis-padding: .4,
+                      tic-length: .1,
+                      minor-tic-length: .08,
+                      label-offset: .2,
                       name: none,
                       ..style-data) = {
   import draw: *
 
   group(name: name, {
-    set-style(content: (padding: .1))
-
     let style = style-data.named()
     if style.len() > 0 {
       set-style(..style)
@@ -376,9 +385,9 @@
     for data in style-data.pos() {
       let axes = (x-axis, y-axis)
       group({
-        scale((x: w, y: h))
-        translate((axis-padding, axis-padding, 0))
-        draw-data-path(data, axes)
+        draw-data-path(data, axes,
+          offset: (axis-padding, axis-padding),
+          scale: (w, h))
       })
     }
 
@@ -386,17 +395,19 @@
     line((-axis-padding, x-y), (w + axis-padding, x-y), mark: (end: ">"),
          name: "x-axis")
     if "label" in x-axis and x-axis.label != none {
-      content("x-axis.end", anchor: "top", x-axis.label)
+      content((rel: (0, -label-offset), to: "x-axis.end"),
+        anchor: "top", x-axis.label)
     }
 
     line((y-x, -axis-padding), (y-x, h + axis-padding), mark: (end: ">"),
          name: "y-axis")
     if "label" in y-axis and y-axis.label != none {
-      content("y-axis.end", anchor: "right", y-axis.label)
+      content((rel: (-label-offset, 0), to: "y-axis.end"),
+        anchor: "right", y-axis.label)
     }
 
     let origin-drawn = false
-    for (axis, anchor, placement, mark-dir) in axis-settings {
+    for (axis, anchor, placement, tic-dir) in axis-settings {
       if axis != none {
         for (pos, label) in compute-linear-tics(axis) {
           let (x, y) = placement
@@ -404,18 +415,23 @@
           if y == auto { y = pos * h }
 
           if label != none {
+            let label-pos = vector.add((x, y),
+              vector.scale(tic-dir, -label-offset))
+
             if x == y-x and y == x-y {
               if origin-drawn { continue }
               origin-drawn = true
-              content((x, y), [#label], anchor: "top-right")
+              content(vector.add((x, y),
+                  vector.scale((-1, -1), label-offset)),
+                [#label], anchor: "top-right")
             } else {
-              content((x, y), [#label], anchor: anchor)
+              content(label-pos, [#label], anchor: anchor)
             }
           }
 
           let major = label != none
-          let dir = vector.scale(mark-dir,
-            if major {major-mark-size} else {minor-mark-size})
+          let dir = vector.scale(tic-dir,
+            if major {tic-length} else {minor-tic-length})
           line(vector.sub((x, y), dir),
                vector.add((x, y), dir))
         }
