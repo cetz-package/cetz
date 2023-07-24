@@ -164,6 +164,11 @@
 ),)
 
 // Register anchor `name` at position.
+//
+// This only works inside a group!
+//
+// - name         (string): Anchor name
+// - position (coordinate): Coordinate
 #let anchor(name, position) = {
   let t = coordinate.resolve-system(position)
   ((
@@ -178,7 +183,51 @@
   ),)
 }
 
-// Group
+#let copy-anchors(element, filter: none, name: none) = ((
+  name: name,
+  custom-anchors-ctx: ctx => {
+    if name != none {
+      assert(element in ctx.nodes,
+        message: "copy-anchors: Could not find element '" + element + "'")
+      if filter == none {
+        return ctx.nodes.at(element).anchors
+      } else {
+        let d = (:)
+        for k in filter { d.insert(k, ctx.nodes.at(element).anchors.at(k)) }
+        return d
+      }
+    }
+    return ()
+  },
+  after: ctx => {
+    if name == none {
+      assert(ctx.groups.len() > 0,
+        message: "copy-anchors with name=none is only allowed inside a group")
+      assert(element in ctx.nodes,
+        message: "copy-anchors: Could not find element '" + element + "'")
+
+      if filter == none {
+        ctx.groups.last().anchors += ctx.nodes.at(element).anchors
+      } else {
+        let d = (:)
+        for k in filter { d.insert(k, ctx.nodes.at(element).anchors.at(k)) }
+        ctx.groups.last().anchors += d
+      }
+    }
+    return ctx
+  }
+),)
+
+// Push a group
+//
+// A group has a local transformation matrix.
+// Groups can be used to get an elements bounding box, as they
+// set default achors (top, top-left, ..) to the bounding box of
+// their children.
+//
+// - name   (string): Element name
+// - anchor (string): Elemen origin
+// - body     (draw): Children
 #let group(name: none, anchor: none, body) = {
   ((
     name: name,
@@ -211,6 +260,11 @@
   ),)
 }
 
+// Draw a mark between two coordinates
+//
+// - from (coordinate): Source coordinate
+// - to   (coordinate): Target coordinate
+// - ..style   (style): Style
 #let mark(from, to, ..style) = {
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
   let style = style.named()
@@ -224,9 +278,15 @@
   ),)
 }
 
+// Draw a poly-line
+//
+// - ..pts (coordinate): Points
+// - ..style    (style): Style
+// - close       (bool): Close path
+// - name      (string): Element name
 #let line(..pts-style, close: false, name: none) = {
-
-  // Extra positional arguments from the pts-style sink are interpreted as coordinates.
+  // Extra positional arguments from the pts-style
+  // sink are interpreted as coordinates.
   let (pts, style) = (pts-style.pos(), pts-style.named())
 
   // Coordinate check
@@ -244,7 +304,8 @@
     render: (ctx, ..pts) => {
       let pts = pts.pos()
       let style = styles.resolve(ctx.style, style, root: "line")
-      cmd.path(close: close, ("line", ..pts), fill: style.fill, stroke: style.stroke)
+      cmd.path(close: close, ("line", ..pts),
+        fill: style.fill, stroke: style.stroke)
 
       if style.mark.start != none or style.mark.end != none {
         let style = style.mark
@@ -253,19 +314,29 @@
           let n = vector.scale(vector.norm(vector.sub(end, start)),
                               style.size)
           start = vector.sub(end, n)
-          cmd.mark(start, end, style.start, fill: style.fill, stroke: style.stroke)  
+          cmd.mark(start, end, style.start,
+            fill: style.fill, stroke: style.stroke)
         }
         if style.end != none {
           let (start, end) = (pts.at(-2), pts.at(-1))
-          let n = vector.scale(vector.norm(vector.sub(end, start)), style.size)
+          let n = vector.scale(vector.norm(vector.sub(end, start)),
+            style.size)
           start = vector.sub(end, n)
-          cmd.mark(start, end, style.end, fill: style.fill, stroke: style.stroke)
+          cmd.mark(start, end, style.end,
+            fill: style.fill, stroke: style.stroke)
         }
       }
     }
   ),)
 }
 
+// Draw a rect from `a` to `b`
+//
+// - a  (coordinate): Bottom-Left coordinate
+// - b  (coordinate): Top-Right coordinate
+// - name   (string): Element name
+// - anchor (string): Element origin
+// - ..style (style): Style
 #let rect(a, b, name: none, anchor: none, ..style) = {
   // Coordinate check
   let t = (a, b).map(coordinate.resolve-system)
@@ -278,6 +349,21 @@
     default-anchor: "center",
     anchor: anchor,
     coordinates: (a, b),
+    custom-anchors: (a, b) => {
+      let c = vector.sub(b, a)
+      let (w, h, d) = c
+      (
+        bottom-left: a,
+        bottom: vector.add(a, (w / 2, 0, d / 2)),
+        bottom-right: vector.add(a, (w, 0, d)),
+        top-left: vector.sub(b, (w, 0, d)),
+        top: vector.sub(b, (w / 2, 0, d / 2)),
+        top-right: b,
+        left: vector.add(a, (0, h / 2, d / 2)),
+        right: vector.sub(b, (0, h / 2, d / 2)),
+        center: vector.add(a, (w / 2, h / 2, d / 2)),
+      )
+    },
     render: (ctx, a, b) => {
       let style = styles.resolve(ctx.style, style, root: "rect")
       let (x1, y1, z1) = a
