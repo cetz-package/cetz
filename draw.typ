@@ -225,8 +225,8 @@
 }
 
 #let line(..pts-style, close: false, name: none) = {
-
-  // Extra positional arguments from the pts-style sink are interpreted as coordinates.
+  // Extra positional arguments from the pts-style
+  // sink are interpreted as coordinates.
   let (pts, style) = (pts-style.pos(), pts-style.named())
 
   // Coordinate check
@@ -244,7 +244,8 @@
     render: (ctx, ..pts) => {
       let pts = pts.pos()
       let style = styles.resolve(ctx.style, style, root: "line")
-      cmd.path(close: close, ("line", ..pts), fill: style.fill, stroke: style.stroke)
+      cmd.path(close: close, ("line", ..pts),
+        fill: style.fill, stroke: style.stroke)
 
       if style.mark.start != none or style.mark.end != none {
         let style = style.mark
@@ -253,13 +254,16 @@
           let n = vector.scale(vector.norm(vector.sub(end, start)),
                               style.size)
           start = vector.sub(end, n)
-          cmd.mark(start, end, style.start, fill: style.fill, stroke: style.stroke)  
+          cmd.mark(start, end, style.start,
+            fill: style.fill, stroke: style.stroke)
         }
         if style.end != none {
           let (start, end) = (pts.at(-2), pts.at(-1))
-          let n = vector.scale(vector.norm(vector.sub(end, start)), style.size)
+          let n = vector.scale(vector.norm(vector.sub(end, start)),
+            style.size)
           start = vector.sub(end, n)
-          cmd.mark(start, end, style.end, fill: style.fill, stroke: style.stroke)
+          cmd.mark(start, end, style.end,
+            fill: style.fill, stroke: style.stroke)
         }
       }
     }
@@ -278,6 +282,21 @@
     default-anchor: "center",
     anchor: anchor,
     coordinates: (a, b),
+    custom-anchors: (a, b) => {
+      let c = vector.sub(b, a)
+      let (w, h, d) = c
+      (
+        bottom-left: a,
+        bottom: vector.add(a, (w / 2, 0, d / 2)),
+        bottom-right: vector.add(a, (w, 0, d)),
+        top-left: vector.sub(b, (w, 0, d)),
+        top: vector.sub(b, (w / 2, 0, d / 2)),
+        top-right: b,
+        left: vector.add(a, (0, h / 2, d / 2)),
+        right: vector.sub(b, (0, h / 2, d / 2)),
+        center: vector.add(a, (w / 2, h / 2, d / 2)),
+      )
+    },
     render: (ctx, a, b) => {
       let style = styles.resolve(ctx.style, style, root: "rect")
       let (x1, y1, z1) = a
