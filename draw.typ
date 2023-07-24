@@ -54,23 +54,37 @@
       panic("Invalid angle format '" + repr(angle) + "'")
     }
   }
+
+  let needs-resolve = (type(angle) == "array" and
+                       type(angle.first()) == "function")
   return ((
-    push-transform: if type(angle) == "array" and type(angle.first()) == "function" { 
-      ctx => resolve-angle(coordinate.resolve-function(coordinate.resolve, ctx, angle))
+    push-transform: if needs-resolve { 
+      ctx => matrix.mul-mat(ctx.transform, resolve-angle(
+        coordinate.resolve-function(coordinate.resolve, ctx, angle)))
     } else {
       resolve-angle(angle)
     }
   ),)
 }
 
-// Scale canvas
+// Push scale matrix
+//
+// World = World * Scale
+//
 // @param factor float
 #let scale(f) = ((
   push-transform: matrix.transform-scale(f)
 ),)
 
-// Translate
-#let translate(vec) = {
+// Push translation matrix
+//
+// World = Translation * World
+//
+// @param vec (vector|dictionary): Translation vector
+// @param pre (bool): Matrix multiplication order
+//                    - false: World = World * Translate
+//                    - true:  World = Translate * World
+#let translate(vec, pre: true) = {
   let resolve-vec(vec) = {
     let (x,y,z) = if type(vec) == "dictionary" {
       (
@@ -89,11 +103,14 @@
     }
     return matrix.transform-translate(x, -y, z)
   }
+
+  let needs-resolve = type(vec) == "array" and type(vec.first()) == "function"
   ((
-    push-transform: if type(vec) == "array" and type(vec.first()) == "function" {
-      ctx => resolve-vec(coordinate.resolve-function(coordinate.resolve, ctx, vec))
+    push-transform: if needs-resolve {
+      ctx => matrix.mul-mat(resolve-vec(coordinate.resolve-function(
+        coordinate.resolve, ctx, vec)), ctx.transform)
     } else {
-      resolve-vec(vec)
+      ctx => matrix.mul-mat(resolve-vec(vec), ctx.transform)
     },
   ),)
 }
@@ -102,8 +119,10 @@
 #let set-origin(origin) = {
   return ((
     push-transform: ctx => {
-      let (x,y,z) = vector.sub(util.apply-transform(ctx.transform, coordinate.resolve(ctx, origin)), util.apply-transform(ctx.transform, (0,0,0)))
-      return matrix.transform-translate(x, y, z)
+      let (x,y,z) = vector.sub(util.apply-transform(ctx.transform, coordinate.resolve(ctx, origin)),
+                               util.apply-transform(ctx.transform, (0,0,0)))
+      return matrix.mul-matrix(matrix.transform-translate(x, y, z),
+                               ctx.transform)
     }
   ),)
 }
