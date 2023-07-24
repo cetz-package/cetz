@@ -643,15 +643,14 @@ circle("g.x", radius: .1)
 
 === Copy-Anchors
 
-Copy all anchors of element into current group, or as new element.
+Copy all anchors of element into current group.
 
 ```typc
-copy-anchors(element, filter: none, name: none)
+copy-anchors(element, filter: none)
 ```
 
 #def-arg("element", "s", [Target element name])
 #def-arg("filter", "a?", [List of anchor names to copy, all if empty])
-#def-arg("name", "s?", [New element name to set anchors for])
 
 #example({
 import "draw.typ": *
