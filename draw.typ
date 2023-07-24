@@ -183,6 +183,41 @@
   ),)
 }
 
+#let copy-anchors(element, filter: none, name: none) = ((
+  name: name,
+  custom-anchors-ctx: ctx => {
+    if name != none {
+      assert(element in ctx.nodes,
+        message: "copy-anchors: Could not find element '" + element + "'")
+      if filter == none {
+        return ctx.nodes.at(element).anchors
+      } else {
+        let d = (:)
+        for k in filter { d.insert(k, ctx.nodes.at(element).anchors.at(k)) }
+        return d
+      }
+    }
+    return ()
+  },
+  after: ctx => {
+    if name == none {
+      assert(ctx.groups.len() > 0,
+        message: "copy-anchors with name=none is only allowed inside a group")
+      assert(element in ctx.nodes,
+        message: "copy-anchors: Could not find element '" + element + "'")
+
+      if filter == none {
+        ctx.groups.last().anchors += ctx.nodes.at(element).anchors
+      } else {
+        let d = (:)
+        for k in filter { d.insert(k, ctx.nodes.at(element).anchors.at(k)) }
+        ctx.groups.last().anchors += d
+      }
+    }
+    return ctx
+  }
+),)
+
 // Push a group
 //
 // A group has a local transformation matrix.

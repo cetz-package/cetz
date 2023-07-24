@@ -155,7 +155,6 @@ Elements can be placed relative to their own anchors.
   ```]
 )
 
-
 = Draw Function Reference
 
 == Canvas
@@ -614,6 +613,61 @@ group({
   rect((-1,-1),(1,1))
 })
 rect((-1,-1),(1,1))
+```)
+
+=== Anchor
+
+Defines a new anchor inside a group.
+
+```typc
+anchor(name, coordinate)
+```
+
+#def-arg("name", "s", [Name of the anchor])
+#def-arg("coordinate", `<coordinate>`, [Position])
+
+#example({
+import "draw.typ": *
+group(name: "g", {
+  circle((0,0))
+  anchor("x", (.4,.1))
+})
+circle("g.x", radius: .1)
+}, ```typc
+group(name: "g", {
+  circle((0,0))
+  anchor("x", (.4,.1))
+})
+circle("g.x", radius: .1)
+```)
+
+=== Copy-Anchors
+
+Copy all anchors of element into current group, or as new element.
+
+```typc
+copy-anchors(element, filter: none, name: none)
+```
+
+#def-arg("element", "s", [Target element name])
+#def-arg("filter", "a?", [List of anchor names to copy, all if empty])
+#def-arg("name", "s?", [New element name to set anchors for])
+
+#example({
+import "draw.typ": *
+group(name: "g", {
+  rotate(45deg)
+  rect((0,0), (1,1), name: "r")
+  copy-anchors("r")
+})
+circle("g.top", radius: .1)
+}, ```typc
+group(name: "g", {
+  rotate(45deg)
+  rect((0,0), (1,1), name: "r")
+  copy-anchors("r")
+})
+circle("g.top", radius: .1)
 ```)
 
 == Transformations
