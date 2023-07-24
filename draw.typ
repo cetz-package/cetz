@@ -107,10 +107,20 @@
   let needs-resolve = type(vec) == "array" and type(vec.first()) == "function"
   ((
     push-transform: if needs-resolve {
-      ctx => matrix.mul-mat(resolve-vec(coordinate.resolve-function(
-        coordinate.resolve, ctx, vec)), ctx.transform)
+      if pre {
+        ctx => matrix.mul-mat(resolve-vec(coordinate.resolve-function(
+          coordinate.resolve, ctx, vec)), ctx.transform)
+      } else {
+        ctx => matrix.mul-mat(ctx.transform,
+          resolve-vec(coordinate.resolve-function(
+            coordinate.resolve, ctx, vec)))
+      }
     } else {
-      ctx => matrix.mul-mat(resolve-vec(vec), ctx.transform)
+      if pre {
+        ctx => matrix.mul-mat(resolve-vec(vec), ctx.transform)
+      } else {
+        ctx => matrix.mul-mat(ctx.transform, resolve-vec(vec))
+      }
     },
   ),)
 }
@@ -121,8 +131,8 @@
     push-transform: ctx => {
       let (x,y,z) = vector.sub(util.apply-transform(ctx.transform, coordinate.resolve(ctx, origin)),
                                util.apply-transform(ctx.transform, (0,0,0)))
-      return matrix.mul-matrix(matrix.transform-translate(x, y, z),
-                               ctx.transform)
+      return matrix.mul-mat(matrix.transform-translate(x, y, z),
+                            ctx.transform)
     }
   ),)
 }

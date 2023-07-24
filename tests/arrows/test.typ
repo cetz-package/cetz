@@ -9,8 +9,8 @@
         move-to((rel: (-1, .25)))
     }
 
-    rotate(45deg)
     fill(blue)
+    rotate(-90deg)
 
     let marks = (">", "<", "|", "<>", "o")
     for m in marks {
