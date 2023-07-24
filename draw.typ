@@ -164,6 +164,11 @@
 ),)
 
 // Register anchor `name` at position.
+//
+// This only works inside a group!
+//
+// - name         (string): Anchor name
+// - position (coordinate): Coordinate
 #let anchor(name, position) = {
   let t = coordinate.resolve-system(position)
   ((
@@ -178,7 +183,16 @@
   ),)
 }
 
-// Group
+// Push a group
+//
+// A group has a local transformation matrix.
+// Groups can be used to get an elements bounding box, as they
+// set default achors (top, top-left, ..) to the bounding box of
+// their children.
+//
+// - name   (string): Element name
+// - anchor (string): Elemen origin
+// - body     (draw): Children
 #let group(name: none, anchor: none, body) = {
   ((
     name: name,
@@ -211,6 +225,11 @@
   ),)
 }
 
+// Draw a mark between two coordinates
+//
+// - from (coordinate): Source coordinate
+// - to   (coordinate): Target coordinate
+// - ..style   (style): Style
 #let mark(from, to, ..style) = {
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
   let style = style.named()
@@ -224,6 +243,12 @@
   ),)
 }
 
+// Draw a poly-line
+//
+// - ..pts (coordinate): Points
+// - ..style    (style): Style
+// - close       (bool): Close path
+// - name      (string): Element name
 #let line(..pts-style, close: false, name: none) = {
   // Extra positional arguments from the pts-style
   // sink are interpreted as coordinates.
@@ -270,6 +295,13 @@
   ),)
 }
 
+// Draw a rect from `a` to `b`
+//
+// - a  (coordinate): Bottom-Left coordinate
+// - b  (coordinate): Top-Right coordinate
+// - name   (string): Element name
+// - anchor (string): Element origin
+// - ..style (style): Style
 #let rect(a, b, name: none, anchor: none, ..style) = {
   // Coordinate check
   let t = (a, b).map(coordinate.resolve-system)
