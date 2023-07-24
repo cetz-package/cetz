@@ -360,7 +360,7 @@
 // The position of the anchor is set as the current position.
 //
 // - node-prefix (string): Anchor node name
-// - callback (function): Callback (achor-name) => cmd
+// - callback (function): Callback (anchor-name) => cmd
 //
 // Example:
 //   for-each-anchor("my-node", (name) => { content((), [#name]) })
