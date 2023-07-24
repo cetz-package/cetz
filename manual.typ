@@ -596,10 +596,20 @@ rect((-1,-1),(1,1))
 All transformation functions push a transformation matrix onto the current transform stack.
 To apply transformations scoped use a `group(...)` object.
 
-=== Translate
+Transformation martices get multiplied in the following order:
+$ M_"world" = M_"world" dot M_"local" $
+
+=== Translate <translate>
 ```typ
-#translate(coordinate)
+#translate(coordinate, pre: true)
 ```
+
+#def-arg("coordinate", `<vector>`,
+  [Coordinates to translate for])
+#def-arg("pre", `<bool>`,
+  [Specify multiplication order. If `true`, translation is multiplied
+   in the order $M_"local" dot M_"world"$, otherwise the order
+   $M_"world" dot M_"local"$ is used.])
 
 #example({
 import "draw.typ": *
