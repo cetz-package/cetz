@@ -9,6 +9,6 @@
 
 ** Canvas
 - *[!]* Changed transformation matrix multiplication order from Local * World to
-  World * Local, this also means that rotation changed from CCW to CW.
+  World * Local.
 - Added `set-viewport` function for setting up scaling and translation to draw
   insides a rectangular region

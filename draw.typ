@@ -43,12 +43,12 @@
 #let rotate(angle) = {
   let resolve-angle(angle) = {
     return if type(angle) == "angle" {
-      matrix.transform-rotate-z(angle)
+      matrix.transform-rotate-z(-angle)
     } else if type(angle) == "dictionary" {
       matrix.transform-rotate-xyz(
-          angle.at("x", default: 0deg),
-          angle.at("y", default: 0deg),
-          angle.at("z", default: 0deg),
+          -angle.at("x", default: 0deg),
+          -angle.at("y", default: 0deg),
+          -angle.at("z", default: 0deg),
         )
     } else {
       panic("Invalid angle format '" + repr(angle) + "'")
