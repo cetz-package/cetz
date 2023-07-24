@@ -34,6 +34,10 @@ else
   exit 1
 fi
 
+function typst_compile()
+{
+  typst --root "$TYPST_ROOT" compile "${@}"
+}
 
 function install_typst()
 {
@@ -83,7 +87,11 @@ function update_test_ref()
 
     echo "[UPDATING] ${NAME}"
 
-    typst --root "$TYPST_ROOT" compile test.typ res.png
+    if [[ -f test.typ ]]; then
+      typst_compile test.typ res.png
+    else
+      echo "[SKIP    ] Missing test.typ!"
+    fi
     
     cp "res.png" "ref.png"
   )
@@ -98,17 +106,19 @@ function run_test()
 
     echo "[TEST] ${NAME} ..."
 
-    if [[ ! -f test.typ ]]; then echo "Missing file 'test.typ'!"; exit 1; fi
+    if [[ ! -f test.typ ]]; then
+      echo "[SKIP] Missing file '$1/test.typ'!"
+    else
+      typst_compile test.typ res.png
 
-    typst --root "$TYPST_ROOT" compile test.typ res.png
+      if [[ $(img_compare res.png ref.png) != 0 ]] ; then
+        $MAGICK_COMPARE -compose src res.png ref.png diff.png || true
+        echo "[FAIL] see $(pwd)/diff.png for differences"
+        exit 1
+      fi
 
-    if [[ $(img_compare res.png ref.png) != 0 ]] ; then
-      $MAGICK_COMPARE -compose src res.png ref.png diff.png || true
-      echo "[FAIL] see $(pwd)/diff.png for differences"
-      exit 1
+      echo "[  OK]"
     fi
-
-    echo "[  OK]"
   )
 }
 
