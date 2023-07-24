@@ -12,3 +12,5 @@
   World * Local.
 - Added `set-viewport` function for setting up scaling and translation to draw
   insides a rectangular region
+- *[!]* Rects now emit rotated anchors, before they did not set anchors
+- New function `copy-anchors` to copy all or some anchors of an element
