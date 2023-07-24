@@ -43,12 +43,12 @@
 #let rotate(angle) = {
   let resolve-angle(angle) = {
     return if type(angle) == "angle" {
-      matrix.transform-rotate-z(angle)
+      matrix.transform-rotate-z(-angle)
     } else if type(angle) == "dictionary" {
       matrix.transform-rotate-xyz(
-          angle.at("x", default: 0deg),
-          angle.at("y", default: 0deg),
-          angle.at("z", default: 0deg),
+          -angle.at("x", default: 0deg),
+          -angle.at("y", default: 0deg),
+          -angle.at("z", default: 0deg),
         )
     } else {
       panic("Invalid angle format '" + repr(angle) + "'")
@@ -136,6 +136,32 @@
     }
   ),)
 }
+
+// Span rect between `from` and `to` as "viewport" with bounds `bounds`.
+//
+// - from (coordinate): Bottom-Left corner coordinate
+// - to   (coordinate): Top right corner coordinate
+// - bounds   (vector): Bounds vector; negative bounds flip sides
+#let set-viewport(from, to, bounds: (1, 1, 1)) = ((
+  push-transform: ctx => {
+    let bounds = vector.as-vec(bounds, init: (1, 1, 1))
+
+    let (fx,fy,fz) = coordinate.resolve(ctx, from)
+    let (tx,ty,tz) = coordinate.resolve(ctx, to)
+
+    // Compute scaling
+    let (sx,sy,sz) = vector.sub((tx,ty,tz), (fx,fy,fz)).enumerate().map(
+      ((i, v)) => if bounds.at(i) == 0 {0} else {v / bounds.at(i)})
+
+    // Swap translation to opposite side, if bounds are negative
+    (fx, fy, fz) = (fx, fy, fz).enumerate().map(
+      ((i, v)) => if bounds.at(i) < 0 {(tx,ty,tz).at(i)} else {v})
+
+    let t = matrix.transform-translate(fx, fy, fz)
+    let s = matrix.transform-scale((x: sx, y: sy, z: sz))
+    return matrix.mul-mat(ctx.transform, matrix.mul-mat(t, s))
+  }
+),)
 
 // Register anchor `name` at position.
 #let anchor(name, position) = {

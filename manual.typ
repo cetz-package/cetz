@@ -625,8 +625,8 @@ rect((0,0), (1,1))
 ```)
 
 === Set Origin
-```typ
-#set-origin(position)
+```typc
+set-origin(position)
 ```
 
 #example({
@@ -642,10 +642,33 @@ set-origin("r.above")
 circle((0, 0), radius: .1)
 ```)
 
+=== Set Viewport
+```typc
+set-viewport(from, to, bounds: (1, 1, 1))
+```
+
+#def-arg("from", `<coordinate>`,
+  [First (bottom-right) coordinate of the viewport rect.])
+#def-arg("to", `<coordinate>`,
+  [Second (top-left) coordinate of the viewport rect.])
+#def-arg("bounds", `<vector>`,
+  [Viewport inner bounds. Negative bounds flip sides.])
+
+#example({
+  import "draw.typ": *
+  rect((0,0), (2,2))
+  set-viewport((0,0), (2,2), bounds: (10, 10))
+  circle((5,5))
+}, ```typ
+rect((0,0), (2,2))
+set-viewport((0,0), (2,2), bounds: (10, 10))
+circle((5,5))
+```)
+
 === Rotate
-```typ
-#rotate(axis-dictionary)
-#rotate(z-angle)
+```typc
+rotate(axis-dictionary)
+rotate(z-angle)
 ```
 
 #example({
