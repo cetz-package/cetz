@@ -59,10 +59,14 @@
   }
 
   if "push-transform" in element {
-    ctx.transform = matrix.mul-mat(
-      if type(element.push-transform) == "function" { (element.push-transform)(ctx) } else { element.push-transform }, 
-      ctx.transform
-    )
+    if type(element.push-transform) == "function" {
+      ctx.transform = (element.push-transform)(ctx)
+    } else {
+      ctx.transform = matrix.mul-mat(
+        ctx.transform,
+        element.push-transform
+      )
+    }
   }
 
   // Render children
