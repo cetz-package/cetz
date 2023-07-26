@@ -170,7 +170,7 @@
                   bottom: x,
                   top: none,
                   frame: false,
-                  tick-length: 0)
+                  tick: (length: 0))
   line((0, size.at(1)), (0, 0), (size.at(0), 0)) // Frame
 
   if data.len() > 0 {

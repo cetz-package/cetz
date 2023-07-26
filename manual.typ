@@ -1377,8 +1377,11 @@ current node, all following items are direct children of that node.
 The node itselfes can be ot type `content` or `dictionary` with a key `content`.
 
 == Plot
+#let plot-module = parse-module("../../lib/plot.typ", name: "Plot")
 
 The library `plot` of CeTZ allows plotting 2D data as linechart.
+
+#show-module(plot-module, show-module-name: false)
 
 === Plot <plot-function>
 
@@ -1423,7 +1426,7 @@ If used with `data` set to a function, the `domain` must be specified!
 
 ```typc
 add(domain: auto, hypograph: false, epigraph: false, fill: false,
-    mark: none, mark-size: .2, mark-style: (:), samples: 100,
+    mark: none, mark-size: .2, samples: 100,
     style: (:), axes: ("x", "y"),
     data)
 ```
@@ -1441,8 +1444,6 @@ add(domain: auto, hypograph: false, epigraph: false, fill: false,
   [Mark symbol. Any of `("x", "o", "square", "triangle", "|", "-")`])
 #def-arg("mark-size", "f?",
   [Size of mark symbol in canvas units])
-#def-arg("mark-style", "style?",
-  [Style used for drawing marks. Note that this inherits the plots style])
 #def-arg("style", "style",
   [Style used for drawing the graph])
 #def-arg("samples", "i",
@@ -1480,14 +1481,14 @@ plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
                          x-unit: $degree$, y-max: .5, {
     plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
     plot.add(domain: (0, 360), x => calc.cos(x * 1deg),
-             samples: 10, mark: "x", mark-style: (stroke: blue))
+             samples: 10, mark: "x", style: (mark: (stroke: blue)))
   })
 }, ```typc
 plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
           x-unit: $degree$, y-max: .5, {
   plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
   plot.add(domain: (0, 360), x => calc.cos(x * 1deg),
-           samples: 10, mark: "x", mark-style: (stroke: blue))
+           samples: 10, mark: "x", style: (mark: (stroke: blue)))
 })
 ```)
 
@@ -1497,19 +1498,18 @@ plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
 With the `chart` library it is easy to draw charts.
 
 Supported charts are:
-- `barchart(..)` (@chart-bar): A chart with horizontal growing bars
+- `barchart(..)`: A chart with horizontal growing bars
   - `mode: "basic"`: (default): One bar per data row
   - `mode: "clustered"`: Multiple grouped bars per data row
   - `mode: "stacked"`: Multiple stacked bars per data row
   - `mode: "stacked100"`: Multiple stacked bars relative to the sum of a data row
-
-=== Barchart <chart-bar>
 
 #show-module(chart-module, show-module-name: false)
 
 === Examples <barchart-examples>
 ==== Basic
 #example(vertical: true, {
+draw.set-style(axes: (tick: (stroke: red, length: 1)))
   let data = (("A", 10), ("B", 20), ("C", 13))
   chart.barchart(size: (10, auto), x-tick-step: 10, data)
 }, ```typc

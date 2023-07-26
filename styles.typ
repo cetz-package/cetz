@@ -1,7 +1,7 @@
 #let resolve(current, new, root: none) = {
   let global
   if root != none and type(current) == "dictionary" {
-    (global, current) = (current, current.at(root))
+    (global, current) = (current, current.at(root, default: (:)))
   }
   if new == auto {
     return current

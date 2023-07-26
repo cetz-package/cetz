@@ -2,10 +2,30 @@
 #import "../util.typ"
 #import "../draw.typ"
 #import "../vector.typ"
+#import "../styles.typ"
 
 // Global defaults
-#let num-samples = 50
 #let tic-limit = 100
+#let default-style = (
+  fill: none,
+  stroke: black,
+  label: (
+    offset: .2,
+  ),
+  tick: (
+    fill: none,
+    stroke: black,
+    length: .1,
+    minor-length: .08,
+    label: (
+      offset: .2,
+    )
+  ),
+  grid: (
+    stroke: (paint: gray, dash: "dotted"),
+    fill: none
+  ),
+)
 
 // Construct Axis Object
 //
@@ -135,9 +155,6 @@
              0))
   draw.translate((-x.min, y.min, 0), pre: false)
 }
-#let axis-translate-pt(size, x, y, origin: (0, 0)) = {
-  
-}
 
 // Draw up to four axes in an "scientific" style at origin (0, 0)
 //
@@ -155,23 +172,16 @@
                 right: auto,
                 bottom: none,
                 top: auto,
-                label-offset: .2,
                 frame: true,
                 padding: (left: 0, right: 0, top: 0, bottom: 0),
                 name: none,
-                tick-length: .1,
-                tick-minor-length: .08,
-                tick-offset: 0,
-                tick-style: (stroke: black),
-                frame-style: (stroke: black, fill: none),
-                grid-style: (stroke: (paint: gray, dash: "dotted")),
                 ..style) = {
   import draw: *
 
   if right == auto and left != none {right = left; right.is-mirror = true}
   if top == auto and bottom != none {top = bottom; top.is-mirror = true}
 
-  group(name: name, {
+  group(name: name, ctx => {
     let (w, h) = size
 
     anchor("origin",           (0, 0))
@@ -179,9 +189,8 @@
     anchor("data-top-right",   (w, h))
 
     let style = style.named()
-    if style.len() > 0 {
-      set-style(..style)
-    }
+    style = util.merge-dictionary(default-style,
+      styles.resolve(ctx.style, style, root: "axes"))
 
     let padding = (
       l: padding.at("left", default: 0),
@@ -209,16 +218,19 @@
 
             if label != none and not axis.at("is-mirror", default: false) {
               let label-pos = vector.add((x, y),
-                vector.scale(tic-dir, -label-offset))
+                vector.scale(tic-dir, -style.tick.label.offset))
               content(label-pos, [#label], anchor: anchor)
             }
 
             let major = label != none
-            let length = if major {tick-length} else {tick-minor-length}
+            let length = if major {
+              style.tick.length} else {
+              style.tick.minor-length}
+            
             if length != none and length > 0 {
-              line(vector.sub((x, y), vector.scale(tic-dir, tick-offset)),
+              line((x, y),
                    vector.add((x, y), vector.scale(tic-dir, length)),
-                   ..tick-style)
+                   ..style.tick)
             }
 
             if axis.ticks.at("grid", default: false) {
@@ -227,14 +239,14 @@
               grid-dir.at(1) *= h
 
               line((x, y), (rel: grid-dir),
-                   ..grid-style)
+                   ..style.grid)
             }
           }
         }
       }
 
       if frame {
-        rect((0, 0), size, ..frame-style)
+        rect((0, 0), size, ..style)
       }
     })
 
@@ -247,7 +259,8 @@
 
         // Use a group to get non-rotated anchors
         group(content("axes." + side, axis.label,
-                      angle: angle, padding: label-offset), anchor: anchor)
+                      angle: angle, padding: style.label.offset),
+                      anchor: anchor)
       }
     }
   })
@@ -267,9 +280,6 @@
                  x-position: 0,
                  y-position: 0,
                  axis-padding: .4,
-                 tick-length: .1,
-                 tick-minor-length: .08,
-                 label-offset: .2,
                  name: none,
                  ..style) = {
   import draw: *
@@ -281,14 +291,13 @@
     bottom: axis-padding,
   )
 
-  group(name: name, {
+  group(name: name, ctx => {
     let style = style.named()
-    if style.len() > 0 {
-      set-style(..style)
-    }
+    style = util.merge-dictionary(default-style,
+      styles.resolve(ctx.style, style, root: "axes"))
 
-    x-position = calc.min(calc.max(y-axis.min, x-position), y-axis.max)
-    y-position = calc.min(calc.max(x-axis.min, y-position), x-axis.max)
+    let x-position = calc.min(calc.max(y-axis.min, x-position), y-axis.max)
+    let y-position = calc.min(calc.max(x-axis.min, y-position), x-axis.max)
 
     let (w, h) = size
 
@@ -303,14 +312,14 @@
     line((-axis-padding, x-y), (w + axis-padding, x-y), mark: (end: ">"),
          name: "x-axis")
     if "label" in x-axis and x-axis.label != none {
-      content((rel: (0, -label-offset), to: "x-axis.end"),
+      content((rel: (0, -style.tick.label.offset), to: "x-axis.end"),
         anchor: "top", x-axis.label)
     }
 
     line((y-x, -axis-padding), (y-x, h + axis-padding), mark: (end: ">"),
          name: "y-axis")
     if "label" in y-axis and y-axis.label != none {
-      content((rel: (-label-offset, 0), to: "y-axis.end"),
+      content((rel: (-style.tick.label.offset, 0), to: "y-axis.end"),
         anchor: "right", y-axis.label)
     }
 
@@ -323,14 +332,14 @@
           if y == auto { y = pos * h }
 
           if label != none {
-            let label-pos = vector.add((x, y),
-              vector.scale(tic-dir, -label-offset))
+            let label-pos = vector.sub((x, y),
+              vector.scale(tic-dir, style.tick.label.offset / 2))
 
             if x == y-x and y == x-y {
               if origin-drawn { continue }
               origin-drawn = true
               content(vector.add((x, y),
-                  vector.scale((-1, -1), label-offset)),
+                  vector.scale((-1, -1), style.tick.label.offset)),
                 [#label], anchor: "top-right")
             } else {
               content(label-pos, [#label], anchor: anchor)
@@ -339,7 +348,7 @@
 
           let major = label != none
           let dir = vector.scale(tic-dir,
-            if major {tick-length} else {tick-minor-length})
+            if major {style.tick.length} else {style.tick.minor-length})
           line(vector.sub((x, y), dir),
                vector.add((x, y), dir))
         }

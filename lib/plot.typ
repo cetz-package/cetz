@@ -97,30 +97,52 @@
   return paths
 }
 
-// Add data to plot
-//
-// Must be called in the body of a `plot` command.
-//
-// - domain (array): Domain of the plot. If data is a function, domain must be
-//                   specified
-// - hypograph (bool): Fill hypograph
-// - epigraph (bool): Fill epigraph
-// - fill (bool): Fill to y zero
-// - samples (int): Samples to use if data is a function
-// - style: (style): Style to use, can be used with a palette function
-// - axes: (array): Name of the axes to use ("x", "y"), note that not all
-//                  plot styles are able to display a custom axis!
-// - mark: (string): Mark symbol: (x,o,*,..)
-// - data: (array|function): Array of data points or function ((x)=>y)
+/// Add data to a plot environment.
+///
+/// Must be called from the body of a `plot(..)` command.
+///
+/// - domain (array): Domain tuple of the plot. If `data` is a function,
+///                   domain must be specified, as `data` is sampled
+///                   for x-values in `domain`. Values must be numbers.
+/// - hypograph (bool): Fill hypograph; uses the `hypograph` style key for
+///                     drawing
+/// - epigraph (bool): Fill epigraph; uses the `epigraph` style key for
+///                    drawing
+/// - fill (bool): Fill to y zero
+/// - samples (int): Number of times the `data` function gets called for
+///                  sampling y-values. Only used if `data` is of
+///                  type function.
+/// - style (style): Style to use, can be used with a palette function
+/// - axes (array): Name of the axes to use ("x", "y"), note that not all
+///                 plot styles are able to display a custom axis!
+/// - mark (string): Mark symbol to place at each distinct value of the
+///                  graph. Uses the `mark` style key of `style` for drawing.
+///
+///                  The following marks are supported:
+///                  - `"*"` or `"x"` -- X
+///                  - `"+"` -- Cross
+///                  - `"|"` -- Bar
+///                  - `"-"` -- Dash
+///                  - `"o"` -- Circle
+///                  - `"triangle"` -- Triangle
+///                  - `"square"` -- Square
+/// - mark-size (float): Mark size in cavas units
+/// - data (array,function): Array of 2D data points (numeric) or a function
+///                          of the form `x => y`, where `x` is a value
+///                          insides `domain` and `y` must be numeric.
+///
+///                          *Examples*
+///                          - `((0,0), (1,1), (2,-1))`
+///                          - x => calc.pow(x, 2)
 #let add(domain: auto,
          hypograph: false,
          epigraph: false,
          fill: false,
          mark: none,
          mark-size: .2,
-         mark-style: (:),
          samples: 100,
          style: (stroke: black, fill: gray),
+         mark-style: (stroke: black, fill: none),
          axes: ("x", "y"),
          data
          ) = {
@@ -172,24 +194,30 @@
   ),)
 }
 
-// Create a plot environment
-//
-// Data for plotting must be passed via `plot.add(..)`
-//
-// - body (plot.add): Plot add commands
-// - size (array): Plot canvas size
-// - axis-style (string): "scientific" or "school-book"
-// - ..options (any): The following options are supported per axis
-//                    and must be prefixed by `<axis-name>-`, e.G.
-//                    `x-min: 0`.
-//                    - min (int): Axis minimum
-//                    - max (int): Axis maximum
-//                    - tick-step (float): Major tick step
-//                    - minor-tick-step (float): Major tick step
-//                    - ticks (array): List of ticks values or value/label
-//                                     tuples
-//                    - unit (content): Tick label suffix
-//                    - decimals (int): Number of decimals digits to display
+/// Create a plot environment
+///
+/// Data for plotting must be passed via `plot.add(..)`
+///
+/// Note that different axis-styles can show different axes.
+/// The `"school-book"` style shows only axis "x" and "y", while
+/// the `"scientific"` style can show "x2" and "y2", if set
+/// (if unset, "x2" mirrors "x" and "y2" mirrors "y"). Other
+/// axes (e.G. "my-axis") work, but no ticks or labels will be shown.
+///
+/// - body (plot.add): Calls of `plot.add` commands
+/// - size (array): Plot canvas size tuple of width and height in canvas units
+/// - axis-style (string): Axis style "scientific" or "school-book"
+/// - ..options (any): The following options are supported per axis
+///                    and must be prefixed by `<axis-name>-`, e.G.
+///                    `x-min: 0`.
+///                    - min (int): Axis minimum
+///                    - max (int): Axis maximum
+///                    - tick-step (float): Major tick step
+///                    - minor-tick-step (float): Major tick step
+///                    - ticks (array): List of ticks values or value/label
+///                                     tuples
+///                    - unit (content): Tick label suffix
+///                    - decimals (int): Number of decimals digits to display
 #let plot(body,
           size: (1, 1),
           axis-style: "scientific",
