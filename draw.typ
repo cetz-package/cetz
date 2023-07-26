@@ -205,11 +205,11 @@
 //
 // A group has a local transformation matrix.
 // Groups can be used to get an elements bounding box, as they
-// set default achors (top, top-left, ..) to the bounding box of
+// set default anchors (top, top-left, ..) to the bounding box of
 // their children.
 //
 // - name   (string): Element name
-// - anchor (string): Elemen origin
+// - anchor (string): Element origin
 // - body     (draw): Children
 #let group(name: none, anchor: none, body) = {
   ((
