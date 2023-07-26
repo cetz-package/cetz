@@ -259,6 +259,10 @@
   if type(length) == "ratio" {
     // NOTE: Ratio length is based on width!
     length = ly.width * length
+  } else {
+    // HACK: To convert em sizes to absolute sizes, we
+    //       measure a rect of that size.
+    length = measure(line(length: length), st).width
   }
 
   // Canvas bounds
