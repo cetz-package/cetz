@@ -11,7 +11,7 @@
       stack(
         dir: ttb,
         spacing: 1em,
-        block(
+        block(width: 100%,
           canvas(body, ..args),
           fill: canvas-background,
           inset: 1em
@@ -590,10 +590,10 @@ merge-path({
 Groups allow scoping context changes such as setting stroke-style, fill and transformations.
 
 ```typc
-group(content, name: none, anchor: none)
+group(body, name: none, anchor: none)
 ```
 
-Note: You can pass `content` a function of the form `ctx => array` that returns the groups children. This way you get access to the groups context object.
+Note: You can pass `content` a function of the form `ctx => draw-cmds` that returns the groups children. This way you get access to the groups context dictionary.
 
 #example({
 import "draw.typ": *
@@ -1394,7 +1394,7 @@ plot(size: (width, height),
 
 The ticks option dictionary supports the following keys:
 #def-arg("size", "a",
-  [Size of the plot])
+  [Size of the plot as tuple of width and height in cavas units])
 #def-arg("axis-style", "s?",
   [Axis style, either "scientific" or "school-book"])
 #def-arg("..options", "any",
@@ -1411,14 +1411,14 @@ The ticks option dictionary supports the following keys:
   ]
 ])
 #def-arg("body", "..",
-  [Calls of `plot.add(..)`, see <plot-add>])
+  [Calls of `plot.add(..)`, see @plot-add])
 
-=== Plot-Add
+=== Plot-Add <plot-add>
 
 The `plot.add` function adds plotting data into a plot environment.
 It must be called from insides `plot({..})`.
 
-If used with a callback, the `domain` must be specified!
+If used with `data` set to a function, the `domain` must be specified!
 
 ```typc
 add(domain: auto, hypograph: false, epigraph: false, fill: false,
@@ -1428,7 +1428,8 @@ add(domain: auto, hypograph: false, epigraph: false, fill: false,
 ```
 
 #def-arg("domain", "a|auto",
-  [Range of x for sampled data])
+  [Range of x for sampled data, set to min/max x value of `data`
+   if set to auto (see `data`)])
 #def-arg("hypograph", "b",
   [Fill graph below function])
 #def-arg("epigraph", "b",
@@ -1438,26 +1439,35 @@ add(domain: auto, hypograph: false, epigraph: false, fill: false,
 #def-arg("mark", "s?",
   [Mark symbol. Any of `("x", "o", "square", "triangle", "|", "-")`])
 #def-arg("mark-size", "f?",
-  [Size of mark symbol])
+  [Size of mark symbol in canvas units])
 #def-arg("mark-style", "style?",
   [Style used for drawing marks. Note that this inherits the plots style])
 #def-arg("style", "style",
   [Style used for drawing the graph])
 #def-arg("samples", "i",
-  [Number of samples to use (only if `data` is of type function)])
+  [Number of times to sample `data` function (ignored if `data` is not a
+   function)])
 #def-arg("axes", "a",
-  [Array of axis names to use])
+  [Array of axis names to use for plotting. Defaults to `("x", "y")`.])
 #def-arg("data", "function|a",
-  [Array of data points or function in the form `x => y`])
+  [Array of 2D data points or a function in the form `x => y`. Examples: \
+   #box[
+   - `((0,0), (1,1), (2,0),)`
+   - `x => calc.pow(x, 2)`
+   ] \
+   Both tuple values (`x` and `y`) must be numeric. If `data` is of type
+   function, it is called `samples` times with argument `x` set between
+   `domain`.
+   ])
 
 #example({
   import "draw.typ": *
-  plot.plot(size: (2,2), x-tick-step: 180, y-tick-step: 1,
+  plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
                          x-unit: $degree$, {
     plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
   })
 }, ```typc
-plot.plot(size: (2,2), x-tick-step: 180, y-tick-step: 1,
+plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
           x-unit: $degree$, {
   plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
 })
@@ -1465,14 +1475,14 @@ plot.plot(size: (2,2), x-tick-step: 180, y-tick-step: 1,
 
 #example({
   import "draw.typ": *
-  plot.plot(size: (2,2), x-tick-step: 180, y-tick-step: 1,
+  plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
                          x-unit: $degree$, y-max: .5, {
     plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
     plot.add(domain: (0, 360), x => calc.cos(x * 1deg),
              samples: 10, mark: "x", mark-style: (stroke: blue))
   })
 }, ```typc
-plot.plot(size: (2,2), x-tick-step: 180, y-tick-step: 1,
+plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
           x-unit: $degree$, y-max: .5, {
   plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
   plot.add(domain: (0, 360), x => calc.cos(x * 1deg),
@@ -1484,23 +1494,34 @@ plot.plot(size: (2,2), x-tick-step: 180, y-tick-step: 1,
 
 With the `chart` library it is easy to draw charts.
 
-=== Barchart
+Supported charts are:
+- `barchart(..)` (@chart-bar): A chart with horizontal growing bars
+  - `mode: "basic"`: (default): One bar per data row
+  - `mode: "clustered"`: Multiple grouped bars per data row
+  - `mode: "stacked"`: Multiple stacked bars per data row
+  - `mode: "stacked100"`: Multiple stacked bars relative to the sum of a data row
+
+=== Barchart <chart-bar>
 
 ```typc
 barchart(size: (width, height))
 ```
 
 #def-arg("data", "a",
-  [Data array of arrays or dictionaries])
+  [Data array of arrays or dictionaries. Examples: \
+   #box[
+   - `(([A], 1), ([B], 2),)`
+   - `((label: [A], value: 1), (label: [B], value: 2),)`
+   ]])
 #def-arg("label-key", "s|i",
-  [Data item key to access an items label])
+  [Data item key to access an items label (array index or dictionary key)])
 #def-arg("value-key", "s|i|a",
   [Data item key(s) to access an items value(s). For multi-value charts
    this must be an array of all keys, e.G. `(..range(1, 5))`])
 #def-arg("mode", "s",
   [Barchart mode, one of "basic", "clustered" (bars next to each other), "stacked" (bar stacked) or "stacked100" (bars stacked but as percentage of their sum)])
 #def-arg("size", "a",
-  [The chart's size. Height can be set to `auto`.])
+  [The chart's size as width-height tuple. Height can be set to `auto`.])
 #def-arg("bar-width", "f",
   [Width of a bar or cluster of bars, with $1$ being leving no gap between
    values.])
@@ -1519,33 +1540,33 @@ barchart(size: (width, height))
 
 === Examples
 ==== Basic
-#example({
+#example(vertical: true, {
   let data = (("A", 10), ("B", 20), ("C", 13))
-  chart.barchart(size: (3, auto), x-tick-step: 10, data)
+  chart.barchart(size: (10, auto), x-tick-step: 10, data)
 }, ```typc
 let data = (("A", 10), ("B", 20), ("C", 13))
-chart.barchart(size: (3, auto), x-tick-step: 10, data)
+chart.barchart(size: (10, auto), x-tick-step: 10, data)
 ```)
 
 ==== Clustered
-#example({
+#example(vertical: true, {
   let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-  chart.barchart(size: (3, auto), mode: "clustered",
+  chart.barchart(size: (10, auto), mode: "clustered",
                  x-tick-step: 10, value-key: (..range(1, 4)), data)
 }, ```typc
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-chart.barchart(size: (3, auto), mode: "clustered",
+chart.barchart(size: (10, auto), mode: "clustered",
                x-tick-step: 10, value-key: (..range(1, 4)), data)
 ```)
 
 ==== Stacked
-#example({
+#example(vertical: true, {
   let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-  chart.barchart(size: (3, auto), mode: "stacked",
+  chart.barchart(size: (10, auto), mode: "stacked",
                  x-tick-step: 10, value-key: (..range(1, 4)), data)
 }, ```typc
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-chart.barchart(size: (3, auto), mode: "clustered",
+chart.barchart(size: (6, auto), mode: "clustered",
                x-tick-step: 10, value-key: (..range(1, 4)), data)
 ```)
 
