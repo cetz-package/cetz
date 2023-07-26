@@ -4,21 +4,44 @@
 #import "palette.typ"
 #import "../draw.typ"
 
-// Draw a bar chart
-//
-// - data (array): Data array.
-// - label-key (any): Key to access label of data item.
-// - value-key (any): Key(s) to access value(s) of data item.
-// - mode (string): Chart mode: basic, clustered, stacked, stacked100.
-// - size (array): Chart width and height, height can be set to auto.
-// - bar-width: Size of a bar in relation to the charts height.
-// - bar-style: Style or function (idx => style) to use for each bar,
-//              accepts a palette function.
-// - x-tick-step: Step size of x axis ticks 
-// - x-ticks: List of tick values or value/label tuples
-// - x-unit: Tick suffix
-// - x-label: X Axis label
-// - y-label: Y Axis label
+/// Draw a bar chart. A bar chart is a chart that represents data with
+/// rectangular bars that grow from left to right, proportional to the values
+/// they represent. For examples see @barchart-examples.
+///
+/// - data (array): Array of data rows. A row can be of type array or
+///                 dictionary, with `label-key` and `value-key` being
+///                 the keys to access a rows label and value(s).
+///
+///                 *Example*
+///                 ```typc
+///                 (([A], 1), ([B], 2), ([C], 3),)
+///                 ``` 
+/// - label-key (int,string): Key to access the label of a data row.
+///                           This key is used as argument to the
+///                           rows `.at(..)` function.
+/// - value-key (int,string): Key(s) to access value(s) of data row.
+///                           These keys are used as argument to the
+///                           rows `.at(..)` function.
+/// - mode (string): Chart mode:
+///                  - `"basic"` -- Single bar per data row
+///                  - `"clustered"` -- Group of bars per data row
+///                  - `"stacked"` -- Stacked bars per data row
+///                  - `"stacked100"` -- Stacked bars per data row relative
+///                                      to the sum of the row
+/// - size (array): Chart size as width and height tuple in canvas unist;
+///                 height can be set to `auto`.
+/// - bar-width (float): Size of a bar in relation to the charts height.
+/// - bar-style (string): Style or function (idx => style) to use for
+///                       each bar, accepts a palette function.
+/// - x-tick-step (float): Step size of x axis ticks 
+/// - x-ticks (array): List of tick values or value/label tuples
+///
+///                    *Example*
+///                    
+///                    `(1, 5, 10)` or `((1, [One]), (2, [Two]), (10, [Ten]))`
+/// - x-unit (content,auto): Tick suffix added to each tick label
+/// - x-label (content,none): X Axis label
+/// - y-label (content,none): Y Axis label
 #let barchart(data,
               label-key: 0,
               value-key: 1,

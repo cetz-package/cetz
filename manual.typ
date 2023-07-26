@@ -1492,6 +1492,7 @@ plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
 ```)
 
 == Chart
+#let chart-module = parse-module("../../lib/chart.typ", name: "Chart")
 
 With the `chart` library it is easy to draw charts.
 
@@ -1504,42 +1505,9 @@ Supported charts are:
 
 === Barchart <chart-bar>
 
-```typc
-barchart(size: (width, height))
-```
+#show-module(chart-module, show-module-name: false)
 
-#def-arg("data", "a",
-  [Data array of arrays or dictionaries. Examples: \
-   #box[
-   - `(([A], 1), ([B], 2),)`
-   - `((label: [A], value: 1), (label: [B], value: 2),)`
-   ]])
-#def-arg("label-key", "s|i",
-  [Data item key to access an items label (array index or dictionary key)])
-#def-arg("value-key", "s|i|a",
-  [Data item key(s) to access an items value(s). For multi-value charts
-   this must be an array of all keys, e.G. `(..range(1, 5))`])
-#def-arg("mode", "s",
-  [Barchart mode, one of "basic", "clustered" (bars next to each other), "stacked" (bar stacked) or "stacked100" (bars stacked but as percentage of their sum)])
-#def-arg("size", "a",
-  [The chart's size as width-height tuple. Height can be set to `auto`.])
-#def-arg("bar-width", "f",
-  [Width of a bar or cluster of bars, with $1$ being leving no gap between
-   values.])
-#def-arg("bar-style", "function|style",
-  [Style of bars, accepts a function of the form `index => style`. You canvas    use palettes from the `palette` library, see @palette.])
-#def-arg("x-tick-step", "f",
-  [X axis distance between each major tick])
-#def-arg("x-ticks", "a",
-  [X axis ticks list, a list of tick values or value/label tuples])
-#def-arg("x-unit", "content",
-  [X axis tick label suffix])
-#def-arg("x-label", "content?",
-  [X axis label])
-#def-arg("y-label", "content?",
-  [Y axis label])
-
-=== Examples
+=== Examples <barchart-examples>
 ==== Basic
 #example(vertical: true, {
   let data = (("A", 10), ("B", 20), ("C", 13))
