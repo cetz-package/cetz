@@ -271,10 +271,7 @@
     }
   }
 
-  let draw-marks(segments, x, y, mark, mark-size) = {
-    assert(segments.map(s => s.len()).sum() <= 1000,
-           message: "To many marks to draw")
-
+  let draw-marks(pts, x, y, mark, mark-size) = {
     // Scale marks back to canvas scaling
     let (sx, sy) = size
     sx = (x.max - x.min) / sx
@@ -317,8 +314,9 @@
       }
     )
 
-    for s in segments {
-      for pt in s {
+    for pt in pts {
+      let (px, py, ..) = pt
+      if px >= x.min and px <= x.max and py >= y.min and py <= y.max {
         draw-mark(pt)
       }
     }
@@ -354,14 +352,14 @@
   }
 
   if axis-style == "scientific" {
-    axes.scientific-axes(
+    axes.scientific(
       size: size,
       bottom: axis-dict.x,
       top: axis-dict.at("x2", default: auto),
       left: axis-dict.y,
       right: axis-dict.at("y2", default: auto),)
   } else if axis-style == "school-book" {
-    axes.school-book-axes(
+    axes.school-book(
       size: size,
       axis-dict.x,
       axis-dict.y,)
@@ -379,7 +377,7 @@
       draw.group({
         axes.set-axis-viewport(size, x, y)
         draw.set-style(..d.style, ..d.mark-style)
-        draw-marks(d.path, x, y, d.mark, d.mark-size)
+        draw-marks(d.data, x, y, d.mark, d.mark-size)
       })
     }
   }

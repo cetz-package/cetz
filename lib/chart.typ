@@ -139,13 +139,13 @@
     if mode == "stacked100" {stacked100-draw-bar}
   )
 
-  axes.scientific-axes(size: size,
-                       left: y,
-                       right: none,
-                       bottom: x,
-                       top: none,
-                       frame: false,
-                       tick-length: 0)
+  axes.scientific(size: size,
+                  left: y,
+                  right: none,
+                  bottom: x,
+                  top: none,
+                  frame: false,
+                  tick-length: 0)
   line((0, size.at(1)), (0, 0), (size.at(0), 0)) // Frame
 
   if data.len() > 0 {

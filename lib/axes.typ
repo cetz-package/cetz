@@ -32,7 +32,7 @@
     value = str(value)
   }
 
-  if tic-options.unit != none {
+  if tic-options.at("unit", default: none) != none {
     value += tic-options.unit
   }
   return value
@@ -150,23 +150,22 @@
 // - padding (array): Padding (left, right, top, bottom)
 // - frame (bool): If true, draw frame
 // - ..style (any): Style
-#let scientific-axes(size: (1, 1),
-                     left: none,
-                     right: auto,
-                     bottom: none,
-                     top: auto,
-                     minor-tic-length: .08,
-                     label-offset: .2,
-                     frame: true,
-                     padding: (left: 0, right: 0, top: 0, bottom: 0),
-                     name: none,
-                     tick-length: .1,
-                     tick-minor-length: .08,
-                     tick-offset: 0,
-                     tick-style: (stroke: black),
-                     frame-style: (stroke: black, fill: none),
-                     grid-style: (stroke: (paint: gray, dash: "dotted")),
-                     ..style) = {
+#let scientific(size: (1, 1),
+                left: none,
+                right: auto,
+                bottom: none,
+                top: auto,
+                label-offset: .2,
+                frame: true,
+                padding: (left: 0, right: 0, top: 0, bottom: 0),
+                name: none,
+                tick-length: .1,
+                tick-minor-length: .08,
+                tick-offset: 0,
+                tick-style: (stroke: black),
+                frame-style: (stroke: black, fill: none),
+                grid-style: (stroke: (paint: gray, dash: "dotted")),
+                ..style) = {
   import draw: *
 
   if right == auto and left != none {right = left; right.is-mirror = true}
@@ -263,16 +262,16 @@
 // - y-position (number): Y Axis position
 // - name (string): Object name
 // - ..style (any): Style
-#let school-book-axes(x-axis, y-axis,
-                      size: (1, 1),
-                      x-position: 0,
-                      y-position: 0,
-                      axis-padding: .4,
-                      tic-length: .1,
-                      minor-tic-length: .08,
-                      label-offset: .2,
-                      name: none,
-                      ..style) = {
+#let school-book(x-axis, y-axis,
+                 size: (1, 1),
+                 x-position: 0,
+                 y-position: 0,
+                 axis-padding: .4,
+                 tick-length: .1,
+                 tick-minor-length: .08,
+                 label-offset: .2,
+                 name: none,
+                 ..style) = {
   import draw: *
 
   let padding = (
@@ -340,7 +339,7 @@
 
           let major = label != none
           let dir = vector.scale(tic-dir,
-            if major {tic-length} else {minor-tic-length})
+            if major {tick-length} else {tick-minor-length})
           line(vector.sub((x, y), dir),
                vector.add((x, y), dir))
         }
