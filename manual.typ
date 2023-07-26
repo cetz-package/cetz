@@ -1404,8 +1404,8 @@ The ticks option dictionary supports the following keys:
   / min: Axis min. value
   / max: Axis max. value
   / ticks: List of tick values or value/label tuples
-  / tick-step: Tick step or `none`
-  / minor-tick-step: Minor tick step or `none`
+  / tick-step: Distance to step between each major tick or `none`
+  / minor-tick-step: Same as `tick-step` but for minor ticks
   / decimals: Number of tick label decimal digits
   / unit: Tick label suffix
   ]
@@ -1507,7 +1507,7 @@ barchart(size: (width, height))
 #def-arg("bar-style", "function|style",
   [Style of bars, accepts a function of the form `index => style`. You canvas    use palettes from the `palette` library, see @palette.])
 #def-arg("x-tick-step", "f",
-  [X axis tick step])
+  [X axis distance between each major tick])
 #def-arg("x-ticks", "a",
   [X axis ticks list, a list of tick values or value/label tuples])
 #def-arg("x-unit", "content",
