@@ -1484,7 +1484,7 @@ add(domain: auto, hypograph: false, epigraph: false, fill: false,
 #def-arg("style", "style",
   [Style used for drawing the graph])
 #def-arg("samples", "i",
-  [Number of samples to use (only if `data` is of type funciton)])
+  [Number of samples to use (only if `data` is of type function)])
 #def-arg("axes", "a",
   [Array of axis names to use])
 #def-arg("data", "function|a",
