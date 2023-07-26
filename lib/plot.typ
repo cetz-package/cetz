@@ -206,7 +206,7 @@
     for (i, name) in d.axes.enumerate() {
       if not name in axis-dict {
         axis-dict.insert(name, axes.axis(
-          min: none, max: none, tics: (step: auto)))
+          min: none, max: none, ticks: (step: auto)))
       }
 
       let axis = axis-dict.at(name)
@@ -226,23 +226,23 @@
 
   // Set axis options
   for (name, axis) in axis-dict {
-    if not "tics" in axis { axis.tics = () }
+    if not "ticks" in axis { axis.ticks = () }
 
     axis.label = get-axis-option(name, "label", $#name$)
     axis.min = get-axis-option(name, "min", axis.min)
     axis.max = get-axis-option(name, "max", axis.max)
 
-    axis.tics.list = get-axis-option(name, "ticks", ())
-    axis.tics.step = get-axis-option(name, "tick-step", axis.tics.step)
-    axis.tics.minor-step = get-axis-option(name, "minor-tick-step", none)
-    axis.tics.decimals = get-axis-option(name, "decimals", 2)
-    axis.tics.unit = get-axis-option(name, "unit", [])
+    axis.ticks.list = get-axis-option(name, "ticks", ())
+    axis.ticks.step = get-axis-option(name, "tick-step", axis.ticks.step)
+    axis.ticks.minor-step = get-axis-option(name, "minor-tick-step", none)
+    axis.ticks.decimals = get-axis-option(name, "decimals", 2)
+    axis.ticks.unit = get-axis-option(name, "unit", [])
 
-    if axis.tics.step == auto {
-      axis.tics.step = (axis.max - axis.min) / 10
+    if axis.ticks.step == auto {
+      axis.ticks.step = (axis.max - axis.min) / 10
     }
-    if axis.tics.minor-step == auto and axis.tics.step != auto {
-      axis.tics.minor-step = axis.tics.step / 2
+    if axis.ticks.minor-step == auto and axis.ticks.step != auto {
+      axis.ticks.minor-step = axis.ticks.step / 2
     }
 
     axis-dict.at(name) = axis

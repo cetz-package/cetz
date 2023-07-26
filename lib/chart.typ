@@ -83,12 +83,14 @@
   
   let x = axes.axis(min: 0, max: max-value,
                     label: x-label,
-                    tics: (grid: true, step: x-step,
-                           unit: x-unit, decimals: 1,
-                           list: x-ticks))
+                    ticks: (grid: true, step: x-step,
+                            unit: x-unit, decimals: 1,
+                            list: x-ticks))
   let y = axes.axis(min: - 1, max: data.len(),
                     label: y-label,
-                    tics: (grid: true, step: none, list: y-tic-list))
+                    ticks: (grid: true,
+                            step: none,
+                            list: y-tic-list))
 
   let basic-draw-bar(idx, y, item, ..style) = {
     rect((0, y - bar-width / 2),

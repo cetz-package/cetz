@@ -10,17 +10,17 @@
 // Construct Axis Object
 //
 // - min (number): Minimum value
-// - max (numble): Maximum value
-// - tics (dictionary): Tick settings:
+// - max (number): Maximum value
+// - ticks (dictionary): Tick settings:
 //     - step (number): Major tic step
 //     - minor-step (number): Minor tic step
 //     - unit (content): Tick label suffix
 //     - decimals (int): Tick float decimal length
 // - label (content): Axis label
 #let axis(min: -1, max: 1, label: none,
-          tics: (step: 1, minor-step: none,
+          ticks: (step: 1, minor-step: none,
                  unit: none, decimals: 2, grid: false)) = (
-  min: min, max: max, tics: tics, label: label,
+  min: min, max: max, ticks: ticks, label: label,
 )
 
 // Format a tick value
@@ -50,36 +50,36 @@
   return (v - min) / dt
 }
 
-// Compute list of tics for axis
+// Compute list of ticks for axis
 //
 // - axis (axis): Axis
-#let compute-linear-tics(axis) = {
+#let compute-linear-ticks(axis) = {
   let (min, max) = (axis.min, axis.max)
   let dt = max - min; if (dt == 0) { dt = 1 }
-  let tics = axis.tics
+  let ticks = axis.ticks
 
   let l = ()
-  if tics != none {
-    if "step" in tics and tics.step != none {
-      let s = 1 / tics.step
+  if ticks != none {
+    if "step" in ticks and ticks.step != none {
+      let s = 1 / ticks.step
       let r = int(max * s + .5) - int(min * s)
       let n = range(int(min * s), int(max * s + 1.5))
 
-      assert(n.len() <= tic-limit, message: "Number of major tics exceeds limit.")
+      assert(n.len() <= tic-limit, message: "Number of major ticks exceeds limit.")
       for t in n {
         let v = ((t / s) - min) / dt
         if v >= 0 and v <= 1 {
-          l.push((v, format-tick-value(t / s, tics)))
+          l.push((v, format-tick-value(t / s, ticks)))
         }
       }
     }
 
-    if "minor-step" in tics and tics.minor-step != none {
-      let s = 1 / tics.minor-step
+    if "minor-step" in ticks and ticks.minor-step != none {
+      let s = 1 / ticks.minor-step
       let r = int(max * s + .5) - int(min * s)
       let n = range(int(min * s), int(max * s + 1.5))
 
-      assert(n.len() <= tic-limit, message: "Number of minor tics exceeds limit.")
+      assert(n.len() <= tic-limit, message: "Number of minor ticks exceeds limit.")
       for t in n {
         let v = ((t / s) - min) / dt
         if v != none and v >= 0 and v <= 1 {
@@ -88,12 +88,12 @@
       }
     }
 
-    if "list" in tics {
-      for t in tics.list {
+    if "list" in ticks {
+      for t in ticks.list {
         let (v, label) = (none, none)
         if type(t) in ("float", "integer") {
           v = t
-          label = format-tick-value(t, tics)
+          label = format-tick-value(t, ticks)
         } else {
           (v, label) = t
         }
@@ -202,7 +202,7 @@
                     h - padding.t - padding.b)
       for (axis, _, anchor, placement, tic-dir) in axis-settings {
         if axis != none {
-          for (pos, label) in compute-linear-tics(axis) {
+          for (pos, label) in compute-linear-ticks(axis) {
             let (x, y) = placement
             if x == auto { x = pos * w + padding.l }
             if y == auto { y = pos * h + padding.b }
@@ -221,7 +221,7 @@
                    ..tick-style)
             }
 
-            if axis.tics.at("grid", default: false) {
+            if axis.ticks.at("grid", default: false) {
               let grid-dir = tic-dir
               grid-dir.at(0) *= w
               grid-dir.at(1) *= h
@@ -317,7 +317,7 @@
     let origin-drawn = false
     for (axis, anchor, placement, tic-dir) in axis-settings {
       if axis != none {
-        for (pos, label) in compute-linear-tics(axis) {
+        for (pos, label) in compute-linear-ticks(axis) {
           let (x, y) = placement
           if x == auto { x = pos * w }
           if y == auto { y = pos * h }
