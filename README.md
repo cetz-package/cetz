@@ -36,11 +36,14 @@ CeTZ (CeTZ, ein Typst Zeichenpacket) is a library for drawing with [Typst](https
     </a>
   </td>
   <td>
+    <a href="gallery/barchart.typ">
+      <img src="gallery/barchart.png" width="250px">
+    </a>
   </td>
 </tr><tr>
   <td>Pie Chart</td>
   <td>Plot</td>
-  <td></td>
+  <td>Clustered Barchart</td>
 </tr>
 
 </table>
