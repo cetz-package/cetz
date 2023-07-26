@@ -208,9 +208,9 @@
 // set default anchors (top, top-left, ..) to the bounding box of
 // their children.
 //
-// - name   (string): Element name
-// - anchor (string): Element origin
-// - body     (draw): Children
+// - name        (string): Element name
+// - anchor      (string): Element origin
+// - body (draw|function): Children or function of the form (ctx => array)
 #let group(name: none, anchor: none, body) = {
   ((
     name: name,

@@ -588,9 +588,12 @@ merge-path({
 
 == Groups <groups>
 Groups allow scoping context changes such as setting stroke-style, fill and transformations.
+
 ```typc
 group(content, name: none, anchor: none)
 ```
+
+Note: You can pass `content` a function of the form `ctx => array` that returns the groups children. This way you get access to the groups context object.
 
 #example({
 import "draw.typ": *
