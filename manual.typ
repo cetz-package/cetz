@@ -1380,6 +1380,8 @@ The library `plot` of CeTZ allows plotting 2D data as linechart.
 
 The `plot` function is an environment for plotting data.
 
+Note that different axis-styles can show different axes. The "school-book" style shows only axis "x" and "y", while the "scientific" style can show "x2" and "y2", if set (if unset, "x2" mirrors "x" and "y2" mirrors "y"). Other axes (e.G. "my-axis") work, but no ticks or labels will be shown.
+
 ```typc
 plot(size: (width, height),
      axis-style: "scientific"
