@@ -1554,7 +1554,32 @@ chart.barchart(size: (3, auto), mode: "clustered",
 A palette is a function that returns a style for an index.
 The palette library provides some predefined palettes.
 
-The list of palettes:
-- red
-- blue
-- rainbow
+Palette functions must return the number of different styles they
+return when passed `"len"` as argument.
+
+A palette that returns a fill-style for an index can be
+defined via `palette.new(stroke, fills)`, but it is also
+possible to just use a function of the format `index => style` as
+palette.
+#def-arg("stroke", "stroke", [Single stroke style])
+#def-arg("fills", "a", [Array of fill styles])
+
+#let show-palette(p) = {
+  canvas({
+    import draw: *
+    for i in range(p("len")) {
+      if calc.rem(i, 10) == 0 { move-to((rel: (0, -.5))) }
+      rect((), (rel: (1,.5)), name: "r", ..p(i))
+      move-to("r.bottom-right")
+    }
+  })
+} 
+
+The list of predefined palettes:
+- `gray` #show-palette(palette.gray)
+- `red` #show-palette(palette.red)
+- `blue` #show-palette(palette.blue)
+- `rainbow` #show-palette(palette.rainbow)
+- `tango-light` #show-palette(palette.tango-light)
+- `tango` #show-palette(palette.tango)
+- `tango-dark` #show-palette(palette.tango-dark)
