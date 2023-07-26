@@ -1,5 +1,6 @@
-#import "canvas.typ": canvas
+#import "lib.typ"
 #import "styles.typ"
+#import lib: *
 
 #let canvas-background = gray.lighten(75%)
 
@@ -1418,161 +1419,182 @@ The node itselfes can be ot type `content` or `dictionary` with a key `content`.
 
 == Plot
 
-The plotting library `plot` of CeTZ allows drawing line charts of data points.
-All data is expected to be in `(x, y)` format.
+The library `plot` of CeTZ allows plotting 2D data as linechart.
 
-=== Data <plot-data>
+=== Plot <plot-function>
 
-Data can be passed as array of data points or dictionary to provide further information. The data dictionary allows for the following keys:
-#def-arg("data", "a|function",
-  [The data point array or callback function])
-#def-arg("style", "style",
-  [Style dictionary used for drawing (same as for `set-style`)])
-#def-arg("epigraph", "b",
-  [If true, fill the epigraph of the function (style key: `epigraph`)])
-#def-arg("hypograph", "b",
-  [If true, fill the hypograph of the function (style key: `hypograph`)])
-#def-arg("fill", "b",
-  [If true, fill the function (style key: `fill`)])
-#def-arg("samples", "i",
-  [Number of samples to use for the data callback.])
+The `plot` function is an environment for plotting data.
 
-=== Tics <plot-tics>
+```typc
+plot(size: (width, height),
+     axis-style: "scientific"
+     ..options,
+     body)
+```
 
 The tics option dictionary supports the following keys:
-#def-arg("step", "n?",
-  [Draw a major tick every $n$ steps])
-#def-arg("minor-step", "n?",
-  [Draw a minor tick every $n$ steps])
+#def-arg("size", "a",
+  [Size of the plot])
+#def-arg("axis-style", "s?",
+  [Axis style, either "scientific" or "school-book"])
+#def-arg("..options", "any",
+  [Axis options in the form `<axis-name>-<option>`. The possible options are:
+  #box[
+  / label : The axis label
+  / min: Axis min. value
+  / max: Axis max. value
+  / ticks: List of tick values or value/label tuples
+  / tick-step: Tick step or `none`
+  / minor-tick-step: Minor tick step or `none`
+  / decimals: Number of tick label decimal digits
+  / unit: Tick label suffix
+  ]
+])
+#def-arg("body", "..",
+  [Calls of `plot.add(..)`, see <plot-add>])
 
-=== Axis
+=== Plot-Add
 
-Defines an axis object.
+The `plot.add` function adds plotting data into a plot environment.
+It must be called from insides `plot({..})`.
 
-```typ
-#axis(min: -1, max: 1, tics: (step: 1, minor-step: none), label: none)
+If used with a callback, the `domain` must be specified!
+
+```typc
+add(domain: auto, hypograph: false, epigraph: false, fill: false,
+    mark: none, mark-size: .2, mark-style: (:), samples: 100,
+    style: (:), axes: ("x", "y"),
+    data)
 ```
-#def-arg("min", "n", [
-  Axis minimum value
-])
-#def-arg("max", "n", [
-  Axis maximum value
-])
-#def-arg("tics", "tics", [
-  Tick options dictionary, see @plot-tics.
-])
-#def-arg("label", "content", [
-  Axis label
-])
 
-=== Scientific Axes
-
-Plot data with an "scientific" axis style.
-```typ
-#scientific-axes(size: (1, 1),
-  left: none, bottom: none, right: none, top: none,
-  name: none, ..style-data)
-```
-#def-arg("size", "a", [
-  Array of width and height
-])
-#def-arg("left", "axis?", [
-  Left (y) axis
-])
-#def-arg("bottom", "axis?", [
-  Bottom (x) axis
-])
-#def-arg("left", "axis?", [
-  Right axis
-])
-#def-arg("top", "axis?", [
-  Top axis
-])
-#def-arg("name", "s?", [
-  Object name
-])
-#def-arg("..style", "style", [
-  Style options
-])
-#def-arg("..data", "data", [
-  One or more data objects
-])
+#def-arg("domain", "a|auto",
+  [Range of x for sampled data])
+#def-arg("hypograph", "b",
+  [Fill graph below function])
+#def-arg("epigraph", "b",
+  [Fill graph above function])
+#def-arg("fill", "b",
+  [Fill graph to zero])
+#def-arg("mark", "s?",
+  [Mark symbol. Any of `("x", "o", "square", "triangle", "|", "-")`])
+#def-arg("mark-size", "f?",
+  [Size of mark symbol])
+#def-arg("mark-style", "style?",
+  [Style used for drawing marks. Note that this inherits the plots style])
+#def-arg("style", "style",
+  [Style used for drawing the graph])
+#def-arg("samples", "i",
+  [Number of samples to use (only if `data` is of type funciton)])
+#def-arg("axes", "a",
+  [Array of axis names to use])
+#def-arg("data", "function|a",
+  [Array of data points or function in the form `x => y`])
 
 #example({
   import "draw.typ": *
-  import "plot.typ"
-  let data = (x) => calc.sin(x * 1deg)
-  let (x, y) = (
-    plot.axis(min: 0, max: 360, tics: (step: 90)),
-    plot.axis(min: -1.5, max: 1.5),
-  )
-  plot.scientific-axes(size: (4, 3),
-    left: y, bottom: x, (data: data, style: (stroke: blue)))
+  plot.plot(size: (2,2), x-tick-step: 180, y-tick-step: 1,
+                         x-unit: $degree$, {
+    plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
+  })
 }, ```typc
-let data = (x) => calc.sin(x * 1deg)
-let (x, y) = (
-  plot.axis(min: 0, max: 360),
-  plot.axis(min: -1.5, max: 1.5),
-)
-plot.scientific-axes(size: (4, 3),
-  left: y, bottom: x, (data: data, style: (stroke: blue)))
+plot.plot(size: (2,2), x-tick-step: 180, y-tick-step: 1,
+          x-unit: $degree$, {
+  plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
+})
 ```)
-
-=== School-Book Axes
-
-Plot data with an "school book" axis style.
-
-```typ
-#school-book-axes(size: (1, 1),
-  x-axis, y-axis,
-  name: none, ..style-data)
-```
-#def-arg("size", "a", [
-  Array of width and height
-])
-#def-arg("x-axis", "axis", [
-  X axis
-])
-#def-arg("y-axis", "axis", [
-  Y axis
-])
-#def-arg("x-position", "n", [
-  Y position of the x axis
-])
-#def-arg("y-position", "n", [
-  X position of the y axis
-])
-#def-arg("name", "s?", [
-  Object name
-])
-#def-arg("..style", "style", [
-  Style options
-])
-#def-arg("..data", "data", [
-  One or more data objects
-])
 
 #example({
   import "draw.typ": *
-  import "plot.typ"
-  let data = (x) => calc.sin(x * 1deg)
-  let (x, y) = (
-    plot.axis(min: 0, max: 360, tics: (step: 90)),
-    plot.axis(min: -1.5, max: 1.5),
-  )
-  plot.school-book-axes(size: (4, 3), x, y,
-    (data: x => calc.sin(x * 1deg),
-     style: (stroke: blue)),
-    (data: x => calc.cos(x * 1deg),
-     style: (stroke: red)))
+  plot.plot(size: (2,2), x-tick-step: 180, y-tick-step: 1,
+                         x-unit: $degree$, y-max: .5, {
+    plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
+    plot.add(domain: (0, 360), x => calc.cos(x * 1deg),
+             samples: 10, mark: "x", mark-style: (stroke: blue))
+  })
 }, ```typc
-let (x, y) = (
-  plot.axis(min: 0, max: 360),
-  plot.axis(min: -1.5, max: 1.5),
-)
-plot.school-book-axes(size: (4, 3), x, y,
-  (data: x => calc.sin(x * 1deg),
-   style: (stroke: blue)),
-  (data: x => calc.cos(x * 1deg),
-   style: (stroke: red)))
+plot.plot(size: (2,2), x-tick-step: 180, y-tick-step: 1,
+          x-unit: $degree$, y-max: .5, {
+  plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
+  plot.add(domain: (0, 360), x => calc.cos(x * 1deg),
+           samples: 10, mark: "x", mark-style: (stroke: blue))
+})
 ```)
+
+== Chart
+
+With the `chart` library it is easy to draw charts.
+
+=== Barchart
+
+```typc
+barchart(size: (width, height))
+```
+
+#def-arg("data", "a",
+  [Data array of arrays or dictionaries])
+#def-arg("label-key", "s|i",
+  [Data item key to access an items label])
+#def-arg("value-key", "s|i|a",
+  [Data item key(s) to access an items value(s). For multi-value charts
+   this must be an array of all keys, e.G. `(..range(1, 5))`])
+#def-arg("mode", "s",
+  [Barchart mode, one of "basic", "clustered" (bars next to each other), "stacked" (bar stacked) or "stacked100" (bars stacked but as percentage of their sum)])
+#def-arg("size", "a",
+  [The chart's size. Height can be set to `auto`.])
+#def-arg("bar-width", "f",
+  [Width of a bar or cluster of bars, with $1$ being leving no gap between
+   values.])
+#def-arg("bar-style", "function|style",
+  [Style of bars, accepts a function of the form `index => style`. You canvas    use palettes from the `palette` library, see @palette.])
+#def-arg("x-tick-step", "f",
+  [X axis tick step])
+#def-arg("x-ticks", "a",
+  [X axis ticks list, a list of tick values or value/label tuples])
+#def-arg("x-unit", "content",
+  [X axis tick label suffix])
+#def-arg("x-label", "content?",
+  [X axis label])
+#def-arg("y-label", "content?",
+  [Y axis label])
+
+=== Examples
+==== Basic
+#example({
+  let data = (("A", 10), ("B", 20), ("C", 13))
+  chart.barchart(size: (3, auto), x-tick-step: 10, data)
+}, ```typc
+let data = (("A", 10), ("B", 20), ("C", 13))
+chart.barchart(size: (3, auto), x-tick-step: 10, data)
+```)
+
+==== Clustered
+#example({
+  let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
+  chart.barchart(size: (3, auto), mode: "clustered",
+                 x-tick-step: 10, value-key: (..range(1, 4)), data)
+}, ```typc
+let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
+chart.barchart(size: (3, auto), mode: "clustered",
+               x-tick-step: 10, value-key: (..range(1, 4)), data)
+```)
+
+==== Stacked
+#example({
+  let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
+  chart.barchart(size: (3, auto), mode: "stacked",
+                 x-tick-step: 10, value-key: (..range(1, 4)), data)
+}, ```typc
+let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
+chart.barchart(size: (3, auto), mode: "clustered",
+               x-tick-step: 10, value-key: (..range(1, 4)), data)
+```)
+
+== Palette <palette>
+
+A palette is a function that returns a style for an index.
+The palette library provides some predefined palettes.
+
+The list of palettes:
+- red
+- blue
+- rainbow
