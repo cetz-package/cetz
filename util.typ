@@ -55,12 +55,12 @@
   return if type(radius) == "array" {radius} else {(radius, radius)}
 }
 
-#let min(a, b) = {
-  if a == none { return b }; if b == none { return a }
-  return calc.min(a, b)
+#let min(..a) = {
+  let a = a.pos().filter(v => v != none)
+  return calc.min(..a)
 }
 
-#let max(a, b) = {
-  if a == none { return b }; if b == none { return a }
-  return calc.max(a, b)
+#let max(..a) = {
+  let a = a.pos().filter(v => v != none)
+  return calc.max(..a)
 }
