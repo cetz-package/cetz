@@ -1,10 +1,12 @@
-// Define a new palette
-//
-// A palette is a function that takes an index (int) and returns
-// a CeTZ style dictionary
-//
-// - stroke (stroke): Stroke
-// - fills   (array): List of fill colors
+/// Define a new palette
+///
+/// A palette is a function in the form `index -> style` that takes an
+/// index (int) and returns a canvas style dictionary. If passed the
+/// string `"len"` it must return the length of its styles.
+///
+/// - stroke (stroke): Single stroke style.
+/// - fills (array): List of fill styles.
+/// -> function
 #let new(stroke, fills) = {
   if type(fills) != "array" {fills = (fills,)}
   (index) => {

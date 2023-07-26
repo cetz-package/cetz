@@ -1,6 +1,7 @@
 #import "lib.typ"
 #import "styles.typ"
 #import lib: *
+#import "deps/typst-doc/typst-doc.typ": parse-module, show-module
 
 #let canvas-background = gray.lighten(75%)
 
@@ -1571,19 +1572,12 @@ chart.barchart(size: (6, auto), mode: "clustered",
 ```)
 
 == Palette <palette>
+#let palette-module = parse-module("../../lib/palette.typ", name: "Palette")
 
 A palette is a function that returns a style for an index.
 The palette library provides some predefined palettes.
 
-Palette functions must return the number of different styles they
-return when passed `"len"` as argument.
-
-A palette that returns a fill-style for an index can be
-defined via `palette.new(stroke, fills)`, but it is also
-possible to just use a function of the format `index => style` as
-palette.
-#def-arg("stroke", "stroke", [Single stroke style])
-#def-arg("fills", "a", [Array of fill styles])
+#show-module(palette-module, show-module-name: false)
 
 #let show-palette(p) = {
   canvas({
@@ -1596,7 +1590,7 @@ palette.
   })
 } 
 
-The list of predefined palettes:
+=== List of predefined palettes
 - `gray` #show-palette(palette.gray)
 - `red` #show-palette(palette.red)
 - `blue` #show-palette(palette.blue)
