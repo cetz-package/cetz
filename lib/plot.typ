@@ -196,7 +196,7 @@
 
 /// Create a plot environment
 ///
-/// Data for plotting must be passed via `plot.add(..)`
+/// Note: Data for plotting must be passed via `plot.add(..)`
 ///
 /// Note that different axis-styles can show different axes.
 /// The `"school-book"` style shows only axis "x" and "y", while
@@ -204,20 +204,37 @@
 /// (if unset, "x2" mirrors "x" and "y2" mirrors "y"). Other
 /// axes (e.G. "my-axis") work, but no ticks or labels will be shown.
 ///
-/// - body (plot.add): Calls of `plot.add` commands
+/// *Options*
+///
+/// The following options are supported per axis
+/// and must be prefixed by `<axis-name>-`, e.G.
+/// `x-min: 0`.
+/// #box[
+///   - label (content): Axis label
+///   - min (int): Axis minimum value
+///   - max (int): Axis maximum value
+///   - tick-step (float): Distance between major ticks
+///   - minor-tick-step (float): Distance between minor ticks
+///   - ticks (array): List of ticks values or value/label
+///                    tuples. Example `(1,2,3)` or `((1, [A]), (2, [B]),)`
+///   - unit (content): Tick label suffix
+///   - decimals (int): Number of decimals digits to display for tick labels
+/// ]
+///
+/// - body (body): Calls of `plot.add` commands
 /// - size (array): Plot canvas size tuple of width and height in canvas units
 /// - axis-style (string): Axis style "scientific" or "school-book"
-/// - ..options (any): The following options are supported per axis
-///                    and must be prefixed by `<axis-name>-`, e.G.
-///                    `x-min: 0`.
-///                    - min (int): Axis minimum
-///                    - max (int): Axis maximum
-///                    - tick-step (float): Major tick step
-///                    - minor-tick-step (float): Major tick step
-///                    - ticks (array): List of ticks values or value/label
-///                                     tuples
-///                    - unit (content): Tick label suffix
-///                    - decimals (int): Number of decimals digits to display
+/// - options (any): The following options are supported per axis
+///                  and must be prefixed by `<axis-name>-`, e.G.
+///                  `x-min: 0`.
+///                  - min (int): Axis minimum
+///                  - max (int): Axis maximum
+///                  - tick-step (float): Major tick step
+///                  - minor-tick-step (float): Major tick step
+///                  - ticks (array): List of ticks values or value/label
+///                                   tuples
+///                  - unit (content): Tick label suffix
+///                  - decimals (int): Number of decimals digits to display
 #let plot(body,
           size: (1, 1),
           axis-style: "scientific",

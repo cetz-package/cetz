@@ -1383,84 +1383,7 @@ The library `plot` of CeTZ allows plotting 2D data as linechart.
 
 #show-module(plot-module, show-module-name: false)
 
-=== Plot <plot-function>
-
-The `plot` function is an environment for plotting data.
-
-Note that different axis-styles can show different axes. The "school-book" style shows only axis "x" and "y", while the "scientific" style can show "x2" and "y2", if set (if unset, "x2" mirrors "x" and "y2" mirrors "y"). Other axes (e.G. "my-axis") work, but no ticks or labels will be shown.
-
-```typc
-plot(size: (width, height),
-     axis-style: "scientific"
-     ..options,
-     body)
-```
-
-The ticks option dictionary supports the following keys:
-#def-arg("size", "a",
-  [Size of the plot as tuple of width and height in cavas units])
-#def-arg("axis-style", "s?",
-  [Axis style, either "scientific" or "school-book"])
-#def-arg("..options", "any",
-  [Axis options in the form `<axis-name>-<option>`. The possible options are:
-  #box[
-  / label : The axis label
-  / min: Axis min. value
-  / max: Axis max. value
-  / ticks: List of tick values or value/label tuples
-  / tick-step: Distance to step between each major tick or `none`
-  / minor-tick-step: Same as `tick-step` but for minor ticks
-  / decimals: Number of tick label decimal digits
-  / unit: Tick label suffix
-  ]
-])
-#def-arg("body", "..",
-  [Calls of `plot.add(..)`, see @plot-add])
-
-=== Plot-Add <plot-add>
-
-The `plot.add` function adds plotting data into a plot environment.
-It must be called from insides `plot({..})`.
-
-If used with `data` set to a function, the `domain` must be specified!
-
-```typc
-add(domain: auto, hypograph: false, epigraph: false, fill: false,
-    mark: none, mark-size: .2, samples: 100,
-    style: (:), axes: ("x", "y"),
-    data)
-```
-
-#def-arg("domain", "a|auto",
-  [Range of x for sampled data, set to min/max x value of `data`
-   if set to auto (see `data`)])
-#def-arg("hypograph", "b",
-  [Fill graph below function])
-#def-arg("epigraph", "b",
-  [Fill graph above function])
-#def-arg("fill", "b",
-  [Fill graph to zero])
-#def-arg("mark", "s?",
-  [Mark symbol. Any of `("x", "o", "square", "triangle", "|", "-")`])
-#def-arg("mark-size", "f?",
-  [Size of mark symbol in canvas units])
-#def-arg("style", "style",
-  [Style used for drawing the graph])
-#def-arg("samples", "i",
-  [Number of times to sample `data` function (ignored if `data` is not a
-   function)])
-#def-arg("axes", "a",
-  [Array of axis names to use for plotting. Defaults to `("x", "y")`.])
-#def-arg("data", "function|a",
-  [Array of 2D data points or a function in the form `x => y`. Examples: \
-   #box[
-   - `((0,0), (1,1), (2,0),)`
-   - `x => calc.pow(x, 2)`
-   ] \
-   Both tuple values (`x` and `y`) must be numeric. If `data` is of type
-   function, it is called `samples` times with argument `x` set between
-   `domain`.
-   ])
+=== Examples
 
 #example({
   import "draw.typ": *
@@ -1481,7 +1404,7 @@ plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
                          x-unit: $degree$, y-max: .5, {
     plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
     plot.add(domain: (0, 360), x => calc.cos(x * 1deg),
-             samples: 10, mark: "x", style: (mark: (stroke: blue)))
+             samples: 10, mark: "x", mark-style: (stroke: blue))
   })
 }, ```typc
 plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
