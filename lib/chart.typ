@@ -28,7 +28,7 @@
               bar-style: palette.red,
               x-tick-step: auto,
               x-ticks: (),
-              x-unit: [],
+              x-unit: auto,
               x-label: none,
               y-label: none,
               ) = {
@@ -77,8 +77,8 @@
   } else {x-tick-step}
 
   let x-unit = x-unit
-  if mode == "stacked100" {
-    x-unit = [%]
+  if x-unit == auto {
+    x-unit = if mode == "stacked100" {[%]} else []
   }
   
   let x = axes.axis(min: 0, max: max-value,
