@@ -1,0 +1,3 @@
+[submodule "deps/typst-doc"]
+	path = deps/typst-doc
+	url = https://github.com/Mc-Zen/typst-doc.git
