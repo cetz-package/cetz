@@ -1,91 +1,137 @@
 #set page(width: auto, height: auto)
 #import "../../canvas.typ": *
-#import "../../plot.typ"
+#import "../../lib/plot.typ"
 
-#let data = (..(for x in range(-360, 360) {
+#let data = (..(for x in range(-360, 360 + 1) {
   ((x, calc.sin(x * 1deg)),)
 }))
 
 /* Scientific Style */
 #box(stroke: 2pt + red, canvas({
-    import "../../draw.typ": *
+  import "../../draw.typ": *
 
-    let (x, y) = (
-      plot.axis(min: -360, max: 360, tics: (step: 180)),
-      plot.axis(min: -1, max: 1)
-    )
-
-    plot.scientific-axes(size: (5, 4), left: y, bottom: x, data)
+  plot.plot(size: (5, 4),
+    x-tick-step: 180,
+    y-tick-step: 1,
+    {
+      plot.add(data)
+    })
 }))
 
 /* 4-Axes */
 #box(stroke: 2pt + red, canvas({
-    import "../../draw.typ": *
+  import "../../draw.typ": *
 
-    let (x, y, x2, y2) = (
-      plot.axis(min: -360, max: 360, tics: (step: 180)),
-      plot.axis(min: -1, max: 1),
-      plot.axis(min: -90, max: 90, tics: (step: 45, minor-step: 15)),
-      plot.axis(min: -1.5, max: 1.5, tics: (minor-step: .1, step: .5))
-    )
-
-    plot.scientific-axes(size: (5, 4), left: y, right: y2, bottom: x, top: x2,
-      (data: data),
-      (data: data, style: (stroke: blue), axes: (x2, y2)))
+  plot.plot(size: (5, 4),
+    x-tick-step: 180,
+    x-min: -360,
+    x-max:  360,
+    y-tick-step: 1,
+    x2-label: none,
+    x2-min: -90,
+    x2-max:  90,
+    x2-tick-step: 45,
+    x2-minor-tick-step: 15,
+    y2-label: none,
+    y2-min: -1.5,
+    y2-max:  1.5,
+    y2-tick-step: .5,
+    y2-minor-tick-step: .1,
+    {
+      plot.add(data)
+      plot.add(data, style: (stroke: blue), axes: ("x2", "y2"))
+    })
 }))
 
 /* School-Book Style */
 #box(stroke: 2pt + red, canvas({
-    import "../../draw.typ": *
+  import "../../draw.typ": *
 
-    let (x, y) = (
-      plot.axis(min: -360, max: 360, tics: (step: 180)),
-      plot.axis(min: -1, max: 1)
-    )
-
-    plot.school-book-axes(x, y, size: (5, 4), data)
+  plot.plot(size: (5, 4),
+    axis-style: "school-book",
+    x-tick-step: 180,
+    y-tick-step: 1,
+    {
+      plot.add(data)
+    })
 }))
 
 /* Clipping */
 #box(stroke: 2pt + red, canvas({
-    import "../../draw.typ": *
+  import "../../draw.typ": *
 
-    let (x, y) = (
-      plot.axis(min: -360, max: 350, tics: (step: 180)),
-      plot.axis(min: -.5, max: .5)
-    )
-
-    plot.school-book-axes(x, y, size: (5, 4), data)
+  plot.plot(size: (5, 4),
+    axis-style: "school-book",
+    x-min: auto,
+    x-max: 350,
+    x-tick-step: 180,
+    y-min: -.5,
+    y-max: .5,
+    y-tick-step: 1,
+    {
+      plot.add(data)
+    })
 }))
 
 /* Epigraph */
 #box(stroke: 2pt + red, canvas({
-    import "../../draw.typ": *
+  import "../../draw.typ": *
 
-    let (x, y) = (
-      plot.axis(min: -360, max: 360, tics: (step: 180), label: $x$),
-      plot.axis(min: -1.5, max: .5, label: $y$)
-    )
-
-    plot.school-book-axes(x, y, size: (5, 4),
-      (data: data, epigraph: true, hypograph: true, fill: true,
-       style: (epigraph: (fill: blue),
-               hypograph: (fill: red),
-               fill: green)))
+  plot.plot(size: (5, 4),
+    axis-style: "school-book",
+    x-tick-step: 180,
+    x-unit: $degree$,
+    y-tick-step: 1,
+    {
+      plot.add(domain: (-360, 360), epigraph: true,
+        x => calc.sin(x * 1deg), style: (fill: blue))
+      plot.add(domain: (-360, 360), hypograph: true,
+        x => calc.cos(x * 1deg), style: (fill: red))
+      plot.add(domain: (-180, 180), fill: true,
+        x => calc.sin(x * 1deg), style: (fill: green))
+    })
 }))
 
-/* Sampled Plots */
+/* Marks */
 #box(stroke: 2pt + red, canvas({
-    import "../../draw.typ": *
+  import "../../draw.typ": *
+  
+  plot.plot(size: (5, 4),
+    axis-style: "scientific",
+    y-max: 2,
+    y-min: -2,
+    x-tick-step: 360,
+    y-tick-step: 1,
+    {
+      for (i, m) in ("o", "square", "x", "triangle", "|", "-").enumerate() {
+        plot.add(domain: (i * 180, (i + 1) * 180),
+          samples: 12,
+          style: (stroke: none),
+          mark: m,
+          mark-style: plot.palette.red,
+          mark-size: .3,
+          x => calc.sin(x * 1deg))
+      }
+    })
+}))
 
-    let (x, y) = (
-      plot.axis(min: -3, max: 5, tics: (step: 1), label: $x$),
-      plot.axis(min: -1, max: 5, label: $y$)
-    )
+/* Palettes */
+#box(stroke: 2pt + red, canvas({
+  import "../../draw.typ": *
 
-    plot.scientific-axes(size: (5, 4), left: y, bottom: x,
-      (data: x => calc.pow(x, 2), samples: 25, style: (stroke: blue)),
-      (data: x => if x >= 0 {calc.sqrt(x)}, samples: 100, style: (stroke: green)),
-      (data: x => calc.abs(x), style: (stroke: red)),
-      )
+  plot.plot(size: (5, 4),
+    x-label: [Rainbow],
+    x-tick-step: none,
+    axis-style: "scientific",
+    y-label: [Color],
+    y-max: 8,
+    y-tick-step: none,
+    {
+      for i in range(0, 7) {
+        plot.add(domain: (i * 180, (i + 1) * 180),
+          epigraph: true,
+          style: plot.palette.rainbow,
+          x => calc.sin(x * 1deg))
+      }
+    })
 }))

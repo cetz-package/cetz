@@ -1,7 +1,7 @@
 // CeTZ Library for drawing graph axes
-#import "util.typ"
-#import "draw.typ"
-#import "vector.typ"
+#import "../util.typ"
+#import "../draw.typ"
+#import "../vector.typ"
 
 // Global defaults
 #let num-samples = 50
@@ -14,10 +14,29 @@
 // - tics (dictionary): Tick settings:
 //     - step (number): Major tic step
 //     - minor-step (number): Minor tic step
+//     - unit (content): Tick label suffix
+//     - decimals (int): Tick float decimal length
 // - label (content): Axis label
-#let axis(min: -1, max: 1, tics: (step: 1, minor-step: none), label: none) = (
+#let axis(min: -1, max: 1, label: none,
+          tics: (step: 1, minor-step: none,
+                 unit: none, decimals: 2, grid: false)) = (
   min: min, max: max, tics: tics, label: label,
 )
+
+// Format a tick value
+#let format-tick-value(value, tic-options) = {
+  if type(value) in ("int", "float") {
+    let factor = calc.pow(10, tic-options.at("decimals", default: 2))
+    value = str(calc.floor(value * factor + .5) / factor)
+  } else if type(value) != "content" {
+    value = str(value)
+  }
+
+  if tic-options.unit != none {
+    value += tic-options.unit
+  }
+  return value
+}
 
 // Get value on axis
 //
@@ -50,7 +69,7 @@
       for t in n {
         let v = ((t / s) - min) / dt
         if v >= 0 and v <= 1 {
-          l.push((v, t / s))
+          l.push((v, format-tick-value(t / s, tics)))
         }
       }
     }
@@ -74,7 +93,7 @@
         let (v, label) = (none, none)
         if type(t) in ("float", "integer") {
           v = t
-          label = str(t)
+          label = format-tick-value(t, tics)
         } else {
           (v, label) = t
         }
@@ -90,167 +109,37 @@
   return l
 }
 
-// Compute list of linear paths for data points
+// Set viewport to axis min/max
 //
-// - data (array): List of (x, y) data points
-#let paths-for-points(data) = {
-  let in-range(p) = {
-    if p == none { return false }
-    let (px, py, ..) = p
-    return (px >= 0
-        and px <= 1
-        and py >= 0
-        and py <= 1)
-  }
+// - size        (vector): Axis canvas size (relative to origin)
+// - origin (coordinates): Axis Canvas origin
+// - x             (axis): X Axis
+// - y             (axis): Y Axis
+// - padding (dictionary): Axis inset (left, right, top, bottom)
+#let set-axis-viewport(size, x, y, origin: (0, 0), padding: (:)) = {
+  let (l, r, t, b) = (
+    padding.at("left", default: 0),
+    padding.at("right", default: 0),
+    padding.at("top", default: 0),
+    padding.at("bottom", default: 0),
+  )
 
-  let lin-interpolated-pt(a, b) = {
-    let x1 = a.at(0)
-    let y1 = a.at(1)
-    let x2 = b.at(0)
-    let y2 = b.at(1)
+  size = (rel: (rel: (-r, -t), to: size), to: origin)
+  origin = (rel: (l, b), to: origin)
 
-    /* Special case for vertical lines */
-    if x2 - x1 == 0 {
-      return (x2, calc.min(1, calc.max(y2, 0)))
-    }
+  // draw.rect(origin, size, stroke: blue)
 
-    if y2 - y1 == 0 {
-      return (calc.min(1, calc.max(x2, 0)), y2)
-    }
-
-    let m = (y2 - y1) / (x2 - x1)
-    let n = y2 - m * x2
-
-    let x = x2
-    let y = y2
-
-    y = calc.min(1, calc.max(y, 0))
-    x = (y - n) / m
-
-    x = calc.min(1, calc.max(x, 0))
-    y = m * x + n
-
-    return (x, y)
-  }
-
-  let paths = ()
-
-  let path = ()
-  let prev-p = none
-  for p in data {
-    if p == none { continue }
-
-    let (px, py, ..) = p
-    if px == none or py == none { continue }
-
-    if in-range(p) {
-      if not in-range(prev-p) and prev-p != none {
-        path.push(lin-interpolated-pt(p, prev-p))
-      }
-
-      path.push(p)
-    } else {
-      if in-range(prev-p) {
-        path.push(lin-interpolated-pt(prev-p, p))
-      } else if prev-p != none {
-        let a = lin-interpolated-pt(p, prev-p)
-        let b = lin-interpolated-pt(prev-p, p)
-        if in-range(a) and in-range(b) {
-          path.push(a)
-          path.push(b)
-        }
-      }
-
-      if path.len() > 0 {
-        paths.push(path)
-        path = ()
-      }
-    }
-
-    prev-p = p
-  }
-
-  if path.len() > 0 {
-    paths.push(path)
-  }
-  return paths
+  draw.set-viewport(origin, size,
+    bounds: (x.max - x.min,
+             y.max - y.min,
+             0))
+  draw.translate((-x.min, y.min, 0), pre: false)
+}
+#let axis-translate-pt(size, x, y, origin: (0, 0)) = {
+  
 }
 
-// Draw data
-//
-// - data (array|dictionary): Data
-// - axes (array): Array of x and y axis
-// - w (number): Width
-// - h (number): Height
-#let draw-data-path(data, axes, offset: (0,0), scale: (1,1)) = {
-  let style = (stroke: black + 1pt)
-  let fill = false
-  let epigraph = false
-  let hypograph = false
-  let num-samples = num-samples
-
-  if type(data) == "dictionary" {
-    style = data.at("style", default: style)
-    epigraph = data.at("epigraph", default: false)
-    hypograph = data.at("hypograph", default: false)
-    fill = data.at("fill", default: false)
-    num-samples = data.at("samples", default: num-samples)
-
-    data = data.data
-  }
-
-  if type(data) == "function" {
-    let (lo, hi) = (axes.at(0).min, axes.at(0).max)
-    let scale = num-samples / (hi - lo)
-    data = range(int(lo * scale - .5), int(hi * scale + 1.5)).map(x =>
-      (x / scale, data(x / scale)))
-  }
-
-  let segments = paths-for-points(data.map(((x, y, ..)) => {
-    (value-on-axis(axes.at(0), x),
-     value-on-axis(axes.at(1), y))
-  })).map(s => s.map(((x, y)) => (
-    offset.at(0) + x * scale.at(0),
-    offset.at(1) + y * scale.at(1))))
-
-  let fill-graph-to(to, style) = {
-    to = value-on-axis(axes.at(1), to) * scale.at(1) + offset.at(1)
-
-    if not "stroke" in style { style.stroke = none }
-    if not "mark" in style { style.mark = (begin: none, end: none) }
-
-    let pts = ()
-    for segment in segments {
-      pts += segment
-    }
-
-    let origin = (pts.first().at(0), to)
-    let target = (pts.last().at(0), to)
-
-    draw.line(origin, ..pts, target, ..style)
-  }
-
-  if epigraph {
-    fill-graph-to(axes.at(1).max,
-                  style.at("epigraph", default: (fill: gray)))
-  }
-  if hypograph {
-    fill-graph-to(axes.at(1).min,
-                  style.at("hypograph", default: (fill: gray)))
-  }
-  if fill {
-    fill-graph-to(0,
-                  (fill: style.at("fill", default: gray)))
-  }
-
-  for segment in segments {
-    let style = style
-    style.fill = none
-    draw.line(..segment, ..style)
-  }
-}
-
-// Draw up to four axes in an "scientific" style
+// Draw up to four axes in an "scientific" style at origin (0, 0)
 //
 // - left (axis): Left (y) axis
 // - bottom (axis): Bottom (x) axis
@@ -258,19 +147,26 @@
 // - top (axis): Top axis
 // - size (array): Size (width, height)
 // - name (string): Object name
+// - padding (array): Padding (left, right, top, bottom)
+// - frame (bool): If true, draw frame
 // - ..style (any): Style
-// - ..data (array|dictionary): Data
 #let scientific-axes(size: (1, 1),
                      left: none,
                      right: auto,
                      bottom: none,
                      top: auto,
-                     tic-offset: 0,
-                     tic-length: .1,
                      minor-tic-length: .08,
                      label-offset: .2,
+                     frame: true,
+                     padding: (left: 0, right: 0, top: 0, bottom: 0),
                      name: none,
-                     ..style-data) = {
+                     tick-length: .1,
+                     tick-minor-length: .08,
+                     tick-offset: 0,
+                     tick-style: (stroke: black),
+                     frame-style: (stroke: black, fill: none),
+                     grid-style: (stroke: (paint: gray, dash: "dotted")),
+                     ..style) = {
   import draw: *
 
   if right == auto and left != none {right = left; right.is-mirror = true}
@@ -279,10 +175,21 @@
   group(name: name, {
     let (w, h) = size
 
-    let style = style-data.named()
+    anchor("origin",           (0, 0))
+    anchor("data-bottom-left", (0, 0))
+    anchor("data-top-right",   (w, h))
+
+    let style = style.named()
     if style.len() > 0 {
       set-style(..style)
     }
+
+    let padding = (
+      l: padding.at("left", default: 0),
+      r: padding.at("right", default: 0),
+      t: padding.at("top", default: 0),
+      b: padding.at("bottom", default: 0),
+    )
 
     let axis-settings = (
       (left,   "left",   "right",  (0, auto), ( 1, 0)),
@@ -291,28 +198,15 @@
       (top,    "top",    "bottom", (auto, h), (0, -1)),
     )
 
-    for data in style-data.pos() {
-      let axes = (bottom, left)
-      if type(data) == "dictionary" {
-        if "axes" in data {
-          axes = data.axes
-        }
-      }
-      group({
-        draw-data-path(data, axes,
-          offset: (0,0),
-          scale: (w, h))
-      })
-    }
-
     group(name: "axes", {
-      rect((0, 0), size)
+      let (w, h) = (w - padding.l - padding.r,
+                    h - padding.t - padding.b)
       for (axis, _, anchor, placement, tic-dir) in axis-settings {
         if axis != none {
           for (pos, label) in compute-linear-tics(axis) {
             let (x, y) = placement
-            if x == auto { x = pos * w }
-            if y == auto { y = pos * h }
+            if x == auto { x = pos * w + padding.l }
+            if y == auto { y = pos * h + padding.b }
 
             if label != none and not axis.at("is-mirror", default: false) {
               let label-pos = vector.add((x, y),
@@ -321,14 +215,32 @@
             }
 
             let major = label != none
-            let length = if major {tic-length} else {minor-tic-length}
-            line(vector.sub((x, y), vector.scale(tic-dir, tic-offset)),
-                 vector.add((x, y), vector.scale(tic-dir, tic-length)))
+            let length = if major {tick-length} else {tick-minor-length}
+            if length != none and length > 0 {
+              line(vector.sub((x, y), vector.scale(tic-dir, tick-offset)),
+                   vector.add((x, y), vector.scale(tic-dir, length)),
+                   ..tick-style)
+            }
+
+            if axis.tics.at("grid", default: false) {
+              let grid-dir = tic-dir
+              grid-dir.at(0) *= w
+              grid-dir.at(1) *= h
+
+              line((x, y), (rel: grid-dir),
+                   ..grid-style)
+            }
           }
         }
       }
+
+      if frame {
+        rect((0, 0), size, ..frame-style)
+      }
     })
+
     for (axis, side, anchor, ..) in axis-settings {
+      if axis == none {continue}
       if "label" in axis and axis.label != none and not axis.at("is-mirror", default: false) {
         let angle = if side in ("left", "right") {
           -90deg
@@ -336,7 +248,7 @@
 
         // Use a group to get non-rotated anchors
         group(content("axes." + side, axis.label,
-                      angle: angle), anchor: anchor)
+                      angle: angle, padding: label-offset), anchor: anchor)
       }
     }
   })
@@ -351,7 +263,6 @@
 // - y-position (number): Y Axis position
 // - name (string): Object name
 // - ..style (any): Style
-// - ..data (array|dictionary): Data
 #let school-book-axes(x-axis, y-axis,
                       size: (1, 1),
                       x-position: 0,
@@ -361,11 +272,18 @@
                       minor-tic-length: .08,
                       label-offset: .2,
                       name: none,
-                      ..style-data) = {
+                      ..style) = {
   import draw: *
 
+  let padding = (
+    left: axis-padding,
+    right: axis-padding,
+    top: axis-padding,
+    bottom: axis-padding,
+  )
+
   group(name: name, {
-    let style = style-data.named()
+    let style = style.named()
     if style.len() > 0 {
       set-style(..style)
     }
@@ -374,6 +292,7 @@
     y-position = calc.min(calc.max(x-axis.min, y-position), x-axis.max)
 
     let (w, h) = size
+
     let x-y = value-on-axis(y-axis, x-position) * h
     let y-x = value-on-axis(x-axis, y-position) * w
 
@@ -382,16 +301,6 @@
       (y-axis, "right", (y-x, auto), (1, 0)),
     )
 
-    for data in style-data.pos() {
-      let axes = (x-axis, y-axis)
-      group({
-        draw-data-path(data, axes,
-          offset: (axis-padding, axis-padding),
-          scale: (w, h))
-      })
-    }
-
-    translate((axis-padding, axis-padding, 0))
     line((-axis-padding, x-y), (w + axis-padding, x-y), mark: (end: ">"),
          name: "x-axis")
     if "label" in x-axis and x-axis.label != none {
