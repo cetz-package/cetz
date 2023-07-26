@@ -30,6 +30,6 @@
   vp((2,2), (3,3))
 
   rotate(-50deg)
-  vp((1,5), (4,8), bounds: (-1,-1,0)) // Mirrored bounds
-  vp((2,6), (3,7), bounds: (2,2,0))   // Non 1 bounds
+  vp((4,8), (1,5), bounds: (1,1,0)) // Mirrored edges
+  vp((2,6), (3,7), bounds: (2,2,0)) // Non 1 bounds
 }))
