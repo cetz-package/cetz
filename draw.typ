@@ -153,10 +153,6 @@
     let (sx,sy,sz) = vector.sub((tx,ty,tz), (fx,fy,fz)).enumerate().map(
       ((i, v)) => if bounds.at(i) == 0 {0} else {v / bounds.at(i)})
 
-    // Swap translation to opposite side, if bounds are negative
-    (fx, fy, fz) = (fx, fy, fz).enumerate().map(
-      ((i, v)) => if bounds.at(i) < 0 {(tx,ty,tz).at(i)} else {v})
-
     let t = matrix.transform-translate(fx, fy, fz)
     let s = matrix.transform-scale((x: sx, y: sy, z: sz))
     return matrix.mul-mat(ctx.transform, matrix.mul-mat(t, s))

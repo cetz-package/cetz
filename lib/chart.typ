@@ -86,7 +86,7 @@
                     ticks: (grid: true, step: x-step,
                             unit: x-unit, decimals: 1,
                             list: x-ticks))
-  let y = axes.axis(min: - 1, max: data.len(),
+  let y = axes.axis(min: data.len(), max: -1,
                     label: y-label,
                     ticks: (grid: true,
                             step: none,
@@ -157,7 +157,7 @@
       axes.set-axis-viewport(size, x, y)
 
       for (i, row) in data.enumerate() {
-        draw-data(i, y.max - i - 1, row)
+        draw-data(i, y.min - i - 1, row)
       }
     })
   }
