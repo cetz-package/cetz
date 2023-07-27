@@ -48,6 +48,8 @@
       }
       */
     }
+  } else if draw-edge == none {
+    draw-edge = (..) => {}
   }
 
   if draw-node == auto or draw-node in ("rect",) {
@@ -75,6 +77,7 @@
       }
     }
   }
+  assert(draw-node != none, message: "Node draw callback must be set!")
 
   let build-node(tree, depth: 0, sibling: 0) = {
     let children = ()

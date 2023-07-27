@@ -153,10 +153,6 @@
     let (sx,sy,sz) = vector.sub((tx,ty,tz), (fx,fy,fz)).enumerate().map(
       ((i, v)) => if bounds.at(i) == 0 {0} else {v / bounds.at(i)})
 
-    // Swap translation to opposite side, if bounds are negative
-    (fx, fy, fz) = (fx, fy, fz).enumerate().map(
-      ((i, v)) => if bounds.at(i) < 0 {(tx,ty,tz).at(i)} else {v})
-
     let t = matrix.transform-translate(fx, fy, fz)
     let s = matrix.transform-scale((x: sx, y: sy, z: sz))
     return matrix.mul-mat(ctx.transform, matrix.mul-mat(t, s))
@@ -205,12 +201,12 @@
 //
 // A group has a local transformation matrix.
 // Groups can be used to get an elements bounding box, as they
-// set default achors (top, top-left, ..) to the bounding box of
+// set default anchors (top, top-left, ..) to the bounding box of
 // their children.
 //
-// - name   (string): Element name
-// - anchor (string): Elemen origin
-// - body     (draw): Children
+// - name        (string): Element name
+// - anchor      (string): Element origin
+// - body (draw|function): Children or function of the form (ctx => array)
 #let group(name: none, anchor: none, body) = {
   ((
     name: name,

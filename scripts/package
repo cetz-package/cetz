@@ -17,6 +17,10 @@ files=(
   coordinate.typ
   styles.typ
   tree.typ
+  lib/axes.typ
+  lib/plot.typ
+  lib/chart.typ
+  lib/palette.typ
   typst.toml
   LICENSE
   README.md

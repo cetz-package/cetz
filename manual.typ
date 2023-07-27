@@ -1,5 +1,7 @@
-#import "canvas.typ": canvas
+#import "lib.typ"
 #import "styles.typ"
+#import lib: *
+#import "deps/typst-doc/typst-doc.typ": parse-module, show-module
 
 #let canvas-background = gray.lighten(75%)
 
@@ -10,7 +12,7 @@
       stack(
         dir: ttb,
         spacing: 1em,
-        block(
+        block(width: 100%,
           canvas(body, ..args),
           fill: canvas-background,
           inset: 1em
@@ -116,18 +118,15 @@ To use an anchor of an element, you must give the element a name using the `name
     stroke(none)
     circle("circle.left", radius: 0.3)
   },
-  [```typ
-  #canvas({
-    import "typst-canvas/draw.typ": *
-    // Name the circle
-    circle((0,0), name: "circle")
-    
-    // Draw a smaller red circle at "circle"'s left anchor
-    fill(red)
-    stroke(none)
-    circle("circle.left", radius: 0.3)
-  })
-  ```]
+[```typc
+// Name the circle
+circle((0,0), name: "circle")
+
+// Draw a smaller red circle at "circle"'s left anchor
+fill(red)
+stroke(none)
+circle("circle.left", radius: 0.3)
+```]
 )
 
 All elements will have default anchors based on their bounding box, they are: `center`, `left`, `right`, `above`/`top` and `below`/`bottom`, `top-left`, `top-right`, `bottom-left`, `bottom-right`. Some elements will have their own anchors.
@@ -140,26 +139,23 @@ Elements can be placed relative to their own anchors.
     stroke(none)
     circle((0,0), radius: 0.3)
   },
-  [```typ
-  #canvas({
-    import "typst-canvas/draw.typ": *
-    // An element does not have to be named 
-    // in order to use its own anchors.
-    circle((0,0), anchor: "left")
+[```typc
+// An element does not have to be named 
+// in order to use its own anchors.
+circle((0,0), anchor: "left")
 
-    // Draw a smaller red circle at the origin
-    fill(red)
-    stroke(none)
-    circle((0,0), radius: 0.3)
-  })
-  ```]
+// Draw a smaller red circle at the origin
+fill(red)
+stroke(none)
+circle((0,0), radius: 0.3)
+```]
 )
 
 = Draw Function Reference
 
 == Canvas
-```typ
-#canvas(background: none, length: 1cm, debug: false, body)
+```typc
+canvas(background: none, length: 1cm, debug: false, body)
 ```
 #def-arg("background", `<color>`, default: "none", "A color to be used for the background of the canvas.")
 #def-arg("length", `<length>`, default: "1cm", "Used to specify what 1 coordinate unit is.")
@@ -179,8 +175,8 @@ You can style draw elements by passing the relevant named arguments to their dra
     // Draws a green line
     line((), (1,1), stroke: green)
   },
-  [```typ
-  #cetz.canvas({
+  [```typc
+  cetz.canvas({
     import cetz.draw: *
     // Draws a red circle with a blue border
     circle((0, 0), fill: red, stroke: blue)
@@ -203,8 +199,8 @@ Instead of having to specify the same styling for each time you want to draw an 
     // Shows that styling can be overridden
     line((), (1,1), stroke: green)
   },
-  [```typ
-  #cetz.canvas({
+  [```typc
+  cetz.canvas({
     import cetz.draw: *
     // Draws an empty square with a black border
     rect((-1, -1), (1, 1))
@@ -228,8 +224,8 @@ When using a dictionary for a style, it is important to note that they update ea
     line((0,0), (1,1), stroke: (paint: blue))
     line((0,0), (0,1), stroke: yellow)
   },
-  [```typ
-  #canvas({
+  [```typc
+  canvas({
     import cetz.draw: *
     // Sets the stroke to red with a thickness of 5pt
     set-style(stroke: (paint: red, thickness: 5pt))
@@ -257,8 +253,8 @@ You can also specify styling for each type of element. Note that dictionary valu
     rect((0,-3), (1, -4), stroke: (thickness: 1pt))
   },
   [
-  ```typ
-  #canvas({
+  ```typc
+  canvas({
     import cetz.draw: *
     set-style(
       // Global fill and stroke
@@ -292,9 +288,9 @@ You can also specify styling for each type of element. Note that dictionary valu
     circle((0.5, -2.5), radius: 0.5, fill: green)
   },
   [
-  ```typ
+  ```typc
   // Its a nice drawing okay
-  #cetz.canvas({
+  cetz.canvas({
     import cetz.draw: *
     set-style(
       rect: (
@@ -319,8 +315,8 @@ You can also specify styling for each type of element. Note that dictionary valu
 === Line
 Draws a line (a direct path between two points) to the canvas. If multiplie coordinates are given, a line is drawn between each consecutive one.
 
-```typ
-#line(..pts, name: none, close: false, ..styling)
+```typc
+line(..pts, name: none, close: false, ..styling)
 ```
 #def-arg("..pts", `<arguments of coordinates>`, [Coordinates to draw the lines between. A minimum of two must be given.])
 #def-arg("name", `<string>`, [Sets the name of element for use with anchors.])
@@ -332,8 +328,8 @@ Draws a line (a direct path between two points) to the canvas. If multiplie coor
     line((0, -1.5), (0, 1.5))
   },
   [
-  ```typ
-  #canvas({
+  ```typc
+  canvas({
     import cetz.draw: *
     line((-1.5, 0), (1.5, 0))
     line((0, -1.5), (0, 1.5))
@@ -347,8 +343,8 @@ Draws a line (a direct path between two points) to the canvas. If multiplie coor
 === Rectangle
 Draws a rectangle to the canvas.
 
-```typ
-#rect(a, b, name: none, anchor: none, ..styling)
+```typc
+rect(a, b, name: none, anchor: none, ..styling)
 ```
 #def-arg("a", `<coordinate>`, [The top left coordinate of the rectangle.])
 #def-arg("b", `<coordinate>`, [The bottom right coordinate of the rectangle.])
@@ -357,8 +353,8 @@ Draws a rectangle to the canvas.
     import "draw.typ": *
     rect((-1.5, 1.5), (1.5, -1.5))
   },
-  [```typ
-  #canvas({
+  [```typc
+  canvas({
     import cetz.draw: *
     rect((-1.5, 1.5), (1.5, -1.5))
   })
@@ -367,8 +363,8 @@ Draws a rectangle to the canvas.
 === Arc
 Draws an arc to the canvas. Exactly two of the three values `start`, `stop`, and `delta` should be defined. You can set the radius of the arc by setting the `radius` style option. You can also draw an elliptical arc by passing an array where the first number is the radius in the x direction and the second number is the radius in the y direction.
 
-```typ
-#arc(position, start: auto, stop: auto, delta: auto, name: none, anchor: none,)
+```typc
+arc(position, start: auto, stop: auto, delta: auto, name: none, anchor: none,)
 ```
 #def-arg("position", `<coordinate>`, [The coordinate to start drawing the arc from.])
 #def-arg("start", `<angle>`, [The angle to start the arc.])
@@ -381,8 +377,8 @@ Draws an arc to the canvas. Exactly two of the three values `start`, `stop`, and
     arc((0,-0.5), start: 45deg, delta: 90deg, mode: "CLOSE")
     arc((0,-1), stop: 135deg, delta: 90deg, mode: "PIE")
   },
-  [```typ
-  #cetz.canvas({
+  [```typc
+  cetz.canvas({
     import cetz.draw: *
     arc((0,0), start: 45deg, stop: 135deg)
     arc((0,-0.5), start: 45deg, delta: 90deg, mode: "CLOSE")
@@ -400,8 +396,8 @@ Draws an arc to the canvas. Exactly two of the three values `start`, `stop`, and
 === Circle
 Draws a circle to the canvas. An ellipse can be drawn by passing an array of length two to the `radius` argument to specify its `x` and `y` radii.
 
-```typ
-#circle(center, name: none, anchor: none)
+```typc
+circle(center, name: none, anchor: none)
 ```
 #def-arg("center", `<coordinate>`, [The coordinate of the circle's origin.])
 
@@ -410,8 +406,8 @@ Draws a circle to the canvas. An ellipse can be drawn by passing an array of len
     circle((0,0))
     circle((0,-2), radius: (0.75, 0.5))
   },
-  [```typ
-  #cetz.canvas({
+  [```typc
+  cetz.canvas({
     import cetz.draw: *
     circle((0,0))
     // Draws an ellipse
@@ -427,8 +423,8 @@ Draws a circle to the canvas. An ellipse can be drawn by passing an array of len
 === Bezier
 Draws a bezier curve with 1 or 2 control points to the canvas.
 
-```typ
-#bezier(start, end, ..ctrl-style)
+```typc
+bezier(start, end, ..ctrl-style)
 ```
 #def-arg("start", `<coordinate>`, "The coordinate to start drawing the bezier curve from.")
 #def-arg("end", `<coordinate>`, "The coordinate to draw the bezier curve to.")
@@ -439,8 +435,8 @@ Draws a bezier curve with 1 or 2 control points to the canvas.
     bezier((0, 0), (2, 0), (1, 1))
     bezier((0, -1), (2, -1), (.5, -2), (1.5, 0))
   },
-  [```typ
-  #cetz.canvas({
+  [```typc
+  cetz.canvas({
     import cetz.draw: *
     bezier((0, 0), (2, 0), (1, 1))
     bezier((0, -1), (2, -1), (.5, -2), (1.5, 0))
@@ -451,8 +447,8 @@ Draws a bezier curve with 1 or 2 control points to the canvas.
 === Content
 Draws a content block to the canvas.
 
-```typ
-#content(pt, ct, angle: 0deg, name: none, anchor: none)
+```typc
+content(pt, ct, angle: 0deg, name: none, anchor: none)
 ```
 #def-arg("pt", `<coordinate>`, "The coordinate of the center of the content block.")
 #def-arg("ct", `<content>`, "The content block.")
@@ -462,8 +458,8 @@ Draws a content block to the canvas.
     import "draw.typ": *
     content((0,0), [Hello World!])
   },
-  [```typ
-  #cetz.canvas({
+  [```typc
+  cetz.canvas({
     import cetz.draw: *
     content((0,0), [Hello World!])
   })
@@ -477,8 +473,8 @@ Draws a content block to the canvas.
     line(a, b)
     content((a, .5, b), angle: b, [Text on a line], anchor: "bottom")
   },
-  [```typ
-  #cetz.canvas({
+  [```typc
+  cetz.canvas({
     import cetz.draw: *
     let (a, b) = ((1,0), (3,1))
 
@@ -496,8 +492,8 @@ This draw element is not affected by fill or stroke styling.
 === Grid
 Draws a grid to the canavas.
 
-```typ
-#grid(from, to, step: 1, help-lines: false, name: none)
+```typc
+grid(from, to, step: 1, help-lines: false, name: none)
 ```
 #def-arg("from", `<coordinate>`, "Specifies the bottom left position of the grid.")
 #def-arg("to", `<coordinate>`, "Specifies the top right position of the grid.")
@@ -508,8 +504,8 @@ Draws a grid to the canavas.
     import "draw.typ": *
     grid((0,0), (3,3), help-lines: true)
   },
-  [```typ
-  #cetz.canvas({
+  [```typc
+  cetz.canvas({
     import cetz.draw: *
     grid((0,0), (3,2), help-lines: true)
   })
@@ -536,8 +532,8 @@ Draws a mark or "arrow head", its styling influences marks being drawn on paths 
   line((0, 1), (1, 1), mark: (end: "<"))
   line((0, 0), (1, 0), mark: (end: ">"))
 },
-[```typ
-  #cetz.canvas({
+[```typc
+  cetz.canvas({
     import cetz.draw: *
     line((1, 0), (1, 6), stroke: (paint: gray, dash: "dotted"))
     set-style(mark: (fill: none))
@@ -564,8 +560,8 @@ Draws a mark or "arrow head", its styling influences marks being drawn on paths 
 
 === Merge-Path
 
-```typ
-#merge-path(body, ..style, close: false, name: none)
+```typc
+merge-path(body, ..style, close: false, name: none)
 ```
 #def-arg("body", `<objects>`, [
   Elements to merge as one path
@@ -583,7 +579,7 @@ merge-path({
   line((0, 0), (1, 0))
   bezier((), (0, 0), (1,1), (0,1))
 }, fill: white)
-}, ```typ
+}, ```typc
 // Merge two different paths into one
 merge-path({
   line((0, 0), (1, 0))
@@ -593,9 +589,12 @@ merge-path({
 
 == Groups <groups>
 Groups allow scoping context changes such as setting stroke-style, fill and transformations.
-```typ
-#group(content, name: none)
+
+```typc
+group(body, name: none, anchor: none)
 ```
+
+Note: You can pass `content` a function of the form `ctx => draw-cmds` that returns the groups children. This way you get access to the groups context dictionary.
 
 #example({
 import "draw.typ": *
@@ -605,7 +604,7 @@ group({
   rect((-1,-1),(1,1))
 })
 rect((-1,-1),(1,1))
-}, ```typ
+}, ```typc
 // Create group
 group({
   stroke(5pt)
@@ -677,8 +676,8 @@ Transformation martices get multiplied in the following order:
 $ M_"world" = M_"world" dot M_"local" $
 
 === Translate <translate>
-```typ
-#translate(coordinate, pre: true)
+```typc
+translate(coordinate, pre: true)
 ```
 
 #def-arg("coordinate", `<vector>`,
@@ -693,7 +692,7 @@ import "draw.typ": *
 rect((0,0), (2,2))
 translate((.5,.5,0))
 rect((0,0), (1,1))
-}, ```typ
+}, ```typc
 // Outer rect
 rect((0,0), (2,2))
 // Inner rect
@@ -711,7 +710,7 @@ import "draw.typ": *
 rect((0,0), (2,2), name: "r")
 set-origin("r.above")
 circle((0, 0), radius: .1)
-}, ```typ
+}, ```typc
 // Outer rect
 rect((0,0), (2,2), name: "r")
 // Move origin to top edge
@@ -736,7 +735,7 @@ set-viewport(from, to, bounds: (1, 1, 1))
   rect((0,0), (2,2))
   set-viewport((0,0), (2,2), bounds: (10, 10))
   circle((5,5))
-}, ```typ
+}, ```typc
 rect((0,0), (2,2))
 set-viewport((0,0), (2,2), bounds: (10, 10))
 circle((5,5))
@@ -754,7 +753,7 @@ rotate(z-angle)
   rect((-1,-1), (1,1))
   rotate((y: 80deg))
   circle((0,0))
-}, ```typ
+}, ```typc
 // Rotate on z-axis
 rotate((z: 45deg))
 rect((-1,-1), (1,1))
@@ -764,7 +763,7 @@ circle((0,0))
 ```)
 
 === Scale
-```typ
+```typc
 #scale(axis-dictionary)
 #scale(factor)
 ```
@@ -773,7 +772,7 @@ circle((0,0))
   import "draw.typ": *
   scale((x: 1.8))
   circle((0,0))
-}, ```typ
+}, ```typc
 // Scale x-axis
 scale((x: 1.8))
 circle((0,0))
@@ -806,7 +805,7 @@ The implicit form can be given as an array of two or three `<number>` or `<lengt
     line((0, -2), (0, -1, 0))
     line((0, -2), (0, -2, 1))
   },
-  [```typ
+  [```typc
   #import "@local/cetz:0.0.1"
   #cetz.canvas({
     import cetz.draw: *
@@ -833,7 +832,7 @@ Use this to reference the position of the previous coordinate passed to a draw f
     line((0,0), (1, 1))
     circle(())
   },
-  [```typ
+  [```typc
   #import "@local/cetz:0.0.1"
   #cetz.canvas({
     import cetz.draw: *
@@ -859,7 +858,7 @@ In the example below, the red circle is placed one unit below the blue circle. I
   circle((0, 0), stroke: blue)
   circle((rel: (0, -1)), stroke: red)
   },
-  [```typ
+  [```typc
   #import "@local/cetz:0.0.1"
   #cetz.canvas({
     import cetz.draw: *
@@ -880,7 +879,7 @@ Defines a point a `radius` distance away from the origin at the given `angle`. A
     import "draw.typ": *
     line((0,0), (angle: 30deg, radius: 1cm))
   },
-  [```typ
+  [```typc
   #import "@local/cetz:0.0.1"
   #cetz.canvas({
     import cetz.draw: *
@@ -896,7 +895,7 @@ The implicit form is an array of the angle then the radius `(angle, radius)` or 
     import "draw.typ": *
     line((0,0), (30deg, 1), (60deg, 1), (90deg, 1), (120deg, 1), (150deg, 1), (180deg, 1),)
   },
-  [```typ
+  [```typc
   #import "@local/cetz:0.0.1"
   #cetz.canvas({
     import cetz.draw: *
@@ -941,40 +940,36 @@ In the barycentric coordinate system a point is expressed as the linear combinat
       content((bary: (content: c, structure: s, form: f)), cont)
     }
   },
-  [```typ
-  #import "@local/cetz:0.0.1"
-  #cetz.canvas({
-    import cetz.draw: *
-    circle((90deg, 3), radius: 0, name: "content")
-    circle((210deg, 3), radius: 0, name: "structure")
-    circle((-30deg, 3), radius: 0, name: "form")
+  [```typc
+circle((90deg, 3), radius: 0, name: "content")
+circle((210deg, 3), radius: 0, name: "structure")
+circle((-30deg, 3), radius: 0, name: "form")
 
-    for (c, a) in (
-      ("content", "bottom"), 
-      ("structure", "top-right"), 
-      ("form", "top-left")
-    ) {
-      content(c, box(c + " oriented", inset: 5pt), anchor: a)
-    }
+for (c, a) in (
+  ("content", "bottom"), 
+  ("structure", "top-right"), 
+  ("form", "top-left")
+) {
+  content(c, box(c + " oriented", inset: 5pt), anchor: a)
+}
 
-    stroke(gray + 1.2pt)
-    line("content", "structure", "form", close: true)
+stroke(gray + 1.2pt)
+line("content", "structure", "form", close: true)
 
-    for (c, s, f, cont) in (
-      (0.5, 0.1, 1, "PostScript"),
-      (1, 0, 0.4, "DVI"),
-      (0.5, 0.5, 1, "PDF"),
-      (0, 0.25, 1, "CSS"),
-      (0.5, 1, 0, "XML"),
-      (0.5, 1, 0.4, "HTML"),
-      (1, 0.2, 0.8, "LaTeX"),
-      (1, 0.6, 0.8, "TeX"),
-      (0.8, 0.8, 1, "Word"),
-      (1, 0.05, 0.05, "ASCII")
-    ) {
-      content((bary: (content: c, structure: s, form: f)), cont)
-    }
-  })
+for (c, s, f, cont) in (
+  (0.5, 0.1, 1, "PostScript"),
+  (1, 0, 0.4, "DVI"),
+  (0.5, 0.5, 1, "PDF"),
+  (0, 0.25, 1, "CSS"),
+  (0.5, 1, 0, "XML"),
+  (0.5, 1, 0.4, "HTML"),
+  (1, 0.2, 0.8, "LaTeX"),
+  (1, 0.6, 0.8, "TeX"),
+  (0.8, 0.8, 1, "Word"),
+  (1, 0.05, 0.05, "ASCII")
+) {
+  content((bary: (content: c, structure: s, form: f)), cont)
+}
   ```]
 )
 
@@ -994,15 +989,12 @@ You can also use implicit syntax of a dot separated string in the form `"name.an
     circle("line.end", name: "circle")
     rect("line.start", "circle.left")
   },
-  [```typ
-  #import "@local/cetz:0.0.1"
-  #cetz.canvas({
-    import cetz.draw: *
-    line((0,0), (3,2), name: "line")
-    circle("line.end", name: "circle")
-    rect("line.start", "circle.left")
-  })
-  ```]
+[```typc
+import cetz.draw: *
+line((0,0), (3,2), name: "line")
+circle("line.end", name: "circle")
+rect("line.start", "circle.left")
+```]
 )
 
 == Tangent
@@ -1033,26 +1025,22 @@ A special algorithm is needed in order to compute the tangent for a given shape.
       close: true
     )
   },
-  [```typ
-  #import "@local/cetz:0.0.1"
-  #cetz.canvas({
-    import cetz.draw: *
-    grid((0,0), (3,2), help-lines: true)
+[```typ
+grid((0,0), (3,2), help-lines: true)
 
-    circle((3,2), name: "a", radius: 2pt)
-    circle((1,1), name: "c", radius: 0.75)
-    content("c", $ c $)
+circle((3,2), name: "a", radius: 2pt)
+circle((1,1), name: "c", radius: 0.75)
+content("c", $ c $)
 
-    stroke(red)
-    line(
-      "a",
-      (element: "c", point: "a", solution: 1),
-      "c",
-      (node: "c", point: "a", solution: 2),
-      close: true
-    )
-  })
-  ```]
+stroke(red)
+line(
+  "a",
+  (element: "c", point: "a", solution: 1),
+  "c",
+  (node: "c", point: "a", solution: 2),
+  close: true
+)
+```]
 )
 
 == Perpendicular
@@ -1081,24 +1069,20 @@ You can use the implicit syntax of `(horizontal, "-|", vertical)` or `(vertical,
     line("p2", ((), "|-", "xline"))
     line("p2", ((), "-|", "yline"))
   },
-  [```typ
-  #import "@local/cetz:0.0.1"
-  #cetz.canvas({
-    import cetz.draw: *
-    content((30deg, 1), $ p_1 $, name: "p1")
-    content((75deg, 1), $ p_2 $, name: "p2")
+[```typc
+content((30deg, 1), $ p_1 $, name: "p1")
+content((75deg, 1), $ p_2 $, name: "p2")
 
-    line((-0.2, 0), (1.2, 0), name: "xline")
-    content("xline.end", $ q_1 $, anchor: "left")
-    line((2, -0.2), (2, 1.2), name: "yline")
-    content("yline.end", $ q_2 $, anchor: "bottom")
+line((-0.2, 0), (1.2, 0), name: "xline")
+content("xline.end", $ q_1 $, anchor: "left")
+line((2, -0.2), (2, 1.2), name: "yline")
+content("yline.end", $ q_2 $, anchor: "bottom")
 
-    line("p1", (horizontal: (), vertical: "xline"))
-    line("p2", (horizontal: (), vertical: "xline"))
-    line("p1", (vertical: (), horizontal: "yline"))
-    line("p2", (vertical: (), horizontal: "yline"))
-  })
-  ```]
+line("p1", (horizontal: (), vertical: "xline"))
+line("p2", (horizontal: (), vertical: "xline"))
+line("p1", (vertical: (), horizontal: "yline"))
+line("p2", (vertical: (), horizontal: "yline"))
+```]
 )
 
 == Interpolation
@@ -1132,25 +1116,21 @@ Can be used implicitly as an array in the form `(a, number, b)` or `(a, number, 
               box(fill: white, inset: 1pt, text(red, [#i])))
     }
   },
-  [```typ
-  #import "@local/cetz:0.0.1"
-  #cetz.canvas({
-    import cetz.draw: *
-    grid((0,0), (3,3), help-lines: true)
-    
-    line((0,0), (2,2))
-    for i in (0, 0.2, 0.5, 0.8, 1, 1.5) { /* Relative distance */
-      content(((0,0), i, (2,2)),
-              box(fill: white, inset: 1pt, [#i]))
-    }
+[```typc
+grid((0,0), (3,3), help-lines: true)
 
-    line((1,0), (3,2))
-    for i in (0, 0.5, 1, 2) { /* Absolute distance */
-      content((a: (1,0), number: i, abs: true, b: (3,2)),
-              box(fill: white, inset: 1pt, text(red, [#i])))
-    }
-  })
-  ```]
+line((0,0), (2,2))
+for i in (0, 0.2, 0.5, 0.8, 1, 1.5) { /* Relative distance */
+  content(((0,0), i, (2,2)),
+          box(fill: white, inset: 1pt, [#i]))
+}
+
+line((1,0), (3,2))
+for i in (0, 0.5, 1, 2) { /* Absolute distance */
+  content((a: (1,0), number: i, abs: true, b: (3,2)),
+          box(fill: white, inset: 1pt, text(red, [#i])))
+}
+```]
 )
 
 #example(
@@ -1164,18 +1144,14 @@ Can be used implicitly as an array in the form `(a, number, b)` or `(a, number, 
     stroke(none)
     circle(((1, 0), 0.5, 10deg, (3, 2)), radius: 2pt)
   },
-  [```typ
-  #import "@local/cetz:0.0.1"
-  #cetz.canvas({
-    import cetz.draw: *
-    grid((0,0), (3,3), help-lines: true)
-    line((1,0), (3,2))
-    line((1,0), ((1, 0), 1, 10deg, (3,2)))
-    fill(red)
-    stroke(none)
-    circle(((1, 0), 0.5, 10deg, (3, 2)), radius: 2pt)}
-  })
-  ```]
+[```typc
+grid((0,0), (3,3), help-lines: true)
+line((1,0), (3,2))
+line((1,0), ((1, 0), 1, 10deg, (3,2)))
+fill(red)
+stroke(none)
+circle(((1, 0), 0.5, 10deg, (3, 2)), radius: 2pt)}
+```]
 )
 
 #example(
@@ -1190,20 +1166,16 @@ Can be used implicitly as an array in the form `(a, number, b)` or `(a, number, 
       circle(((2,2), i / 8, i * 22.5deg, (3,2)), radius: 2pt)
     }
   },
-  [```typ
-  #import "@local/cetz:0.0.1"
-  #cetz.canvas({
-    import cetz.draw: *
-    grid((0,0), (4,4), help-lines: true)
+[```typc
+grid((0,0), (4,4), help-lines: true)
 
-    fill(black)
-    stroke(none)
-    let n = 16
-    for i in range(0, n+1) {
-      circle(((2,2), i / 8, i * 22.5deg, (3,2)), radius: 2pt)
-    }
-  })
-  ```]
+fill(black)
+stroke(none)
+let n = 16
+for i in range(0, n+1) {
+  circle(((2,2), i / 8, i * 22.5deg, (3,2)), radius: 2pt)
+}
+```]
 )
 
 You can even chain them together!
@@ -1227,27 +1199,23 @@ You can even chain them together!
       radius: 2pt
     )
  },
-  [```typ
-  #import "@local/cetz:0.0.1"
-  #cetz.canvas({
-    import cetz.draw: *
-    grid((0,0), (3, 2), help-lines: true)
-    line((0,0), (3,2))
-    stroke(red)
-    line(((0,0), 0.3, (3,2)), (3,0))
-    fill(red)
-    stroke(none)
-    circle(
-      (
-        // a
-        (((0, 0), 0.3, (3, 2))),
-        0.7,
-        (3,0)
-      ),
-      radius: 2pt
-    )
-  })
-  ```]
+[```typ
+grid((0,0), (3, 2), help-lines: true)
+line((0,0), (3,2))
+stroke(red)
+line(((0,0), 0.3, (3,2)), (3,0))
+fill(red)
+stroke(none)
+circle(
+  (
+    // a
+    (((0, 0), 0.3, (3, 2))),
+    0.7,
+    (3,0)
+  ),
+  radius: 2pt
+)
+```]
 )
 
 #example(
@@ -1259,17 +1227,13 @@ You can even chain them together!
       content(((1,0), l, (3,2)), $ #c $)
     }
  },
-  [```typ
-  #import "@local/cetz:0.0.1"
-  #cetz.canvas({
-    import cetz.draw: *
-    grid((0,0), (3, 2), help-lines: true)
-    line((1,0), (3,2))
-    for (l, c) in ((0cm, "0cm"), (1cm, "1cm"), (15mm, "15mm")) {
-      content(((1,0), l, (3,2)), $ #c $)
-    }
-  })
-  ```]
+[```typc
+grid((0,0), (3, 2), help-lines: true)
+line((1,0), (3,2))
+for (l, c) in ((0cm, "0cm"), (1cm, "1cm"), (15mm, "15mm")) {
+  content(((1,0), l, (3,2)), $ #c $)
+}
+```]
 )
 
 == Function
@@ -1284,23 +1248,19 @@ The example below shows how to use this system to create an offset from an ancho
     fill(red)
     circle((v => vector.add(v, (0, -1)), "c.right"), radius: 0.3)
  },
-  [```typ
-  #import "@local/cetz:0.0.1"
-  #cetz.canvas({
-    import cetz.draw: *
-    circle((0, 0), name: "c")
-    fill(red)
-    circle((v => cetz.vector.add(v, (0, -1)), "c.right"), radius: 0.3)
-  })
-  ```]
+[```typc
+circle((0, 0), name: "c")
+fill(red)
+circle((v => cetz.vector.add(v, (0, -1)), "c.right"), radius: 0.3)
+```]
 )
 
 = Utility
 
 == For-Each-Anchor
 
-```typ
-#for-each-anchor(node-name, callback)
+```typc
+for-each-anchor(node-name, callback)
 ```
 #def-arg("node-name", `<string>`, [
   Target node name
@@ -1319,7 +1279,7 @@ The example below shows how to use this system to create an offset from an ancho
             angle: -45deg)
     }
   })
-}, ```typ
+}, ```typc
 // Label nodes anchors
 rect((0, 0), (2,2), name: "my-rect")
 for-each-anchor("my-rect", (name) => {
@@ -1415,3 +1375,117 @@ tree.tree(data, content: (padding: .1), direction: "right",
 A tree node is an array of nodes. The first array item represents the
 current node, all following items are direct children of that node.
 The node itselfes can be ot type `content` or `dictionary` with a key `content`.
+
+== Plot
+#let plot-module = parse-module("../../lib/plot.typ", name: "Plot")
+
+The library `plot` of CeTZ allows plotting 2D data as linechart.
+
+#show-module(plot-module, show-module-name: false)
+
+=== Examples
+
+#example({
+  import "draw.typ": *
+  plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
+                         x-unit: $degree$, {
+    plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
+  })
+}, ```typc
+plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
+          x-unit: $degree$, {
+  plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
+})
+```)
+
+#example({
+  import "draw.typ": *
+  plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
+                         x-unit: $degree$, y-max: .5, {
+    plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
+    plot.add(domain: (0, 360), x => calc.cos(x * 1deg),
+             samples: 10, mark: "x", mark-style: (stroke: blue))
+  })
+}, ```typc
+plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
+          x-unit: $degree$, y-max: .5, {
+  plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
+  plot.add(domain: (0, 360), x => calc.cos(x * 1deg),
+           samples: 10, mark: "x", style: (mark: (stroke: blue)))
+})
+```)
+
+== Chart
+#let chart-module = parse-module("../../lib/chart.typ", name: "Chart")
+
+With the `chart` library it is easy to draw charts.
+
+Supported charts are:
+- `barchart(..)`: A chart with horizontal growing bars
+  - `mode: "basic"`: (default): One bar per data row
+  - `mode: "clustered"`: Multiple grouped bars per data row
+  - `mode: "stacked"`: Multiple stacked bars per data row
+  - `mode: "stacked100"`: Multiple stacked bars relative to the sum of a data row
+
+#show-module(chart-module, show-module-name: false)
+
+=== Examples <barchart-examples>
+==== Basic
+#example(vertical: true, {
+draw.set-style(axes: (tick: (stroke: red, length: 1)))
+  let data = (("A", 10), ("B", 20), ("C", 13))
+  chart.barchart(size: (10, auto), x-tick-step: 10, data)
+}, ```typc
+let data = (("A", 10), ("B", 20), ("C", 13))
+chart.barchart(size: (10, auto), x-tick-step: 10, data)
+```)
+
+==== Clustered
+#example(vertical: true, {
+  let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
+  chart.barchart(size: (10, auto), mode: "clustered",
+                 x-tick-step: 10, value-key: (..range(1, 4)), data)
+}, ```typc
+let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
+chart.barchart(size: (10, auto), mode: "clustered",
+               x-tick-step: 10, value-key: (..range(1, 4)), data)
+```)
+
+==== Stacked
+#example(vertical: true, {
+  let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
+  chart.barchart(size: (10, auto), mode: "stacked",
+                 x-tick-step: 10, value-key: (..range(1, 4)), data)
+}, ```typc
+let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
+chart.barchart(size: (6, auto), mode: "clustered",
+               x-tick-step: 10, value-key: (..range(1, 4)), data)
+```)
+
+== Palette <palette>
+#let palette-module = parse-module("../../lib/palette.typ", name: "Palette")
+
+A palette is a function that returns a style for an index.
+The palette library provides some predefined palettes.
+
+#show-module(palette-module, show-module-name: false)
+
+#let show-palette(p) = {
+  canvas({
+    import draw: *
+    for i in range(p("len")) {
+      if calc.rem(i, 10) == 0 { move-to((rel: (0, -.5))) }
+      rect((), (rel: (1,.5)), name: "r", ..p(i))
+      move-to("r.bottom-right")
+    }
+  })
+} 
+
+=== List of predefined palettes
+- `gray` #show-palette(palette.gray)
+- `red` #show-palette(palette.red)
+- `blue` #show-palette(palette.blue)
+- `rainbow` #show-palette(palette.rainbow)
+- `tango-light` #show-palette(palette.tango-light)
+- `tango` #show-palette(palette.tango)
+- `tango-dark` #show-palette(palette.tango-dark)

@@ -14,3 +14,9 @@
   insides a rectangular region
 - *[!]* Rects now emit rotated anchors, before they did not set anchors
 - New function `copy-anchors` to copy all or some anchors of an element
+
+** Chart
+- Added new library `chart` for drawing charts, currently only barcharts are supported
+
+** Plot
+- Added new library `plot` for drawing line charts (of functions), replacing `typst-plot`

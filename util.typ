@@ -55,12 +55,36 @@
   return if type(radius) == "array" {radius} else {(radius, radius)}
 }
 
-#let min(a, b) = {
-  if a == none { return b }; if b == none { return a }
-  return calc.min(a, b)
+/// Find minimum value of a, ignoring `none`
+#let min(..a) = {
+  let a = a.pos().filter(v => v != none)
+  return calc.min(..a)
 }
 
-#let max(a, b) = {
-  if a == none { return b }; if b == none { return a }
-  return calc.max(a, b)
+/// Find maximum value of a, ignoring `none`
+#let max(..a) = {
+  let a = a.pos().filter(v => v != none)
+  return calc.max(..a)
+}
+
+/// Merge dictionary a and b and return the result
+/// Prefers values of b.
+///
+/// - a (dictionary): Dictionary a
+/// - b (dictionary): Dictionary b
+/// -> dictionary
+#let merge-dictionary(a, b) = {
+  if type(a) == "dictionary" and type(b) == "dictionary" {
+    let c = a
+    for (k, v) in b {
+      if not k in c {
+        c.insert(k, v)
+      } else {
+        c.at(k) = merge-dictionary(a.at(k), v)
+      }
+    }
+    return c
+  } else {
+    return b
+  }
 }
