@@ -103,7 +103,7 @@ The name CeTZ is a recursive acronym for "CeTZ, ein Typst Zeichenpacket" (german
 
 This is the minimal starting point:
   ```typ
-  #import "@local/cetz:0.0.1"
+  #import "@local/cetz:0.0.2"
   #cetz.canvas({
     import cetz.draw: *
     ...
@@ -722,7 +722,7 @@ The implicit form can be given as an array of two or three `<number>` or `<lengt
     line((0, -2), (0, -2, 1))
   },
   [```typc
-  #import "@local/cetz:0.0.1"
+  #import "@local/cetz:0.0.2"
   #cetz.canvas({
     import cetz.draw: *
 
@@ -749,7 +749,7 @@ Use this to reference the position of the previous coordinate passed to a draw f
     circle(())
   },
   [```typc
-  #import "@local/cetz:0.0.1"
+  #import "@local/cetz:0.0.2"
   #cetz.canvas({
     import cetz.draw: *
     line((0,0), (1, 1))
@@ -775,7 +775,7 @@ In the example below, the red circle is placed one unit below the blue circle. I
   circle((rel: (0, -1)), stroke: red)
   },
   [```typc
-  #import "@local/cetz:0.0.1"
+  #import "@local/cetz:0.0.2"
   #cetz.canvas({
     import cetz.draw: *
     circle((0, 0), stroke: blue)
@@ -796,7 +796,7 @@ Defines a point a `radius` distance away from the origin at the given `angle`. A
     line((0,0), (angle: 30deg, radius: 1cm))
   },
   [```typc
-  #import "@local/cetz:0.0.1"
+  #import "@local/cetz:0.0.2"
   #cetz.canvas({
     import cetz.draw: *
     line((0,0), (angle: 30deg, radius: 1cm))
@@ -812,7 +812,7 @@ The implicit form is an array of the angle then the radius `(angle, radius)` or 
     line((0,0), (30deg, 1), (60deg, 1), (90deg, 1), (120deg, 1), (150deg, 1), (180deg, 1),)
   },
   [```typc
-  #import "@local/cetz:0.0.1"
+  #import "@local/cetz:0.0.2"
   #cetz.canvas({
     import cetz.draw: *
     line((0,0), (30deg, 1), (60deg, 1), 
