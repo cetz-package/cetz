@@ -135,3 +135,26 @@
       }
     })
 }))
+
+/* Tick Step Calculation */
+#box(stroke: 2pt + red, {canvas({
+  import "../../draw.typ": *
+
+  plot.plot(size: (12, 4),
+    y2-decimals: 4,
+    {
+      plot.add(((0,0), (1,10)), axes: ("x", "y"))
+      plot.add(((0,0), (.1,.01)), axes: ("x2", "y2"))
+    })
+}); canvas({
+  import "../../draw.typ": *
+
+  plot.plot(size: (12, 4),
+    y2-decimals: 9,
+    x2-decimals: 9,
+    y2-format: "sci",
+    {
+      plot.add(((0,0), (30,2500)), axes: ("x", "y"))
+      plot.add(((0,0), (.001,.00001)), axes: ("x2", "y2"))
+    })
+})})

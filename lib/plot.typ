@@ -217,6 +217,7 @@
 ///   - minor-tick-step (float): Distance between minor ticks
 ///   - ticks (array): List of ticks values or value/label
 ///                    tuples. Example `(1,2,3)` or `((1, [A]), (2, [B]),)`
+///   - format (string): Tick label format, `"float"` or `"sci"` (scientific)
 ///   - unit (content): Tick label suffix
 ///   - decimals (int): Number of decimals digits to display for tick labels
 /// ]
@@ -251,7 +252,7 @@
     for (i, name) in d.axes.enumerate() {
       if not name in axis-dict {
         axis-dict.insert(name, axes.axis(
-          min: none, max: none, ticks: (step: auto)))
+          min: none, max: none))
       }
 
       let axis = axis-dict.at(name)
@@ -279,16 +280,10 @@
 
     axis.ticks.list = get-axis-option(name, "ticks", ())
     axis.ticks.step = get-axis-option(name, "tick-step", axis.ticks.step)
-    axis.ticks.minor-step = get-axis-option(name, "minor-tick-step", none)
+    axis.ticks.minor-step = get-axis-option(name, "minor-tick-step", axis.ticks.minor-step)
     axis.ticks.decimals = get-axis-option(name, "decimals", 2)
     axis.ticks.unit = get-axis-option(name, "unit", [])
-
-    if axis.ticks.step == auto {
-      axis.ticks.step = (axis.max - axis.min) / 10
-    }
-    if axis.ticks.minor-step == auto and axis.ticks.step != auto {
-      axis.ticks.minor-step = axis.ticks.step / 2
-    }
+    axis.ticks.format = get-axis-option(name, "format", axis.ticks.format)
 
     axis-dict.at(name) = axis
   }

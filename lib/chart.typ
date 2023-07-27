@@ -95,10 +95,6 @@
     (i, t.at(label-key))
   })
 
-  let x-step = if x-tick-step == auto {
-    max-value / 10
-  } else {x-tick-step}
-
   let x-unit = x-unit
   if x-unit == auto {
     x-unit = if mode == "stacked100" {[%]} else []
@@ -106,13 +102,15 @@
   
   let x = axes.axis(min: 0, max: max-value,
                     label: x-label,
-                    ticks: (grid: true, step: x-step,
+                    ticks: (grid: true, step: x-tick-step,
+                            minor-step: none,
                             unit: x-unit, decimals: 1,
                             list: x-ticks))
   let y = axes.axis(min: data.len(), max: -1,
                     label: y-label,
                     ticks: (grid: true,
                             step: none,
+                            minor-step: none,
                             list: y-tic-list))
 
   let basic-draw-bar(idx, y, item, ..style) = {

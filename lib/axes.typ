@@ -38,16 +38,51 @@
 //     - decimals (int): Tick float decimal length
 // - label (content): Axis label
 #let axis(min: -1, max: 1, label: none,
-          ticks: (step: 1, minor-step: none,
-                 unit: none, decimals: 2, grid: false)) = (
+          ticks: (step: auto, minor-step: none,
+                  unit: none, decimals: 2, grid: false,
+                  format: "float")) = (
   min: min, max: max, ticks: ticks, label: label,
 )
 
 // Format a tick value
 #let format-tick-value(value, tic-options) = {
+  let round(value, digits) = {
+    let factor = calc.pow(10, digits)
+    calc.floor(value * factor + .5) / factor
+  }
+
+  let format-float(value, digits) = {
+    $#round(value, digits)$
+  }
+
+  let format-sci(value, digits) = {
+    let exponent = if value != 0 {
+      calc.floor(calc.log(calc.abs(value), base: 10))
+    } else {
+      0
+    }
+
+    let ee = calc.pow(10, calc.abs(exponent + 1))
+    if exponent > 0 {
+      value = value / ee * 10
+    } else if exponent < 0 {
+      value = value * ee * 10
+    }
+
+    value = round(value, digits)
+    if exponent <= -1 or exponent >= 1 {
+      return $#value times 10^#exponent$
+    }
+    return $#value$
+  }
+
   if type(value) in ("int", "float") {
-    let factor = calc.pow(10, tic-options.at("decimals", default: 2))
-    value = str(calc.floor(value * factor + .5) / factor)
+    let format = tic-options.at("format", default: "float")
+    if format == "sci" {
+      value = format-sci(value, tic-options.at("decimals", default: 2))
+    } else {
+      value = format-float(value, tic-options.at("decimals", default: 2))
+    }
   } else if type(value) != "content" {
     value = str(value)
   }
@@ -70,9 +105,9 @@
   return (v - min) / dt
 }
 
-// Compute list of ticks for axis
-//
-// - axis (axis): Axis
+/// Compute list of linear ticks for axis
+///
+/// - axis (axis): Axis
 #let compute-linear-ticks(axis) = {
   let (min, max) = (axis.min, axis.max)
   let dt = max - min; if (dt == 0) { dt = 1 }
@@ -99,7 +134,7 @@
       let r = int(max * s + .5) - int(min * s)
       let n = range(int(min * s), int(max * s + 1.5))
 
-      assert(n.len() <= tic-limit, message: "Number of minor ticks exceeds limit.")
+      assert(n.len() <= tic-limit * 10, message: "Number of minor ticks exceeds limit.")
       for t in n {
         let v = ((t / s) - min) / dt
         if v != none and v >= 0 and v <= 1 {
@@ -108,25 +143,71 @@
       }
     }
 
-    if "list" in ticks {
-      for t in ticks.list {
-        let (v, label) = (none, none)
-        if type(t) in ("float", "integer") {
-          v = t
-          label = format-tick-value(t, ticks)
-        } else {
-          (v, label) = t
-        }
-
-        v = value-on-axis(axis, v)
-        if v != none and v >= 0 and v <= 1 {
-          l.push((v, label))
-        }
-      }
-    }
   }
 
   return l
+}
+
+/// Get list of fixed axis ticks
+///
+/// - axis (axis): Axis object
+#let fixed-ticks(axis) = {
+  let l = ()
+  if "list" in axis.ticks {
+    for t in axis.ticks.list {
+      let (v, label) = (none, none)
+      if type(t) in ("float", "integer") {
+        v = t
+        label = format-tick-value(t, axis.ticks)
+      } else {
+        (v, label) = t
+      }
+
+      v = value-on-axis(axis, v)
+      if v != none and v >= 0 and v <= 1 {
+        l.push((v, label))
+      }
+    }
+  }
+  return l
+}
+
+/// Compute list of axis ticks
+///
+/// - axis (axis): Axis object
+#let compute-ticks(axis) = {
+  let find-max-n-ticks(axis, n: 11) = {
+    let dt = calc.abs(axis.max - axis.min)
+    let scale = calc.pow(10, calc.floor(calc.log(dt, base: 10) - 1))
+    if scale > 100000 or scale < .000001 {return none}
+
+    let (step, best) = (none, 0)
+    for s in (1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10) {
+      s = s * scale
+
+      let divs = calc.abs(dt / s)
+      if divs >= best and divs <= n {
+        step = s
+        best = divs
+      }
+    }
+    return step
+  }
+
+  if axis.ticks.step == auto {
+    axis.ticks.step = find-max-n-ticks(axis, n: 11)
+  }
+  if axis.ticks.minor-step == auto {
+    axis.ticks.minor-step = if axis.ticks.step != none {
+      axis.ticks.step / 5
+    } else {
+      none
+    }
+  }
+
+  let ticks = compute-linear-ticks(axis)
+  ticks += fixed-ticks(axis)
+  return ticks
 }
 
 /// Draw inside viewport coordinates of two axes
@@ -204,7 +285,7 @@
                     h - padding.t - padding.b)
       for (axis, _, anchor, placement, tic-dir) in axis-settings {
         if axis != none {
-          for (pos, label) in compute-linear-ticks(axis) {
+          for (pos, label) in compute-ticks(axis) {
             let (x, y) = placement
             if x == auto { x = pos * w + padding.l }
             if y == auto { y = pos * h + padding.b }
@@ -319,7 +400,7 @@
     let origin-drawn = false
     for (axis, anchor, placement, tic-dir) in axis-settings {
       if axis != none {
-        for (pos, label) in compute-linear-ticks(axis) {
+        for (pos, label) in compute-ticks(axis) {
           let (x, y) = placement
           if x == auto { x = pos * w }
           if y == auto { y = pos * h }
