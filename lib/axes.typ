@@ -112,6 +112,7 @@
   let (min, max) = (axis.min, axis.max)
   let dt = max - min; if (dt == 0) { dt = 1 }
   let ticks = axis.ticks
+  let ferr = 0.0000001 // Floating point tollerance
 
   let l = ()
   if ticks != none {
@@ -123,7 +124,7 @@
       assert(n.len() <= tic-limit, message: "Number of major ticks exceeds limit.")
       for t in n {
         let v = ((t / s) - min) / dt
-        if v >= 0 and v <= 1 {
+        if v >= 0 and v <= 1 + ferr {
           l.push((v, format-tick-value(t / s, ticks)))
         }
       }
@@ -137,7 +138,7 @@
       assert(n.len() <= tic-limit * 10, message: "Number of minor ticks exceeds limit.")
       for t in n {
         let v = ((t / s) - min) / dt
-        if v != none and v >= 0 and v <= 1 {
+        if v != none and v >= 0 and v <= 1 + ferr {
           l.push((v, none))
         }
       }
