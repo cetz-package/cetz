@@ -129,31 +129,24 @@
   return l
 }
 
-// Set viewport to axis min/max
-//
-// - size        (vector): Axis canvas size (relative to origin)
-// - origin (coordinates): Axis Canvas origin
-// - x             (axis): X Axis
-// - y             (axis): Y Axis
-// - padding (dictionary): Axis inset (left, right, top, bottom)
-#let set-axis-viewport(size, x, y, origin: (0, 0), padding: (:)) = {
-  let (l, r, t, b) = (
-    padding.at("left", default: 0),
-    padding.at("right", default: 0),
-    padding.at("top", default: 0),
-    padding.at("bottom", default: 0),
-  )
+/// Draw inside viewport coordinates of two axes
+///
+/// - size (vector): Axis canvas size (relative to origin)
+/// - origin (coordinates): Axis Canvas origin
+/// - x (axis): X Axis
+/// - y (axis): Y Axis
+/// - name (string,none): Group name
+#let axis-viewport(size, x, y, origin: (0, 0), name: none, body) = {
+  size = (rel: size, to: origin)
 
-  size = (rel: (rel: (-r, -t), to: size), to: origin)
-  origin = (rel: (l, b), to: origin)
-
-  // draw.rect(origin, size, stroke: blue)
-
-  draw.set-viewport(origin, size,
-    bounds: (x.max - x.min,
-             y.max - y.min,
-             0))
-  draw.translate((-x.min, y.min, 0), pre: false)
+  draw.group({
+    draw.set-viewport(origin, size,
+      bounds: (x.max - x.min,
+               y.max - y.min,
+               0))
+    draw.translate((-x.min, y.min, 0), pre: false)
+    body
+  })
 }
 
 // Draw up to four axes in an "scientific" style at origin (0, 0)

@@ -379,8 +379,7 @@
   // Fill epi-/hypo-graph
   for d in data {
     let (x, y) = d.axes.map(name => axis-dict.at(name))
-    draw.group({
-      axes.set-axis-viewport(size, x, y)
+    axes.axis-viewport(size, x, y, {
       draw.anchor("center", (0, 0))
       draw.set-style(..d.style)
 
@@ -413,14 +412,12 @@
   // Stroke + Mark data
   for d in data {
     let (x, y) = d.axes.map(name => axis-dict.at(name))
-    draw.group({
-      axes.set-axis-viewport(size, x, y)
+    axes.axis-viewport(size, x, y, {
       draw.set-style(..d.style)
       stroke-segments(d.path)
     })
     if d.mark != none {
-      draw.group({
-        axes.set-axis-viewport(size, x, y)
+      axes.axis-viewport(size, x, y, {
         draw.set-style(..d.style, ..d.mark-style)
         draw-marks(d.data, x, y, d.mark, d.mark-size)
       })

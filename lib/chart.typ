@@ -176,9 +176,7 @@
   if data.len() > 0 {
     if type(bar-style) != "function" { bar-style = ((i) => bar-style) }
 
-    group({
-      axes.set-axis-viewport(size, x, y)
-
+    axes.axis-viewport(size, x, y, {
       for (i, row) in data.enumerate() {
         draw-data(i, y.min - i - 1, row)
       }
