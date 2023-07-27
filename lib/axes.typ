@@ -354,17 +354,10 @@
                  size: (1, 1),
                  x-position: 0,
                  y-position: 0,
-                 axis-padding: .4,
+                 axis-margin: .5,
                  name: none,
                  ..style) = {
   import draw: *
-
-  let padding = (
-    left: axis-padding,
-    right: axis-padding,
-    top: axis-padding,
-    bottom: axis-padding,
-  )
 
   group(name: name, ctx => {
     let style = style.named()
@@ -373,6 +366,13 @@
 
     let x-position = calc.min(calc.max(y-axis.min, x-position), y-axis.max)
     let y-position = calc.min(calc.max(x-axis.min, y-position), x-axis.max)
+
+    let margin = (
+      left: if y-position > x-axis.min {axis-margin} else {style.tick.length},
+      right: axis-margin,
+      top: axis-margin,
+      bottom: if x-position > y-axis.min {axis-margin} else {style.tick.length}
+    ) 
 
     let (w, h) = size
 
@@ -384,21 +384,25 @@
       (y-axis, "right", (y-x, auto), (1, 0)),
     )
 
-    line((-axis-padding, x-y), (w + axis-padding, x-y), mark: (end: ">"),
+    line((-margin.left, x-y), (w + margin.right, x-y), mark: (end: ">"),
          name: "x-axis")
     if "label" in x-axis and x-axis.label != none {
       content((rel: (0, -style.tick.label.offset), to: "x-axis.end"),
         anchor: "top", x-axis.label)
     }
 
-    line((y-x, -axis-padding), (y-x, h + axis-padding), mark: (end: ">"),
+    line((y-x, -margin.bottom), (y-x, h + margin.top), mark: (end: ">"),
          name: "y-axis")
     if "label" in y-axis and y-axis.label != none {
       content((rel: (-style.tick.label.offset, 0), to: "y-axis.end"),
         anchor: "right", y-axis.label)
     }
 
+    // If both axes cross at the same value (mostly 0)
+    // draw the tick label for both axes together.
     let origin-drawn = false
+    let shared-origin = x-position == y-position
+
     for (axis, anchor, placement, tic-dir) in axis-settings {
       if axis != none {
         for (pos, label) in compute-ticks(axis) {
@@ -408,13 +412,13 @@
 
           if label != none {
             let label-pos = vector.sub((x, y),
-              vector.scale(tic-dir, style.tick.label.offset / 2))
+              vector.scale(tic-dir, style.tick.label.offset))
 
-            if x == y-x and y == x-y {
+            if x == y-x and y == x-y and shared-origin {
               if origin-drawn { continue }
               origin-drawn = true
               content(vector.add((x, y),
-                  vector.scale((-1, -1), style.tick.label.offset)),
+                  vector.scale((-1, -1), style.tick.label.offset / 2)),
                 [#label], anchor: "top-right")
             } else {
               content(label-pos, [#label], anchor: anchor)

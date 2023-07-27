@@ -199,8 +199,8 @@
 /// Note: Data for plotting must be passed via `plot.add(..)`
 ///
 /// Note that different axis-styles can show different axes.
-/// The `"school-book"` style shows only axis "x" and "y", while
-/// the `"scientific"` style can show "x2" and "y2", if set
+/// The `"school-book"` and `"left"` style shows only axis "x" and "y",
+/// while the `"scientific"` style can show "x2" and "y2", if set
 /// (if unset, "x2" mirrors "x" and "y2" mirrors "y"). Other
 /// axes (e.G. "my-axis") work, but no ticks or labels will be shown.
 ///
@@ -224,7 +224,11 @@
 ///
 /// - body (body): Calls of `plot.add` commands
 /// - size (array): Plot canvas size tuple of width and height in canvas units
-/// - axis-style (string): Axis style "scientific" or "school-book"
+/// - axis-style (string): Axis style "scientific", "left", "school-book"
+///                  - `"scientific"`: Frame plot area and draw axes y, x, y2, and x2 around it
+///                  - `"school-book"`: Draw axes x and y as arrows with both crossing at $(0, 0)$
+///                  - `"left"`: Draw axes x and y as arrows, the y axis stays on the left (at `x.min`)
+///                              and the x axis at the bottom (at `y.min`)
 /// - options (any): The following options are supported per axis
 ///                  and must be prefixed by `<axis-name>-`, e.G.
 ///                  `x-min: 0`.
@@ -243,7 +247,7 @@
           ) = {
   let data = body
 
-  assert(axis-style in ("scientific", "school-book"),
+  assert(axis-style in ("scientific", "school-book", "left"),
          message: "Invalid plot style")
 
   // Create axes
@@ -397,6 +401,13 @@
       top: axis-dict.at("x2", default: auto),
       left: axis-dict.y,
       right: axis-dict.at("y2", default: auto),)
+  } else if axis-style == "left" {
+    axes.school-book(
+      size: size,
+      axis-dict.x,
+      axis-dict.y,
+      x-position: axis-dict.y.min,
+      y-position: axis-dict.x.min)
   } else if axis-style == "school-book" {
     axes.school-book(
       size: size,

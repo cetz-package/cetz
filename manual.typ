@@ -1415,6 +1415,20 @@ plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
 })
 ```)
 
+#example({
+  import "draw.typ": *
+  plot.plot(size: (3,2), axis-style: "left", {
+    plot.add(domain: (-2, 2), x => calc.exp(-(x * x)),
+             fill: true)
+  })
+}, ```typc
+plot.plot(size: (3,2), axis-style: "left", {
+  plot.add(domain: (-2, 2), x => calc.exp(-(x * x)),
+           fill: true)
+})
+```)
+
+
 == Chart
 #let chart-module = parse-module("../../lib/chart.typ", name: "Chart")
 
