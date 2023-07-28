@@ -118,7 +118,6 @@
   if ticks != none {
     if "step" in ticks and ticks.step != none {
       let s = 1 / ticks.step
-      let r = int(max * s + .5) - int(min * s)
       let n = range(int(min * s), int(max * s + 1.5))
 
       assert(n.len() <= tic-limit, message: "Number of major ticks exceeds limit.")
@@ -226,7 +225,7 @@
       bounds: (x.max - x.min,
                y.max - y.min,
                0))
-    draw.translate((-x.min, y.min, 0), pre: false)
+    draw.translate((-x.min, -y.min, 0), pre: false)
     body
   })
 }
