@@ -262,7 +262,10 @@
 // - size (array): Size (width, height)
 // - name (string): Object name
 // - padding (array): Padding (left, right, top, bottom)
-// - frame (bool): If true, draw frame
+// - frame (string): Frame mode:
+//                   - true: Draw frame around all axes
+//                   - "set": Draw line for set (!= none) axes
+//                   - false: Draw no frame
 // - ..style (any): Style
 #let scientific(size: (1, 1),
                 left: none,
@@ -275,8 +278,20 @@
                 ..style) = {
   import draw: *
 
-  if right == auto and left != none {right = left; right.is-mirror = true}
-  if top == auto and bottom != none {top = bottom; top.is-mirror = true}
+  if right == auto {
+    if left != none {
+      right = left; right.is-mirror = true
+    } else {
+      right = none
+    }
+  }
+  if top == auto {
+    if bottom != none {
+      top = bottom; top.is-mirror = true
+    } else {
+      top = none
+    }
+  }
 
   group(name: name, ctx => {
     let (w, h) = size
@@ -319,6 +334,8 @@
             minor: grid-mode in ("minor", "both")
           )
 
+          let is-mirror = axis.at("is-mirror", default: false)
+
           for (pos, label, major) in compute-ticks(axis) {
             let (x, y) = placement
             if x == auto { x = pos * w + padding.l }
@@ -329,31 +346,54 @@
               style.tick.minor-length}
             let tick-start = (x, y)
             let tick-end = vector.add(tick-start,
-              vector.scale(tic-dic, length))
+              vector.scale(tic-dir, length))
 
-            if label != none and not axis.at("is-mirror", default: false) {
-              let label-pos = vector.add(tick-start,
-                vector.scale(tic-dir, -style.tick.label.offset))
-              content(label-pos, [#label], anchor: anchor)
+            if not is-mirror {
+              if label != none {
+                let label-pos = vector.add(tick-start,
+                  vector.scale(tic-dir, -style.tick.label.offset))
+                content(label-pos, [#label], anchor: anchor)
+              }
+
+              if grid-mode.major and major or grid-mode.minor and not major {
+                let (grid-begin, grid-end) = if name in ("top", "bottom") {
+                  ((x, 0), (x, h))
+                } else {
+                  ((0, y), (w, y))
+                }
+
+                line(grid-begin, grid-end, ..style.grid)
+              }
             }
             
             if length != none and length > 0 {
               line(tick-start, tick-end, ..style.tick)
             }
-
-            if grid-mode.major and major or grid-mode.minor and not major {
-              let grid-dir = tic-dir
-              grid-dir.at(0) *= w
-              grid-dir.at(1) *= h
-
-              line((x, y), (rel: grid-dir), ..style.grid)
-            }
           }
         }
       }
 
-      if frame {
+      assert(frame in (true, false, "set"),
+             message: "Invalid frame mode")
+      if frame == true {
         rect((0, 0), size, ..style)
+      } else if frame == "set" { 
+        let segments = ((),)
+
+        if left != none {segments.last() += ((0,h), (0,0))}
+        if bottom != none {segments.last() += ((0,0), (w,0))}
+        else {segments.push(())}
+        if right != none {segments.last() += ((w,0), (w,h))}
+        else {segments.push(())}
+        if top != none {segments.last() += ((w,h), (0,h))}
+        else {segments.push(())}
+
+
+        for s in segments {
+          if s.len() > 1 {
+            line(..s, ..style)
+          }
+        }
       }
     })
 
