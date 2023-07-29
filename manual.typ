@@ -1417,18 +1417,33 @@ plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
 
 #example({
   import "draw.typ": *
-  plot.plot(size: (3,2), axis-style: "scientific",
-    y-tick-step: .4, x-tick-step: 1, {
-    plot.add(domain: (-4, 4), x => calc.exp(-(x * x)),
-             fill: true)
+  // Axes can be styled.
+  // Set the tick length to .05:
+  set-style(axes: (tick: (length: .05)))
+  
+  // Plot something
+  plot.plot(size: (3,3), axis-style: "left",
+    y-tick-step: .5, x-tick-step: 1, {
+    for i in range(0, 3) {
+      plot.add(domain: (-4, 2),
+        x => calc.exp(-(calc.pow(x + i, 2))),
+        fill: true, style: palette.tango)
+    }
   })
 }, ```typc
-plot.plot(size: (3,2), axis-style: "left", {
-  plot.add(domain: (-2, 2), x => calc.exp(-(x * x)),
-           fill: true)
+// Axes can be styled!
+// Set the tick length to .05:
+set-style(axes: (tick: (length: .05)))
+
+// Plot something
+plot.plot(size: (3,3), axis-style: "left", {
+  for i in range(0, 3) {
+    plot.add(domain: (-4, 2),
+      x => calc.exp(-(calc.pow(x + i, 2))),
+      fill: true, style: palette.tango)
+  }
 })
 ```)
-
 
 == Chart
 #let chart-module = parse-module("../../lib/chart.typ", name: "Chart")
