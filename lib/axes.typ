@@ -27,6 +27,11 @@
   ),
 )
 
+#let default-style-schoolbook = util.merge-dictionary(default-style, (
+  tick: (label: (offset: .1)),
+  mark: (end: ">"),
+  padding: .4))
+
 // Construct Axis Object
 //
 // - min (number): Minimum value
@@ -353,14 +358,13 @@
                  size: (1, 1),
                  x-position: 0,
                  y-position: 0,
-                 axis-margin: .5,
                  name: none,
                  ..style) = {
   import draw: *
 
   group(name: name, ctx => {
     let style = style.named()
-    style = util.merge-dictionary(default-style,
+    style = util.merge-dictionary(default-style-schoolbook,
       styles.resolve(ctx.style, style, root: "axes"))
 
     let x-position = calc.min(calc.max(y-axis.min, x-position), y-axis.max)
