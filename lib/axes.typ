@@ -383,14 +383,14 @@
       (y-axis, "right", (y-x, auto), (1, 0)),
     )
 
-    line((-margin.left, x-y), (w + margin.right, x-y), mark: (end: ">"),
+    line((-margin.left, x-y), (w + margin.right, x-y), mark: (end: ">"), ..style,
          name: "x-axis")
     if "label" in x-axis and x-axis.label != none {
       content((rel: (0, -style.tick.label.offset), to: "x-axis.end"),
         anchor: "top", x-axis.label)
     }
 
-    line((y-x, -margin.bottom), (y-x, h + margin.top), mark: (end: ">"),
+    line((y-x, -margin.bottom), (y-x, h + margin.top), mark: (end: ">"), ..style,
          name: "y-axis")
     if "label" in y-axis and y-axis.label != none {
       content((rel: (-style.tick.label.offset, 0), to: "y-axis.end"),
