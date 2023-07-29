@@ -289,6 +289,10 @@
     axis.ticks.unit = get-axis-option(name, "unit", [])
     axis.ticks.format = get-axis-option(name, "format", axis.ticks.format)
 
+    // Sanity checks
+    assert(axis.min < axis.max,
+           message: "Axis min. must be < max.")
+
     axis-dict.at(name) = axis
   }
 
@@ -389,7 +393,7 @@
         fill-segments-to(d.path, y.max)
       }
       if d.at("fill", default: false) {
-        fill-segments-to(d.path, 0)
+        fill-segments-to(d.path, calc.max(calc.min(y.max, 0), y.min))
       }
     })
   }
