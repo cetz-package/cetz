@@ -199,8 +199,8 @@
 /// Note: Data for plotting must be passed via `plot.add(..)`
 ///
 /// Note that different axis-styles can show different axes.
-/// The `"school-book"` style shows only axis "x" and "y", while
-/// the `"scientific"` style can show "x2" and "y2", if set
+/// The `"school-book"` and `"left"` style shows only axis "x" and "y",
+/// while the `"scientific"` style can show "x2" and "y2", if set
 /// (if unset, "x2" mirrors "x" and "y2" mirrors "y"). Other
 /// axes (e.G. "my-axis") work, but no ticks or labels will be shown.
 ///
@@ -217,14 +217,25 @@
 ///   - minor-tick-step (float): Distance between minor ticks
 ///   - ticks (array): List of ticks values or value/label
 ///                    tuples. Example `(1,2,3)` or `((1, [A]), (2, [B]),)`
-///   - format (string): Tick label format, `"float"` or `"sci"` (scientific)
+///   - format (string): Tick label format, `"float"`, `"sci"` (scientific)
+///                      or a custom function that receives a value and
+///                      returns a content (`value => content`).
+///   - grid (bool,string): Enable grid-lines at tick values:
+///                         - `"major"`: Enable major tick grid
+///                         - `"minor"`: Enable minor tick grid
+///                         - `"both"`: Enable major & minor tick grid
+///                         - `false`: Disable grid
 ///   - unit (content): Tick label suffix
 ///   - decimals (int): Number of decimals digits to display for tick labels
 /// ]
 ///
 /// - body (body): Calls of `plot.add` commands
 /// - size (array): Plot canvas size tuple of width and height in canvas units
-/// - axis-style (string): Axis style "scientific" or "school-book"
+/// - axis-style (string): Axis style "scientific", "left", "school-book"
+///                  - `"scientific"`: Frame plot area and draw axes y, x, y2, and x2 around it
+///                  - `"school-book"`: Draw axes x and y as arrows with both crossing at $(0, 0)$
+///                  - `"left"`: Draw axes x and y as arrows, the y axis stays on the left (at `x.min`)
+///                              and the x axis at the bottom (at `y.min`)
 /// - options (any): The following options are supported per axis
 ///                  and must be prefixed by `<axis-name>-`, e.G.
 ///                  `x-min: 0`.
@@ -243,7 +254,7 @@
           ) = {
   let data = body
 
-  assert(axis-style in ("scientific", "school-book"),
+  assert(axis-style in ("scientific", "school-book", "left"),
          message: "Invalid plot style")
 
   // Create axes
@@ -284,6 +295,11 @@
     axis.ticks.decimals = get-axis-option(name, "decimals", 2)
     axis.ticks.unit = get-axis-option(name, "unit", [])
     axis.ticks.format = get-axis-option(name, "format", axis.ticks.format)
+    axis.ticks.grid = get-axis-option(name, "grid", false)
+
+    // Sanity checks
+    assert(axis.min < axis.max,
+           message: "Axis min. must be < max.")
 
     axis-dict.at(name) = axis
   }
@@ -385,7 +401,7 @@
         fill-segments-to(d.path, y.max)
       }
       if d.at("fill", default: false) {
-        fill-segments-to(d.path, 0)
+        fill-segments-to(d.path, calc.max(calc.min(y.max, 0), y.min))
       }
     })
   }
@@ -397,6 +413,13 @@
       top: axis-dict.at("x2", default: auto),
       left: axis-dict.y,
       right: axis-dict.at("y2", default: auto),)
+  } else if axis-style == "left" {
+    axes.school-book(
+      size: size,
+      axis-dict.x,
+      axis-dict.y,
+      x-position: axis-dict.y.min,
+      y-position: axis-dict.x.min)
   } else if axis-style == "school-book" {
     axes.school-book(
       size: size,

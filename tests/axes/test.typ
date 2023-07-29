@@ -1,21 +1,51 @@
 #set page(width: auto, height: auto)
-#import "../../canvas.typ": *
+#import "../../lib.typ": *
 
+// Schoolbook Axis Styling
 #box(stroke: 2pt + red, canvas({
-    import "../../draw.typ": *
+  import "../../draw.typ": *
 
-    set-style(radius: .05)
+  set-style(axes: (stroke: blue))
+  set-style(axes: (padding: .75))
+  set-style(axes: (x: (stroke: red)))
+  set-style(axes: (y: (stroke: green, tick: (stroke: blue, length: .3))))
+  axes.school-book(size: (6, 6),
+    axes.axis(min: -1, max: 1, ticks: (step: 1, minor-step: auto,
+      grid: "both")),
+    axes.axis(min: -1, max: 1, ticks: (step: .5, minor-step: auto,
+      grid: "major")))
+}))
 
-    circle((0, 0), stroke: black)
+// Scientific Axis Styling
+#box(stroke: 2pt + red, canvas({
+  import "../../draw.typ": *
 
-    circle((1, 1), stroke: green)
+  set-style(axes: (stroke: blue))
+  set-style(axes: (left: (tick: (stroke: green + 2pt))))
+  set-style(axes: (bottom: (tick: (stroke: red, length: .5))))
+  set-style(axes: (right: (tick: (label: (offset: 0)))))
+  axes.scientific(size: (6, 6),
+    frame: "set",
+    top: none,
+    bottom: axes.axis(min: -1, max: 1, ticks: (step: 1, minor-step: auto,
+      grid: "both")),
+    left: axes.axis(min: -1, max: 1, ticks: (step: .5, minor-step: auto,
+      grid: false)),
+    right: axes.axis(min: -10, max: 10, ticks: (step: auto, minor-step: auto,
+      grid: "major")),)
+}))
 
-    circle((0, 1), stroke: yellow)
+// Custom Tick Format
+#box(stroke: 2pt + red, canvas({
+  import "../../draw.typ": *
 
-    circle((1, 0), stroke: blue)
-
-    set-style(stroke: blue, mark: (end: ">", fill: blue, stroke: blue))
-    line((0, 0, 0), ( 0deg, .5))
-    line((0, 0, 0), (45deg, .5))
-    line((0, 0, 0), (90deg, .5))
+  axes.scientific(size: (6, 1),
+    bottom: axes.axis(min: -2*calc.pi, max: 2*calc.pi, ticks: (
+      step: calc.pi, minor-step: auto, format: v => {
+        let d = v / calc.pi
+        if d == 0 {return $0$}
+        {$#{d}pi$}
+      }
+    )),
+    left: axes.axis(min: -1, max: 1, ticks: (step: none, minor-step: none)))
 }))
