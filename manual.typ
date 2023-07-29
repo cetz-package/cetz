@@ -1445,6 +1445,33 @@ plot.plot(size: (3,3), axis-style: "left", {
 })
 ```)
 
+=== Styling <plot.style>
+
+The following style keys can be used (in addition to the standard keys)
+to style plot axes. Individual axes can be styled differently by
+using their axis name as key below the `axes` root.
+
+```typc
+set-style(axes: ( /* Style for all axes */ ))
+set-style(axes: (bottom: ( /* Style axis "left" */)))
+```
+
+Axis names to be used for styling:
+- School-Book and Left style:
+  - `x`: X-Axis
+  - `y`: Y-Axis
+- Scientific style:
+  - `left`: Y-Axis
+  - `right`: Y2-Axis
+  - `bottom`: X-Axis
+  - `top`: X2-Axis
+
+==== Default `scientific` Style
+#raw(repr(axes.default-style))
+
+==== Default `school-book` Style
+#raw(repr(axes.default-style-schoolbook))
+
 == Chart
 #let chart-module = parse-module("../../lib/chart.typ", name: "Chart")
 
@@ -1491,6 +1518,11 @@ let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
 chart.barchart(size: (6, auto), mode: "clustered",
                x-tick-step: 10, value-key: (..range(1, 4)), data)
 ```)
+
+=== Styling
+
+Charts share their axis system with plots and therefore can be
+styled the same way, see @plot.style.
 
 == Palette <palette>
 #let palette-module = parse-module("../../lib/palette.typ", name: "Palette")

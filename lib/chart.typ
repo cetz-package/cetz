@@ -167,10 +167,8 @@
                   right: none,
                   bottom: x,
                   top: none,
-                  frame: false,
+                  frame: "set",
                   tick: (length: 0))
-  line((0, size.at(1)), (0, 0), (size.at(0), 0)) // Frame
-
   if data.len() > 0 {
     if type(bar-style) != "function" { bar-style = ((i) => bar-style) }
 
