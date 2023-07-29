@@ -217,7 +217,14 @@
 ///   - minor-tick-step (float): Distance between minor ticks
 ///   - ticks (array): List of ticks values or value/label
 ///                    tuples. Example `(1,2,3)` or `((1, [A]), (2, [B]),)`
-///   - format (string): Tick label format, `"float"` or `"sci"` (scientific)
+///   - format (string): Tick label format, `"float"`, `"sci"` (scientific)
+///                      or a custom function that receives a value and
+///                      returns a content (`value => content`).
+///   - grid (bool,string): Enable grid-lines at tick values:
+///                         - `"major"`: Enable major tick grid
+///                         - `"minor"`: Enable minor tick grid
+///                         - `"both"`: Enable major & minor tick grid
+///                         - `false`: Disable grid
 ///   - unit (content): Tick label suffix
 ///   - decimals (int): Number of decimals digits to display for tick labels
 /// ]
@@ -288,6 +295,7 @@
     axis.ticks.decimals = get-axis-option(name, "decimals", 2)
     axis.ticks.unit = get-axis-option(name, "unit", [])
     axis.ticks.format = get-axis-option(name, "format", axis.ticks.format)
+    axis.ticks.grid = get-axis-option(name, "grid", false)
 
     // Sanity checks
     assert(axis.min < axis.max,

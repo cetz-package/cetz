@@ -10,9 +10,11 @@
 #box(stroke: 2pt + red, canvas({
   import "../../draw.typ": *
 
-  plot.plot(size: (5, 4),
+  plot.plot(size: (5, 2),
     x-tick-step: 180,
     y-tick-step: 1,
+    x-grid: "major",
+    y-grid: "major",
     {
       plot.add(data)
     })
@@ -22,7 +24,7 @@
 #box(stroke: 2pt + red, canvas({
   import "../../draw.typ": *
 
-  plot.plot(size: (5, 4),
+  plot.plot(size: (5, 3),
     x-tick-step: 180,
     x-min: -360,
     x-max:  360,

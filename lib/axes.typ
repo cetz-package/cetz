@@ -52,8 +52,7 @@
 // Format a tick value
 #let format-tick-value(value, tic-options) = {
   let round(value, digits) = {
-    let factor = calc.pow(10, digits)
-    calc.floor(value * factor + .5) / factor
+    calc.round(value, digits: digits)
   }
 
   let format-float(value, digits) = {
@@ -83,7 +82,9 @@
 
   if type(value) in ("int", "float") {
     let format = tic-options.at("format", default: "float")
-    if format == "sci" {
+    if type(format) == "function" {
+      value = (format)(value)
+    } else if format == "sci" {
       value = format-sci(value, tic-options.at("decimals", default: 2))
     } else {
       value = format-float(value, tic-options.at("decimals", default: 2))

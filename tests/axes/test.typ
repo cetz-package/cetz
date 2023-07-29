@@ -34,3 +34,18 @@
     right: axes.axis(min: -10, max: 10, ticks: (step: auto, minor-step: auto,
       grid: "major")),)
 }))
+
+// Custom Tick Format
+#box(stroke: 2pt + red, canvas({
+  import "../../draw.typ": *
+
+  axes.scientific(size: (6, 1),
+    bottom: axes.axis(min: -2*calc.pi, max: 2*calc.pi, ticks: (
+      step: calc.pi, minor-step: auto, format: v => {
+        let d = v / calc.pi
+        if d == 0 {return $0$}
+        {$#{d}pi$}
+      }
+    )),
+    left: axes.axis(min: -1, max: 1, ticks: (step: none, minor-step: none)))
+}))
