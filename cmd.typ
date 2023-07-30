@@ -119,25 +119,49 @@
                  (left, y + m * ry, z), (x - m * rx, top, z)))
 }
 
+// Draw an elliptical arc approximated by up to 4
+// cubic bezier curves.
 #let arc(x, y, z, start, stop, rx, ry, mode: "OPEN", fill: none, stroke: none) = {
-  let samples = calc.abs(int((stop - start) / 1deg))
-  path(
-    fill: fill, stroke: stroke,
-    close: mode != "OPEN",
-    ("line", ..range(0, samples+1).map(i => {
-      let angle = start + (stop - start) * i / samples
-      (
-        x - rx*calc.cos(start) + rx*calc.cos(angle),
-        y - ry*calc.sin(start) + ry*calc.sin(angle),
-        z
-      )
-    }) + if mode == "PIE" {
-      ((x - rx*calc.cos(start), y - ry*calc.sin(start), z),
-       (x, y, z),)
-    } else {
-      ()
-    })
-  )
+  let delta = calc.max(-360deg, calc.min(stop - start, 360deg))
+  let num-curves = calc.max(1, calc.min(calc.ceil(delta / 90deg), 4))
+
+  let position = (x, y, z)
+
+  // Move x/y to the center
+  x -= rx * calc.cos(start)
+  y -= ry * calc.sin(start)
+
+  // Calculation of control points is based on the method described here:
+  // https://pomax.github.io/bezierinfo/#circles_cubic
+  let segments = ()
+  for n in range(0, num-curves) {
+    let start = start + delta / num-curves * n
+    let stop = start + delta / num-curves
+
+    let d = delta / num-curves
+    let k = 4/3 * calc.tan(d / 4)
+
+    let sx = x + rx * calc.cos(start)
+    let sy = y + ry * calc.sin(start)
+    let ex = x + rx * calc.cos(stop)
+    let ey = y + ry * calc.sin(stop)
+
+    let s = (sx, sy, z, 1)
+    let c1 = (x + rx * (calc.cos(start) - k * calc.sin(start)),
+              y + ry * (calc.sin(start) + k * calc.cos(start)), z, 1)
+    let c2 = (x + rx * (calc.cos(stop) + k * calc.sin(stop)),
+              y + ry * (calc.sin(stop) - k * calc.cos(stop)), z, 1)
+    let e = (ex, ey, z, 1)
+
+    segments.push(("cubic", s, e, c1, c2))
+  }
+
+  if mode == "PIE" and calc.abs(delta) < 360deg {
+    segments.insert(0, ("line", (x, y, z), segments.first().at(1)))
+    segments.push(("line", segments.last().at(2), (x, y, z)))
+  }
+
+  path(..segments, fill: fill, stroke: stroke, close: mode != "OPEN")
 }
 
 #let mark(from, to, symbol, fill: none, stroke: none) = {
