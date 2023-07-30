@@ -118,7 +118,7 @@
   let (min, max) = (axis.min, axis.max)
   let dt = max - min; if (dt == 0) { dt = 1 }
   let ticks = axis.ticks
-  let ferr = 0.000001 // Floating point tollerance
+  let ferr = 0.000001 // Floating point tolerance
 
   let l = ()
   if ticks != none {

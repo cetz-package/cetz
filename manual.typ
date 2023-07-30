@@ -416,6 +416,34 @@ circle(center, name: none, anchor: none)
   ```]
 )
 
+==== Circle-Through
+Draws a circle through 3 points by determining the center.
+
+```typ
+#circle-through(a, b, c, name: none, ..style)
+```
+#def-arg("a", "c", [Coordinate 1.])
+#def-arg("b", "c", [Coordinate 2.])
+#def-arg("c", "c", [Coordinate 3.])
+
+#example({
+    import "draw.typ": *
+    let (a, b, c) = ((0,0), (2,-.5), (1,1))
+    line(a, b, c, close: true, stroke: gray)
+    circle-through(a, b, c, name: "c")
+    circle("c.center", radius: .05, fill: red)
+  },
+  [```typ
+  #cetz.canvas({
+    import cetz.draw: *
+    let (a, b, c) = ((0,0), (2,-.5), (1,1))
+    line(a, b, c, close: true, stroke: gray)
+    circle-through(a, b, c, name: "c")
+    circle("c.center", radius: .05, fill: red)
+  })
+  ```]
+)
+
 #STYLING
 
 #def-arg("radius", `<number> or <length> or <array of <number> or <length>>`, default: "1", [The circle's radius. If an array is given an ellipse will be drawn where the first item is the `x` radius and the second item is the `y` radius. This is also a global style shared with arc!])
@@ -426,23 +454,61 @@ Draws a bezier curve with 1 or 2 control points to the canvas.
 ```typc
 bezier(start, end, ..ctrl-style)
 ```
-#def-arg("start", `<coordinate>`, "The coordinate to start drawing the bezier curve from.")
-#def-arg("end", `<coordinate>`, "The coordinate to draw the bezier curve to.")
-#def-arg("..ctrl-style", `<coordinates>`, "An argument sink for the control points and styles. Its positional part should be of one or two coordinates to specify the control points of the bezier curve.")
+#def-arg("start", "c", "The coordinate to start drawing the bezier curve from.")
+#def-arg("end", "c", "The coordinate to draw the bezier curve to.")
+#def-arg("..ctrl-style", "c|style", "An argument sink for the control points and styles. Its positional part should be of one or two coordinates to specify the control points of the bezier curve.")
 
 #example({
     import "draw.typ": *
-    bezier((0, 0), (2, 0), (1, 1))
-    bezier((0, -1), (2, -1), (.5, -2), (1.5, 0))
+    let (a, b, c) = ((0, 0), (2, 0), (1, 1))
+    line(a, c,  b, stroke: gray)
+    bezier(a, b, c)
+
+    let (a, b, c, d) = ((0, -1), (2, -1), (.5, -2), (1.5, 0))
+    line(a, c, d, b, stroke: gray)
+    bezier(a, b, c, d)
   },
   [```typc
   cetz.canvas({
     import cetz.draw: *
-    bezier((0, 0), (2, 0), (1, 1))
-    bezier((0, -1), (2, -1), (.5, -2), (1.5, 0))
+    let (a, b, c) = ((0, 0), (2, 0), (1, 1))
+    line(a, c,  b, stroke: gray)
+    bezier(a, b, c)
+
+    let (a, b, c, d) = ((0, -1), (2, -1), (.5, -2), (1.5, 0))
+    line(a, c, d, b, stroke: gray)
+    bezier(a, b, c, d)
   })
   ```]
 )
+
+==== Bezier-Through
+Draw a bezier curve through 3 coordinates.
+
+```typ
+#bezier-through(a, b, c, deg: 3, ..style)
+```
+#def-arg("a", "c", "The coordinate to start drawing the bezier curve from.")
+#def-arg("b", "c", "The coordinate to draw the bezier curve through.")
+#def-arg("c", "c", "The coordinate to draw the bezier curve to.")
+#def-arg("deg", "i", "Degree of the bezier function (2 or 3).")
+
+#example({
+    import "draw.typ": *
+    let (a, b, c) = ((0, 0), (1, 1), (2, -1))
+    line(a, b, c, stroke: gray)
+    bezier-through(a, b, c)
+  },
+  [```typ
+  #cetz.canvas({
+    import cetz.draw: *
+    let (a, b, c) = ((0, 0), (1, 1), (2, -1))
+    line(a, b, c, stroke: gray)
+    bezier-through(a, b, c)
+  })
+  ```]
+)
+
 
 === Content
 Draws a content block to the canvas.

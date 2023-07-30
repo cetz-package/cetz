@@ -213,12 +213,7 @@
       element.name, 
       (
         anchors: anchors,
-        // Part of intersections
-        // paths: for drawable in drawables {
-        //   if drawable.type == "path" {
-        //     (drawable.coordinates + if drawable.close {(drawable.coordinates.first(),)},)
-        //   }
-        // }
+        // paths: drawables, // Uncomment as soon as needed
       )
     )
   }
