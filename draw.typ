@@ -4,6 +4,7 @@
 #import "util.typ"
 #import "path-util.typ"
 #import "coordinate.typ"
+#import "bezier.typ": to-abc, cubic-through-3points
 // #import "collisions.typ"
 #import "styles.typ"
 
@@ -468,16 +469,17 @@
   ),)
 }
 
-// Render content
-//
-// NOTE: Content itself is not transformed by the canvas transformations!
-//       native transformation matrix support from typst would be required.
-// - pt (coordinate): Content coordinate
-// - ct (content): Content
-// - angle (angle|coordinate): Rotation angle or second coordinate to use for
-//                             angle calculation
-// - anchor (string): Anchor to use as origin
-// - name (string): Node name
+/// Render content
+///
+/// NOTE: Content itself is not transformed by the canvas transformations!
+///       native transformation matrix support from typst would be required.
+///
+/// - pt (coordinate): Content coordinate
+/// - ct (content): Content
+/// - angle (angle|coordinate): Rotation angle or second coordinate to use for
+///                             angle calculation
+/// - anchor (string): Anchor to use as origin
+/// - name (string): Node name
 #let content(
   pt,
   ct,
@@ -608,29 +610,33 @@
 
 /// Draw a quadratic bezier from a to c through b
 ///
-/// - a (coordinate): Start point
+/// - s (coordinate): Start point
 /// - b (coordinate): Passthrough point
-/// - c (coordinate): End point
+/// - e (coordinate): End point
+/// - deg (int): Degree (2 or 3) of the bezier curve
 /// - name (string): Element name
-#let bezier-through(a, b, c, order: 2, name: none, ..style) = {
+#let bezier-through(s, b, e, deg: 3, name: none, ..style) = {
   ((
     name: name,
-    coordinates: (a, b, c),
-    render: (ctx, a, b, c) => {
-      let d1 = vector.dist(a, b)
-      let d2 = vector.dist(c, b)
+    coordinates: (s, b, e),
+    render: (ctx, s, b, e) => {
+      let d1 = vector.dist(s, b)
+      let d2 = vector.dist(e, b)
       let t = d1 / (d1 + d2)
 
-      let (A, B, C) = util.bezier-ABC(a, c, b, t, order: order)
+      let (A, B, C) = to-abc(s, e, b, t, deg: deg)
 
       let style = styles.resolve(ctx.style, style.named(), root: "bezier")
 
-      if order == 2 {
-        cmd.path(("quadratic", a, c, A),
+      if deg == 2 {
+        cmd.path(("quadratic", s, e, A),
                  fill: style.fill,
                  stroke: style.stroke)
       } else {
-        panic("Cubic bezier curves through 3 points are not supported yet")
+        let (s, e, c1, c2) = cubic-through-3points(s, b, e)
+        cmd.path(("cubic", s, e, c1, c2),
+                 fill: style.fill,
+                 stroke: style.stroke)
       }
     }
   ),)

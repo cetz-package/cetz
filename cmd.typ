@@ -1,6 +1,7 @@
 #import "matrix.typ"
 #import "vector.typ"
 #import "util.typ"
+#import "bezier.typ"
 #import "path-util.typ"
 
 #let typst-path = path
@@ -69,7 +70,7 @@
           let samples = path-util.ctx-samples((:)) //(ctx)
           vertices.push(a)
           for i in range(0, samples) {
-            vertices.push(util.bezier-quadratic-pt(a, b, c, i / samples))
+            vertices.push(bezier.quadratic-point(a, b, c, i / samples))
           }
           vertices.push(b)
         } else if type == "cubic" {

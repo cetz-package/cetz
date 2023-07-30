@@ -1,7 +1,7 @@
 // This file contains utility functions for path calculation
-
 #import "util.typ"
 #import "vector.typ"
+#import "bezier.typ"
 
 #let default-samples = 25
 #let ctx-samples(ctx) = ctx.at("samples", default: default-samples)
@@ -42,13 +42,13 @@
       bounds.push(a)
       bounds.push(b)
       bounds += range(1, samples).map(x =>
-        util.bezier-quadratic-pt(a, b, c, x / samples))
+        bezier.quadratic-point(a, b, c, x / samples))
     } else if type == "cubic" {
       let (a, b, c, d) = s.slice(1)
       bounds.push(a)
       bounds.push(b)
       bounds += range(1, samples).map(x =>
-        util.bezier-cubic-pt(a, b, c, d, x / samples))
+        bezier.cubic-point(a, b, c, d, x / samples))
     }
   }
 
@@ -69,13 +69,13 @@
     let (a, b, c) = s.slice(1)
     pts.push(a)
     pts = range(1, samples).map(t =>
-      util.bezier-quadratic-pt(a, b, c, t / samples))
+      bezier.quadratic-point(a, b, c, t / samples))
     pts.push(b)
   } else if type == "cubic" {
     let (a, b, c, d) = s.slice(1)
     pts.push(a)
     pts = range(1, samples).map(t =>
-      util.bezier-cubic-pt(a, b, c, d, t / samples))
+      bezier.cubic-point(a, b, c, d, t / samples))
     pts.push(b)
   } else {
     panic("Not implemented")
@@ -142,10 +142,10 @@
     return point-on-polyline(s, t)
   } else if type == "quadratic" {
     let (a, b, c) = s.slice(1)
-    return util.bezier-quadratic-pt(a, b, c, t)
+    return bezier.quadratic-point(a, b, c, t)
   } else if type == "cubic" {
     let (a, b, c, d) = s.slice(1)
-    return util.bezier-cubic-pt(a, b, c, d, t)
+    return bezier.cubic-point(a, b, c, d, t)
   }
 }
 

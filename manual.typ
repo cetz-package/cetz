@@ -422,9 +422,9 @@ Draws a circle through 3 points by determining the center.
 ```typ
 #circle-through(a, b, c, name: none, ..style)
 ```
-#def-arg("a", `<coordinate>`, [Coordinate 1.])
-#def-arg("b", `<coordinate>`, [Coordinate 2.])
-#def-arg("c", `<coordinate>`, [Coordinate 3.])
+#def-arg("a", "c", [Coordinate 1.])
+#def-arg("b", "c", [Coordinate 2.])
+#def-arg("c", "c", [Coordinate 3.])
 
 #example({
     import "draw.typ": *
@@ -454,9 +454,9 @@ Draws a bezier curve with 1 or 2 control points to the canvas.
 ```typc
 bezier(start, end, ..ctrl-style)
 ```
-#def-arg("start", `<coordinate>`, "The coordinate to start drawing the bezier curve from.")
-#def-arg("end", `<coordinate>`, "The coordinate to draw the bezier curve to.")
-#def-arg("..ctrl-style", `<coordinates>`, "An argument sink for the control points and styles. Its positional part should be of one or two coordinates to specify the control points of the bezier curve.")
+#def-arg("start", "c", "The coordinate to start drawing the bezier curve from.")
+#def-arg("end", "c", "The coordinate to draw the bezier curve to.")
+#def-arg("..ctrl-style", "c|style", "An argument sink for the control points and styles. Its positional part should be of one or two coordinates to specify the control points of the bezier curve.")
 
 #example({
     import "draw.typ": *
@@ -485,14 +485,13 @@ bezier(start, end, ..ctrl-style)
 ==== Bezier-Through
 Draw a bezier curve through 3 coordinates.
 
-*NOTE:* Currently only quadratic curves are generated, which can slow down rendering!
-
 ```typ
-#bezier-through(a, b, c, ..style)
+#bezier-through(a, b, c, deg: 3, ..style)
 ```
-#def-arg("a", `<coordinate>`, "The coordinate to start drawing the bezier curve from.")
-#def-arg("b", `<coordinate>`, "The coordinate to draw the bezier curve through.")
-#def-arg("c", `<coordinate>`, "The coordinate to draw the bezier curve to.")
+#def-arg("a", "c", "The coordinate to start drawing the bezier curve from.")
+#def-arg("b", "c", "The coordinate to draw the bezier curve through.")
+#def-arg("c", "c", "The coordinate to draw the bezier curve to.")
+#def-arg("deg", "i", "Degree of the bezier function (2 or 3).")
 
 #example({
     import "draw.typ": *

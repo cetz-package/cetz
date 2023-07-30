@@ -1,7 +1,12 @@
 #import "matrix.typ"
 #import "vector.typ"
+#import "bezier.typ"
 
-// Multiplies the vector by the transform matrix
+/// Multiplies the vector by the transform matrix
+///
+/// - transform (matrix): Transformation matrix
+/// - vec (vector): Vector to get transformed
+/// -> vector
 #let apply-transform(transform, vec) = {
   matrix.mul-vec(
     transform, 
@@ -9,7 +14,11 @@
   ).slice(0, 3)
 }
 
-// Reverts the transform of the given vector
+/// Reverts the transform of the given vector
+///
+/// - transform (matrix): Transformation matrix
+/// - vec (vector): Vector to get transformed
+/// -> vector
 #let revert-transform(transform, vec) = {
   apply-transform(matrix.inverse(transform), vec)
 }
@@ -23,23 +32,23 @@
   return vector.add(a, vector.scale(vector.sub(b, a), t))
 }
 
-// First derivative of a line
-#let line-dt(a, b) = {
-  return vector.sub(b, a)
-}
-
-// Get tangent of a line
-#let line-tangent(a, b) = {
-  return vector.norm(line-dt(a, b))
-}
-
-// Get normal of a line
+/// Get orthogonal vector to line
+///
+/// - a (vector): Start point
+/// - b (vector): End point
+/// -> vector Cormal direction
 #let line-normal(a, b) = {
-  let v = line-tangent(a, b)
+  let v = vector.norm(vector.sub(b, a))
   return (0 - v.at(1), v.at(0), v.at(2, default: 0))
 }
 
-#let ellipse-pt(center, radius, angle) = {
+/// Get point on an ellipse for an angle
+///
+/// - center (vector): Center
+/// - radius (float,array): Radius or tuple of x/y radii
+/// - angled (angle): Angle to get the point at
+/// -> vector
+#let ellipse-point(center, radius, angle) = {
   let (rx, ry) = if type(radius) == "array" {
     radius
   } else {
@@ -50,26 +59,11 @@
   return (calc.cos(angle) * rx + x, calc.sin(angle) * ry + y, z)
 }
 
-#let ellipse-tangent(center, radius, angle) = {
-  let (rx, ry) = if type(radius) == "array" {
-    radius
-  } else {
-    (radius, radius)
-  }
-
-  return vector.norm((-calc.sin(angle) * rx, calc.cos(angle) * ry, 0))
-}
-
-#let ellipse-normal(center, radius, angle) = {
-  let t = ellipse-tangent(center, radius, angle)
-  return (0 - t.at(1), t.at(0), t.at(2, default: 0))
-}
-
-// Calculate circle center from 3 points
-//
-// - a (vector): Point 1
-// - b (vector): Point 2
-// - c (vector): Point 3
+/// Calculate circle center from 3 points
+///
+/// - a (vector): Point 1
+/// - b (vector): Point 2
+/// - c (vector): Point 3
 #let calculate-circle-center-3pt(a, b, c) = {
   let m-ab = line-pt(a, b, .5)
   let m-bc = line-pt(b, c, .5)
@@ -110,125 +104,6 @@
 
   assert(args.len() == 4, message: "Could not find circle center")
   return line-intersection-2d(..args)
-}
-
-// Get point on quadratic bezier curve
-//
-// - a (vector): Start point
-// - b (vector): End point
-// - c (vector): Control point
-// - t (float):  Position on curve [0, 1]
-#let bezier-quadratic-pt(a, b, c, t) = {
-  // (1-t)^2 * a + 2 * (1-t) * t * c + t^2 b
-  return vector.add(
-    vector.add(
-      vector.scale(a, calc.pow(1-t, 2)),
-      vector.scale(c, 2 * (1-t) * t)
-    ),
-    vector.scale(b, calc.pow(t, 2))
-  )
-}
-
-// First derivative over t
-#let bezier-quadratic-dt(a, b, c, t) = {
-  // 2(-a(1-t) + bt - 2ct + c)
-  return vector.scale(
-    vector.add(
-      vector.sub(
-        vector.add(
-          vector.scale(vector.neg(a), (1 - t)),
-          vector.scale(b, t)),
-        vector.scale(c, 2 * t)),
-      c)
-  , 2)
-}
-
-// Get tangent of quadratic bezier
-#let bezier-quadratic-tangent(a, b, c, t) = {
-  return vector.norm(bezier-quadratic-dt(a, b, c, t))
-}
-
-// Get normal of quadratic bezier
-#let bezier-quadratic-normal(a, b, c, t) = {
-  let v = bezier-quadratic-tangent(a, b, c, t)
-  return (0 - v.at(1), v.at(0), v.at(2, default: 0))
-}
-
-// Get bezier curves ABC coordinates
-//
-// - s (vector): Curve start
-// - e (vector): Curve end
-// - B (vector): Point on curve
-// - t (fload): Ratio on curve
-// - order (int): Bezier order
-//
-// => (A, B, C)
-#let bezier-ABC(s, e, B, t, order: 2) = {
-  let tt = calc.pow(t, order)
-  let u(t) = { calc.pow(1 - t, order) / (tt + calc.pow(1 - t, order)) }
-  let ratio(t) = { calc.abs((tt + calc.pow(1 - t, order) - 1) /
-                            (tt + calc.pow(1 - t, order))) }
-
-  let C = vector.add(vector.scale(s, u(t)), vector.scale(e, 1 - u(t)))
-  let A = vector.sub(B, vector.scale(vector.sub(C, B), 1 / ratio(t)))
-
-  return (A, B, C)
-}
-
-// Get point on a cubic bezier curve
-//
-// - a (vector):  Start point
-// - b (vector):  End point
-// - c1 (vector): First control point
-// - c2 (vector): Second control point
-// - t (float):   Position on curve [0, 1]
-#let bezier-cubic-pt(a, b, c1, c2, t) = {
-  // (1-t)^3*a + 3*(1-t)^2*t*c1 + 3*(1-t)*t^2*c2 + t^3*b
-  vector.add(
-    vector.add(
-      vector.scale(a, calc.pow(1-t, 3)),
-      vector.scale(c1, 3 * calc.pow(1-t, 2) * t)
-    ),
-    vector.add(
-      vector.scale(c2, 3*(1-t)*calc.pow(t,2)),
-      vector.scale(b, calc.pow(t, 3))
-    )
-  )
-}
-
-// First derivative over t
-#let bezier-cubic-dt(a, b, c1, c2, t) = {
-  // -3(a(1-t)^2 + t(-2c2 - bt + 3 c2 t) + c1(-1 + 4t - 3t^2))
-  vector.scale(
-    vector.add(
-      vector.add(
-        vector.scale(a, calc.pow((1 - t), 2)),
-        vector.scale(
-          vector.sub(
-            vector.add(
-              vector.scale(b, -1 * t),
-              vector.scale(c2, 3 * t)
-            ),
-            vector.scale(c2, 2)
-          ),
-          t
-        )
-      ),
-      vector.scale(c1, -3 * calc.pow(t, 2) + 4 * t - 1)
-    ),
-    -3
-  )
-}
-
-// Get tangent of cubic bezier
-#let bezier-cubic-tangent(a, b, c1, c2, t) = {
-  return vector.norm(bezier-cubic-dt(a, b, c1, c2, t))
-}
-
-// Get normal of cubic bezier
-#let bezier-cubic-normal(a, b, c1, c2, t) = {
-  let v = bezier-cubic-tangent(a, b, c1, c2, t)
-  return (0 - v.at(1), v.at(0), v.at(2, default: 0))
 }
 
 #let resolve-number(ctx, num) = {

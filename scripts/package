@@ -12,7 +12,7 @@ files=(
   path-util.typ
   vector.typ
   matrix.typ
-  lib.typ
+  bezier.typ
   collisions.typ
   coordinate.typ
   styles.typ
@@ -21,6 +21,7 @@ files=(
   lib/plot.typ
   lib/chart.typ
   lib/palette.typ
+  lib.typ
   typst.toml
   LICENSE
   README.md
