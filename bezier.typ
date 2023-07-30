@@ -125,6 +125,24 @@
   return (A, B, C)
 }
 
+
+/// Compute control points for quadratic bezier through 3 points
+///
+/// - s (vector): Curve start
+/// - e (vector): Curve end
+/// - B (vector): Point on curve
+///
+/// -> (s, e, c) Cubic bezier curve points
+#let quadratic-through-3points(s, B, e) = {
+  let d1 = vector.dist(s, B)
+  let d2 = vector.dist(e, B)
+  let t = d1 / (d1 + d2)
+
+  let (A, B, C) = to-abc(s, e, B, t, deg: 2)
+
+  return (s, e, A)
+}
+
 /// Compute control points for cubic bezier through 3 points
 ///
 /// - s (vector): Curve start

@@ -110,6 +110,14 @@
       }
       coordinates.push(c)
     }
+
+    // If the element wants to calculate extra coordinates depending
+    // on it's resolved coordinates, it can use "transform-coordinates".
+    if "transform-coordinates" in element {
+      assert(type(element.transform-coordinates) == "function")
+
+      coordinates = (element.transform-coordinates)(..coordinates)
+    }
   }
 
   // Render element

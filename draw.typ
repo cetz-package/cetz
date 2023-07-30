@@ -4,33 +4,44 @@
 #import "util.typ"
 #import "path-util.typ"
 #import "coordinate.typ"
-#import "bezier.typ": to-abc, cubic-through-3points
+#import "bezier.typ": to-abc, quadratic-through-3points, cubic-through-3points
 // #import "collisions.typ"
 #import "styles.typ"
 
 #let typst-rotate = rotate
 
+/// Set current style
+///
+/// - ..style (any): Style key/value pairs
 #let set-style(..style) = {
-  assert.eq(style.pos().len(), 0, message: "set-style takes no positional arguments" )
+  assert.eq(style.pos().len(), 0,
+            message: "set-style takes no positional arguments" )
   ((
     style: style.named()
   ),)
 }
 
-#let fill(fill) = {
-  ((
-    style: (fill: fill)
-  ),)
-}
+/// Set current fill style
+///
+/// Shorthand for `set-style(fill: <fill>)`
+///
+/// - fill (paint): Fill style
+#let fill(fill) = ((style: (fill: fill)),)
 
-#let stroke(stroke) = {
-  ((
-    style: (stroke: stroke)
-  ),)
-}
+/// Set current stroke style
+///
+/// Shorthand for `set-style(stroke: <fill>)`
+///
+/// - stroke (stroke): Stroke style
+#let stroke(stroke) = ((style: (stroke: stroke)),)
 
-// Move to coordinate `pt`
-// @param pt coordinate
+/// Set current coordinate
+///
+/// The current coordinate can be used via `()` (empty coordinate).
+/// It is also used as base for relative coordinates if not specified
+/// otherwise.
+///
+/// - param (coordinate): Coordinate to move to
 #let move-to(pt) = {
   let t = coordinate.resolve-system(pt)
   ((
@@ -39,8 +50,12 @@
   ),)
 }
 
-// Rotate on z-axis (default) or specified axes if `angle` is of type
-// dictionary
+/// Rotate on z-axis (default) or specified axes if `angle` is of type
+/// dictionary.
+///
+/// - angle (angle,dictionary): Angle (z-axis) or dictionary of the
+///                             form `(x: <angle>, y: <angle>, z: <angle>)`
+///                             specifying per axis rotation angle.
 #let rotate(angle) = {
   let resolve-angle(angle) = {
     return if type(angle) == "angle" {
@@ -68,23 +83,24 @@
   ),)
 }
 
-// Push scale matrix
-//
-// World = World * Scale
-//
-// @param factor float
-#let scale(f) = ((
-  push-transform: matrix.transform-scale(f)
+/// Push scale matrix
+///
+/// World = World * Scale
+///
+/// - factor (float,dictionary): Scaling factor for all axes or per axis scaling
+///                              factor dictionary.
+#let scale(factor) = ((
+  push-transform: matrix.transform-scale(factor)
 ),)
 
-// Push translation matrix
-//
-// World = Translation * World
-//
-// @param vec (vector|dictionary): Translation vector
-// @param pre (bool): Matrix multiplication order
-//                    - false: World = World * Translate
-//                    - true:  World = Translate * World
+/// Push translation matrix
+///
+/// World = Translation * World
+///
+/// - vec (vector,dictionary): Translation vector
+/// - pre (bool): Matrix multiplication order
+///               - false: World = World * Translate
+///               - true:  World = Translate * World
 #let translate(vec, pre: true) = {
   let resolve-vec(vec) = {
     let (x,y,z) = if type(vec) == "dictionary" {
@@ -126,23 +142,26 @@
   ),)
 }
 
-// Sets the given position as the origin
+/// Sets the given position as the origin
+///
+/// - origin (coordinate): Coordinate to set as new origin
 #let set-origin(origin) = {
   return ((
     push-transform: ctx => {
-      let (x,y,z) = vector.sub(util.apply-transform(ctx.transform, coordinate.resolve(ctx, origin)),
-                               util.apply-transform(ctx.transform, (0,0,0)))
+      let (x,y,z) = vector.sub(
+        util.apply-transform(ctx.transform, coordinate.resolve(ctx, origin)),
+        util.apply-transform(ctx.transform, (0,0,0)))
       return matrix.mul-mat(matrix.transform-translate(x, y, z),
                             ctx.transform)
     }
   ),)
 }
 
-// Span rect between `from` and `to` as "viewport" with bounds `bounds`.
-//
-// - from (coordinate): Bottom-Left corner coordinate
-// - to   (coordinate): Top right corner coordinate
-// - bounds   (vector): Bounds vector; negative bounds flip sides
+/// Span rect between `from` and `to` as "viewport" with bounds `bounds`.
+///
+/// - from (coordinate): Bottom-Left corner coordinate
+/// - to (coordinate): Top right corner coordinate
+/// - bounds (vector): Bounds vector
 #let set-viewport(from, to, bounds: (1, 1, 1)) = ((
   push-transform: ctx => {
     let bounds = vector.as-vec(bounds, init: (1, 1, 1))
@@ -160,12 +179,12 @@
   }
 ),)
 
-// Register anchor `name` at position.
-//
-// This only works inside a group!
-//
-// - name         (string): Anchor name
-// - position (coordinate): Coordinate
+/// Register anchor `name` at position.
+///
+/// This only works inside a group!
+///
+/// - name (string): Anchor name
+/// - position (coordinate): Coordinate
 #let anchor(name, position) = {
   let t = coordinate.resolve-system(position)
   ((
@@ -180,6 +199,10 @@
   ),)
 }
 
+/// Copy anchors of element to current group
+///
+/// - element (string): Source element to copy anchors from
+/// - filter (none,array): Name of anchors to copy or `none` to copy all
 #let copy-anchors(element, filter: none) = ((
   after: ctx => {
     assert(ctx.groups.len() > 0,
@@ -198,16 +221,16 @@
   },
 ),)
 
-// Push a group
-//
-// A group has a local transformation matrix.
-// Groups can be used to get an elements bounding box, as they
-// set default anchors (top, top-left, ..) to the bounding box of
-// their children.
-//
-// - name        (string): Element name
-// - anchor      (string): Element origin
-// - body (draw|function): Children or function of the form (ctx => array)
+/// Push a group
+///
+/// A group has a local transformation matrix.
+/// Groups can be used to get an elements bounding box, as they
+/// set default anchors (top, top-left, ..) to the bounding box of
+/// their children.
+///
+/// - name (string): Element name
+/// - anchor (string): Element origin
+/// - body (draw,function): Children or function of the form (ctx => array)
 #let group(name: none, anchor: none, body) = {
   ((
     name: name,
@@ -240,11 +263,11 @@
   ),)
 }
 
-// Draw a mark between two coordinates
-//
-// - from (coordinate): Source coordinate
-// - to   (coordinate): Target coordinate
-// - ..style   (style): Style
+/// Draw a mark between two coordinates
+///
+/// - from (coordinate): Source coordinate
+/// - to (coordinate): Target coordinate
+/// - ..style (style): Style
 #let mark(from, to, ..style) = {
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
   let style = style.named()
@@ -258,12 +281,17 @@
   ),)
 }
 
-// Draw a poly-line
-//
-// - ..pts (coordinate): Points
-// - ..style    (style): Style
-// - close       (bool): Close path
-// - name      (string): Element name
+/// Draw a poly-line
+///
+/// Style root: `line`.
+/// Anchors:
+///   - start -- First coordinate
+///   - end   -- Last coordinate
+///
+/// - ..pts (coordinate): Points
+/// - ..style (style): Style
+/// - close (bool): Close path
+/// - name (string): Element name
 #let line(..pts-style, close: false, name: none) = {
   // Extra positional arguments from the pts-style
   // sink are interpreted as coordinates.
@@ -310,13 +338,15 @@
   ),)
 }
 
-// Draw a rect from `a` to `b`
-//
-// - a  (coordinate): Bottom-Left coordinate
-// - b  (coordinate): Top-Right coordinate
-// - name   (string): Element name
-// - anchor (string): Element origin
-// - ..style (style): Style
+/// Draw a rect from `a` to `b`
+///
+/// Style root: `rect`.
+///
+/// - a (coordinate): Bottom-Left coordinate
+/// - b (coordinate): Top-Right coordinate
+/// - name (string): Element name
+/// - anchor (string): Element origin
+/// - ..style (style): Style
 #let rect(a, b, name: none, anchor: none, ..style) = {
   // Coordinate check
   let t = (a, b).map(coordinate.resolve-system)
@@ -355,12 +385,28 @@
   ),)
 }
 
+/// Draw an arc
+///
+/// Style root: `arc`.
+///
+/// Exactly two arguments of `start`, `stop` and `delta` must be set to a value other
+/// than `auto`.
+///
+/// - position (coordinate): Start coordinate
+/// - start (auto,angle): Start angle
+/// - stop (auto,angle): End angle
+/// - delta (auto,angle): Angle delta
+/// - name (none,string): Element name
+/// - anchor (none,string): Element anchor
+/// - ..style (style): Style
 #let arc(position, start: auto, stop: auto, delta: auto, name: none, anchor: none, ..style) = {
   // Start, stop, delta check
-  assert((start,stop,delta).filter(it=>{it == auto}).len() == 1, message: "Exactly two of three options start, stop and delta should be defined.")
+  assert((start, stop, delta).filter(it => {it == auto}).len() == 1,
+         message: "Exactly two of three options start, stop and delta should be defined.")
 
   // No extra positional arguments from the style sink
-  assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
+  assert.eq(style.pos(), (),
+            message: "Unexpected positional arguments: " + repr(style.pos()))
   let style = style.named()
 
   // Coordinate check
@@ -400,7 +446,16 @@
   ),)
 }
 
-// Render ellipse
+/// Draw ellipse
+///
+/// Style root: `circle`.
+/// The ellipses radii can be specified by its style field `radius`, which can be of
+/// type `float` or a tuple of two `float`'s specifying the x/y radius. 
+///
+/// - center (coordinate): Center coordinate
+/// - name (string): Element name
+/// - anchor (string): Element anchor
+/// - ..style (style): Style
 #let circle(center, name: none, anchor: none, ..style) = {
   // No extra positional arguments from the style sink
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
@@ -421,15 +476,15 @@
   ),)
 }
 
-// Execute callback for each anchor with the name of the anchor
-//
-// The position of the anchor is set as the current position.
-//
-// - node-prefix (string): Anchor node name
-// - callback (function): Callback (anchor-name) => cmd
-//
-// Example:
-//   for-each-anchor("my-node", (name) => { content((), [#name]) })
+/// Execute callback for each anchor with the name of the anchor
+///
+/// The position of the anchor is set as the current position.
+///
+/// - node-prefix (string): Anchor node name
+/// - callback (function): Callback (anchor-name) => cmd
+///
+/// Example:
+///   for-each-anchor("my-node", (name) => { content((), [#name]) })
 #let for-each-anchor(node-prefix, callback) = {
   ((
     children: (ctx) => {
@@ -442,24 +497,36 @@
   ),)
 }
 
-// Draw circle through three points
-//
-// - a (coordinate): Point 1
-// - b (coordinate): Point 2
-// - c (coordinate): Point 3
-#let circle-through(a, b, c, name: none, ..style) = {
+/// Draw circle through three points
+///
+/// Style root: `circle`.
+/// Anchors:
+///   - a -- Point a
+///   - b -- Point b
+///   - c -- Point c
+///   - center -- Calculated center
+///
+/// - a (coordinate): Point 1
+/// - b (coordinate): Point 2
+/// - c (coordinate): Point 3
+/// - name (string): Element name
+/// - anchor (string): Element name
+#let circle-through(a, b, c, name: none, anchor: none, ..style) = {
   ((
     name: name,
+    anchor: anchor,
     coordinates: (a, b, c),
-    custom-anchors: (a, b, c) => {
-      (a: a, b: b, c: c,
-       center: util.calculate-circle-center-3pt(a, b, c))
-    },
-    render: (ctx, a, b, c) => {
-      let style = styles.resolve(ctx.style, style.named(), root: "circle")
-
+    transform-coordinates: (a, b, c) => {
       let center = util.calculate-circle-center-3pt(a, b, c)
       assert(center != none, message: "Could not calculate circle center")
+
+      (a, b, c, center)
+    },
+    custom-anchors: (a, b, c, center) => {
+      (a: a, b: b, c: c, center: center)
+    },
+    render: (ctx, a, b, c, center) => {
+      let style = styles.resolve(ctx.style, style.named(), root: "circle")
 
       let (x, y, ..) = center
       let r = vector.dist(a, (x, y, 0))
@@ -471,12 +538,14 @@
 
 /// Render content
 ///
+/// Style root: `content`.
+///
 /// NOTE: Content itself is not transformed by the canvas transformations!
 ///       native transformation matrix support from typst would be required.
 ///
 /// - pt (coordinate): Content coordinate
 /// - ct (content): Content
-/// - angle (angle|coordinate): Rotation angle or second coordinate to use for
+/// - angle (angle,coordinate): Rotation angle or second coordinate to use for
 ///                             angle calculation
 /// - anchor (string): Anchor to use as origin
 /// - name (string): Node name
@@ -573,9 +642,16 @@
 
 /// Draw a quadratic or cubic bezier line
 ///
+/// Style root: `bezier`.
+/// Anchors:
+///   - start    -- First coordinate
+///   - end      -- Last coordinate
+///   - ctrl-<n> -- Control point <n>
+///
 /// - start (coordinate): Start point
 /// - end (coordinate): End point
 /// - ..ctrl (coordinate): Control points
+/// - name (string): Element name
 #let bezier(start, end, ..ctrl-style, name: none) = {
   // Extra positional arguments are treated like control points.
   let (ctrl, style) = (ctrl-style.pos(), ctrl-style.named())
@@ -610,31 +686,43 @@
 
 /// Draw a quadratic bezier from a to c through b
 ///
+/// Style root: `bezier`.
+///
 /// - s (coordinate): Start point
 /// - b (coordinate): Passthrough point
 /// - e (coordinate): End point
 /// - deg (int): Degree (2 or 3) of the bezier curve
 /// - name (string): Element name
+/// - ..style (style): Style
 #let bezier-through(s, b, e, deg: 3, name: none, ..style) = {
+  assert(deg in (2, 3), message: "Only beziers of degree 2 or 3 are supported")
   ((
     name: name,
     coordinates: (s, b, e),
-    render: (ctx, s, b, e) => {
-      let d1 = vector.dist(s, b)
-      let d2 = vector.dist(e, b)
-      let t = d1 / (d1 + d2)
-
-      let (A, B, C) = to-abc(s, e, b, t, deg: deg)
-
+    transform-coordinates: (s, b, e) => {
+      if deg == 2 {
+        quadratic-through-3points(s, b, e)
+      } else {
+        cubic-through-3points(s, b, e)
+      }
+    },
+    custom-anchors: (s, b, e, ..c) => {
+      let anchors = (start: s, end: e)
+      for (i, ctrl) in c.pos().enumerate() {
+        anchors.insert("ctrl-" + str(i + 1), ctrl)
+      }
+      return anchors
+    },
+    render: (ctx, s, e, ..c) => {
       let style = styles.resolve(ctx.style, style.named(), root: "bezier")
 
-      if deg == 2 {
-        cmd.path(("quadratic", s, e, A),
+      let c = c.pos()
+      if c.len() == 1 {
+        cmd.path(("quadratic", s, e, ..c),
                  fill: style.fill,
                  stroke: style.stroke)
       } else {
-        let (s, e, c1, c2) = cubic-through-3points(s, b, e)
-        cmd.path(("cubic", s, e, c1, c2),
+        cmd.path(("cubic", s, e, ..c),
                  fill: style.fill,
                  stroke: style.stroke)
       }
@@ -735,7 +823,8 @@
 /// - name (string): Element name
 #let merge-path(body, close: false, name: none, ..style) = {
   // No extra positional arguments from the style sink
-  assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
+  assert.eq(style.pos(), (),
+            message: "Unexpected positional arguments: " + repr(style.pos()))
   let style = style.named()
   ((
     name: name,
@@ -798,7 +887,12 @@
   ),)
 }
 
-// Render shadow of children by rendering them twice
+/// Render shadow of children by rendering them twice
+///
+/// Style root: `shadow`.
+///
+/// - body (canvas): Child elements
+/// - ..style (style): Style
 #let shadow(body, ..style) = {
   // No extra positional arguments from the style sink
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
@@ -840,6 +934,17 @@
 //   ),)
 // }
 
+/// Draw a grid
+///
+/// Style root: `grid`.
+///
+/// - from (coordinate): Start point
+/// - end (coordinate): End point
+/// - step (float,dictionary): Distance between grid lines. If passed a
+///                            dictionary, x and y step can be set via the
+///                            keys `x` and `y`.
+/// - name (string): Element name
+/// - ..style (style): Style
 #let grid(from, to, step: 1, name: none, help-lines: false, ..style) = {
   let t = (from, to).map(coordinate.resolve-system)
   ((
