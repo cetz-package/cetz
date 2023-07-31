@@ -324,7 +324,7 @@
   // Extra positional arguments from the pts-style
   // sink are interpreted as coordinates.
   let (pts, style) = (pts-style.pos(), pts-style.named())
-  assert(pts.len() > 2,
+  assert(pts.len() >= 2,
     message: "Line must have a minimum of two points")
 
   // Coordinate check
