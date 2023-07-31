@@ -13,7 +13,7 @@ files=(
   vector.typ
   matrix.typ
   bezier.typ
-  collisions.typ
+  intersection.typ
   coordinate.typ
   styles.typ
   tree.typ

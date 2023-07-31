@@ -2,6 +2,9 @@
 #import "vector.typ"
 #import "bezier.typ"
 
+/// Constant to be used as float rounding error
+#let float-epsilon = 0.000001
+
 /// Multiplies the vector by the transform matrix
 ///
 /// - transform (matrix): Transformation matrix
