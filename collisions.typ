@@ -1,63 +1,79 @@
-// NOTE: this file is to be used for finding intersections of paths. It is currently not in use but could be fully implemented at a later date.
-
 #import "vector.typ"
+#import "util.typ"
 
-// http://paulbourke.net/geometry/pointlineplane/ Intersection point of two line segments in 2 dimensions
-// http://jeffreythompson.org/collision-detection/poly-poly.php
+/// Check for path-path intersection in 2D
+///
+/// - a (path): Path a
+/// - b (path): Path b
+/// - samples (int): Number of samples to use for bezier curves
+#let path-path(a, b, samples: 25) = {
+  import "bezier.typ"
 
-// Returns the (x,y) coordinates of the intersection or none if the lines do not collide
-#let line-line(x1, y1, x2, y2, x3, y3, x4, y4) = {
-  let denominator = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1)
-  if denominator == 0 {
-    // lines are parallel or coincident
-    return none
-  }
-
-  let uA = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator
-  let uB = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denominator
-
-  return if (uA >= 0 and uA <= 1 and uB >= 0 and uB <= 1) {
-    (
-      x1 + uA * (x2 - x1),
-      y1 + uA * (y2 - y1)
-    )
-  }
-}
-
-// Returns the (x,y) coordinates of the intersections or none if the polygon and line do not collide
-// Assumes the polygon is not closed. If the polygon is closed add the first vertex to the end of the vertex list
-#let poly-line(vertices, x1, y1, x2, y2) = {
-  for current in range(vertices.len() - 1) {
-    let next = current + 1
-    let (x3, y3, x4, y4) = (
-      vertices.at(current).at(0),
-      vertices.at(current).at(1),
-      vertices.at(next).at(0),
-      vertices.at(next).at(1),
-    )
-
-    let collision = line-line(x1, y1, x2, y2, x3, y3, x4, y4)
-    if collision != none {
-      collision
+  // Check for line-line intersection and return point or none
+  let line-line(a, b, c, d) = {
+    let lli8(x1, y1, x2, y2, x3, y3, x4, y4) = {
+      let nx = (x1*y2 - y1*x2)*(x3 - x4)-(x1 - x2)*(x3*y4 - y3*x4)
+      let ny = (x1*y2 - y1*x2)*(y3 - y4)-(y1 - y2)*(x3*y4 - y3*x4)
+      let d = (x1 - x2)*(y3 - y4)-(y1 - y2)*(x3 - x4)
+      if d == 0 {
+        return none
+      }
+      return (nx / d, ny / d, 0)
+    }
+    let pt = lli8(a.at(0), a.at(1), b.at(0), b.at(1),
+                  c.at(0), c.at(1), d.at(0), d.at(1))
+    if pt != none {
+      let on-line(pt, a, b) = {
+        let (x, y, ..) = pt
+        let epsilon = util.float-epsilon
+        let mx = calc.min(a.at(0), b.at(0)) - epsilon
+        let my = calc.min(a.at(1), b.at(1)) - epsilon
+        let Mx = calc.max(a.at(0), b.at(0)) + epsilon
+        let My = calc.max(a.at(1), b.at(1)) + epsilon
+        return mx <= x and Mx >= x and my <= y and My >= y
+      }
+      if on-line(pt, a, b) and on-line(pt, c, d) {
+        return pt
+      }
     }
   }
-}
 
-#let poly-poly(p1, p2) = {
-  let intersections = ()
-  for current in range(p1.len() - 1) {
-    let next = current + 1
-    let (x1, y1, x2, y2) = (
-      p1.at(current).at(0),
-      p1.at(current).at(1),
-      p1.at(next).at(0),
-      p1.at(next).at(1)
-    )
-
-    let collision = poly-line(p2, x1, y1, x2, y2)
-    if collision != none and not collision in intersections {
-      intersections.push(collision)
+  // Convert segment to vertices by sampling curves
+  let linearize-segment(s) = {
+    let t = s.at(0)
+    if t == "line" {
+      return s.slice(1)
+    } else if t == "quadratic" {
+      return range(samples + 1).map(
+        t => bezier.quadratic-point(..s.slice(1), t/samples))
+    } else if t == "cubic" {
+      return range(samples + 1).map(
+        t => bezier.cubic-point(..s.slice(1), t/samples))
     }
   }
-  return intersections
+
+  // Check for segment-segment intersection and return list of points
+  let segment-segment(a, b) = {
+    let pts = ()
+    let av = linearize-segment(a)
+    let bv = linearize-segment(b)
+    for ai in range(0, av.len() - 1) {
+      for bi in range(0, bv.len() - 1) {
+        let isect = line-line(av.at(ai), av.at(ai + 1),
+                              bv.at(bi), bv.at(bi + 1))
+        if isect != none {
+          pts.push(isect)
+        }
+      }
+    }
+    return pts
+  }
+
+  let pts = ()
+  for sa in a.segments {
+    for sb in b.segments {
+      pts += segment-segment(sa, sb)
+    }
+  }
+  return pts
 }

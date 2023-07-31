@@ -17,6 +17,8 @@
 - New function `copy-anchors` to copy anchors of an element into a group
 - Arcs are now approximated using up to 4 bezier curves instead of using
   sampling with straight lines
+- New function `intersections` that emits anchors at all child element
+  intersection points
 
 ** Chart
 - Added new library `chart` for drawing charts, currently only bar- and columncharts are supported

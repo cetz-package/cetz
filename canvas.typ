@@ -142,7 +142,7 @@
   }
 
   // Add default anchors
-  if bounds != none {
+  if bounds != none and element.at("add-default-anchors", default: true) {
     let mid-x = (bounds.l + bounds.r) / 2
     let mid-y = (bounds.t + bounds.b) / 2
     anchors += (
@@ -186,6 +186,8 @@
       anchors.at(element.default-anchor)
     } else if "center" in anchors {
       anchors.center
+    } else {
+      (0,0,0,1)
     }
   }
 

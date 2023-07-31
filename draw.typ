@@ -5,7 +5,7 @@
 #import "path-util.typ"
 #import "coordinate.typ"
 #import "bezier.typ": to-abc, quadratic-through-3points, cubic-through-3points
-// #import "collisions.typ"
+#import "collisions.typ"
 #import "styles.typ"
 
 #let typst-rotate = rotate
@@ -840,6 +840,48 @@
 ),)
 }
 
+/// Emit on anchor per interesection of all elements
+/// inside body.
+///
+/// - body (elements): Element body
+/// - name (string): Element name
+/// - samples (int): Number of samples to use for linearizing curves.
+///                  Raising this gives more precision but slows down
+///                  calculation.
+#let intersections(body, name: none, samples: 10) = {
+  assert(name != none, message: "Intersection element name must be set")
+  samples = calc.min(calc.max(2, samples), 2500)
+  ((
+    name: name,
+    children: body,
+    add-default-anchors: false,
+    custom-anchors-drawables: (children) => {
+      if children.len() == 0 { return () }
+
+      let pts = ()
+
+      let anchors = (:)
+      for i in range(children.len()) {
+        for j in range(i + 1, children.len()) {
+          if i != j {
+            let isect = collisions.path-path(children.at(i),
+                                             children.at(j),
+                                             samples: samples)
+            for pt in isect {
+              if not pt in pts { pts.push(pt) }
+            }
+          }
+        }
+      }
+
+      for pt in pts {
+        anchors.insert(str(anchors.len()), pt)
+      }
+      return anchors
+    },
+  ),)
+}
+
 /// Merge multiple paths
 ///
 /// - body (any): Body
@@ -936,6 +978,7 @@
   ),)
 }
 
+// TODO: Is this still needed?
 // Calculate the intersections of two named paths
 // #let intersections(path-1, path-2, name: "intersection") = {
 //   ((
