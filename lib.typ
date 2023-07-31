@@ -1,3 +1,5 @@
+#let version = (0,0,2)
+
 #import "canvas.typ": canvas
 #import "draw.typ"
 #import "coordinate.typ"

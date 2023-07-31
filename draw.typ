@@ -780,14 +780,14 @@
   ),)
 }
 
-/// NOTE: This function is supposed to be REPLACED by a
-///       new coordinate syntax!
-///
 /// Create anchors along a path
 ///
+/// NOTE: This function is supposed to be replaced by a
+///       new coordinate syntax!
+///
 /// - path (path): Path
-/// - anchors (positional): Dictionaries of the format:
-///     (name: string, pos: float)
+/// - anchors (positional): List of dictionaries of the format:
+///     `(name: string, pos: float)`, where pos is in range [0, 1].
 /// - name (string): Element name, uses paths name, if auto
 #let place-anchors(path, ..anchors, name: auto) = {
   let name = if name == auto and "name" in path.first() {
@@ -866,7 +866,7 @@
 ),)
 }
 
-/// Emit on anchor per intersection of all elements
+/// Emit one anchor per intersection of all elements
 /// inside body.
 ///
 /// - body (elements): Element body

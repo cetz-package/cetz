@@ -85,7 +85,8 @@
 
 #align(center)[
   #link("https://github.com/johannes-wolf")[Johannes Wolf] and #link("https://github.com/fenjalien")[fenjalien] \
-  https://github.com/johannes-wolf/typst-canvas
+  https://github.com/johannes-wolf/typst-canvas \
+  Version #lib.version.map(v => str(v)).join(".")
 ]
 
 #set par(justify: true)
@@ -103,7 +104,7 @@ The name CeTZ is a recursive acronym for "CeTZ, ein Typst Zeichenpacket" (german
 
 This is the minimal starting point:
   ```typ
-  #import "@local/cetz:0.0.1"
+  #import "@local/cetz:0.0.2"
   #cetz.canvas({
     import cetz.draw: *
     ...
@@ -587,38 +588,84 @@ rect((-1,-1),(1,1))
 
 #show-module-fn(draw-module, "anchor")
 #example({
-import "draw.typ": *
-group(name: "g", {
-  circle((0,0))
-  anchor("x", (.4,.1))
-})
-circle("g.x", radius: .1)
-}, ```typc
-group(name: "g", {
-  circle((0,0))
-  anchor("x", (.4,.1))
-})
-circle("g.x", radius: .1)
-```)
+  import lib.draw: *
+  group(name: "g", {
+    circle((0,0))
+    anchor("x", (.4,.1))
+  })
+  circle("g.x", radius: .1, fill: black)
+  },
+  ```typc
+  group(name: "g", {
+    circle((0,0))
+    anchor("x", (.4,.1))
+  })
+  circle("g.x", radius: .1)
+  ```)
 
 
 #show-module-fn(draw-module, "copy-anchors")
 #example({
-import "draw.typ": *
-group(name: "g", {
-  rotate(45deg)
-  rect((0,0), (1,1), name: "r")
-  copy-anchors("r")
-})
-circle("g.top", radius: .1)
-}, ```typc
-group(name: "g", {
-  rotate(45deg)
-  rect((0,0), (1,1), name: "r")
-  copy-anchors("r")
-})
-circle("g.top", radius: .1)
-```)
+  import lib.draw: *
+  group(name: "g", {
+    rotate(45deg)
+    rect((0,0), (1,1), name: "r")
+    copy-anchors("r")
+  })
+  circle("g.top", radius: .1, fill: black)
+},
+  ```typc
+  group(name: "g", {
+    rotate(45deg)
+    rect((0,0), (1,1), name: "r")
+    copy-anchors("r")
+  })
+  circle("g.top", radius: .1, fill: black)
+  ```)
+
+#show-module-fn(draw-module, "place-anchors")
+#example({
+  import lib.draw: *
+  place-anchors(name: "demo",
+                bezier((0,0), (3,0), (1,-1), (2,1)),
+                (name: "a", pos: .15),
+                (name: "mid", pos: .5))
+  circle("demo.a", radius: .1, fill: black)
+  circle("demo.mid", radius: .1, fill: black)
+},
+  ```typc
+  place-anchors(name: "demo",
+                bezier((0,0), (3,0), (1,-1), (2,1)),
+                (name: "a", pos: .15),
+                (name: "mid", pos: .5))
+  circle("demo.a", radius: .1, fill: black)
+  circle("demo.mid", radius: .1, fill: black)
+  ```)
+
+#show-module-fn(draw-module, "intersections")
+#example({
+  import lib.draw: *
+  intersections(name: "demo", {
+    circle((0, 0))
+    bezier((0,0), (3,0), (1,-1), (2,1))
+    line((0,-1), (0,1))
+    rect((1.5,-1),(2.5,1))
+  })
+  for-each-anchor("demo", (name) => {
+    circle("demo." + name, radius: .1, fill: black)
+  })
+},
+  ```typc
+  intersections(name: "demo", {
+    circle((0, 0))
+    bezier((0,0), (3,0), (1,-1), (2,1))
+    line((0,-1), (0,1))
+    rect((1.5,-1),(2.5,1))
+  })
+  for-each-anchor("demo", (name) => {
+    circle("demo." + name, radius: .1, fill: black)
+  })
+  ```)
 
 == Transformations
 All transformation functions push a transformation matrix onto the current transform stack.
@@ -722,7 +769,7 @@ The implicit form can be given as an array of two or three `<number>` or `<lengt
     line((0, -2), (0, -2, 1))
   },
   [```typc
-  #import "@local/cetz:0.0.1"
+  #import "@local/cetz:0.0.2"
   #cetz.canvas({
     import cetz.draw: *
 
@@ -749,7 +796,7 @@ Use this to reference the position of the previous coordinate passed to a draw f
     circle(())
   },
   [```typc
-  #import "@local/cetz:0.0.1"
+  #import "@local/cetz:0.0.2"
   #cetz.canvas({
     import cetz.draw: *
     line((0,0), (1, 1))
@@ -775,7 +822,7 @@ In the example below, the red circle is placed one unit below the blue circle. I
   circle((rel: (0, -1)), stroke: red)
   },
   [```typc
-  #import "@local/cetz:0.0.1"
+  #import "@local/cetz:0.0.2"
   #cetz.canvas({
     import cetz.draw: *
     circle((0, 0), stroke: blue)
@@ -796,7 +843,7 @@ Defines a point a `radius` distance away from the origin at the given `angle`. A
     line((0,0), (angle: 30deg, radius: 1cm))
   },
   [```typc
-  #import "@local/cetz:0.0.1"
+  #import "@local/cetz:0.0.2"
   #cetz.canvas({
     import cetz.draw: *
     line((0,0), (angle: 30deg, radius: 1cm))
@@ -812,7 +859,7 @@ The implicit form is an array of the angle then the radius `(angle, radius)` or 
     line((0,0), (30deg, 1), (60deg, 1), (90deg, 1), (120deg, 1), (150deg, 1), (180deg, 1),)
   },
   [```typc
-  #import "@local/cetz:0.0.1"
+  #import "@local/cetz:0.0.2"
   #cetz.canvas({
     import cetz.draw: *
     line((0,0), (30deg, 1), (60deg, 1), 
@@ -1368,7 +1415,7 @@ Supported charts are:
 
 #show-module(chart-module, show-module-name: false)
 
-=== Examples <barchart-examples>
+=== Examples -- Bar Chart <barchart-examples>
 ==== Basic
 #example(vertical: true, {
 draw.set-style(axes: (tick: (stroke: red, length: 1)))
@@ -1401,16 +1448,46 @@ chart.barchart(size: (6, auto), mode: "clustered",
                x-tick-step: 10, value-key: (..range(1, 4)), data)
 ```)
 
-=== Examples <columnchart-examples>
-==== Basic
+=== Examples -- Column Chart <columnchart-examples>
+==== Basic, Clustered and Stacked
 #example(vertical: true, {
-draw.set-style(axes: (tick: (stroke: red, length: 1)))
+  draw.set-style(axes: (tick: (stroke: red, length: 1)))
+    let data1 = (("A", 10), ("B", 20), ("C", 13))
+    let data2 = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
+    draw.group(name: "chart", {
+      draw.anchor("default", (0,0))
+      chart.columnchart(size: (auto, 4), y-tick-step: 10, data1)
+    })
+    draw.set-origin("chart.bottom-right")
+    draw.group(name: "chart", anchor: "bottom-left", {
+      draw.anchor("default", (0,0))
+      chart.columnchart(size: (auto, 4),
+        mode: "clustered",
+        value-key: (1,2,3),
+        y-tick-step: 10, data2)
+    })
+    draw.set-origin("chart.bottom-right")
+    draw.group(name: "chart", anchor: "bottom-left", {
+      draw.anchor("default", (0,0))
+      chart.columnchart(size: (auto, 4),
+        mode: "stacked",
+        value-key: (1,2,3),
+        y-tick-step: 10, data2)
+    })
+  },
+  ```typc
+  // Left
   let data = (("A", 10), ("B", 20), ("C", 13))
-  chart.columnchart(size: (auto, 4), y-tick-step: 10, data)
-}, ```typc
-let data = (("A", 10), ("B", 20), ("C", 13))
-chart.columnchart(size: (auto, 4), y-tick-step: 10, data)
-```)
+  chart.columnchart(size: (auto, 4), data)
+  // Center
+  let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
+  chart.columnchart(size: (auto, 4),
+    mode: "clustered", value-key: (1,2,3), data)
+  // Right
+  let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
+  chart.columnchart(size: (auto, 4),
+    mode: "stacked", value-key: (1,2,3), data)
+  ```)
 
 === Styling
 
