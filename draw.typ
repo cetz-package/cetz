@@ -387,10 +387,15 @@
 
 /// Draw an arc
 ///
-/// Style root: `arc`.
+/// *Style root:* `arc`.
 ///
 /// Exactly two arguments of `start`, `stop` and `delta` must be set to a value other
-/// than `auto`.
+/// than `auto`. You can set the radius of the arc by setting the `radis` style option, which accepts a `float` or tuple of floats for setting the x/y radius.
+/// You can set the arcs draw mode using the style `mode`, which accepts the
+/// values `"PIE"`, `"CLOSE"` and `"OPEN"` (default). If set to `"PIE"`, the first and
+/// last points of the arc's path are it's center. If set to `"CLOSE"`, the path is closed.
+///
+/// The arc curve is approximated using 1-4 cubic bezier curves.
 ///
 /// - position (coordinate): Start coordinate
 /// - start (auto,angle): Start angle
@@ -422,7 +427,8 @@
     custom-anchors-ctx: (ctx, position) => {
       let style = styles.resolve(ctx.style, style, root: "arc")
       let (x, y, z) = position
-      let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
+      let (rx, ry) = util.resolve-radius(style.radius)
+        .map(util.resolve-number.with(ctx))
       (
         start: position,
         end: (
@@ -439,9 +445,12 @@
     },
     render: (ctx, position) => {
       let style = styles.resolve(ctx.style, style, root: "arc")
+      let (rx, ry) = util.resolve-radius(style.radius)
+        .map(util.resolve-number.with(ctx))
+
       let (x, y, z) = position
-      let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
-      cmd.arc(x, y, z, start-angle, stop-angle, rx, ry, mode: style.mode, fill: style.fill, stroke: style.stroke)
+      cmd.arc(x, y, z, start-angle, stop-angle, rx, ry,
+        mode: style.mode, fill: style.fill, stroke: style.stroke)
     }
   ),)
 }
