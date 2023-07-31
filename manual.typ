@@ -1391,19 +1391,19 @@ tree(root-node, draw-node: auto, draw-edge: auto,
 #example({
   import "draw.typ": *
   import "tree.typ"
-  let data = ([Root], ([A], [AA], [AB]), ([B], [BA]))
+  let data = ([Root], ([A], [A-A], [A-B]), ([B], [B-A]))
   tree.tree(data, content: (padding: .1), line: (stroke: blue))
 }, ```typc
 import "tree.typ"
 
-let data = ([Root], ([A], [AA], [AB]), ([B], [BA]))
+let data = ([Root], ([A], [A-A], [A-B]), ([B], [B-A]))
 tree.tree(data, content: (padding: .1), line: (stroke: blue))
 ```)
 
 #example({
   import "draw.typ": *
   import "tree.typ"
-  let data = ([\*], ([A], [AA], [AB]), ([B], [BA]))
+  let data = ([\*], ([A], [A-A], [A-B]), ([B], [B-A]))
   tree.tree(data, content: (padding: .1), direction: "right",
           mark: (end: ">", fill: none),
           draw-node: (node, ..) => {
@@ -1420,7 +1420,7 @@ tree.tree(data, content: (padding: .1), line: (stroke: blue))
 }, ```typc
 import "tree.typ"
 
-let data = ([Root], ([\*], [AA], [AB]), ([B], [BA]))
+let data = ([Root], ([\*], [A-A], [A-B]), ([B], [B-A]))
 tree.tree(data, content: (padding: .1), direction: "right",
           mark: (end: ">", fill: none),
           draw-node: (node, ..) => {
@@ -1440,7 +1440,7 @@ tree.tree(data, content: (padding: .1), direction: "right",
 
 A tree node is an array of nodes. The first array item represents the
 current node, all following items are direct children of that node.
-The node itselfes can be ot type `content` or `dictionary` with a key `content`.
+The node itselfes can be of type `content` or `dictionary` with a key `content`.
 
 == Plot
 #let plot-module = parse-module("../../lib/plot.typ", name: "Plot")
@@ -1519,7 +1519,7 @@ using their axis name as key below the `axes` root.
 
 ```typc
 set-style(axes: ( /* Style for all axes */ ))
-set-style(axes: (bottom: ( /* Style axis "left" */)))
+set-style(axes: (bottom: ( /* Style axis "bottom" */)))
 ```
 
 Axis names to be used for styling:

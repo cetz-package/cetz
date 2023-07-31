@@ -216,3 +216,30 @@
       plot.add(circle-data, axes: ("x", "yb"), style: (stroke: yellow))
     })
 }),))
+
+/* Anchors */
+#box(stroke: 2pt + red, canvas({
+  import "../../draw.typ": *
+
+  plot.plot(size: (5, 3), name: "plot",
+    x-tick-step: 180,
+    y-tick-step: 1,
+    x-grid: "major",
+    y-grid: "major",
+    {
+      plot.add(data)
+      plot.add-anchor("from", (-270, "max"))
+      plot.add-anchor("to", (90, "max"))
+      plot.add-anchor("lo", (90, 0))
+      plot.add-anchor("hi", (90, "max"))
+    })
+
+  line((rel: (0, .2), to: "plot.from"),
+       (rel: (0, .2), to: "plot.to"),
+       mark: (start: "|", end: "|"), name: "annotation")
+  content((rel: (0, .1), to: "annotation.center"), $2 pi$, anchor: "bottom")
+
+  line((rel: (0,  .2), to: "plot.lo"),
+       (rel: (0, -.2), to: "plot.hi"),
+       mark: (start: ">", end: ">"), name: "amplitude")
+}))

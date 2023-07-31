@@ -244,7 +244,7 @@
 #let axis-viewport(size, x, y, origin: (0, 0), name: none, body) = {
   size = (rel: size, to: origin)
 
-  draw.group({
+  draw.group(name: name, {
     draw.set-viewport(origin, size,
       bounds: (x.max - x.min,
                y.max - y.min,
