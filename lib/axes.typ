@@ -99,10 +99,11 @@
   return value
 }
 
-// Get value on axis
+// Get value on axis [0, 1]
 //
 // - axis (axis): Axis
 // - v (number): Value
+// -> float
 #let value-on-axis(axis, v) = {
   if v == none { return }
   let (min, max) = (axis.min, axis.max)
@@ -322,6 +323,9 @@
     group(name: "axes", {
       let (w, h) = (w - padding.l - padding.r,
                     h - padding.t - padding.b)
+      anchor("origin", (0, 0))
+      anchor("center", (w / 2, h / 2))
+
       for (axis, _, anchor, placement, tic-dir, name) in axis-settings {
         let style = style
         if name in style {
@@ -389,7 +393,6 @@
         if top != none {segments.last() += ((w,h), (0,h))}
         else {segments.push(())}
 
-
         for s in segments {
           if s.len() > 1 {
             line(..s, ..style)
@@ -399,14 +402,22 @@
     })
 
     for (axis, side, anchor, ..) in axis-settings {
-      if axis == none {continue}
-      if "label" in axis and axis.label != none and not axis.at("is-mirror", default: false) {
-        let angle = if side in ("left", "right") {
+      if axis == none or not "label" in axis or axis.label == none {continue}
+      if not axis.at("is-mirror", default: false) {
+        let is-left-right = side in ("left", "right")
+        let angle = if is-left-right {
           -90deg
-        } else { 0deg }
+        } else {
+          0deg
+        }
+        let position = if is-left-right {
+          ("axes." + side, "|-", "axes.center")
+        } else {
+          ("axes." + side, "-|", "axes.center")
+        }
 
         // Use a group to get non-rotated anchors
-        group(content("axes." + side, axis.label,
+        group(content(position, axis.label,
                       angle: angle, padding: style.label.offset),
                       anchor: anchor)
       }
@@ -461,7 +472,7 @@
          name: "x-axis")
     if "label" in x-axis and x-axis.label != none {
       content((rel: (0, -style.tick.label.offset), to: "x-axis.end"),
-        anchor: "top", x-axis.label)
+        anchor: "top-left", x-axis.label)
     }
 
     line((y-x, -padding.bottom), (y-x, h + padding.top),
@@ -469,7 +480,7 @@
          name: "y-axis")
     if "label" in y-axis and y-axis.label != none {
       content((rel: (-style.tick.label.offset, 0), to: "y-axis.end"),
-        anchor: "right", y-axis.label)
+        anchor: "bottom-right", y-axis.label)
     }
 
     // If both axes cross at the same value (mostly 0)
