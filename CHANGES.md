@@ -19,7 +19,7 @@
   sampling with straight lines
 
 ** Chart
-- Added new library `chart` for drawing charts, currently only barcharts are supported
+- Added new library `chart` for drawing charts, currently only bar- and columncharts are supported
 
 ** Plot
 - Added new library `plot` for drawing line charts (of functions), replacing `typst-plot`

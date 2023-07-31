@@ -1601,6 +1601,12 @@ chart.columnchart(size: (auto, 4), y-tick-step: 10, data)
 Charts share their axis system with plots and therefore can be
 styled the same way, see @plot.style.
 
+==== Default `barchart` Style
+#raw(repr(chart.barchart-default-style))
+
+==== Default `columnchart` Style
+#raw(repr(chart.columnchart-default-style))
+
 == Palette <palette>
 #let palette-module = parse-module("../../lib/palette.typ", name: "Palette")
 

@@ -616,6 +616,8 @@
       let padding = util.resolve-number(ctx, style.padding)
       let angle = get-angle(pt, pt2)
       let (w, h) = measure(ct, ctx)
+      w += 2 * padding
+      h += 2 * padding
       let x-dir = vector.scale((calc.cos(angle), -calc.sin(angle), 0), w/2)
       let y-dir = vector.scale((calc.sin(angle), calc.cos(angle), 0), h/2)
       let tr-dir = vector.add(x-dir, y-dir)
