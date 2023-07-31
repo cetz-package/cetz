@@ -3,6 +3,15 @@
 #import lib: *
 #import "deps/typst-doc/typst-doc.typ": parse-module, show-module
 
+// This is a wrapper around typs-doc show-module that
+// strips all but one function from the module first.
+// As soon as typst-doc supports examples, this is no longer
+// needed.
+#let show-module-fn(module, fn, ..args) = {
+  module.functions = module.functions.filter(f => f.name == fn)
+  show-module(module, ..args.pos(), ..args.named(), show-module-name: false)
+}
+
 #let canvas-background = gray.lighten(75%)
 
 #let example(body, source, ..args, vertical: false) = {
@@ -311,17 +320,9 @@ You can also specify styling for each type of element. Note that dictionary valu
   ```])
 
 == Elements
+#let draw-module = parse-module("../../draw.typ", name: "Draw")
 
-=== Line
-Draws a line (a direct path between two points) to the canvas. If multiplie coordinates are given, a line is drawn between each consecutive one.
-
-```typc
-line(..pts, name: none, close: false, ..styling)
-```
-#def-arg("..pts", `<arguments of coordinates>`, [Coordinates to draw the lines between. A minimum of two must be given.])
-#def-arg("name", `<string>`, [Sets the name of element for use with anchors.])
-#def-arg("close", `<bool>`, default: false, [When `true` a straight line is drawn from the last coordinate to the first coordinate, essentially "closing" the shape.])
-
+#show-module-fn(draw-module, "line")
 #example({
     import "draw.typ": *
     line((-1.5, 0), (1.5, 0))
@@ -338,17 +339,9 @@ line(..pts, name: none, close: false, ..styling)
 
 #STYLING
 
-#def-arg("mark", `<dictionary> or <auto>`, default: auto, [The styling to apply to marks on the line, see @marks.])
+#def-arg("mark", `<dictionary> or <auto>`, default: auto, [The styling to apply to marks on the line, see `mark`])
 
-=== Rectangle
-Draws a rectangle to the canvas.
-
-```typc
-rect(a, b, name: none, anchor: none, ..styling)
-```
-#def-arg("a", `<coordinate>`, [The top left coordinate of the rectangle.])
-#def-arg("b", `<coordinate>`, [The bottom right coordinate of the rectangle.])
-
+#show-module-fn(draw-module, "rect")
 #example({
     import "draw.typ": *
     rect((-1.5, 1.5), (1.5, -1.5))
@@ -360,17 +353,7 @@ rect(a, b, name: none, anchor: none, ..styling)
   })
   ```])
 
-=== Arc
-Draws an arc to the canvas. Exactly two of the three values `start`, `stop`, and `delta` should be defined. You can set the radius of the arc by setting the `radius` style option. You can also draw an elliptical arc by passing an array where the first number is the radius in the x direction and the second number is the radius in the y direction.
-
-```typc
-arc(position, start: auto, stop: auto, delta: auto, name: none, anchor: none,)
-```
-#def-arg("position", `<coordinate>`, [The coordinate to start drawing the arc from.])
-#def-arg("start", `<angle>`, [The angle to start the arc.])
-#def-arg("stop", `<angle>`, [The angle to stop the arc.])
-#def-arg("delta", `<angle>`, [The angle that is added to start or removed from stop.])
-
+#show-module-fn(draw-module, "arc")
 #example({
     import "draw.typ": *
     arc((0,0), start: 45deg, stop: 135deg)
@@ -392,15 +375,7 @@ arc(position, start: auto, stop: auto, delta: auto, name: none, anchor: none,)
 #def-arg("radius", `<number> or <array>`, default: 1, [The radius of the arc. This is also a global style shared with circle!])
 #def-arg("mode", `<string>`, default: `"OPEN"`, [The options are "OPEN" (the default, just the arc), "CLOSE" (a circular segment) and "PIE" (a circular sector).])
 
-
-=== Circle
-Draws a circle to the canvas. An ellipse can be drawn by passing an array of length two to the `radius` argument to specify its `x` and `y` radii.
-
-```typc
-circle(center, name: none, anchor: none)
-```
-#def-arg("center", `<coordinate>`, [The coordinate of the circle's origin.])
-
+#show-module-fn(draw-module, "circle")
 #example({
     import "draw.typ": *
     circle((0,0))
@@ -416,16 +391,7 @@ circle(center, name: none, anchor: none)
   ```]
 )
 
-==== Circle-Through
-Draws a circle through 3 points by determining the center.
-
-```typ
-#circle-through(a, b, c, name: none, ..style)
-```
-#def-arg("a", "c", [Coordinate 1.])
-#def-arg("b", "c", [Coordinate 2.])
-#def-arg("c", "c", [Coordinate 3.])
-
+#show-module-fn(draw-module, "circle-through")
 #example({
     import "draw.typ": *
     let (a, b, c) = ((0,0), (2,-.5), (1,1))
@@ -448,16 +414,7 @@ Draws a circle through 3 points by determining the center.
 
 #def-arg("radius", `<number> or <length> or <array of <number> or <length>>`, default: "1", [The circle's radius. If an array is given an ellipse will be drawn where the first item is the `x` radius and the second item is the `y` radius. This is also a global style shared with arc!])
 
-=== Bezier
-Draws a bezier curve with 1 or 2 control points to the canvas.
-
-```typc
-bezier(start, end, ..ctrl-style)
-```
-#def-arg("start", "c", "The coordinate to start drawing the bezier curve from.")
-#def-arg("end", "c", "The coordinate to draw the bezier curve to.")
-#def-arg("..ctrl-style", "c|style", "An argument sink for the control points and styles. Its positional part should be of one or two coordinates to specify the control points of the bezier curve.")
-
+#show-module-fn(draw-module, "bezier")
 #example({
     import "draw.typ": *
     let (a, b, c) = ((0, 0), (2, 0), (1, 1))
@@ -482,44 +439,28 @@ bezier(start, end, ..ctrl-style)
   ```]
 )
 
-==== Bezier-Through
-Draw a bezier curve through 3 coordinates.
-
-```typ
-#bezier-through(a, b, c, deg: 3, ..style)
-```
-#def-arg("a", "c", "The coordinate to start drawing the bezier curve from.")
-#def-arg("b", "c", "The coordinate to draw the bezier curve through.")
-#def-arg("c", "c", "The coordinate to draw the bezier curve to.")
-#def-arg("deg", "i", "Degree of the bezier function (2 or 3).")
-
+#show-module-fn(draw-module, "bezier-through")
 #example({
     import "draw.typ": *
     let (a, b, c) = ((0, 0), (1, 1), (2, -1))
     line(a, b, c, stroke: gray)
-    bezier-through(a, b, c)
+    bezier-through(a, b, c, name: "b")
+    // Show calculated control points
+    line(a, "b.ctrl-1", "b.ctrl-2", c, stroke: gray)
   },
   [```typ
   #cetz.canvas({
     import cetz.draw: *
     let (a, b, c) = ((0, 0), (1, 1), (2, -1))
     line(a, b, c, stroke: gray)
-    bezier-through(a, b, c)
+    bezier-through(a, b, c, name: "b")
+    // Show calculated control points
+    line(a, "b.ctrl-1", "b.ctrl-2", c, stroke: gray)
   })
   ```]
 )
 
-
-=== Content
-Draws a content block to the canvas.
-
-```typc
-content(pt, ct, angle: 0deg, name: none, anchor: none)
-```
-#def-arg("pt", `<coordinate>`, "The coordinate of the center of the content block.")
-#def-arg("ct", `<content>`, "The content block.")
-#def-arg("angle", `<angle|coordinate>`, [The angle to rotate the content block by. Uses Typst's `rotate` function. If passed a coordinate, the angle between `pt` and `angle` is used.])
-
+#show-module-fn(draw-module, "content")
 #example({
     import "draw.typ": *
     content((0,0), [Hello World!])
@@ -531,7 +472,6 @@ content(pt, ct, angle: 0deg, name: none, anchor: none)
   })
   ```]
 )
-
 #example({
     import "draw.typ": *
     let (a, b) = ((1,0), (3,1))
@@ -555,17 +495,8 @@ This draw element is not affected by fill or stroke styling.
 
 #def-arg("padding", `<length>`, default: 0em, "")
 
-=== Grid
-Draws a grid to the canavas.
 
-```typc
-grid(from, to, step: 1, help-lines: false, name: none)
-```
-#def-arg("from", `<coordinate>`, "Specifies the bottom left position of the grid.")
-#def-arg("to", `<coordinate>`, "Specifies the top right position of the grid.")
-#def-arg("step", `<number> or <length> or <array of <number> or <length>>`, [The stepping in both $x$ and $y$ directions. An array can be given to specify the stepping for each direction.])
-#def-arg("help-lines", `<bool>`, default: "false", [Styles the grid to look "subdued" by using thin gray lines (`0.2pt + gray`)])
-
+#show-module-fn(draw-module, "grid")
 #example({
     import "draw.typ": *
     grid((0,0), (3,3), help-lines: true)
@@ -578,13 +509,8 @@ grid(from, to, step: 1, help-lines: false, name: none)
   ```]
 )
 
-=== Mark <marks>
-Draws a mark or "arrow head", its styling influences marks being drawn on paths (e.g. lines).
 
-```
-#mark(from, to, ..style)
-```
-
+#show-module-fn(draw-module, "mark")
 #example({
   import "draw.typ": *
   line((1, 0), (1, 6), stroke: (paint: gray, dash: "dotted"))
@@ -624,21 +550,7 @@ Draws a mark or "arrow head", its styling influences marks being drawn on paths 
 
 == Path Transformations <path-transform>
 
-=== Merge-Path
-
-```typc
-merge-path(body, ..style, close: false, name: none)
-```
-#def-arg("body", `<objects>`, [
-  Elements to merge as one path
-])
-#def-arg("close", `<bool>`, [
-  Auto close the path using a straight line
-])
-#def-arg("name", `<string>`, [
-  Element name
-])
-
+#show-module-fn(draw-module, "merge-path")
 #example({
 import "draw.typ": *
 merge-path({
@@ -653,15 +565,8 @@ merge-path({
 }, fill: white)
 ```)
 
-== Groups <groups>
-Groups allow scoping context changes such as setting stroke-style, fill and transformations.
 
-```typc
-group(body, name: none, anchor: none)
-```
-
-Note: You can pass `content` a function of the form `ctx => draw-cmds` that returns the groups children. This way you get access to the groups context dictionary.
-
+#show-module-fn(draw-module, "group")
 #example({
 import "draw.typ": *
 group({
@@ -680,17 +585,7 @@ group({
 rect((-1,-1),(1,1))
 ```)
 
-=== Anchor
-
-Defines a new anchor inside a group.
-
-```typc
-anchor(name, coordinate)
-```
-
-#def-arg("name", "s", [Name of the anchor])
-#def-arg("coordinate", `<coordinate>`, [Position])
-
+#show-module-fn(draw-module, "anchor")
 #example({
 import "draw.typ": *
 group(name: "g", {
@@ -706,17 +601,8 @@ group(name: "g", {
 circle("g.x", radius: .1)
 ```)
 
-=== Copy-Anchors
 
-Copy all anchors of element into current group.
-
-```typc
-copy-anchors(element, filter: none)
-```
-
-#def-arg("element", "s", [Target element name])
-#def-arg("filter", "a?", [List of anchor names to copy, all if empty])
-
+#show-module-fn(draw-module, "copy-anchors")
 #example({
 import "draw.typ": *
 group(name: "g", {
@@ -741,18 +627,8 @@ To apply transformations scoped use a `group(...)` object.
 Transformation martices get multiplied in the following order:
 $ M_"world" = M_"world" dot M_"local" $
 
-=== Translate <translate>
-```typc
-translate(coordinate, pre: true)
-```
 
-#def-arg("coordinate", `<vector>`,
-  [Coordinates to translate for])
-#def-arg("pre", `<bool>`,
-  [Specify multiplication order. If `true`, translation is multiplied
-   in the order $M_"local" dot M_"world"$, otherwise the order
-   $M_"world" dot M_"local"$ is used.])
-
+#show-module-fn(draw-module, "translate")
 #example({
 import "draw.typ": *
 rect((0,0), (2,2))
@@ -766,11 +642,7 @@ translate((.5,.5,0))
 rect((0,0), (1,1))
 ```)
 
-=== Set Origin
-```typc
-set-origin(position)
-```
-
+#show-module-fn(draw-module, "set-origin")
 #example({
 import "draw.typ": *
 rect((0,0), (2,2), name: "r")
@@ -784,18 +656,7 @@ set-origin("r.above")
 circle((0, 0), radius: .1)
 ```)
 
-=== Set Viewport
-```typc
-set-viewport(from, to, bounds: (1, 1, 1))
-```
-
-#def-arg("from", `<coordinate>`,
-  [First (bottom-right) coordinate of the viewport rect.])
-#def-arg("to", `<coordinate>`,
-  [Second (top-left) coordinate of the viewport rect.])
-#def-arg("bounds", `<vector>`,
-  [Viewport inner bounds. Negative bounds flip sides.])
-
+#show-module-fn(draw-module, "set-viewport")
 #example({
   import "draw.typ": *
   rect((0,0), (2,2))
@@ -807,12 +668,7 @@ set-viewport((0,0), (2,2), bounds: (10, 10))
 circle((5,5))
 ```)
 
-=== Rotate
-```typc
-rotate(axis-dictionary)
-rotate(z-angle)
-```
-
+#show-module-fn(draw-module, "rotate")
 #example({
   import "draw.typ": *
   rotate((z: 45deg))
@@ -828,12 +684,7 @@ rotate((y: 80deg))
 circle((0,0))
 ```)
 
-=== Scale
-```typc
-#scale(axis-dictionary)
-#scale(factor)
-```
-
+#show-module-fn(draw-module, "scale")
 #example({
   import "draw.typ": *
   scale((x: 1.8))
@@ -843,7 +694,6 @@ circle((0,0))
 scale((x: 1.8))
 circle((0,0))
 ```)
-
 
 
 = Coordinate Systems <coordinate-systems>
@@ -1323,18 +1173,7 @@ circle((v => cetz.vector.add(v, (0, -1)), "c.right"), radius: 0.3)
 
 = Utility
 
-== For-Each-Anchor
-
-```typc
-for-each-anchor(node-name, callback)
-```
-#def-arg("node-name", `<string>`, [
-  Target node name
-])
-#def-arg("callback", `<function>`, [
-  Callback function acception the anchor name
-])
-
+#show-module-fn(draw-module, "for-each-anchor")
 #example({
   import "draw.typ": *
   rect((0, 0), (2,2), name: "my-rect")
@@ -1360,34 +1199,11 @@ for-each-anchor("my-rect", (name) => {
 = Libraries
 
 == Tree
+#let tree-module = parse-module("../../tree.typ", name: "Tree")
 
 With the tree library, CeTZ provides a simple tree layout algorithm.
 
-```typc
-tree(root-node, draw-node: auto, draw-edge: auto,
-  direction: "down", parent-position: "center", grow: 1,
-  spread: 1, name: none, ..style)
-```
-
-#def-arg("root-node", "node",
-  [Tree root node, see @tree-node])
-#def-arg("draw-node", "function?",
-  [Node render callback `(node, parent-name) => (draw, ..)`])
-#def-arg("draw-edge", "function?",
-  [Edge render callback `(source-name, target-name, target-node) => (draw, ..)`])
-#def-arg("direction", "s",
-  [Tree grow direction: "top", "bottom", "left" or "right"])
-#def-arg("parent-position", "s",
-  [Positioning of parent nodes: "begin", "center" or "end"])
-#def-arg("grow", "f",
-  [Direction grow factor])
-#def-arg("spread", "f",
-  [Sibling spread factor])
-#def-arg("name", "s?",
-  [Object name])
-#def-arg("..style", "style",
-  [Draw style])
-
+#show-module(tree-module, show-module-name: false)
 #example({
   import "draw.typ": *
   import "tree.typ"

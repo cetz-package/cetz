@@ -5,18 +5,18 @@
 #import "vector.typ"
 #import "matrix.typ"
 
-// Layout and render tree nodes
-//
-// - root (array): Tree structure represented by nested lists
-//                 Example: ([root], [child 1], ([child 2], [grandchild 1]))
-// - draw-node (function): Callback for rendering a node.
-//                         Signature: (node) -> cmds[]
-// - draw-edge (function): Callback for rendering edges between nodes
-//                         Signature: (source-name, target-name, target-node) -> cmds[]
-// - direction (string): Tree grow direction (top, bottom, left, right)
-// - parent-position (string): Positioning of parent nodes (begin, center, end)
-// - grow (float): Depth grow factor (default 1)
-// - spread (float): Sibling spread factor (default 1)
+/// Layout and render tree nodes
+///
+/// - root (array): Tree structure represented by nested lists
+///                 Example: `([root], [child 1], ([child 2], [grandchild 1]))`
+/// - draw-node (function): Callback for rendering a node.
+///                         Signature: `node => elements`
+/// - draw-edge (function): Callback for rendering edges between nodes
+///                         Signature: `(source-name, target-name, target-node) => elements`
+/// - direction (string): Tree grow direction (top, bottom, left, right)
+/// - parent-position (string): Positioning of parent nodes (begin, center, end)
+/// - grow (float): Depth grow factor (default 1)
+/// - spread (float): Sibling spread factor (default 1)
 #let tree(root, draw-node: auto, draw-edge: auto,
           direction: "down", parent-position: "center",
           grow: 1, spread: 1, name: none, ..style) = {

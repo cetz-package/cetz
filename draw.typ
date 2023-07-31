@@ -102,8 +102,6 @@
 
 /// Push scale matrix
 ///
-/// World = World * Scale
-///
 /// - factor (float,dictionary): Scaling factor for all axes or per axis scaling
 ///                              factor dictionary.
 #let scale(factor) = ((
@@ -112,12 +110,10 @@
 
 /// Push translation matrix
 ///
-/// World = Translation * World
-///
 /// - vec (vector,dictionary): Translation vector
-/// - pre (bool): Matrix multiplication order
-///               - false: World = World * Translate
-///               - true:  World = Translate * World
+/// - pre (bool): Specify matrix multiplication order
+///               - false: `World = World * Translate`
+///               - true:  `World = Translate * World`
 #let translate(vec, pre: true) = {
   let resolve-vec(vec) = {
     let (x,y,z) = if type(vec) == "dictionary" {
@@ -245,9 +241,13 @@
 /// set default anchors (top, top-left, ..) to the bounding box of
 /// their children.
 ///
+/// Note: You can pass `content` a function of the form `ctx => draw-cmds`
+/// which returns the groups children. This way you get access to the
+/// groups context dictionary.
+///
 /// - name (string): Element name
 /// - anchor (string): Element origin
-/// - body (draw,function): Children or function of the form (ctx => array)
+/// - body (draw,function): Children or function of the form (`ctx => elements`)
 #let group(name: none, anchor: none, body) = {
   ((
     name: name,
@@ -280,7 +280,11 @@
   ),)
 }
 
-/// Draw a mark between two coordinates
+/// Draw a mark or "arrow head" between two coordinates
+///
+/// *Style root:* `mark`.
+///
+/// Its styling influences marks being drawn on paths (`line`, `bezier`, ...).
 ///
 /// - from (coordinate): Source coordinate
 /// - to (coordinate): Target coordinate
@@ -298,16 +302,23 @@
   ),)
 }
 
-/// Draw a poly-line
+/// Draw a line or poly-line
 ///
-/// Style root: `line`.
-/// Anchors:
+/// Draws a line (a direct path between points) to the canvas.
+/// If multiplie coordinates are given, a line is drawn between each
+/// consecutive one.
+///
+/// *Style root:* `line`.
+///
+/// *Anchors:*
 ///   - start -- First coordinate
 ///   - end   -- Last coordinate
 ///
-/// - ..pts (coordinate): Points
+/// - ..pts (coordinate): Coordinates to draw the line(s) between. A min.
+///                       of two points must be given.
 /// - ..style (style): Style
-/// - close (bool): Close path
+/// - close (bool): Close path. If `true`, a straight line is drawn from
+///                 the last back to the first coordinate, closing the path.
 /// - name (string): Element name
 #let line(..pts-style, close: false, name: none) = {
   // Extra positional arguments from the pts-style
@@ -357,7 +368,18 @@
 
 /// Draw a rect from `a` to `b`
 ///
-/// Style root: `rect`.
+/// *Style root:* `rect`.
+///
+/// *Anchors*:
+/// - center: Center
+/// - top-left: Top left
+/// - top-right: Top right
+/// - bottom-left: Bottom left
+/// - bottom-left: Bottom right
+/// - top: Mid between top-left and top-right
+/// - left: Mid between top-left and bottom-left
+/// - right: Mid between top-right and bottom-right
+/// - bottom: Mid between bottom-left and bottom-right
 ///
 /// - a (coordinate): Bottom-Left coordinate
 /// - b (coordinate): Top-Right coordinate
@@ -472,9 +494,10 @@
   ),)
 }
 
-/// Draw ellipse
+/// Draw a circle or an ellipse
 ///
-/// Style root: `circle`.
+/// *Style root:* `circle`.
+///
 /// The ellipses radii can be specified by its style field `radius`, which can be of
 /// type `float` or a tuple of two `float`'s specifying the x/y radius. 
 ///
@@ -507,10 +530,10 @@
 /// The position of the anchor is set as the current position.
 ///
 /// - node-prefix (string): Anchor node name
-/// - callback (function): Callback (anchor-name) => cmd
+/// - callback (function): Callback of the form `anchor-name => elements`
 ///
 /// Example:
-///   for-each-anchor("my-node", (name) => { content((), [#name]) })
+///   `for-each-anchor("my-node", (name) => { content((), [#name]) })`
 #let for-each-anchor(node-prefix, callback) = {
   ((
     children: (ctx) => {
@@ -523,10 +546,11 @@
   ),)
 }
 
-/// Draw circle through three points
+/// Draw a circle through three points
 ///
-/// Style root: `circle`.
-/// Anchors:
+/// *Style root:* `circle`.
+///
+/// *Anchors:*
 ///   - a -- Point a
 ///   - b -- Point b
 ///   - c -- Point c
@@ -564,7 +588,7 @@
 
 /// Render content
 ///
-/// Style root: `content`.
+/// *Style root:* `content`.
 ///
 /// NOTE: Content itself is not transformed by the canvas transformations!
 ///       native transformation matrix support from typst would be required.
@@ -666,11 +690,12 @@
 
 /// Draw a quadratic or cubic bezier line
 ///
-/// Style root: `bezier`.
-/// Anchors:
+/// *Style root:* `bezier`.
+///
+/// *Anchors:*
 ///   - start    -- First coordinate
 ///   - end      -- Last coordinate
-///   - ctrl-<n> -- Control point <n>
+///   - ctrl-(n) -- Control point (n)
 ///
 /// - start (coordinate): Start point
 /// - end (coordinate): End point
@@ -710,7 +735,7 @@
 
 /// Draw a quadratic bezier from a to c through b
 ///
-/// Style root: `bezier`.
+/// *Style root:* `bezier`.
 ///
 /// - s (coordinate): Start point
 /// - b (coordinate): Passthrough point
@@ -730,8 +755,9 @@
         cubic-through-3points(s, b, e)
       }
     },
-    custom-anchors: (s, b, e, ..c) => {
+    custom-anchors: (s, e, ..c) => {
       let anchors = (start: s, end: e)
+      assert.eq(c.pos().len(), deg - 1)
       for (i, ctrl) in c.pos().enumerate() {
         anchors.insert("ctrl-" + str(i + 1), ctrl)
       }
@@ -955,7 +981,7 @@
 
 /// Render shadow of children by rendering them twice
 ///
-/// Style root: `shadow`.
+/// *Style root:* `shadow`.
 ///
 /// - body (canvas): Child elements
 /// - ..style (style): Style
@@ -1003,14 +1029,15 @@
 
 /// Draw a grid
 ///
-/// Style root: `grid`.
+/// *Style root:* `grid`.
 ///
 /// - from (coordinate): Start point
 /// - end (coordinate): End point
 /// - step (float,dictionary): Distance between grid lines. If passed a
-///                            dictionary, x and y step can be set via the
-///                            keys `x` and `y`.
+///                            dictionary, $x$ and $y$ step can be set via the
+///                            keys `x` and `y` (`(x: <step>, y: <step>)`).
 /// - name (string): Element name
+/// - help-lines (bool): Styles the grid using thin gray lines
 /// - ..style (style): Style
 #let grid(from, to, step: 1, name: none, help-lines: false, ..style) = {
   let t = (from, to).map(coordinate.resolve-system)
