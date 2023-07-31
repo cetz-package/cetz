@@ -1,3 +1,13 @@
+* 0.0.3
+** Plot
+- Added aguments `plot-style` and `mark-style` to the `plot(..)` base function
+  that allow providing a base style that gets inherited by all graphs.
+  Plots now default to the color pattern (blue, red, green, yellow, black) for
+  stroking & filling graphs.
+
+** Axes
+- Fixed axis label alignment.
+
 * 0.0.2
 ** Content
 - The `content` function now supports a second coordinate as `angle`, to

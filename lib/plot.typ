@@ -6,6 +6,18 @@
 #import "../draw.typ"
 #import "../vector.typ"
 
+#let default-colors = (blue, red, green, yellow, black)
+
+#let default-plot-style(i) = {
+  let color = default-colors.at(calc.rem(i, default-colors.len()))
+  return (stroke: color,
+          fill: color.lighten(75%))
+}
+
+#let default-mark-style(i) = {
+  return default-plot-style(i)
+}
+
 // Compute list of linear paths for data points, clipped to
 // the bounding box of [min-x, max-x][min-y, max-y].
 //
@@ -138,11 +150,11 @@
          hypograph: false,
          epigraph: false,
          fill: false,
+         style: (:),
          mark: none,
          mark-size: .2,
+         mark-style: (:),
          samples: 100,
-         style: (stroke: black, fill: gray),
-         mark-style: (stroke: black, fill: none),
          axes: ("x", "y"),
          data
          ) = {
@@ -255,6 +267,10 @@
 ///                  - `"school-book"`: Draw axes x and y as arrows with both crossing at $(0, 0)$
 ///                  - `"left"`: Draw axes x and y as arrows, the y axis stays on the left (at `x.min`)
 ///                              and the x axis at the bottom (at `y.min`)
+/// - plot-style (style,function): Style used for drawing plot graphs
+///                                This style gets inherited by all plots.
+/// - mark-style (style,function): Style used for drawing plot marks.
+///                                This style gets inherited by all plots.
 /// - name (string): Element name
 /// - options (any): The following options are supported per axis
 ///                  and must be prefixed by `<axis-name>-`, e.G.
@@ -271,6 +287,8 @@
           size: (1, 1),
           axis-style: "scientific",
           name: none,
+          plot-style: default-plot-style,
+          mark-style: default-mark-style,
           ..options
           ) = draw.group(name: name, ctx => {
   let data = ()
@@ -334,12 +352,24 @@
 
   // Prepare styles
   for i in range(data.len()) {
+    let style-base = plot-style
+    if type(style-base) == "function" {
+      style-base = (style-base)(i)
+    }
     if type(data.at(i).style) == "function" {
       data.at(i).style = (data.at(i).style)(i)
+    }
+    let mark-style-base = mark-style
+    if type(mark-style-base) == "function" {
+      mark-style-base = (mark-style-base)(i)
     }
     if type(data.at(i).mark-style) == "function" {
       data.at(i).mark-style = (data.at(i).mark-style)(i)
     }
+    data.at(i).style = util.merge-dictionary(
+      style-base, data.at(i).style)
+    data.at(i).mark-style = util.merge-dictionary(
+      mark-style-base, data.at(i).mark-style)
   }
 
   // Compute poly-lines
