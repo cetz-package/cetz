@@ -390,7 +390,7 @@
 /// *Style root:* `arc`.
 ///
 /// Exactly two arguments of `start`, `stop` and `delta` must be set to a value other
-/// than `auto`. You can set the radius of the arc by setting the `radis` style option, which accepts a `float` or tuple of floats for setting the x/y radius.
+/// than `auto`. You can set the radius of the arc by setting the `radius` style option, which accepts a `float` or tuple of floats for setting the x/y radius.
 /// You can set the arcs draw mode using the style `mode`, which accepts the
 /// values `"PIE"`, `"CLOSE"` and `"OPEN"` (default). If set to `"PIE"`, the first and
 /// last points of the arc's path are it's center. If set to `"CLOSE"`, the path is closed.

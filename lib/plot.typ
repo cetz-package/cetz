@@ -180,6 +180,7 @@
   )
 
   ((
+    type: "data",
     data: data,
     axes: axes,
     x-domain: domain,
@@ -191,6 +192,24 @@
     mark: mark,
     mark-size: mark-size,
     mark-style: mark-style,
+  ),)
+}
+
+/// Add an anchor to a plot environment
+///
+/// - name (string): Anchor name
+/// - position (array): Tuple of x and y values.
+///                     Both values can have the special values "min" and
+///                     "max", which resolve to the axis min/max value.
+///                     Position is in axis space!
+/// - axes (array): Name of the axes to use ("x", "y"), note that both
+///                 axes must exist!
+#let add-anchor(name, position, axes: ("x", "y")) = {
+  ((
+    type: "anchor",
+    name: name,
+    position: position,
+    axes: axes,
   ),)
 }
 
@@ -236,6 +255,7 @@
 ///                  - `"school-book"`: Draw axes x and y as arrows with both crossing at $(0, 0)$
 ///                  - `"left"`: Draw axes x and y as arrows, the y axis stays on the left (at `x.min`)
 ///                              and the x axis at the bottom (at `y.min`)
+/// - name (string): Element name
 /// - options (any): The following options are supported per axis
 ///                  and must be prefixed by `<axis-name>-`, e.G.
 ///                  `x-min: 0`.
@@ -250,9 +270,17 @@
 #let plot(body,
           size: (1, 1),
           axis-style: "scientific",
+          name: none,
           ..options
-          ) = {
-  let data = body
+          ) = draw.group(name: name, ctx => {
+  let data = ()
+  let anchors = ()
+  for cmd in body {
+    assert(type(cmd) == "dictionary" and "type" in cmd,
+           message: "Expected plot sub-command in plot body")
+    if cmd.type == "data" { data.push(cmd) }
+    if cmd.type == "anchor" { anchors.push(cmd) }
+  }
 
   assert(axis-style in ("scientific", "school-book", "left"),
          message: "Invalid plot style")
@@ -441,4 +469,19 @@
       })
     }
   }
-}
+
+  // Place anchors
+  for a in anchors {
+    let (x, y) = a.axes.map(name => axis-dict.at(name))
+    assert(x != none, message: "Axis " + name + " does not exist")
+    assert(y != none, message: "Axis " + name + " does not exist")
+    axes.axis-viewport(name: "anchors", size, x, y, {
+      let (ax, ay) = a.position
+      if ax == "min" {ax = x.min} else if ax == "max" {ax = x.max}
+      if ay == "min" {ay = y.min} else if ay == "max" {ay = y.max}
+      draw.anchor("default", (0,0))
+      draw.anchor(a.name, (ax, ay))
+    })
+    draw.copy-anchors("anchors", filter: (a.name,))
+  }
+})
