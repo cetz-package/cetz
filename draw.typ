@@ -9,6 +9,23 @@
 #import "styles.typ"
 
 #let typst-rotate = rotate
+#let typst-measure = measure
+
+// Measure content in canvas coordinates
+#let measure(cnt, ctx) = {
+  let size = typst-measure(cnt, ctx.typst-style)
+
+  // Transformation matrix:
+  // sx .. .. .
+  // .. sy .. .
+  // .. .. sz .
+  // .. .. .. 1
+  let sx = ctx.transform.at(0).at(0)
+  let sy = ctx.transform.at(1).at(1)
+
+  return (calc.abs(size.width / ctx.length / sx),
+          calc.abs(size.height / ctx.length / sy))
+}
 
 /// Set current style
 ///
@@ -598,10 +615,9 @@
       let style = styles.resolve(ctx.style, style, root: "content")
       let padding = util.resolve-number(ctx, style.padding)
       let angle = get-angle(pt, pt2)
-      let size = measure(ct, ctx.typst-style)
-      let w = size.width / ctx.length + padding * 2
-      let h = size.height / ctx.length + padding * 2
-
+      let (w, h) = measure(ct, ctx)
+      w += 2 * padding
+      h += 2 * padding
       let x-dir = vector.scale((calc.cos(angle), -calc.sin(angle), 0), w/2)
       let y-dir = vector.scale((calc.sin(angle), calc.cos(angle), 0), h/2)
       let tr-dir = vector.add(x-dir, y-dir)
@@ -626,22 +642,21 @@
       let style = styles.resolve(ctx.style, style, root: "content")
       let padding = util.resolve-number(ctx, style.padding)
       let angle = get-angle(pt, pt2)
-      let size = measure(ct, ctx.typst-style)
-      let tw = size.width / ctx.length 
-      let th = size.height / ctx.length
+      let (tw, th) = measure(ct, ctx)
       let w = (calc.abs(calc.sin(angle) * th) +
                calc.abs(calc.cos(angle) * tw)) + padding * 2
       let h = (calc.abs(calc.cos(angle) * th) +
                calc.abs(calc.sin(angle) * tw)) + padding * 2
 
+      let (width: width, height: height) = typst-measure(ct, ctx.typst-style)
       cmd.content(
         x,
         y,
         w,
         h,
         move(
-          dx: -tw/2 * ctx.length,
-          dy: -th/2 * ctx.length,
+          dx: -width/2,
+          dy: -height/2,
           typst-rotate(angle, ct)
         )
       )

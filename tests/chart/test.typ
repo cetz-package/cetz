@@ -60,3 +60,44 @@
                  bar-style: palette.blue,
                  data2)
 }))
+
+#box(stroke: 2pt + red, canvas({
+  chart.columnchart(mode: "basic",
+                    size: (auto, 5),
+                    value-key: 1,
+                    label-key: 0,
+                    bar-width: .7,
+                    y-tick-step: 5,
+                    x-label: [x],
+                    y-label: [y],
+                    data1)
+}))
+
+#box(stroke: 2pt + red, canvas({
+  chart.columnchart(mode: "clustered",
+                    size: (auto, 5),
+                    label-key: 0,
+                    value-key: (..range(1, 5)),
+                    bar-width: .9,
+                    data2)
+}))
+
+#box(stroke: 2pt + red, canvas({
+  chart.columnchart(mode: "stacked",
+                    size: (auto, 5),
+                    label-key: 0,
+                    value-key: (..range(1, 5)),
+                    bar-width: .7,
+                    bar-style: palette.blue,
+                    data2)
+}))
+
+#box(stroke: 2pt + red, canvas({
+  chart.columnchart(mode: "stacked100",
+                    size: (auto, 4),
+                    label-key: 0,
+                    value-key: (..range(1, 5)),
+                    bar-width: .7,
+                    bar-style: palette.blue,
+                    data2)
+}))

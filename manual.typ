@@ -1585,10 +1585,27 @@ chart.barchart(size: (6, auto), mode: "clustered",
                x-tick-step: 10, value-key: (..range(1, 4)), data)
 ```)
 
+=== Examples <columnchart-examples>
+==== Basic
+#example(vertical: true, {
+draw.set-style(axes: (tick: (stroke: red, length: 1)))
+  let data = (("A", 10), ("B", 20), ("C", 13))
+  chart.columnchart(size: (auto, 4), y-tick-step: 10, data)
+}, ```typc
+let data = (("A", 10), ("B", 20), ("C", 13))
+chart.columnchart(size: (auto, 4), y-tick-step: 10, data)
+```)
+
 === Styling
 
 Charts share their axis system with plots and therefore can be
 styled the same way, see @plot.style.
+
+==== Default `barchart` Style
+#raw(repr(chart.barchart-default-style))
+
+==== Default `columnchart` Style
+#raw(repr(chart.columnchart-default-style))
 
 == Palette <palette>
 #let palette-module = parse-module("../../lib/palette.typ", name: "Palette")
