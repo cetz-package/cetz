@@ -31,6 +31,12 @@ files=(
   gallery/pie-chart.png
   gallery/karls-picture.typ
   gallery/karls-picture.png
+  gallery/plot.typ
+  gallery/plot.png
+  gallery/barchart.typ
+  gallery/barchart.png
+  gallery/tree.typ
+  gallery/tree.png
   manual.typ
   manual.pdf
 )

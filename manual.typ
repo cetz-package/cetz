@@ -1415,7 +1415,7 @@ Supported charts are:
 
 #show-module(chart-module, show-module-name: false)
 
-=== Examples <barchart-examples>
+=== Examples -- Bar Chart <barchart-examples>
 ==== Basic
 #example(vertical: true, {
 draw.set-style(axes: (tick: (stroke: red, length: 1)))
@@ -1448,8 +1448,8 @@ chart.barchart(size: (6, auto), mode: "clustered",
                x-tick-step: 10, value-key: (..range(1, 4)), data)
 ```)
 
-=== Examples <columnchart-examples>
-==== Basic
+=== Examples -- Column Chart <columnchart-examples>
+==== Basic, Clustered and Stacked
 #example(vertical: true, {
   draw.set-style(axes: (tick: (stroke: red, length: 1)))
     let data1 = (("A", 10), ("B", 20), ("C", 13))
