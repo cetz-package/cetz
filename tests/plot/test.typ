@@ -84,6 +84,7 @@
     x-tick-step: 180,
     x-unit: $degree$,
     y-tick-step: 1,
+    plot-style: (stroke: black),
     {
       plot.add(domain: (-360, 360), epigraph: true,
         x => calc.sin(x * 1deg), style: (fill: blue))
@@ -104,13 +105,14 @@
     y-min: -2,
     x-tick-step: 360,
     y-tick-step: 1,
+    style: plot.palette.red,
+    mark-style: plot.palette.red,
     {
       for (i, m) in ("o", "square", "x", "triangle", "|", "-").enumerate() {
         plot.add(domain: (i * 180, (i + 1) * 180),
           samples: 12,
           style: (stroke: none),
           mark: m,
-          mark-style: plot.palette.red,
           mark-size: .3,
           x => calc.sin(x * 1deg))
       }
@@ -227,7 +229,7 @@
     x-grid: "major",
     y-grid: "major",
     {
-      plot.add(data)
+      plot.add(data, fill: true)
       plot.add-anchor("from", (-270, "max"))
       plot.add-anchor("to", (90, "max"))
       plot.add-anchor("lo", (90, 0))
