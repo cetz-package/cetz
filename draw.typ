@@ -5,7 +5,7 @@
 #import "path-util.typ"
 #import "coordinate.typ"
 #import "bezier.typ": to-abc, quadratic-through-3points, cubic-through-3points
-#import "collisions.typ"
+#import "intersection.typ"
 #import "styles.typ"
 
 #let typst-rotate = rotate
@@ -840,7 +840,7 @@
 ),)
 }
 
-/// Emit on anchor per interesection of all elements
+/// Emit on anchor per intersection of all elements
 /// inside body.
 ///
 /// - body (elements): Element body
@@ -864,9 +864,9 @@
       for i in range(children.len()) {
         for j in range(i + 1, children.len()) {
           if i != j {
-            let isect = collisions.path-path(children.at(i),
-                                             children.at(j),
-                                             samples: samples)
+            let isect = intersection.path-path(children.at(i),
+                                               children.at(j),
+                                               samples: samples)
             for pt in isect {
               if not pt in pts { pts.push(pt) }
             }
@@ -988,7 +988,7 @@
 //       let anchors = (:)
 //       for p1 in ps1 {
 //         for p2 in ps2 {
-//           let cs = collisions.poly-poly(p1, p2)
+//           let cs = intersection.poly-poly(p1, p2)
 //           if cs != none {
 //             for c in cs {
 //               anchors.insert(str(anchors.len()+1), util.revert-transform(ctx.transform, c))
