@@ -97,9 +97,12 @@ function update_test_ref()
   )
 }
 
+TEST_FAIL=0
+TEST_OK=0
+
 function run_test()
 {
-  (
+  if (
     cd "$1"
     local NAME
     NAME="$(basename "$1")"
@@ -115,28 +118,32 @@ function run_test()
         $MAGICK_COMPARE -compose src res.png ref.png diff.png || true
         echo "[FAIL] see $(pwd)/diff.png for differences"
         exit 1
+      else
+        echo "[  OK]"
+        exit 0
       fi
-
-      echo "[  OK]"
-    fi
-  )
+    fi);
+  then
+    TEST_OK=$((TEST_OK + 1))
+  else
+    TEST_FAIL=$((TEST_FAIL + 1))
+  fi
 }
 
 echo "Typst: $(typst --version)"
 
-find "$TEST_ROOT" -type d | \
-  while read -r test
-  do
-    if [[ "$test" == "$TEST_ROOT" ]]; then continue; fi
+while read -r test
+do
+  if [[ "$test" == "$TEST_ROOT" ]]; then continue; fi
 
-    if [[ "$MODE" == "test" ]]; then
-      run_test "$test"
-    elif [[ "$MODE" == "update" ]]; then
-      update_test_ref "$test"
-    else
-      echo "Unknown mode '$MODE'"; exit 1
-    fi
-  done
+  if [[ "$MODE" == "test" ]]; then
+    run_test "$test"
+  elif [[ "$MODE" == "update" ]]; then
+    update_test_ref "$test"
+  else
+    echo "Unknown mode '$MODE'"; exit 1
+  fi
+done < <(find "$TEST_ROOT" -type d)
 
 # Optional tests
 if hash typos 2>/dev/null; then
@@ -149,4 +156,10 @@ if hash typos 2>/dev/null; then
 else
   echo "[SKIP] typos"
   echo "[    ] You can install 'typos' via 'cargo install typos-cli'."
+fi
+
+echo "Passed: $TEST_OK"
+echo "Failed: $TEST_FAIL"
+if [[ $TEST_FAIL -gt 0 ]]; then
+  exit 1
 fi

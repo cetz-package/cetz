@@ -51,29 +51,10 @@
         let type = s.at(0)
         let coordinates = s.slice(1)
         
-        assert(type in ("line", "quadratic", "cubic"),
-               message: "Path segments must be of type line, quad or cube")
+        assert(type in ("line", "cubic"),
+               message: "Path segments must be of type line, cubic")
         
-        if type == "quadratic" {
-          // TODO: Typst path implementation does not support quadratic
-          //       curves.
-          // let a = coordinates.at(0)
-          // let b = coordinates.at(1)
-          // let ctrla = relative(a, coordinates.at(2))
-          // let ctrlb = relative(b, coordinates.at(2))
-          // vertices.push((a, (0em, 0em), ctrla))
-          // vertices.push((b, (0em, 0em), (0em, 0em)))
-          let a = coordinates.at(0)
-          let b = coordinates.at(1)
-          let c = coordinates.at(2)
-
-          let samples = path-util.ctx-samples((:)) //(ctx)
-          vertices.push(a)
-          for i in range(0, samples) {
-            vertices.push(bezier.quadratic-point(a, b, c, i / samples))
-          }
-          vertices.push(b)
-        } else if type == "cubic" {
+        if type == "cubic" {
           let a = coordinates.at(0)
           let b = coordinates.at(1)
           let ctrla = relative(a, coordinates.at(2))

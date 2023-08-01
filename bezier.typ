@@ -176,3 +176,16 @@
 
   return (s, e, c1, c2)
 }
+
+/// Convert quadratic bezier to cubic
+///
+/// - s (vector): Curve start
+/// - e (vector): Curve end
+/// - c (vector): Control point
+///
+/// -> (s, e, c1, c2)
+#let quadratic-to-cubic(s, e, c) = {
+  let c1 = vector.add(s, vector.scale(vector.sub(c, s), 2/3))
+  let c2 = vector.add(e, vector.scale(vector.sub(c, e), 2/3))
+  return (s, e, c1, c2)
+}
