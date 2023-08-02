@@ -38,11 +38,8 @@
     if type == "line" {
       bounds += s.slice(1)
     } else if type == "cubic" {
-      let (a, b, c, d) = s.slice(1)
-      bounds.push(a)
-      bounds.push(b)
-      bounds += range(1, samples).map(x =>
-        bezier.cubic-point(a, b, c, d, x / samples))
+      bounds += bezier.cubic-aabb(
+        s.at(1), s.at(2), s.at(3), s.at(4))
     }
   }
 
