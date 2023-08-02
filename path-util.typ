@@ -38,7 +38,9 @@
     if type == "line" {
       bounds += s.slice(1)
     } else if type == "cubic" {
-      bounds += bezier.cubic-aabb(
+      bounds.push(s.at(1))
+      bounds.push(s.at(2))
+      bounds += bezier.cubic-extrema(
         s.at(1), s.at(2), s.at(3), s.at(4))
     }
   }
