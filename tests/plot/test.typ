@@ -245,3 +245,19 @@
        (rel: (0, -.2), to: "plot.hi"),
        mark: (start: ">", end: ">"), name: "amplitude")
 }))
+
+/* Something cool */
+#box(stroke: 2pt + red, canvas({
+  import "../../draw.typ": *
+
+  plot.plot(size: (10, 4),
+    x-min: -.8,
+    x-grid: "major",
+    y-grid: "major",
+    {
+      plot.add(samples: 100, domain: (-2 * calc.pi, 2 * calc.pi), t =>
+        (calc.cos(t) / (calc.pow(calc.sin(t), 2) + 1),
+         calc.cos(t) * calc.sin(t) / (calc.pow(calc.sin(t), 2) + 1)))
+    })
+}))
+
