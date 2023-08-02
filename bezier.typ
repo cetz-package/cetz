@@ -176,3 +176,72 @@
 
   return (s, e, c1, c2)
 }
+
+/// Convert quadratic bezier to cubic
+///
+/// - s (vector): Curve start
+/// - e (vector): Curve end
+/// - c (vector): Control point
+///
+/// -> (s, e, c1, c2)
+#let quadratic-to-cubic(s, e, c) = {
+  let c1 = vector.add(s, vector.scale(vector.sub(c, s), 2/3))
+  let c2 = vector.add(e, vector.scale(vector.sub(c, e), 2/3))
+  return (s, e, c1, c2)
+}
+
+/// Find cubic extrema
+///
+/// -> (vector, ..) List of extrema points
+#let cubic-extrema(s, e, c1, c2) = {
+  // Compute roots of d/dx
+  let dim-extrema(a, b, c1, c2) = {
+    if a == b + 3 * c1 - 3 * c2 and b + c1 != 2 * c2 {
+      return ((b + 2 * c1 - 3 * c2) / (2 * (b + c1 - 2 * c2)),)
+    }
+    if a + 3 * c2 != b + 3 * c1 {
+      let ts = ()
+      for s in (-1, 1) {
+        let r = a * b - a * c2 - b * c1 + c1 * c1 - c1 * c2 + c2 * c2
+        if r >= 0 {
+          ts.push((s * calc.sqrt(r) + a - 2 * c1 + c2) /
+                  (a - b - 3 * c1 + 3 * c2))
+        }
+      }
+      return ts
+    }
+    return ()
+  }
+
+  let pts = ()
+  let dims = calc.max(s.len(), e.len())
+  for dim in range(dims) {
+    let ts = dim-extrema(s.at(dim, default: 0), e.at(dim, default: 0),
+                         c1.at(dim, default: 0), c2.at(dim, default: 0))
+    for t in ts {
+      if t >= 0 and t <= 1 {
+        pts.push(cubic-point(s, e, c1, c2, t))
+      }
+    }
+  }
+  return pts
+}
+
+/// Return aabb coordinates for cubic bezier curve
+///
+/// -> (bottom-left, top-right)
+#let cubic-aabb(s, e, c1, c2) = {
+  let (lo, hi) = (s, e)
+  for dim in range(lo.len()) {
+    if lo.at(dim) > hi.at(dim) {
+      (lo.at(dim), hi.at(dim)) = (hi.at(dim), lo.at(dim))
+    }
+  }
+  for pt in cubic-extrema(s, e, c1, c2) {
+    for dim in range(pt.len()) {
+      lo.at(dim) = calc.min(lo.at(dim), hi.at(dim), pt.at(dim))
+      hi.at(dim) = calc.max(lo.at(dim), hi.at(dim), pt.at(dim))
+    }
+  }
+  return (lo, hi)
+}

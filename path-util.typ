@@ -37,18 +37,9 @@
     let type = s.at(0)
     if type == "line" {
       bounds += s.slice(1)
-    } else if type == "quadratic" {
-      let (a, b, c) = s.slice(1)
-      bounds.push(a)
-      bounds.push(b)
-      bounds += range(1, samples).map(x =>
-        bezier.quadratic-point(a, b, c, x / samples))
     } else if type == "cubic" {
-      let (a, b, c, d) = s.slice(1)
-      bounds.push(a)
-      bounds.push(b)
-      bounds += range(1, samples).map(x =>
-        bezier.cubic-point(a, b, c, d, x / samples))
+      bounds += bezier.cubic-aabb(
+        s.at(1), s.at(2), s.at(3), s.at(4))
     }
   }
 
@@ -65,12 +56,6 @@
   let pts = ()
   if type == "line" {
     pts = s.slice(1)
-  } else if type == "quadratic" {
-    let (a, b, c) = s.slice(1)
-    pts.push(a)
-    pts = range(1, samples).map(t =>
-      bezier.quadratic-point(a, b, c, t / samples))
-    pts.push(b)
   } else if type == "cubic" {
     let (a, b, c, d) = s.slice(1)
     pts.push(a)
@@ -140,9 +125,6 @@
   let type = s.at(0)
   if type == "line" {
     return point-on-polyline(s, t)
-  } else if type == "quadratic" {
-    let (a, b, c) = s.slice(1)
-    return bezier.quadratic-point(a, b, c, t)
   } else if type == "cubic" {
     let (a, b, c, d) = s.slice(1)
     return bezier.cubic-point(a, b, c, d, t)

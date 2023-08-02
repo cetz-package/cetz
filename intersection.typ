@@ -49,9 +49,6 @@
     let t = s.at(0)
     if t == "line" {
       return s.slice(1)
-    } else if t == "quadratic" {
-      return range(samples + 1).map(
-        t => bezier.quadratic-point(..s.slice(1), t/samples))
     } else if t == "cubic" {
       return range(samples + 1).map(
         t => bezier.cubic-point(..s.slice(1), t/samples))

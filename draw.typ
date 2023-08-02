@@ -4,7 +4,7 @@
 #import "util.typ"
 #import "path-util.typ"
 #import "coordinate.typ"
-#import "bezier.typ": to-abc, quadratic-through-3points, cubic-through-3points
+#import "bezier.typ": to-abc, quadratic-through-3points, cubic-through-3points, quadratic-to-cubic
 #import "intersection.typ"
 #import "styles.typ"
 
@@ -717,6 +717,13 @@
   return ((
     name: name,
     coordinates: (start, end, ..ctrl),
+    transform-coordinates: (s, e, ..ctrl) => {
+      let ctrl = ctrl.pos()
+      if ctrl.len() == 1 {
+        return quadratic-to-cubic(s, e, ..ctrl)
+      }
+      return (s, e, ..ctrl)
+    },
     custom-anchors: (start, end, ..ctrl) => {
       let a = (start: start, end: end)
       for (i, c) in ctrl.pos().enumerate() {
@@ -724,11 +731,10 @@
       }
       return a
     },
-    render: (ctx, start, end, ..ctrl) => {
+    render: (ctx, start, end, c1, c2) => {
       let style = styles.resolve(ctx.style, style, root: "bezier")
-      ctrl = ctrl.pos()
       cmd.path(
-        (if len == 1 { "quadratic" } else { "cubic" }, start, end, ..ctrl),
+        ("cubic", start, end, c1, c2),
         fill: style.fill, stroke: style.stroke
       )
     }
@@ -742,24 +748,17 @@
 /// - s (coordinate): Start point
 /// - b (coordinate): Passthrough point
 /// - e (coordinate): End point
-/// - deg (int): Degree (2 or 3) of the bezier curve
 /// - name (string): Element name
 /// - ..style (style): Style
-#let bezier-through(s, b, e, deg: 3, name: none, ..style) = {
-  assert(deg in (2, 3), message: "Only beziers of degree 2 or 3 are supported")
+#let bezier-through(s, b, e, name: none, ..style) = {
   ((
     name: name,
     coordinates: (s, b, e),
     transform-coordinates: (s, b, e) => {
-      if deg == 2 {
-        quadratic-through-3points(s, b, e)
-      } else {
-        cubic-through-3points(s, b, e)
-      }
+      cubic-through-3points(s, b, e)
     },
     custom-anchors: (s, e, ..c) => {
       let anchors = (start: s, end: e)
-      assert.eq(c.pos().len(), deg - 1)
       for (i, ctrl) in c.pos().enumerate() {
         anchors.insert("ctrl-" + str(i + 1), ctrl)
       }
@@ -769,15 +768,9 @@
       let style = styles.resolve(ctx.style, style.named(), root: "bezier")
 
       let c = c.pos()
-      if c.len() == 1 {
-        cmd.path(("quadratic", s, e, ..c),
-                 fill: style.fill,
-                 stroke: style.stroke)
-      } else {
-        cmd.path(("cubic", s, e, ..c),
-                 fill: style.fill,
-                 stroke: style.stroke)
-      }
+      cmd.path(("cubic", s, e, ..c),
+               fill: style.fill,
+               stroke: style.stroke)
     }
   ),)
 }
