@@ -141,7 +141,8 @@
 /// - mark-size (float): Mark size in cavas units
 /// - data (array,function): Array of 2D data points (numeric) or a function
 ///                          of the form `x => y`, where `x` is a value
-///                          insides `domain` and `y` must be numeric.
+///                          insides `domain` and `y` must be numeric or
+///                          a 2D vector (for parametric functions).
 ///
 ///                          *Examples*
 ///                          - `((0,0), (1,1), (2,-1))`
@@ -164,26 +165,30 @@
     assert(type(domain) == "array" and domain.len() == 2)
 
     let (lo, hi) = domain
-    data = range(0, samples + 1).map(x => {
+
+    let y0 = (data)(lo)
+    let is-vector = type(y0) == "array"
+    if not is-vector {
+      y0 = ((lo, y0), )
+    } else {
+      y0 = (y0, )
+    }
+    
+    data = y0 + range(1, samples + 1).map(x => {
       let x = lo + x / samples * (hi - lo)
-      (x, (data)(x))
+      if is-vector {
+        (data)(x)
+      } else {
+        (x, (data)(x))
+      }
     })
   }
 
-  // If data is not of type function, auto set domain
-  if domain == auto or domain.at(0) == auto or domain.at(1) == auto {
-    let (lo, hi) = (
-      calc.min(..data.map(t => t.at(0))),
-      calc.max(..data.map(t => t.at(0)))
-    )
-    if domain == auto {
-      domain = (lo, hi)
-    } else if domain.at(0) == auto {
-      domain.at(0) = lo
-    } else if domain.at(1) == auto {
-      domain.at(1) = hi
-    }
-  }
+  // Get x-domain
+  let x-domain = (
+    calc.min(..data.map(t => t.at(0))),
+    calc.max(..data.map(t => t.at(0)))
+  )
 
   // Get y-domain
   let y-domain = (
@@ -195,7 +200,7 @@
     type: "data",
     data: data,
     axes: axes,
-    x-domain: domain,
+    x-domain: x-domain,
     y-domain: y-domain,
     epigraph: epigraph,
     hypograph: hypograph,
