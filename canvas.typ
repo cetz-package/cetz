@@ -231,7 +231,6 @@
   if ctx.debug and bounds != none {
     drawables.push(
       cmd.path(
-        ctx, 
         stroke: red, 
         fill: none, 
         close: true, 
