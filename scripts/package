@@ -53,7 +53,7 @@ fi
 if (( $# < 1 )) || [[ "${1:-}" == "help" ]]; then
   echo "package TARGET"
   echo ""
-  echo "Packages all relevant files into a directory named '${PKG_PREFIX}-<version>'"
+  echo "Packages all relevant files into a directory named '${PKG_PREFIX}/<version>'"
   echo "at TARGET. If TARGET is set to @local, the local Typst package directory"
   echo "will be used so that the package gets installed for local use."
   echo "The version is read from 'typst.toml' in the project root."
@@ -75,7 +75,7 @@ TARGET="${1:?Missing target path or @local}"
 VERSION="$(read-toml "$SOURCE/typst.toml" "version")"
 
 if [[ "$TARGET" == "@local" ]] || [[ "$TARGET" == "install" ]]; then
-  TARGET="${DATA_DIR}/typst/packages/local/$PKG_PREFIX"
+  TARGET="${DATA_DIR}/typst/packages/local/"
   echo "Install dir: $TARGET"
 fi
 
@@ -86,9 +86,10 @@ for f in "${files[@]}"; do
   cp "$SOURCE/$f" "$TMP/$f"
 done
 
-echo "Packaged to: $TARGET/$VERSION"
-if rm -rf "${TARGET:?}/$VERSION" 2>/dev/null; then
+TARGET="${TARGET:?}/${PKG_PREFIX:?}/${VERSION:?}"
+echo "Packaged to: $TARGET"
+if rm -rf "${TARGET:?}" 2>/dev/null; then
   echo "Overwriting existing version."
 fi
-mkdir -p "$TARGET/"
-mv "$TMP" "$TARGET/$VERSION"
+mkdir -p "$TARGET"
+mv "$TMP"/* "$TARGET"
