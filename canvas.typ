@@ -330,15 +330,22 @@
     -bounds.t, 
     0
   )
-  box(stroke: if debug {green}, width: width, height: height, fill: background, {
-    for d in draw-cmds {
-      d.segments = d.segments.map(s => {
-        return (s.at(0),) + s.slice(1).map(v => {
-          return util.apply-transform(transform, v)
-            .slice(0,2).map(x => ctx.length * x)
+  box(
+    stroke: if debug {green}, 
+    width: width, 
+    height: height, 
+    fill: background, 
+    align(
+      top,
+      for d in draw-cmds {
+        d.segments = d.segments.map(s => {
+          return (s.at(0),) + s.slice(1).map(v => {
+            return util.apply-transform(transform, v)
+              .slice(0,2).map(x => ctx.length * x)
+          })
         })
-      })
-      (d.draw)(d)
-    }
-  })
+        (d.draw)(d)
+      }
+    )
+  )
 }))
