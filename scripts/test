@@ -36,7 +36,7 @@ fi
 
 function typst_compile()
 {
-  typst --root "$TYPST_ROOT" compile "${@}"
+  typst compile --root "$TYPST_ROOT" "${@}"
 }
 
 function install_typst()

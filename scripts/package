@@ -75,7 +75,7 @@ TARGET="${1:?Missing target path or @local}"
 VERSION="$(read-toml "$SOURCE/typst.toml" "version")"
 
 if [[ "$TARGET" == "@local" ]] || [[ "$TARGET" == "install" ]]; then
-  TARGET="${DATA_DIR}/typst/packages/local/"
+  TARGET="${DATA_DIR}/typst/packages/local/$PKG_PREFIX"
   echo "Install dir: $TARGET"
 fi
 
@@ -86,9 +86,9 @@ for f in "${files[@]}"; do
   cp "$SOURCE/$f" "$TMP/$f"
 done
 
-echo "Packaged to: $TARGET/$PKG_PREFIX-$VERSION"
-if rm -rf "$TARGET/$PKG_PREFIX-$VERSION" 2>/dev/null; then
+echo "Packaged to: $TARGET/$VERSION"
+if rm -rf "${TARGET:?}/$VERSION" 2>/dev/null; then
   echo "Overwriting existing version."
 fi
 mkdir -p "$TARGET/"
-mv "$TMP" "$TARGET/$PKG_PREFIX-$VERSION"
+mv "$TMP" "$TARGET/$VERSION"
