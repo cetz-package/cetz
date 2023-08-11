@@ -5,6 +5,7 @@
 #import "util.typ"
 #import "coordinate.typ"
 #import "styles.typ"
+#import "path-util.typ"
 
 // Compute bounding box of points
 #let bounding-box(pts, init: none) = {
@@ -83,6 +84,7 @@
         if r.bounds != none {
           bounds = bounding-box(r.bounds, init: bounds)
         }
+
         ctx = r.ctx
         child-drawables += r.drawables
       }
@@ -129,7 +131,7 @@
       })
 
       if "bounds" not in drawable {
-        drawable.bounds = drawable.segments.map(s => s.slice(1)).flatten()
+        drawable.bounds = path-util.bounds(drawable.segments)
       } else {
         drawable.bounds = drawable.bounds.map(util.apply-transform.with(ctx.transform));
       }
