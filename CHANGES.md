@@ -10,6 +10,7 @@
 
 ## Draw
 - Fixed issue #24, assert if line has fewer than two points.
+- Fixed an issue with calculating bounding boxes for some transformed paths
 
 ## Chart
 - Fixed barchart bars getting labeled in reversed order

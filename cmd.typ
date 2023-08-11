@@ -40,7 +40,6 @@
     type: "path",
     close: close,
     segments: segments,
-    bounds: path-util.bounds(segments),
     draw: (self) => {
       let relative = (orig, c) => {
         return vector.sub(c, orig)
