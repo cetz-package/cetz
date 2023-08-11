@@ -197,7 +197,7 @@
 
       axes.axis-viewport(size, x, y, {
         for (i, row) in data.enumerate() {
-          draw-data(i, y.min - i - 1, row)
+          draw-data(i, i, row)
         }
       })
     }
