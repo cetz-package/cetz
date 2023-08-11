@@ -1,7 +1,7 @@
 #import "lib.typ"
 #import "styles.typ"
+#import "@preview/tidy:0.1.0"
 #import lib: *
-#import "deps/typst-doc/typst-doc.typ": parse-module, show-module
 
 // This is a wrapper around typs-doc show-module that
 // strips all but one function from the module first.
@@ -9,7 +9,8 @@
 // needed.
 #let show-module-fn(module, fn, ..args) = {
   module.functions = module.functions.filter(f => f.name == fn)
-  show-module(module, ..args.pos(), ..args.named(), show-module-name: false)
+  tidy.show-module(module, ..args.pos(), ..args.named(),
+                   show-module-name: false)
 }
 
 #let canvas-background = gray.lighten(75%)
@@ -321,7 +322,7 @@ You can also specify styling for each type of element. Note that dictionary valu
   ```])
 
 == Elements
-#let draw-module = parse-module("../../draw.typ", name: "Draw")
+#let draw-module = tidy.parse-module(read("draw.typ"), name: "Draw")
 
 #show-module-fn(draw-module, "line")
 #example({
@@ -1246,11 +1247,11 @@ for-each-anchor("my-rect", (name) => {
 = Libraries
 
 == Tree
-#let tree-module = parse-module("../../tree.typ", name: "Tree")
+#let tree-module = tidy.parse-module(read("tree.typ"), name: "Tree")
 
 With the tree library, CeTZ provides a simple tree layout algorithm.
 
-#show-module(tree-module, show-module-name: false)
+#tidy.show-module(tree-module, show-module-name: false)
 #example({
   import "draw.typ": *
   import "tree.typ"
@@ -1306,11 +1307,11 @@ current node, all following items are direct children of that node.
 The node itselfes can be of type `content` or `dictionary` with a key `content`.
 
 == Plot
-#let plot-module = parse-module("../../lib/plot.typ", name: "Plot")
+#let plot-module = tidy.parse-module(read("lib/plot.typ"), name: "Plot")
 
 The library `plot` of CeTZ allows plotting 2D data as linechart.
 
-#show-module(plot-module, show-module-name: false)
+#tidy.show-module(plot-module, show-module-name: false)
 
 === Examples
 
@@ -1402,7 +1403,7 @@ Axis names to be used for styling:
 #raw(repr(axes.default-style-schoolbook))
 
 == Chart
-#let chart-module = parse-module("../../lib/chart.typ", name: "Chart")
+#let chart-module = tidy.parse-module(read("lib/chart.typ"), name: "Chart")
 
 With the `chart` library it is easy to draw charts.
 
@@ -1413,7 +1414,7 @@ Supported charts are:
   - `mode: "stacked"`: Multiple stacked bars per data row
   - `mode: "stacked100"`: Multiple stacked bars relative to the sum of a data row
 
-#show-module(chart-module, show-module-name: false)
+#tidy.show-module(chart-module, show-module-name: false)
 
 === Examples -- Bar Chart <barchart-examples>
 ==== Basic
@@ -1501,12 +1502,12 @@ styled the same way, see @plot.style.
 #raw(repr(chart.columnchart-default-style))
 
 == Palette <palette>
-#let palette-module = parse-module("../../lib/palette.typ", name: "Palette")
+#let palette-module = tidy.parse-module(read("lib/palette.typ"), name: "Palette")
 
 A palette is a function that returns a style for an index.
 The palette library provides some predefined palettes.
 
-#show-module(palette-module, show-module-name: false)
+#tidy.show-module(palette-module, show-module-name: false)
 
 #let show-palette(p) = {
   canvas({
