@@ -277,17 +277,17 @@
 /// - mark-style (style,function): Style used for drawing plot marks.
 ///                                This style gets inherited by all plots.
 /// - name (string): Element name
-/// - options (any): The following options are supported per axis
-///                  and must be prefixed by `<axis-name>-`, e.G.
-///                  `x-min: 0`.
-///                  - min (int): Axis minimum
-///                  - max (int): Axis maximum
-///                  - tick-step (float): Major tick step
-///                  - minor-tick-step (float): Major tick step
-///                  - ticks (array): List of ticks values or value/label
-///                                   tuples
-///                  - unit (content): Tick label suffix
-///                  - decimals (int): Number of decimals digits to display
+/// - ..options (any): The following options are supported per axis
+///                    and must be prefixed by `<axis-name>-`, e.G.
+///                    `x-min: 0`.
+///                    - min (int): Axis minimum
+///                    - max (int): Axis maximum
+///                    - tick-step (float): Major tick step
+///                    - minor-tick-step (float): Major tick step
+///                    - ticks (array): List of ticks values or value/label
+///                                     tuples
+///                    - unit (content): Tick label suffix
+///                    - decimals (int): Number of decimals digits to display
 #let plot(body,
           size: (1, 1),
           axis-style: "scientific",

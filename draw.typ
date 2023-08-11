@@ -58,7 +58,7 @@
 /// It is also used as base for relative coordinates if not specified
 /// otherwise.
 ///
-/// - param (coordinate): Coordinate to move to
+/// - pt (coordinate): Coordinate to move to
 #let move-to(pt) = {
   let t = coordinate.resolve-system(pt)
   ((
@@ -314,9 +314,9 @@
 ///   - start -- First coordinate
 ///   - end   -- Last coordinate
 ///
-/// - ..pts (coordinate): Coordinates to draw the line(s) between. A min.
-///                       of two points must be given.
-/// - ..style (style): Style
+/// - ..pts-style (coordinate,style): - Coordinates to draw the line(s) between.
+///                                     A min. of two points must be given.
+///                                   - Style attribute to set
 /// - close (bool): Close path. If `true`, a straight line is drawn from
 ///                 the last back to the first coordinate, closing the path.
 /// - name (string): Element name
@@ -701,7 +701,7 @@
 ///
 /// - start (coordinate): Start point
 /// - end (coordinate): End point
-/// - ..ctrl (coordinate): Control points
+/// - ..ctrl-style (coordinate,style): Control points or Style attributes
 /// - name (string): Element name
 #let bezier(start, end, ..ctrl-style, name: none) = {
   // Extra positional arguments are treated like control points.
@@ -781,8 +781,8 @@
 ///       new coordinate syntax!
 ///
 /// - path (path): Path
-/// - anchors (positional): List of dictionaries of the format:
-///     `(name: string, pos: float)`, where pos is in range [0, 1].
+/// - ..anchors (positional): List of dictionaries of the format:
+///   `(name: string, pos: float)`, where pos is in range [0, 1].
 /// - name (string): Element name, uses paths name, if auto
 #let place-anchors(path, ..anchors, name: auto) = {
   let name = if name == auto and "name" in path.first() {
@@ -814,7 +814,7 @@
 /// Put marks on a path
 ///
 /// - path (path): Path
-/// - marks (positional): Array of dictionaries of the format:
+/// - ..marks (positional): Array of dictionaries of the format:
 ///     (mark: string,
 ///      pos: float,
 ///      scale: float,
@@ -1027,7 +1027,7 @@
 /// *Style root:* `grid`.
 ///
 /// - from (coordinate): Start point
-/// - end (coordinate): End point
+/// - to (coordinate): End point
 /// - step (float,dictionary): Distance between grid lines. If passed a
 ///                            dictionary, $x$ and $y$ step can be set via the
 ///                            keys `x` and `y` (`(x: <step>, y: <step>)`).
