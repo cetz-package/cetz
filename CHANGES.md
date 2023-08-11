@@ -1,4 +1,4 @@
-# 0.0.3
+# 0.1.0
 ## Plot
 - Added arguments `plot-style` and `mark-style` to the `plot(..)` base function
   that allow providing a base style that gets inherited by all graphs.
