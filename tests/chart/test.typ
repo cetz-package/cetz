@@ -2,6 +2,12 @@
 #import "../../lib.typ"
 #import lib: *
 
+#let data0 = (
+  ([1], 1),
+  ([2], 2),
+  ([3], 3),
+)
+
 #let data1 = (
   ([15-24], 20.0),
   ([25-29], 17.2),
@@ -19,6 +25,12 @@
   ([45-54], 25.0, 20.6, 22.4, 22.0),
   ([55+],   19.9, 18.2, 19.2, 16.4),
 )
+
+#box(stroke: 2pt + red, canvas({
+  chart.barchart(mode: "basic",
+                 size: (9, auto),
+                 data0)
+}))
 
 #box(stroke: 2pt + red, canvas({
   chart.barchart(mode: "basic",
@@ -59,6 +71,12 @@
                  bar-width: .7,
                  bar-style: palette.blue,
                  data2)
+}))
+
+#box(stroke: 2pt + red, canvas({
+  chart.columnchart(mode: "basic",
+                    size: (auto, 5),
+                    data0)
 }))
 
 #box(stroke: 2pt + red, canvas({

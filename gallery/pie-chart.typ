@@ -1,4 +1,4 @@
-#import "@local/cetz:0.0.1"
+#import "@local/cetz:0.0.2"
 
 #set page(width: auto, height: auto, margin: .5cm)
 
@@ -13,8 +13,8 @@
 
     let segment(from, to) = {
       merge-path(close: true, {
-        line((0, 0), (rel: (-360deg * from, 1)))
-        arc((), start: from * -360deg, stop: to * -360deg, radius: 1)
+        line((0, 0), (rel: (360deg * from, 1)))
+        arc((), start: from * 360deg, stop: to * 360deg, radius: 1)
       })
     }
 
@@ -30,7 +30,7 @@
         segment(offset, offset + value)
 
         // Place an anchor for each segment
-        anchor(v.at(2), (offset * -360deg + value * -180deg, .75))
+        anchor(v.at(2), (offset * 360deg + value * 180deg, .75))
 
         offset += value
       } 
@@ -50,7 +50,7 @@
   line("chart.red", ((), "-|", (2, 0)))
   content((), [Red], anchor: "left")
 
-  line("chart.blue", (1, 1), ((), "-|", (2,0)))
+  line("chart.blue", (1, -1), ((), "-|", (2,0)))
   content((), [Blue], anchor: "left")
 
   line("chart.green", ((), "-|", (2,0)))

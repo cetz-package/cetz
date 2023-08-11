@@ -11,6 +11,9 @@
 ## Draw
 - Fixed issue #24, assert if line has fewer than two points.
 
+## Chart
+- Fixed barchart bars getting labeled in reversed order
+
 # 0.0.2
 ## Content
 - The `content` function now supports a second coordinate as `angle`, to
