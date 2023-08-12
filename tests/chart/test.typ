@@ -1,6 +1,5 @@
 #set page(width: auto, height: auto)
-#import "../../lib.typ"
-#import lib: *
+#import "../../src/lib.typ": *
 
 #let data0 = (
   ([1], 1),

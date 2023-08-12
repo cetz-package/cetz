@@ -1,8 +1,8 @@
 #set page(width: 10cm, height: 20cm)
-#import "../../canvas.typ": *
+#import "../../src/lib.typ": *
 
 #box(stroke: 2pt + red, canvas(length: 100%, {
-    import "../../draw.typ": *
+    import draw: *
 
     stroke(black)
     fill(blue)

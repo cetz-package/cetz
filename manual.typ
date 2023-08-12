@@ -1,5 +1,5 @@
-#import "lib.typ"
-#import "styles.typ"
+#import "src/lib.typ"
+#import "src/styles.typ"
 #import "@preview/tidy:0.1.0"
 #import lib: *
 

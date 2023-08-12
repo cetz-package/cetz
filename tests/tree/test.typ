@@ -1,13 +1,13 @@
 #set page(width: auto, height: auto)
-#import "../../canvas.typ": *
+#import "../../src/lib.typ": *
 
 #let data = (
   [A], ([B], [C], [D]), ([E], [F])
 )
 
 #box(stroke: 2pt + red, canvas({
-  import "../../draw.typ": *
-  import "../../tree.typ": tree
+  import draw: *
+  import tree: *
 
   set-style(content: (padding: .2),
     fill: gray.lighten(70%),

@@ -5,38 +5,11 @@ PKG_PREFIX="cetz"
 
 # List of all files that get packaged
 files=(
-  canvas.typ
-  cmd.typ
-  draw.typ
-  util.typ
-  path-util.typ
-  vector.typ
-  matrix.typ
-  bezier.typ
-  intersection.typ
-  coordinate.typ
-  styles.typ
-  tree.typ
-  lib/axes.typ
-  lib/plot.typ
-  lib/chart.typ
-  lib/palette.typ
-  lib.typ
+  src/
+  gallery/
   typst.toml
   LICENSE
   README.md
-  gallery/3d-chart.typ
-  gallery/3d-chart.png
-  gallery/pie-chart.typ
-  gallery/pie-chart.png
-  gallery/karls-picture.typ
-  gallery/karls-picture.png
-  gallery/plot.typ
-  gallery/plot.png
-  gallery/barchart.typ
-  gallery/barchart.png
-  gallery/tree.typ
-  gallery/tree.png
   manual.typ
   manual.pdf
 )
@@ -83,7 +56,7 @@ TMP="$(mktemp -d)"
 
 for f in "${files[@]}"; do
   mkdir -p "$TMP/$(dirname "$f")" 2>/dev/null
-  cp "$SOURCE/$f" "$TMP/$f"
+  cp "$SOURCE/$f" "$TMP/$f" -r
 done
 
 TARGET="${TARGET:?}/${PKG_PREFIX:?}/${VERSION:?}"
