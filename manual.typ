@@ -247,7 +247,7 @@ circle((0.5, -2.5), radius: 0.5, fill: green)
 ```
 
 == Elements
-#let draw-module = tidy.parse-module(read("draw.typ"), name: "Draw")
+#let draw-module = tidy.parse-module(read("src/draw.typ"), name: "Draw")
 
 #show-module-fn(draw-module, "line")
 ```example
@@ -746,7 +746,7 @@ for-each-anchor("my-rect", (name) => {
 = Libraries
 
 == Tree
-#let tree-module = tidy.parse-module(read("tree.typ"), name: "Tree")
+#let tree-module = tidy.parse-module(read("src/tree.typ"), name: "Tree")
 
 With the tree library, CeTZ provides a simple tree layout algorithm.
 
@@ -784,7 +784,7 @@ current node, all following items are direct children of that node.
 The node itselfes can be of type `content` or `dictionary` with a key `content`.
 
 == Plot
-#let plot-module = tidy.parse-module(read("lib/plot.typ"), name: "Plot")
+#let plot-module = tidy.parse-module(read("src/lib/plot.typ"), name: "Plot")
 
 The library `plot` of CeTZ allows plotting 2D data as linechart.
 
@@ -856,7 +856,7 @@ Axis names to be used for styling:
 #raw(repr(axes.default-style-schoolbook))
 
 == Chart
-#let chart-module = tidy.parse-module(read("lib/chart.typ"), name: "Chart")
+#let chart-module = tidy.parse-module(read("src/lib/chart.typ"), name: "Chart")
 
 With the `chart` library it is easy to draw charts.
 
@@ -937,7 +937,7 @@ styled the same way, see @plot.style.
 #raw(repr(chart.columnchart-default-style))
 
 == Palette <palette>
-#let palette-module = tidy.parse-module(read("lib/palette.typ"), name: "Palette")
+#let palette-module = tidy.parse-module(read("src/lib/palette.typ"), name: "Palette")
 
 A palette is a function that returns a style for an index.
 The palette library provides some predefined palettes.
