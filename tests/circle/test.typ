@@ -1,8 +1,8 @@
 #set page(width: auto, height: auto)
-#import "../../canvas.typ": *
+#import "../../src/lib.typ": *
 
 #box(stroke: 2pt + red, canvas(length: .5cm, {
-    import "../../draw.typ": *
+    import draw: *
 
     set-style(radius: (4, .5), stroke: none)
     for r in range(0, 6) {

@@ -1,5 +1,5 @@
 #set page(width: auto, height: auto)
-#import "../../lib.typ": *
+#import "../../src/lib.typ": *
 
 #let test(body) = canvas(length: 1cm, {
   import draw: *

@@ -1,8 +1,8 @@
 #set page(width: auto, height: auto)
-#import "../../canvas.typ": *
+#import "../../src/lib.typ": *
 
 #box(stroke: 2pt + red, canvas({
-    import "../../draw.typ": *
+    import draw: *
 
     content((0,0), image("image.png", width: 2cm),
             anchor: "top-left", name: "i")

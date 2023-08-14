@@ -1,8 +1,8 @@
 #set page(width: auto, height: auto)
-#import "../../canvas.typ": *
+#import "../../src/lib.typ": *
 
 #box(stroke: 2pt + red, canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   group(name: "g", {
     translate((-1.5, .5, 0))
@@ -27,7 +27,7 @@
 }))
 
 #box(stroke: 2pt + red, canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   rect((0, 0), (1, 1), name: "a", fill: blue)
   content("a.center", [A])

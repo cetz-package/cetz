@@ -1,8 +1,8 @@
 #set page(width: auto, height: auto)
-#import "../../canvas.typ": *
+#import "../../src/canvas.typ": *
 
 #box(stroke: 2pt + red, canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   group(name: "g", {
     rotate(37deg)

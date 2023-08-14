@@ -2,7 +2,7 @@
 name = "cetz"
 version = "0.0.2"
 repository = "https://github.com/johannes-wolf/typst-canvas"
-entrypoint = "lib.typ"
+entrypoint = "src/lib.typ"
 authors = [
   "Johannes Wolf <https://github.com/johannes-wolf>",
   "fenjalien <https://github.com/fenjalien>"

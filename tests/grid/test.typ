@@ -1,8 +1,8 @@
 #set page(width: auto, height: auto)
-#import "../../canvas.typ": *
+#import "../../src/lib.typ": *
 
 #box(stroke: 2pt + red, canvas({
-    import "../../draw.typ": *
+    import draw: *
 
     grid((0,0), (1,1), step: .1)
 

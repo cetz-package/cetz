@@ -1,8 +1,8 @@
 #set page(width: auto, height: auto)
-#import "../../canvas.typ": *
+#import "../../src/lib.typ": *
 
 #box(stroke: 2pt + red, canvas({
-    import "../../draw.typ": *
+    import draw: *
 
     let ring(start, end, radius) = merge-path({
       arc((0, 0), start: start, stop: end, radius: radius,

@@ -1,9 +1,9 @@
 #set page(width: auto, height: auto)
-#import "../../lib.typ": *
+#import "../../src/lib.typ": *
 
 // Schoolbook Axis Styling
 #box(stroke: 2pt + red, canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   set-style(axes: (stroke: blue))
   set-style(axes: (padding: .75))
@@ -18,7 +18,7 @@
 
 // Scientific Axis Styling
 #box(stroke: 2pt + red, canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   set-style(axes: (stroke: blue))
   set-style(axes: (left: (tick: (stroke: green + 2pt))))
@@ -37,7 +37,7 @@
 
 // Custom Tick Format
 #box(stroke: 2pt + red, canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   axes.scientific(size: (6, 1),
     bottom: axes.axis(min: -2*calc.pi, max: 2*calc.pi, ticks: (

@@ -1,5 +1,5 @@
 #set page(width: auto, height: auto)
-#import "../../lib.typ": *
+#import "../../src/lib.typ": *
 
 #set text(10pt)
 #box(stroke: 2pt + red, canvas(length: 1em, {

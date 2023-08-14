@@ -1,8 +1,8 @@
 #set page(width: auto, height: auto)
-#import "../../canvas.typ": *
+#import "../../src/lib.typ": *
 
 #block(stroke: 2pt + red, canvas(length: .5cm, {
-  import "../../draw.typ": *
+  import draw: *
 
   let curve-through(a, b, c) = {
     group(name: "g", {
@@ -22,7 +22,7 @@
 }))
 
 #block(stroke: 2pt + red, canvas(length: .5cm, {
-  import "../../draw.typ": *
+  import draw: *
 
   merge-path(close: true, {
     bezier-through((-1, 0), (-calc.cos(45deg), calc.sin(45deg)), (0, 1))

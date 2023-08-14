@@ -1,6 +1,5 @@
 #set page(width: auto, height: auto)
-#import "../../canvas.typ": *
-#import "../../lib/plot.typ"
+#import "../../src/lib.typ": *
 
 #let data = (..(for x in range(-360, 360 + 1) {
   ((x, calc.sin(x * 1deg)),)
@@ -8,7 +7,7 @@
 
 /* Scientific Style */
 #box(stroke: 2pt + red, canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   plot.plot(size: (5, 2),
     x-tick-step: 180,
@@ -22,7 +21,7 @@
 
 /* 4-Axes */
 #box(stroke: 2pt + red, canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   plot.plot(size: (5, 3),
     x-tick-step: 180,
@@ -47,7 +46,7 @@
 
 /* School-Book Style */
 #box(stroke: 2pt + red, canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   plot.plot(size: (5, 4),
     axis-style: "school-book",
@@ -60,7 +59,7 @@
 
 /* Clipping */
 #box(stroke: 2pt + red, canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   plot.plot(size: (5, 4),
     axis-style: "school-book",
@@ -77,7 +76,7 @@
 
 /* Epigraph */
 #box(stroke: 2pt + red, canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   plot.plot(size: (5, 4),
     axis-style: "school-book",
@@ -97,7 +96,7 @@
 
 /* Marks */
 #box(stroke: 2pt + red, canvas({
-  import "../../draw.typ": *
+  import draw: *
   
   plot.plot(size: (5, 4),
     axis-style: "scientific",
@@ -121,7 +120,7 @@
 
 /* Palettes */
 #box(stroke: 2pt + red, canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   plot.plot(size: (5, 4),
     x-label: [Rainbow],
@@ -142,7 +141,7 @@
 
 /* Tick Step Calculation */
 #box(stroke: 2pt + red, {canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   plot.plot(size: (12, 4),
     y2-decimals: 4,
@@ -151,7 +150,7 @@
       plot.add(((0,0), (.1,.01)), axes: ("x2", "y2"))
     })
 }); canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   plot.plot(size: (12, 4),
     y2-decimals: 9,
@@ -167,7 +166,7 @@
 #box(stroke: 2pt + red, stack(dir: ltr,
   ..("scientific", "left", "school-book").map(axis-style => {
     canvas({
-      import "../../draw.typ": *
+      import draw: *
       plot.plot(size: (4,4), x-tick-step: 90, y-tick-step: 1,
                 axis-style: axis-style, {
         plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
@@ -180,7 +179,7 @@
 #let circle-data = range(0, 361).map(
   t => (.5 * calc.cos(t*1deg), .5 * calc.sin(t*1deg)))
 #box(stroke: 2pt + red, stack(dir: ltr, canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   plot.plot(size: (4, 4),
     x-tick-step: 1,
@@ -199,7 +198,7 @@
       plot.add(circle-data, axes: ("x", "yb"), style: (stroke: yellow))
     })
 }), canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   plot.plot(size: (4, 4),
     x-tick-step: 1,
@@ -221,7 +220,7 @@
 
 /* Anchors */
 #box(stroke: 2pt + red, canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   plot.plot(size: (5, 3), name: "plot",
     x-tick-step: 180,
@@ -248,7 +247,7 @@
 
 /* Something cool */
 #box(stroke: 2pt + red, canvas({
-  import "../../draw.typ": *
+  import draw: *
 
   plot.plot(size: (10, 4),
     x-min: -.8,
