@@ -1,4 +1,4 @@
-#let version = (0,0,3)
+#let version = (0,1,0)
 
 #import "canvas.typ": canvas
 #import "draw.typ"
@@ -21,4 +21,3 @@
 #let cetz-tree = tree
 #let cetz-vector = vector
 #let cetz-matrix = matrix
-

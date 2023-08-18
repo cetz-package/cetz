@@ -1,6 +1,6 @@
 #set page(width: auto, height: auto)
 
-#import "@local/cetz:0.0.2"
+#import "@local/cetz:0.1.0"
 
 #box(stroke: 2pt + red, cetz.canvas({
   import cetz.draw: *
