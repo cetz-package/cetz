@@ -19,6 +19,8 @@
     minor-length: .08,
     label: (
       offset: .2,
+      angle: 0deg,
+      anchor: auto,
     )
   ),
   grid: (
@@ -360,7 +362,10 @@
               if label != none {
                 let label-pos = vector.add(tick-start,
                   vector.scale(tic-dir, -style.tick.label.offset))
-                content(label-pos, [#label], anchor: anchor)
+                content(label-pos, [#label],
+                        anchor: if style.tick.label.anchor == auto {anchor}
+                                else {style.tick.label.anchor},
+                        angle: style.tick.label.angle)
               }
 
               if grid-mode.major and major or grid-mode.minor and not major {
