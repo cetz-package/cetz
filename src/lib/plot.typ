@@ -386,7 +386,9 @@
 
   let stroke-segments(segments) = {
     for s in segments {
-      draw.line(..s, fill: none)
+      if s != none and s.len() > 1 {
+        draw.line(..s, fill: none)
+      }
     }
   }
 

@@ -23,7 +23,7 @@
   set-style(axes: (stroke: blue))
   set-style(axes: (left: (tick: (stroke: green + 2pt))))
   set-style(axes: (bottom: (tick: (stroke: red, length: .5))))
-  set-style(axes: (right: (tick: (label: (offset: 0)))))
+  set-style(axes: (right: (tick: (label: (offset: 0), length: -.1))))
   axes.scientific(size: (6, 6),
     frame: "set",
     top: none,

@@ -815,8 +815,8 @@ import cetz.plot
 import cetz.palette
 
 // Axes can be styled!
-// Set the tick length to .05:
-set-style(axes: (tick: (length: .05)))
+// Set the tick length to -.05:
+set-style(axes: (tick: (length: -.05)))
 
 // Plot something
 plot.plot(size: (3,3), x-tick-step: 1, axis-style: "left", {

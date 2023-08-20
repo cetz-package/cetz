@@ -352,6 +352,9 @@
             let tick-start = (x, y)
             let tick-end = vector.add(tick-start,
               vector.scale(tic-dir, length))
+            if (length < 0) {
+              (tick-start, tick-end) = (tick-end, tick-start)
+            }
 
             if not is-mirror {
               if label != none {
@@ -371,7 +374,7 @@
               }
             }
             
-            if length != none and length > 0 {
+            if length != none and length != 0 {
               line(tick-start, tick-end, ..style.tick)
             }
           }
