@@ -4,7 +4,7 @@
 #import "util.typ"
 #import "path-util.typ"
 #import "coordinate.typ"
-#import "bezier.typ": to-abc, quadratic-through-3points, cubic-through-3points, quadratic-to-cubic
+#import "bezier.typ": to-abc, quadratic-through-3points, cubic-through-3points, quadratic-to-cubic, cubic-point
 #import "intersection.typ"
 #import "styles.typ"
 
@@ -690,6 +690,28 @@
   ),)
 }
 
+// Helper function for rendering marks for a cubic bezier
+#let _render-cubic-marks(start, end, c1, c2, style) = {
+  if style.mark != none {
+    let style = style.mark
+    let offset = 0.001
+    if style.start != none {
+      let dir = vector.scale(vector.norm(
+        vector.sub(cubic-point(start, end, c1, c2, 0 + offset),
+                   start)), style.size)
+      cmd.mark(vector.sub(start, dir), start, style.start,
+        fill: style.fill, stroke: style.stroke)
+    }
+    if style.end != none {
+      let dir = vector.scale(vector.norm(
+        vector.sub(cubic-point(start, end, c1, c2, 1 - offset),
+                   end)), style.size)
+      cmd.mark(vector.add(end, dir), end, style.end,
+        fill: style.fill, stroke: style.stroke)
+    }
+  }
+}
+
 /// Draw a quadratic or cubic bezier line
 ///
 /// *Style root:* `bezier`.
@@ -737,6 +759,7 @@
         ("cubic", start, end, c1, c2),
         fill: style.fill, stroke: style.stroke
       )
+      _render-cubic-marks(start, end, c1, c2, style)
     }
   ),)
 }
@@ -771,6 +794,7 @@
       cmd.path(("cubic", s, e, ..c),
                fill: style.fill,
                stroke: style.stroke)
+      _render-cubic-marks(s, e, ..c, style)
     }
   ),)
 }
