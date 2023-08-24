@@ -414,6 +414,15 @@ circle("demo.a", radius: .1, fill: black)
 circle("demo.mid", radius: .1, fill: black)
 ```
 
+#show-module-fn(draw-module, "place-marks")
+```example
+place-marks(bezier-through((0,0), (1,1), (2,0)),
+            (mark: "|", size: .1, pos: 0),
+            (mark: "o", size: .2, pos: .5),
+            (mark: ">", size: .3, pos: 1),
+            fill: black)
+```
+
 #show-module-fn(draw-module, "intersections")
 ```example
 intersections(name: "demo", {

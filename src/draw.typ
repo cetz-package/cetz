@@ -814,17 +814,16 @@
 /// Put marks on a path
 ///
 /// - path (path): Path
-/// - ..marks (positional): Array of dictionaries of the format:
-///     (mark: string,
-///      pos: float,
-///      scale: float,
-///      stroke: stroke,
-///      fill: fill)
+/// - ..marks-style (positional,named): Array of dictionaries of the format:
+///     (mark: string,    Mark symbol
+///      pos: float,      Position between 0 and 1
+///      name: string?    Optional anchor name
+///      scale: float?,   Optional scale
+///      stroke: stroke?, Optional stroke style
+///      fill: fill?)     Optional fill style
+///   and style keys.
 #let place-marks(path,
-                 ..marks,
-                 size: auto,
-                 fill: none,
-                 stroke: black + 1pt,
+                 ..marks-style,
                  name: none) = {
 ((
   name: name,
@@ -832,9 +831,11 @@
   custom-anchors-drawables: (drawables) => {
     if drawables.len() == 0 { return () }
 
-    let anchors = (:)
     let s = drawables.first().segments
-    for m in marks.pos() {
+    let anchors = (
+      start: path-util.point-on-path(s, 0),
+      end: path-util.point-on-path(s, 1))
+    for m in marks-style.pos() {
       if "name" in m {
         anchors.insert(m.name, path-util.point-on-path(s, m.pos))
       }
@@ -842,19 +843,22 @@
     return anchors
   },
   finalize-children: (ctx, children) => {
-    let size = if size != auto { size } else { ctx.style.mark.size }
+    let style = styles.resolve(ctx.style, marks-style.named(), root: "mark")
 
     let p = children.first()
     (p,);
 
-    for m in marks.pos() {
-      let scale = m.at("scale", default: size)
-      let fill = m.at("fill", default: fill)
-      let stroke = m.at("stroke", default: stroke)
+    for m in marks-style.pos() {
+      let size = m.at("size", default: style.size)
+      let fill = m.at("fill", default: style.fill)
+      let stroke = m.at("stroke", default: style.stroke)
 
-      let (pt, dir) = path-util.direction(p.segments, m.pos, scale: scale)
+      let (pt, dir) = path-util.direction(p.segments, m.pos,
+                                          scale: size)
       if pt != none {
-        cmd.mark(vector.add(pt, dir), pt, m.mark, fill: fill, stroke: stroke)
+        cmd.mark(vector.add(pt, dir), pt, m.mark,
+                 fill: fill,
+                 stroke: stroke)
       }
     }
   }
