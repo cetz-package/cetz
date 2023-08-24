@@ -77,6 +77,7 @@
   bezier: (
     fill: auto,
     stroke: auto,
+    mark: auto,
   ),
   shadow: (
     color: gray,
