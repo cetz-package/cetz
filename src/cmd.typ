@@ -103,6 +103,10 @@
 // cubic bezier curves.
 #let arc(x, y, z, start, stop, rx, ry, mode: "OPEN", fill: none, stroke: none) = {
   let delta = calc.max(-360deg, calc.min(stop - start, 360deg))
+  if delta < 0deg {
+    delta = 360deg + delta
+  }
+
   let num-curves = calc.max(1, calc.min(calc.ceil(delta / 90deg), 4))
 
   let position = (x, y, z)

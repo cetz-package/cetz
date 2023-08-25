@@ -118,7 +118,7 @@
     if "transform-coordinates" in element {
       assert(type(element.transform-coordinates) == "function")
 
-      coordinates = (element.transform-coordinates)(..coordinates)
+      coordinates = (element.transform-coordinates)(ctx, ..coordinates)
     }
   }
 

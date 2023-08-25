@@ -568,7 +568,7 @@
     name: name,
     anchor: anchor,
     coordinates: (a, b, c),
-    transform-coordinates: (a, b, c) => {
+    transform-coordinates: (ctx, a, b, c) => {
       let center = util.calculate-circle-center-3pt(a, b, c)
       assert(center != none, message: "Could not calculate circle center")
 
@@ -739,7 +739,7 @@
   return ((
     name: name,
     coordinates: (start, end, ..ctrl),
-    transform-coordinates: (s, e, ..ctrl) => {
+    transform-coordinates: (ctx, s, e, ..ctrl) => {
       let ctrl = ctrl.pos()
       if ctrl.len() == 1 {
         return quadratic-to-cubic(s, e, ..ctrl)
@@ -777,7 +777,7 @@
   ((
     name: name,
     coordinates: (s, b, e),
-    transform-coordinates: (s, b, e) => {
+    transform-coordinates: (ctx, s, b, e) => {
       cubic-through-3points(s, b, e)
     },
     custom-anchors: (s, e, ..c) => {
