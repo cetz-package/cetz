@@ -83,5 +83,5 @@
     color: gray,
     offset-x: .1,
     offset-y: -.1,
-  )
+  ),
 )
