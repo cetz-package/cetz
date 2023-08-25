@@ -972,3 +972,25 @@ The palette library provides some predefined palettes.
 - `tango-light` #show-palette(palette.tango-light)
 - `tango` #show-palette(palette.tango)
 - `tango-dark` #show-palette(palette.tango-dark)
+
+== Angle <angle>
+#let angle-module = tidy.parse-module(read("src/lib/angle.typ"), name: "Angle")
+
+The `angle` function of the angle module allows drawing angles with an optional label.
+
+#tidy.show-module(angle-module, show-module-name: false)
+
+```example
+import cetz.angle: angle
+let (a, b, c) = ((0,0), (-1,1), (1.5,0))
+line(a, b)
+line(a, c)
+set-style(angle: (radius: 1, label-radius: .5), stroke: blue)
+angle(a, c, b, label: $alpha$, mark: (end: ">"), stroke: blue)
+set-style(stroke: red)
+angle(a, b, c, label: n => $#{n/1deg} degree$,
+  mark: (end: ">"), stroke: red, inner: false)
+```
+
+==== Default `angle` Style
+#raw(repr(angle.default-style))

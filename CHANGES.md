@@ -1,3 +1,18 @@
+# 0.1.1
+## Libs
+### Angle
+- New `angle` library for drawing angles
+
+### Axes
+- Support tick label rotation
+- Support negative tick mark direction
+
+## Draw
+- Fixed `arc` with negative delta
+- Fixed division by 0 error when calculating bezier extremas
+- Added `mark: (..)` support for `bezier` and `bezier-through`
+
+
 # 0.1.0
 ## Plot
 - Added arguments `plot-style` and `mark-style` to the `plot(..)` base function

@@ -203,7 +203,7 @@
       let ts = ()
       for s in (-1, 1) {
         let r = a * b - a * c2 - b * c1 + c1 * c1 - c1 * c2 + c2 * c2
-        if r >= 0 {
+        if r >= 0 and (a - b - 3 * c1 + 3 * c2) != 0 {
           ts.push((s * calc.sqrt(r) + a - 2 * c1 + c2) /
                   (a - b - 3 * c1 + 3 * c2))
         }
