@@ -13,7 +13,7 @@
     axes.axis(min: -1, max: 1, ticks: (step: 1, minor-step: auto,
       grid: "both")),
     axes.axis(min: -1, max: 1, ticks: (step: .5, minor-step: auto,
-      grid: "major")))
+      grid: "major")),)
 }))
 
 // Scientific Axis Styling

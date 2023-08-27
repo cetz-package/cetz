@@ -49,7 +49,9 @@
   }
 
   if "style" in element {
-    ctx.style = styles.resolve(
+    // NOTE: Do not call "inherit" here, to keep
+    //       inherited attributes unresolved yet.
+    ctx.style = styles.resolve-rec(
       ctx.style,
       if type(element.style) == "function" {
         (element.style)(ctx)

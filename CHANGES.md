@@ -13,6 +13,9 @@
 - Added `mark: (..)` support for `bezier` and `bezier-through`
 - Changed `content` to allow for a second coordinate to span content between
 - Added `content: (frame: "rect"|"circle")` style for drawing a frame around content
+- Changed the value for inheriting style values from `auto` to `"inherit"`.
+  Note that only direct parent values can be inherited.
+  To supply a custom base style, use the new `inject:` parameter on `styles.resolve`.
 
 # 0.1.0
 ## Plot

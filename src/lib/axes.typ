@@ -305,8 +305,7 @@
     anchor("data-top-right",   (w, h))
 
     let style = style.named()
-    style = util.merge-dictionary(default-style,
-      styles.resolve(ctx.style, style, root: "axes"))
+    style = styles.resolve(ctx.style, style, root: "axes", inject: default-style)
 
     let padding = (
       l: padding.at("left", default: 0),
@@ -452,8 +451,9 @@
 
   group(name: name, ctx => {
     let style = style.named()
-    style = util.merge-dictionary(default-style-schoolbook,
-      styles.resolve(ctx.style, style, root: "axes"))
+    style = styles.resolve(ctx.style, style, root: "axes",
+      inject: default-style-schoolbook)
+    //panic(style, ctx.style)
 
     let x-position = calc.min(calc.max(y-axis.min, x-position), y-axis.max)
     let y-position = calc.min(calc.max(x-axis.min, y-position), x-axis.max)

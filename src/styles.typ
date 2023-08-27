@@ -1,4 +1,37 @@
-#let resolve(current, new, root: none) = {
+#import "util.typ"
+
+// TODO: I do not really like how styling works.
+//       Maybe have something more CSS like, i.e.
+//       inheriting flat attributes in classes.
+
+// Traverse the style dictionary and inherit all values
+// of `new` with value "inherit" from `base` or `global`.
+#let inherit(global, base, new) = {
+  if type(new) == "dictionary" {
+    for (k, v) in new {
+      if k in base {
+        if v == "inherit" {
+          let b = base.at(k)
+          if b == "inherit" {
+            b = global.at(k, default: none)
+          }
+
+          new.insert(k, inherit(global, base, b))
+        } else {
+          new.insert(k, inherit(global, base, v))
+        }
+      } else {
+        assert(v != "inherit",
+          message: "Can not inherit style attribute '" + k + "' from: " + repr(base))
+      }
+    }
+  }
+
+  new
+}
+
+// Resolve style recursive
+#let resolve-rec(current, new, root: none) = {
   let global
   if root != none and type(current) == "dictionary" {
     (global, current) = (current, current.at(root, default: (:)))
@@ -12,8 +45,9 @@
   for (k, v) in new {
     current.insert(
       k,
-      if k in current and type(current.at(k)) == "dictionary" and type(v) == "dictionary" {
-        resolve(current.at(k), v)
+      if k in current and type(current.at(k)) == "dictionary" and
+         type(v) == "dictionary" {
+        resolve-rec(current.at(k), v)
       } else {
         v
       }
@@ -23,19 +57,31 @@
   if root != none {
     for (k, v) in current {
       if k in global {
-        if v == auto {
-          current.insert(
-            k,
-            global.at(k)
-          )
-        } else if type(v) == "dictionary" {
-          // panic(global, v, k)
-          current.insert(k, resolve(global, v, root: k))
+        if type(v) == "dictionary" {
+          current.insert(k, resolve-rec(global, v, root: k))
         }
       }
     }
   }
   return current
+}
+
+/// Resolve style
+///
+/// - current (style): Current style dictionary
+/// - new (style): Style to merge onto current
+/// - root (string,none): Style root key
+/// - inject (style, none): Inject new style at `root`
+#let resolve(current, new, root: none, inject: none) = {
+  let s = current
+  if inject != none {
+    assert(root != none,
+      message: "When injecting a new base style, root must be set!")
+    let new = (:); new.insert(root, inject)
+    s = util.merge-dictionary(new, s)
+  }
+  s = resolve-rec(s, new, root: root)
+  return inherit(current, s, s)
 }
 
 #let default = (
@@ -46,42 +92,42 @@
     size: .15,
     start: none,
     end: none,
-    fill: auto,
-    stroke: auto
+    fill: "inherit",
+    stroke: "inherit",
   ),
   line: (
-    fill: auto,
-    stroke: auto,
-    mark: auto,
+    fill: "inherit",
+    stroke: "inherit",
+    mark: "inherit",
   ),
   rect: (
-    fill: auto,
-    stroke: auto,
+    fill: "inherit",
+    stroke: "inherit",
   ),
   arc: (
-    fill: auto,
-    stroke: auto,
+    fill: "inherit",
+    stroke: "inherit",
 
-    radius: auto,
+    radius: "inherit",
     mode: "OPEN",
   ),
   circle: (
-    fill: auto,
-    stroke: auto,
+    fill: "inherit",
+    stroke: "inherit",
 
-    radius: auto
+    radius: "inherit"
   ),
   content: (
     padding: 0em,
     frame: none,
 
-    fill: auto,
-    stroke: auto,
+    fill: "inherit",
+    stroke: "inherit",
   ),
   bezier: (
-    fill: auto,
-    stroke: auto,
-    mark: auto,
+    fill: "inherit",
+    stroke: "inherit",
+    mark: "inherit",
   ),
   shadow: (
     color: gray,
