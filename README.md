@@ -104,4 +104,4 @@ Otherwise download and install a matching package from the [ImageMagick](https:/
 ## Projects using CeTZ
 - [circuitypst](https://github.com/fenjalien/circuitypst) A port of [circuitikz](https://github.com/circuitikz/circuitikz) to Typst.
 - [conchord](https://github.com/sitandr/conchord) Package for writing lyrics with chords that generates fretboard diagrams using CeTZ.
-- [typst-chords](https://github.com/ljgago/typst-chords) A library to write song lyrics with chord diagrams in Typst.
+- [finite](https://github.com/jneug/typst-finite) Finite is a Typst package for rendering finite automata
