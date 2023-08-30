@@ -305,7 +305,7 @@
 /// Draw a line or poly-line
 ///
 /// Draws a line (a direct path between points) to the canvas.
-/// If multiplie coordinates are given, a line is drawn between each
+/// If multiple coordinates are given, a line is drawn between each
 /// consecutive one.
 ///
 /// *Style root:* `line`.
