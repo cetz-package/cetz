@@ -72,7 +72,11 @@
     radius: auto
   ),
   content: (
-    padding: 0em
+    padding: 0em,
+    frame: none,
+
+    fill: auto,
+    stroke: auto,
   ),
   bezier: (
     fill: auto,

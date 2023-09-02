@@ -206,18 +206,20 @@
       anchors.insert(k, vector.add(translate, a))
     }
 
-    bounds = bounding-box(
-      (
-        vector.add(
-          translate,
-          (bounds.l, bounds.t)
+    bounds = if bounds != none {
+      bounding-box(
+        (
+          vector.add(
+            translate,
+            (bounds.l, bounds.t)
+          ),
+          vector.add(
+            translate,
+            (bounds.r, bounds.b)
+          )
         ),
-        vector.add(
-          translate,
-          (bounds.r, bounds.b)
-        )
-      ),
-    )
+      )
+    }
   }
 
   if "name" in element and type(element.name) == "string" {
