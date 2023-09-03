@@ -588,7 +588,7 @@
   ),)
 }
 
-/// Render content in a rect
+/// Render content
 ///
 /// *Style root:* `content`.
 ///
@@ -600,20 +600,36 @@
 /// NOTE: Content itself is not transformed by the canvas transformations!
 ///       native transformation matrix support from typst would be required.
 ///
-/// - a (coordinate): Content rect start coordinate
-/// - b (coordinate,auto): Content rect end coordinate or auto
-/// - ct (content): Content
-/// - angle (angle,coordinate): Rotation angle or second coordinate to use for
-///                             angle calculation
-/// - anchor (string): Anchor to use as origin
+/// The following positional arguments are supported:
+///   / `coordinate`, `content`: Place content at coordinate
+///   / `coordinate` a, `coordinate` b, `content`: Place content in rect between a and b
+///
+/// - angle (angle,coordinate): Rotation angle or coordinate relative to the first
+///                             coordinate used for angle calculation
+/// - anchor (string): Anchor to use as origin. Defaults to `"center"`.
 /// - name (string): Node name
 /// - clip (bool): Clip content inside rect
-#let content-rect(a, b, ct,
-                  angle: 0deg,
-                  clip: false,
-                  anchor: none,
-                  name: none,
-                  ..style) = {
+/// - ..style-args (coordinate,content,style): Named arguments are used for for styling
+///     while positional args can be of `coordinate` or `content`, see the description
+///     above.
+#let content(angle: 0deg,
+             clip: false,
+             anchor: none,
+             name: none,
+             ..style-args) = {
+  let args = style-args.pos()
+  let style = style-args.named()
+  
+  let (a, b, ct) = (none, auto, none)
+  if args.len() == 2 {
+    (a, ct) = args
+  } else if args.len() == 3 {
+    (a, b, ct) = args
+  } else {
+    panic("Invalid arguments to content. Expecting 2 or 3 argumnents, got " +
+          str(args.len))
+  }
+
   let _ = coordinate.resolve-system(a)
 
   assert(b != none)
@@ -628,10 +644,6 @@
   if type(angle) == "array" {
     let _ = coordinate.resolve-system(angle)
   }
-
-  assert.eq(style.pos(), (),
-    message: "Unexpected positional arguments: " + repr(style.pos()))
-  let style = style.named()
 
   let c = a
   if type(angle) != "angle" {
@@ -663,7 +675,7 @@
     name: name,
     coordinates: (a, b, c),
     anchor: anchor,
-    default-anchor: "center",
+    default-anchor: if auto-size { "center" } else { "top-left" },
     transform-coordinates: (ctx, a, b, c) => {
       let style = styles.resolve(ctx.style, style, root: "content")
       let padding = util.resolve-number(ctx, style.padding)
@@ -680,16 +692,22 @@
       let tr-dir = vector.add(x-dir, y-dir)
       let tl-dir = vector.sub(x-dir, y-dir)
 
+      let center = if auto-size {
+        a
+      } else {
+        vector.add(a, (w / 2, -h / 2, 0))
+      }
+
       return (
-        a, // center
-        vector.sub(a, tl-dir), // tl
-        vector.add(a, tr-dir), // tr
-        vector.sub(a, tr-dir), // bl
-        vector.add(a, tl-dir), // br
-        vector.sub(a, x-dir), // left
-        vector.add(a, x-dir), // right
-        vector.sub(a, y-dir), // bottom
-        vector.add(a, y-dir), // top
+        center, // center
+        vector.sub(center, tl-dir), // tl
+        vector.add(center, tr-dir), // tr
+        vector.sub(center, tr-dir), // bl
+        vector.add(center, tl-dir), // br
+        vector.sub(center, x-dir), // left
+        vector.add(center, x-dir), // right
+        vector.sub(center, y-dir), // bottom
+        vector.add(center, y-dir), // top
       )
     },
     custom-anchors-ctx: (ctx, center, tl, tr, bl, br, left, right, bottom, top) => {
@@ -759,33 +777,6 @@
       )
     }
   ),)
-}
-
-/// Render content
-///
-/// This is an alias for `content-rect` with `b` set to `auto`.
-/// For additional information see `content-rect`.
-///
-/// *Style root:* `content`.
-///
-/// NOTE: Content itself is not transformed by the canvas transformations!
-///       native transformation matrix support from typst would be required.
-///
-/// - pt (coordinate): Content coordinate
-/// - ct (content): Content
-/// - angle (angle,coordinate): Rotation angle or second coordinate to use for
-///                             angle calculation
-/// - anchor (string): Anchor to use as origin
-/// - name (string): Node name
-#let content(
-  pt,
-  ct,
-  angle: 0deg,
-  anchor: none,
-  name: none,
-  ..style
-  ) = {
-  content-rect(pt, auto, ct, angle: angle, anchor: anchor, name: name, ..style)
 }
 
 // Helper function for rendering marks for a cubic bezier
