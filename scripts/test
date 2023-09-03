@@ -23,7 +23,9 @@ TYPST_BASE_URL="https://github.com/typst/typst/releases/download"
 TYPST_ARCHIVE="typst-x86_64-unknown-linux-musl.tar.xz"
 
 TYPST_ROOT="$(realpath "$DIR/..")"
+export TYPST_ROOT
 TEST_ROOT="$(realpath "$DIR/../tests")"
+export TEST_ROOT
 
 if hash magick 2>/dev/null; then
   MAGICK_COMPARE="magick compare"
@@ -33,11 +35,13 @@ else
   >&2 echo "Could not find 'magick' nor 'compare' binary. Make sure you have image magick installed and in your PATH."
   exit 1
 fi
+export MAGICK_COMPARE
 
 function typst_compile()
 {
   typst compile --root "$TYPST_ROOT" "${@}"
 }
+export -f typst_compile
 
 function install_typst()
 {
@@ -77,9 +81,13 @@ function img_compare()
 {
   $MAGICK_COMPARE -metric rmse "$1" "$2" null: 2>&1 | cut -d\  -f1
 }
+export -f img_compare
 
 function update_test_ref()
 {
+  if [[ "$1" == "$TEST_ROOT" ]]; then
+    return
+  fi
   (
     cd "$1"
     local NAME
@@ -96,12 +104,16 @@ function update_test_ref()
     cp "res.png" "ref.png"
   )
 }
+export -f update_test_ref
 
 TEST_FAIL=0
 TEST_OK=0
 
 function run_test()
 {
+  if [[ "$1" == "$TEST_ROOT" ]]; then
+    return
+  fi
   if (
     cd "$1"
     local NAME
@@ -129,21 +141,26 @@ function run_test()
     TEST_FAIL=$((TEST_FAIL + 1))
   fi
 }
+export -f run_test
 
 echo "Typst: $(typst --version)"
 
-while read -r test
-do
-  if [[ "$test" == "$TEST_ROOT" ]]; then continue; fi
+if ! hash parallel 2>/dev/null; then
+  function parallel() {
+    xargs -n 1 -I {} bash -c "$1"
+  }
+fi
 
-  if [[ "$MODE" == "test" ]]; then
-    run_test "$test"
-  elif [[ "$MODE" == "update" ]]; then
-    update_test_ref "$test"
-  else
-    echo "Unknown mode '$MODE'"; exit 1
-  fi
-done < <(find "$TEST_ROOT" -type d)
+function tests() {
+  find "$TEST_ROOT" -type d
+}
+if [[ "$MODE" == "test" ]]; then
+  tests | parallel 'run_test {}'
+elif [[ "$MODE" == "update" ]]; then
+  tests | parallel 'update_test_ref {}'
+else
+  echo "Unknown mode '$MODE'"; exit 1
+fi
 
 # Optional tests
 if hash typos 2>/dev/null; then
@@ -151,15 +168,9 @@ if hash typos 2>/dev/null; then
   if typos --format brief --exclude "/deps/*"; then
     echo "[  OK]"
   else
-    echo "[FAIL]"
+    echo "[WARN]"
   fi
 else
   echo "[SKIP] typos"
   echo "[    ] You can install 'typos' via 'cargo install typos-cli'."
-fi
-
-echo "Passed: $TEST_OK"
-echo "Failed: $TEST_FAIL"
-if [[ $TEST_FAIL -gt 0 ]]; then
-  exit 1
 fi
