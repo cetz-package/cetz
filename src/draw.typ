@@ -592,37 +592,63 @@
 ///
 /// *Style root:* `content`.
 ///
+/// *Style keys:*
+///   / padding (`float`): Set vertical and horizontal padding
+///   / frame (`string`, `none`): Set frame style (`none`, `"rect"`, `"circle"`)
+///                               The frame inherits the `stroke` and `fill` style.
+///
 /// NOTE: Content itself is not transformed by the canvas transformations!
 ///       native transformation matrix support from typst would be required.
 ///
-/// - pt (coordinate): Content coordinate
-/// - ct (content): Content
-/// - angle (angle,coordinate): Rotation angle or second coordinate to use for
-///                             angle calculation
-/// - anchor (string): Anchor to use as origin
+/// The following positional arguments are supported:
+///   / `coordinate`, `content`: Place content at coordinate
+///   / `coordinate` a, `coordinate` b, `content`: Place content in rect between a and b
+///
+/// - angle (angle,coordinate): Rotation angle or coordinate relative to the first
+///                             coordinate used for angle calculation
+/// - anchor (string): Anchor to use as origin. Defaults to `"center"`.
 /// - name (string): Node name
-#let content(
-  pt,
-  ct,
-  angle: 0deg,
-  anchor: none,
-  name: none,
-  ..style
-  ) = {
-  // Angle can be either an angle or a second coordinate
-  assert(type(angle) in ("angle", "array"))
+/// - clip (bool): Clip content inside rect
+/// - ..style-args (coordinate,content,style): Named arguments are used for for styling
+///     while positional args can be of `coordinate` or `content`, see the description
+///     above.
+#let content(angle: 0deg,
+             clip: false,
+             anchor: none,
+             name: none,
+             ..style-args) = {
+  let args = style-args.pos()
+  let style = style-args.named()
+  
+  let (a, b, ct) = (none, auto, none)
+  if args.len() == 2 {
+    (a, ct) = args
+  } else if args.len() == 3 {
+    (a, b, ct) = args
+  } else {
+    panic("Invalid arguments to content. Expecting 2 or 3 argumnents, got " +
+          str(args.len))
+  }
 
-  // No extra positional arguments from the style sink
-  assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
-  let style = style.named()
+  let _ = coordinate.resolve-system(a)
 
-  // Coordinate check
-  let t = coordinate.resolve-system(pt)
+  assert(b != none)
+  let auto-size = b == auto
+  if not auto-size {
+    let _ = coordinate.resolve-system(b)
+  } else {
+    b = a
+  }
 
-  let pt2 = pt
+  assert(type(angle) in ("array", "angle"))
+  if type(angle) == "array" {
+    let _ = coordinate.resolve-system(angle)
+  }
+
+  let c = a
   if type(angle) != "angle" {
-    pt2 = angle
-    let t = coordinate.resolve-system(pt2)
+    c = angle
+    let _ = coordinate.resolve-system(c)
   }
 
   let get-angle(a, b) = {
@@ -632,47 +658,110 @@
     return angle
   }
 
+  let frame-fns = (
+    rect: (ctx, style, center, tl, tr, bl, br) => {
+      cmd.path(("line", tl, tr, br, bl), close: true,
+        stroke: style.stroke, fill: style.fill)
+      },
+    circle: (ctx, style, center, tl, tr, bl, br) => {
+      let (x, y, z) = util.calculate-circle-center-3pt(tl, bl, br)
+      let r = vector.dist((x, y, z), tl)
+      cmd.ellipse(x, y, z, r, r,
+        stroke: style.stroke, fill: style.fill)
+      },
+  )
+
   ((
     name: name,
-    coordinates: (pt, pt2,),
+    coordinates: (a, b, c),
     anchor: anchor,
-    default-anchor: "center",
-    custom-anchors-ctx: (ctx, pt, pt2) => {
+    default-anchor: if auto-size { "center" } else { "top-left" },
+    transform-coordinates: (ctx, a, b, c) => {
       let style = styles.resolve(ctx.style, style, root: "content")
       let padding = util.resolve-number(ctx, style.padding)
-      let angle = get-angle(pt, pt2)
-      let (w, h) = measure(ct, ctx)
-      w += 2 * padding
-      h += 2 * padding
+      let angle = get-angle(a, c)
+      let (w, h, ..) = if auto-size {
+        measure(ct, ctx)
+      } else {
+        vector.sub(b, a)
+      }
+      w = calc.abs(w) + 2 * padding
+      h = calc.abs(h) + 2 * padding
       let x-dir = vector.scale((calc.cos(angle), -calc.sin(angle), 0), w/2)
       let y-dir = vector.scale((calc.sin(angle), calc.cos(angle), 0), h/2)
       let tr-dir = vector.add(x-dir, y-dir)
       let tl-dir = vector.sub(x-dir, y-dir)
 
+      let center = if auto-size {
+        a
+      } else {
+        vector.add(a, (w / 2, -h / 2, 0))
+      }
+
       return (
-        center:       pt,
-        bottom:       vector.sub(pt, y-dir),
-        below:        vector.sub(pt, y-dir),
-        top:          vector.add(pt, y-dir),
-        above:        vector.add(pt, y-dir),
-        left:         vector.sub(pt, x-dir),
-        right:        vector.add(pt, x-dir),
-        bottom-left:  vector.sub(pt, tr-dir),
-        top-right:    vector.add(pt, tr-dir),
-        bottom-right: vector.add(pt, tl-dir),
-        top-left:     vector.sub(pt, tl-dir),
+        center, // center
+        vector.sub(center, tl-dir), // tl
+        vector.add(center, tr-dir), // tr
+        vector.sub(center, tr-dir), // bl
+        vector.add(center, tl-dir), // br
+        vector.sub(center, x-dir), // left
+        vector.add(center, x-dir), // right
+        vector.sub(center, y-dir), // bottom
+        vector.add(center, y-dir), // top
       )
     },
-    render: (ctx, pt, pt2) => {
-      let (x, y, ..) = pt
+    custom-anchors-ctx: (ctx, center, tl, tr, bl, br, left, right, bottom, top) => {
+      return (
+        center:       center,
+        bottom:       bottom,
+        below:        bottom,
+        top:          top,
+        above:        top,
+        left:         left,
+        right:        right,
+        bottom-left:  bl,
+        top-right:    tr,
+        bottom-right: br,
+        top-left:     tl,
+      )
+    },
+    render: (ctx, center, tl, tr, bl, br, l, r, b, t) => {
+      if vector.dist(l, r) == 0 or vector.dist(t, b) == 0 {
+        return ()
+      }
+
+      let (x, y, ..) = center 
       let style = styles.resolve(ctx.style, style, root: "content")
       let padding = util.resolve-number(ctx, style.padding)
-      let angle = get-angle(pt, pt2)
-      let (tw, th) = measure(ct, ctx)
+      let angle = get-angle(tl, tr)
+      let (tw, th, ..) = if auto-size {
+        measure(ct, ctx)
+      } else {
+        (vector.len(vector.sub(r, l)),
+         vector.len(vector.sub(b, t)), 0)
+      }
       let w = (calc.abs(calc.sin(angle) * th) +
                calc.abs(calc.cos(angle) * tw)) + padding * 2
       let h = (calc.abs(calc.cos(angle) * th) +
                calc.abs(calc.sin(angle) * tw)) + padding * 2
+
+      let ct = if auto-size {
+        let (width: width, height: height) = typst-measure(ct, ctx.typst-style)
+        box(width: width,
+            height: height,
+            ct)
+      } else {
+        box(width: tw * ctx.length,
+            height: th * ctx.length,
+            ct)
+      }
+
+      let frame-fn = if style.frame != none {
+        frame-fns.at(style.frame, default: none)
+      }
+      if frame-fn != none {
+        frame-fn(ctx, style, center, tl, tr, bl, br)
+      }
 
       let (width: width, height: height) = typst-measure(ct, ctx.typst-style)
       cmd.content(
@@ -1026,29 +1115,6 @@
     },
   ),)
 }
-
-// TODO: Is this still needed?
-// Calculate the intersections of two named paths
-// #let intersections(path-1, path-2, name: "intersection") = {
-//   ((
-//     name: name,
-//     custom-anchors-ctx: (ctx) => {
-//       let (ps1, ps2) = (path-1, path-2).map(x => ctx.nodes.at(x).paths)
-//       let anchors = (:)
-//       for p1 in ps1 {
-//         for p2 in ps2 {
-//           let cs = intersection.poly-poly(p1, p2)
-//           if cs != none {
-//             for c in cs {
-//               anchors.insert(str(anchors.len()+1), util.revert-transform(ctx.transform, c))
-//             }
-//           }
-//         }
-//       }
-//       anchors
-//     },
-//   ),)
-// }
 
 /// Draw a grid
 ///

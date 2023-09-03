@@ -329,6 +329,11 @@ line(a, b)
 content((a, .5, b), angle: b, [Text on a line], anchor: "bottom")
 ```
 
+```example
+content((0,0), (2,1), par(justify: false)[This is a long text.], frame: "rect",
+  fill: gray, stroke: none)
+```
+
 #STYLING
 This draw element is not affected by fill or stroke styling.
 

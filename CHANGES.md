@@ -11,7 +11,8 @@
 - Fixed `arc` with negative delta
 - Fixed division by 0 error when calculating bezier extremas
 - Added `mark: (..)` support for `bezier` and `bezier-through`
-
+- Added `content-rect` function for spanning content between points
+- Added `content: (frame: "rect"|"circle")` style for drawing a frame around content
 
 # 0.1.0
 ## Plot
