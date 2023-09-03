@@ -606,7 +606,8 @@
 ///
 /// - angle (angle,coordinate): Rotation angle or coordinate relative to the first
 ///                             coordinate used for angle calculation
-/// - anchor (string): Anchor to use as origin. Defaults to `"center"`.
+/// - anchor (string): Anchor to use as origin. Defaults to `"center"` if one coordinate
+///                    is set or `"top-left"` if two coordinates are set.
 /// - name (string): Node name
 /// - clip (bool): Clip content inside rect
 /// - ..style-args (coordinate,content,style): Named arguments are used for for styling
