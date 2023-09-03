@@ -10,7 +10,7 @@ jobs:
           submodules: recursive
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: imagemagick cargo
+          packages: imagemagick cargo parallel
           version: 1.0
       - name: Install typos-cli from crates.io
         uses: baptiste0928/cargo-install@v2
