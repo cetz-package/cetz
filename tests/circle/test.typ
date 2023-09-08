@@ -21,3 +21,11 @@
       }
     }
 }))
+
+#box(stroke: 2pt + red, canvas(length: .5cm, {
+  import draw: *
+
+  for z in range(-2, 2) {
+    circle((0,0,z))
+  }
+}))
