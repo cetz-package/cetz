@@ -92,7 +92,7 @@
        ("cubic", (x, top, z), (right, y, z),
                  (x + m * rx, top, z), (right, y + m * ry, z)),
        ("cubic", (right, y, z), (x, bottom, z),
-                 (right, y - m * ry), (x + m * rx, bottom, z)),
+                 (right, y - m * ry, z), (x + m * rx, bottom, z)),
        ("cubic", (x, bottom, z), (left, y, z),
                  (x - m * rx, bottom, z), (left, y - m * ry, z)),
        ("cubic", (left, y, z), (x, top, z),
