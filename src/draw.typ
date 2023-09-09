@@ -234,6 +234,31 @@
   },
 ),)
 
+/// Modify the canvas' context
+///
+/// - callback (function): Function of the form `ctx => ctx` that returns the
+///                        new canvas context.
+#let set-ctx(callback) = {
+  assert(type(callback) == "function")
+  ((
+    before: callback,
+  ),)
+}
+
+/// Get the canvas' context and return children
+///
+/// - body (function): Function of the form `ctx => elements` that receives the
+///                    current context and returns draw commands.
+#let get-ctx(body) = {
+  assert(type(body) == "function")
+  ((
+    children: ctx => {
+      let c = body(ctx)
+      return if c == none { () } else { c }
+    },
+  ),)
+}
+
 /// Push a group
 ///
 /// A group has a local transformation matrix.
@@ -249,6 +274,7 @@
 /// - anchor (string): Element origin
 /// - body (draw,function): Children or function of the form (`ctx => elements`)
 #let group(name: none, anchor: none, body) = {
+  let body = if body == none { () } else { body }
   ((
     name: name,
     anchor: anchor,

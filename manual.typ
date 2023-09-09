@@ -491,6 +491,37 @@ scale((x: 1.8))
 circle((0,0))
 ```
 
+== Context Modification
+
+The context of a canvas holds the canvas' internal state like style and transformation.
+Note that the fields of the context of a canvas are considered private and therefore
+unstable. You can add custom values to the context, but in order to prevent naming
+conflicts with future CeTZ versions, try to assign unique names.
+
+#show-module-fn(draw-module, "set-ctx")
+```example
+// Setting a custom transformation matrix
+set-ctx(ctx => {
+  let mat = ((1, 0, .5, 0),
+             (0, 1, 0, 0),
+             (0, 0, 1, 0),
+             (0, 0, 0, 1))
+  ctx.transform = mat
+  return ctx
+})
+circle((z: 0), fill: red)
+circle((z: 1), fill: blue)
+circle((z: 2), fill: green)
+```
+
+#show-module-fn(draw-module, "get-ctx")
+```example
+// Print the transformation matrix
+get-ctx(ctx => {
+  content((), [#repr(ctx.transform)])
+})
+```
+
 = Coordinate Systems <coordinate-systems>
 A _coordinate_ is a position on the canvas on which the picture is drawn. They take the form of dictionaries and the following sub-sections define the key value pairs for each system. Some systems have a more implicit form as an array of values and `CeTZ` attempts to infer the system based on the element types.
 
