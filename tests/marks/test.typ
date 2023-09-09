@@ -50,3 +50,19 @@
       (mark: "<>", pos:.75),
       (mark: "|", pos: .5))
 }))
+
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  line((1,-1), (1,2), stroke: green)
+  mark((0,0), (1,0), symbol: ">", angle: 30deg)
+  mark((0,1), (1,1), symbol: ">", fill: blue)
+}))
+
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  line((-1,0), (2,0), stroke: green)
+  mark((0,-1), (0,0), symbol: ">", angle: 30deg)
+  mark((1,-1), (1,0), symbol: ">", fill: blue)
+}))

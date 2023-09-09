@@ -4,7 +4,7 @@
 #import "util.typ"
 #import "path-util.typ"
 #import "coordinate.typ"
-#import "bezier.typ": to-abc, quadratic-through-3points, cubic-through-3points, quadratic-to-cubic, cubic-point, catmull-to-cubic
+#import "bezier.typ": to-abc, quadratic-through-3points, cubic-through-3points, quadratic-to-cubic, cubic-point, catmull-to-cubic, shorten
 #import "intersection.typ"
 #import "styles.typ"
 
@@ -332,6 +332,49 @@
   ),)
 }
 
+// Calculate mark offset by taking stroke thickness and join
+// into account. This is only done for triangle marks, as they
+// are the only type of marks where this matters!
+#let _get-mark-offset(ctx, style, mark) = {
+  if mark in ("<", ">") {
+    let sign = if mark == "<" {1} else {-1}
+
+    let (width, limit, join) = if type(style.stroke) == dictionary {
+      (style.stroke.at("thickness", default: 1pt),
+       style.stroke.at("miter-limit", default: 4),
+       style.stroke.at("join", default: "miter"))
+    } else if type(style.stroke) == stroke {
+      (style.stroke.thickness,
+       style.stroke.miter-limit,
+       style.stroke.join)
+    } else {
+      (1pt, 4, "miter")
+    }
+
+    if type(width) == length {
+      width /= ctx.length
+    }
+
+    if join == "miter" {
+      let miter = (calc.tan(90deg - style.angle / 2) +
+                   calc.sin(style.angle / 2)) * width / 2
+      if 2 * miter / width <= limit {
+        return miter * sign
+      } else {
+        // If the miter limit kicks in, use bevel calculation
+        join = "bevel"
+      }
+    }
+    if join == "bevel" {
+      return calc.sin(style.angle / 2) * width / 2 * sign
+    } else {
+      return width / 2 * sign
+    }
+  }
+
+  return 0
+}
+
 /// Draw a mark or "arrow head" between two coordinates
 ///
 /// *Style root:* `mark`.
@@ -349,7 +392,13 @@
     coordinates: (from, to),
     render: (ctx, from, to) => {
       let style = styles.resolve(ctx.style, style, root: "mark")
-      cmd.mark(from, to, style.symbol, fill: style.fill, stroke: style.stroke)
+      let offset = _get-mark-offset(ctx, style, style.symbol)
+      if offset != 0 {
+        let dir = vector.norm(vector.sub(to, from))
+        to = vector.add(to, vector.scale(dir, offset))
+      }
+
+      cmd.mark(from, to, style.symbol, style)
     }
   ),)
 }
@@ -394,6 +443,21 @@
     render: (ctx, ..pts) => {
       let pts = pts.pos()
       let style = styles.resolve(ctx.style, style, root: "line")
+
+      // If the mark is offset shorten the first segment
+      let start-offset = _get-mark-offset(ctx, style.mark, style.mark.start)
+      if start-offset != 0 {
+        let d = vector.norm(vector.sub(pts.at(1), pts.at(0)))
+        pts.at(0) = vector.sub(pts.at(0), vector.scale(d, start-offset))
+      }
+
+      // If the mark is offset shorten the last segment
+      let end-offset = _get-mark-offset(ctx, style.mark, style.mark.end)
+      if end-offset != 0 {
+        let d = vector.norm(vector.sub(pts.at(-2), pts.at(-1)))
+        pts.at(-1) = vector.add(pts.at(-1), vector.scale(d, -end-offset))
+      }
+
       cmd.path(close: close, ("line", ..pts),
         fill: style.fill, stroke: style.stroke)
 
@@ -401,19 +465,17 @@
         let style = style.mark
         if style.start != none {
           let (start, end) = (pts.at(1), pts.at(0))
-          let n = vector.scale(vector.norm(vector.sub(end, start)),
-                              style.size)
+          let d = vector.norm(vector.sub(end, start))
+          let n = vector.scale(d, style.size)
           start = vector.sub(end, n)
-          cmd.mark(start, end, style.start,
-            fill: style.fill, stroke: style.stroke)
+          cmd.mark(start, end, style.start, style)
         }
         if style.end != none {
           let (start, end) = (pts.at(-2), pts.at(-1))
-          let n = vector.scale(vector.norm(vector.sub(end, start)),
-            style.size)
+          let d = vector.norm(vector.sub(end, start))
+          let n = vector.scale(d, style.size)
           start = vector.sub(end, n)
-          cmd.mark(start, end, style.end,
-            fill: style.fill, stroke: style.stroke)
+          cmd.mark(start, end, style.end, style)
         }
       }
     }
@@ -845,20 +907,18 @@
 #let _render-cubic-marks(start, end, c1, c2, style) = {
   if style.mark != none {
     let style = style.mark
-    let offset = 0.001
+    let sample-offset = 0.001
     if style.start != none {
       let dir = vector.scale(vector.norm(
-        vector.sub(cubic-point(start, end, c1, c2, 0 + offset),
+        vector.sub(cubic-point(start, end, c1, c2, 0 + sample-offset),
                    start)), style.size)
-      cmd.mark(vector.sub(start, dir), start, style.start,
-        fill: style.fill, stroke: style.stroke)
+      cmd.mark(vector.sub(start, dir), start, style.start, style)
     }
     if style.end != none {
       let dir = vector.scale(vector.norm(
-        vector.sub(cubic-point(start, end, c1, c2, 1 - offset),
+        vector.sub(cubic-point(start, end, c1, c2, 1 - sample-offset),
                    end)), style.size)
-      cmd.mark(vector.add(end, dir), end, style.end,
-        fill: style.fill, stroke: style.stroke)
+      cmd.mark(vector.add(end, dir), end, style.end, style)
     }
   }
 }
@@ -906,6 +966,17 @@
     },
     render: (ctx, start, end, c1, c2) => {
       let style = styles.resolve(ctx.style, style, root: "bezier")
+
+      let start-offset = _get-mark-offset(ctx, style, style.mark.start)
+      if start-offset != 0 {
+        // TODO: (start, end, c1, c2) = shorten(start, end, c1, c2, 1 - offset)
+      }
+
+      let end-offset = _get-mark-offset(ctx, style, style.mark.end)
+      if end-offset != 0 {
+        // TODO: (start, end, c1, c2) = shorten(start, end, c1, c2, 1 + offset)
+      }
+
       cmd.path(
         ("cubic", start, end, c1, c2),
         fill: style.fill, stroke: style.stroke
@@ -938,14 +1009,23 @@
       }
       return anchors
     },
-    render: (ctx, s, e, ..c) => {
+    render: (ctx, s, e, c1, c2) => {
       let style = styles.resolve(ctx.style, style.named(), root: "bezier")
 
-      let c = c.pos()
-      cmd.path(("cubic", s, e, ..c),
+      let start-offset = _get-mark-offset(ctx, style.mark, style.mark.start)
+      if start-offset != 0 {
+        // TODO: (s, e, c1, c2) = shorten(s, e, c1, c2, -start-offset)
+      }
+
+      let end-offset = _get-mark-offset(ctx, style.mark, style.mark.end)
+      if end-offset != 0 {
+        // TODO: (s, e, c1, c2) = shorten(s, e, c1, c2, -end-offset)
+      }
+
+      cmd.path(("cubic", s, e, c1, c2),
                fill: style.fill,
                stroke: style.stroke)
-      _render-cubic-marks(s, e, ..c, style)
+      _render-cubic-marks(s, e, c1, c2, style)
     }
   ),)
 }
@@ -1035,6 +1115,7 @@
 ///      pos: float,      Position between 0 and 1
 ///      name: string?    Optional anchor name
 ///      scale: float?,   Optional scale
+///      angle: angle?,   Optional angle (triangle marks only)
 ///      stroke: stroke?, Optional stroke style
 ///      fill: fill?)     Optional fill style
 ///   and style keys.
@@ -1068,13 +1149,14 @@
       let size = m.at("size", default: style.size)
       let fill = m.at("fill", default: style.fill)
       let stroke = m.at("stroke", default: style.stroke)
+      let angle = m.at("angle", default: style.angle)
 
       let (pt, dir) = path-util.direction(p.segments, m.pos,
                                           scale: size)
       if pt != none {
-        cmd.mark(vector.add(pt, dir), pt, m.mark,
-                 fill: fill,
-                 stroke: stroke)
+        let style = style
+        style.angle = angle
+        cmd.mark(vector.add(pt, dir), pt, m.mark, style)
       }
     }
   }
