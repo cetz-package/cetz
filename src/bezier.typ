@@ -225,8 +225,12 @@
   let pts = ()
   let dims = calc.max(s.len(), e.len())
   for dim in range(dims) {
-    let ts = dim-extrema(s.at(dim, default: 0), e.at(dim, default: 0),
-                         c1.at(dim, default: 0), c2.at(dim, default: 0))
+    let ts = dim-extrema(
+      s.at(dim, default: 0),
+      e.at(dim, default: 0),
+      c1.at(dim, default: 0),
+      c2.at(dim, default: 0)
+    )
     for t in ts {
       if t >= 0 and t <= 1 {
         pts.push(cubic-point(s, e, c1, c2, t))

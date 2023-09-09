@@ -5,7 +5,7 @@
   import draw: *
 
   group({
-    intersections(name: "i", samples: 10, {
+    intersections("i", samples: 10, {
       body
     })
     for-each-anchor("i", (name) => {
