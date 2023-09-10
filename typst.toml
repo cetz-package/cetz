@@ -1,6 +1,6 @@
 [package]
 name = "cetz"
-version = "0.1.0"
+version = "0.1.1"
 repository = "https://github.com/johannes-wolf/typst-canvas"
 entrypoint = "src/lib.typ"
 authors = [

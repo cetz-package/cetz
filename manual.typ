@@ -120,7 +120,7 @@ The name CeTZ is a recursive acronym for "CeTZ, ein Typst Zeichenpacket" (german
 
 This is the minimal starting point:
   ```typ
-  #import "@local/cetz:0.1.0"
+  #import "@local/cetz:0.1.1"
   #cetz.canvas({
     import cetz.draw: *
     ...
