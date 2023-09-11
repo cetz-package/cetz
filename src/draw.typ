@@ -667,11 +667,6 @@
     b = a
   }
 
-  assert(type(angle) in ("array", "angle"))
-  if type(angle) == "array" {
-    let _ = coordinate.resolve-system(angle)
-  }
-
   let c = a
   if type(angle) != "angle" {
     c = angle
