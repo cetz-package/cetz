@@ -57,3 +57,9 @@
   content((0,0), (1,1), angle: 15deg,
     text(white, align(center+horizon)[With style!]))
 }))
+
+#box(stroke: 2pt + red, canvas(length: 1cm, {
+  import draw: *
+  circle((0,0), name: "c")
+  content((0,0), angle: "c.top-right", [Text])
+}))
