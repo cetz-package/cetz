@@ -479,9 +479,9 @@
   if axis-style == "scientific" {
     axes.scientific(
       size: size,
-      bottom: axis-dict.x,
+      bottom: axis-dict.at("x", default: none),
       top: axis-dict.at("x2", default: auto),
-      left: axis-dict.y,
+      left: axis-dict.at("y", default: none),
       right: axis-dict.at("y2", default: auto),)
   } else if axis-style == "left" {
     axes.school-book(
