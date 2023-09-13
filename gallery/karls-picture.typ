@@ -1,4 +1,4 @@
-#import "@preview/cetz:0.1.0"
+#import "@preview/cetz:0.1.1"
 
 #set page(width: auto, height: auto, margin: .5cm)
 
@@ -10,9 +10,9 @@
   set-style(
     mark: (fill: black),
     stroke: (thickness: 0.4pt, cap: "round"),
-    arc: (
+    angle: (
       radius: 0.3,
-      mode: "PIE",
+      label-radius: .22,
       fill: green.lighten(80%),
       stroke: (paint: green.darken(50%))
     ),
@@ -39,8 +39,8 @@
   }
 
   // Draw the green angle
-  arc((0,0), start: 0deg, stop: 30deg, anchor: "origin", name: "arc")
-  content((15deg + 4deg, 0.2), text(green)[#sym.alpha])
+  cetz.angle.angle((0,0), (1,0), (1, calc.tan(30deg)),
+    label: text(green, [#sym.alpha]))
 
   line((0,0), (1, calc.tan(30deg)))
 
