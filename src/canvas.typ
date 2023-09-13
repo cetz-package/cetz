@@ -319,12 +319,16 @@
       ctx = r.ctx
       draw-cmds += r.drawables
     }
-
   }
 
   if bounds == none {
     return []
   }
+
+  // Order draw commands by z-index
+  draw-cmds = draw-cmds.sorted(key: (cmd) => {
+    return cmd.at("z-index", default: 0)
+  })
 
   // Final canvas size
   let width = calc.abs(bounds.r - bounds.l) * length

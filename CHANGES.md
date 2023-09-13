@@ -1,5 +1,7 @@
 # 0.1.2
 CeTZ requires Typst 0.8.0.
+## Draw
+- New `on-layer(layer, body)` function for drawing with a given z-index
 ## Libs
 ### Plot
 - Added `sample-at: (..)` option to `plot.add(..)` for specifying extra sample points
