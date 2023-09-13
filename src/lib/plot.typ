@@ -124,6 +124,8 @@
 /// - samples (int): Number of times the `data` function gets called for
 ///                  sampling y-values. Only used if `data` is of
 ///                  type function.
+/// - sample-at (array): Array of x-values the function gets sampled at in addition
+///                      to the default sampling.
 /// - style (style): Style to use, can be used with a palette function
 /// - axes (array): Name of the axes to use ("x", "y"), note that not all
 ///                 plot styles are able to display a custom axis!
@@ -156,6 +158,7 @@
          mark-size: .2,
          mark-style: (:),
          samples: 100,
+         sample-at: (),
          axes: ("x", "y"),
          data
          ) = {
@@ -173,9 +176,11 @@
     } else {
       y0 = (y0, )
     }
-    
-    data = y0 + range(1, samples + 1).map(x => {
-      let x = lo + x / samples * (hi - lo)
+
+    let pts = sample-at + range(0, samples + 1).map(t => lo + t / samples * (hi - lo))
+    pts = pts.sorted()
+
+    data = pts.map(x => {
       if is-vector {
         (data)(x)
       } else {

@@ -260,3 +260,14 @@
     })
 }))
 
+/* Custom sample points */
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  plot.plot(size: (6, 4), y-min: -2, y-max: 2,
+    samples: 10,
+    {
+      plot.add(samples: 2, sample-at: (.99, 1.001, 1.99, 2.001, 2.99), domain: (0, 3),
+        x => calc.pow(-1, int(x)))
+    })
+}))
