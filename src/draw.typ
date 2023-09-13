@@ -405,7 +405,7 @@
 /// - top-left: Top left
 /// - top-right: Top right
 /// - bottom-left: Bottom left
-/// - bottom-left: Bottom right
+/// - bottom-right: Bottom right
 /// - top: Mid between top-left and top-right
 /// - left: Mid between top-left and bottom-left
 /// - right: Mid between top-right and bottom-right
@@ -428,28 +428,120 @@
     default-anchor: "center",
     anchor: anchor,
     coordinates: (a, b),
-    custom-anchors: (a, b) => {
-      let c = vector.sub(b, a)
-      let (w, h, d) = c
+    transform-coordinates: (ctx, a, b) => {
+      let (ax, ay, az) = a;
+      let (bx, by, bz) = b
+
+      let (x1, x2) = (calc.min(ax, bx), calc.max(ax, bx))
+      let (y1, y2) = (calc.min(ay, by), calc.max(ay, by))
+      let (z1, z2) = (calc.min(az, bz), calc.max(az, bz))
+
+      let style = styles.resolve(ctx.style, style, root: "rect")
+      let (rtl, rtr, rbl, rbr) = if type(style.radius) == array {
+        style.radius
+      } else if style.radius == none {
+        (0, 0, 0, 0)
+      } else {
+        (style.radius, style.radius, style.radius, style.radius)
+      }
+
+      let lo = (x1, y1, z1)
+      let hi = (x2, y2, z2)
+      let w = (x2 - x1)
+      let h = (y2 - y1)
+      let z = z1 + (z2 - z1)/2 // TODO: Fix z interpolation
+      let center = (x1 + w/2,
+                    y1 + h/2,
+                    z)
+
+      // Clamp corner radii
+      let max-radius = calc.min(w/2, h/2)
+      rtl = calc.max(0, calc.min(rtl, max-radius))
+      rtr = calc.max(0, calc.min(rtr, max-radius))
+      rbl = calc.max(0, calc.min(rbl, max-radius))
+      rbr = calc.max(0, calc.min(rbr, max-radius))
+
+      // Top
+      let tl = (x1 + rtl, y2, z)
+      let t  = (x1 + w/2, y2, z)
+      let tr = (x2 - rtr, y2, z)
+
+      // Right
+      let rt = (x2, y2 - rtr, z)
+      let r  = (x2, y2 - h/2, z)
+      let rb = (x2, y1 + rbr, z)
+      
+      // Bottom
+      let bl = (x1 + rbl, y1, z)
+      let b  = (x1 + w/2, y1, z)
+      let br = (x2 - rbr, y1, z)
+
+      // Left
+      let lt = (x1, y2 - rtl, z)
+      let l  = (x1, y2 - h/2, z)
+      let lb = (x1, y1 + rbl, z)
+
+      // Control points
+      let m = 0.551784
+      //// Top-right
+      let tr-c1 = (tr.at(0) + rtr * m, tr.at(1), tr.at(2))
+      let tr-c2 = (rt.at(0), rt.at(1) + rtr * m, rt.at(2))
+      //// Bottom-right
+      let br-c1 = (rb.at(0), rb.at(1) - rbr * m, rb.at(2))
+      let br-c2 = (br.at(0) + rbr * m, br.at(1), br.at(2))
+      //// Bottom-left
+      let bl-c1 = (bl.at(0) - rbl * m, bl.at(1), bl.at(2))
+      let bl-c2 = (lb.at(0), lb.at(1) - rbl * m, lb.at(2))
+      //// Top-left
+      let tl-c1 = (lt.at(0), lt.at(1) + rtl * m, lt.at(2))
+      let tl-c2 = (tl.at(0) - rtl * m, tl.at(1), tl.at(2))
+
+      // Corners
+      let m = 0.707106 // sin and cos of 45 deg
+      let c-tl = (tl.at(0) - rtl * m, lt.at(1) + rtl * m, z)
+      let c-tr = (tr.at(0) + rtr * m, rt.at(1) + rtr * m, z)
+      let c-br = (br.at(0) + rbr * m, rb.at(1) - rbr * m, z)
+      let c-bl = (bl.at(0) - rbl * m, lb.at(1) - rbl * m, z)
+
+      (tl, t, tr, rt, r, rb, bl, b, br, lt, l, lb, center,
+       tr-c1, tr-c2, br-c1, br-c2, bl-c1, bl-c2, tl-c1, tl-c2,
+       c-tl, c-tr, c-br, c-bl)
+    },
+    custom-anchors: (tl, t, tr, rt, r, rb, bl, b, br, lt, l, lb, center,
+                     tr-c1, tr-c2, br-c1, br-c2, bl-c1, bl-c2, tl-c1, tl-c2,
+                     c-tl, c-tr, c-br, c-bl) => {
       (
-        bottom-left: a,
-        bottom: vector.add(a, (w / 2, 0, d / 2)),
-        bottom-right: vector.add(a, (w, 0, d)),
-        top-left: vector.sub(b, (w, 0, d)),
-        top: vector.sub(b, (w / 2, 0, d / 2)),
-        top-right: b,
-        left: vector.add(a, (0, h / 2, d / 2)),
-        right: vector.sub(b, (0, h / 2, d / 2)),
-        center: vector.add(a, (w / 2, h / 2, d / 2)),
+        bottom-left: c-bl,
+        bottom: b,
+        bottom-right: c-br,
+        top-left: c-tl,
+        top: t,
+        top-right: c-tr,
+        left: l,
+        right: r,
+        center: center,
       )
     },
-    render: (ctx, a, b) => {
+add-default-anchors: false,
+    render: (ctx, tl, t, tr, rt, r, rb, bl, b, br, lt, l, lb, center,
+                  tr-c1, tr-c2, br-c1, br-c2, bl-c1, bl-c2, tl-c1, tl-c2,
+                  ..) => {
       let style = styles.resolve(ctx.style, style, root: "rect")
-      let (x1, y1, z1) = a
-      let (x2, y2, z2) = b
-      cmd.path(close: true, fill: style.fill, stroke: style.stroke,
-              ("line", (x1, y1, z1), (x2, y1, z2),
-                       (x2, y2, z2), (x1, y2, z1)))
+      if style.radius != none {
+        cmd.path(close: true, fill: style.fill, stroke: style.stroke,
+                ("line", tl, tr),
+                ("cubic", tr, rt, tr-c1, tr-c2),
+                ("line", rt, rb),
+                ("cubic", rb, br, br-c1, br-c2),
+                ("line", br, bl),
+                ("cubic", bl, lb, bl-c1, bl-c2),
+                ("line", lb, lt),
+                ("cubic", lt, tl, tl-c1, tl-c2)
+                )
+      } else {
+        cmd.path(close: true, fill: style.fill, stroke: style.stroke,
+                ("line", tl, tr, br, bl))
+      }
     },
   ),)
 }

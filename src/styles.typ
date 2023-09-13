@@ -55,6 +55,7 @@
     mark: auto,
   ),
   rect: (
+    radius: none,
     fill: auto,
     stroke: auto,
   ),
