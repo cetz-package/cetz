@@ -4,6 +4,8 @@
 #import "../vector.typ"
 #import "../styles.typ"
 
+#let typst-content = content
+
 // Global defaults
 #let tic-limit = 100
 #let default-style = (
@@ -84,14 +86,14 @@
 
   if type(value) in ("int", "float") {
     let format = tic-options.at("format", default: "float")
-    if type(format) == "function" {
+    if type(format) == function {
       value = (format)(value)
     } else if format == "sci" {
       value = format-sci(value, tic-options.at("decimals", default: 2))
     } else {
       value = format-float(value, tic-options.at("decimals", default: 2))
     }
-  } else if type(value) != "content" {
+  } else if type(value) != typst-content {
     value = str(value)
   }
 

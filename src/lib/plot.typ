@@ -163,14 +163,14 @@
          data
          ) = {
   // If data is of type function, sample it
-  if type(data) == "function" {
+  if type(data) == function {
     assert(samples >= 2)
-    assert(type(domain) == "array" and domain.len() == 2)
+    assert(type(domain) == array and domain.len() == 2)
 
     let (lo, hi) = domain
 
     let y0 = (data)(lo)
-    let is-vector = type(y0) == "array"
+    let is-vector = type(y0) == array
     if not is-vector {
       y0 = ((lo, y0), )
     } else {
@@ -304,7 +304,7 @@
   let data = ()
   let anchors = ()
   for cmd in body {
-    assert(type(cmd) == "dictionary" and "type" in cmd,
+    assert(type(cmd) == dictionary and "type" in cmd,
            message: "Expected plot sub-command in plot body")
     if cmd.type == "data" { data.push(cmd) }
     if cmd.type == "anchor" { anchors.push(cmd) }
@@ -363,17 +363,17 @@
   // Prepare styles
   for i in range(data.len()) {
     let style-base = plot-style
-    if type(style-base) == "function" {
+    if type(style-base) == function {
       style-base = (style-base)(i)
     }
-    if type(data.at(i).style) == "function" {
+    if type(data.at(i).style) == function {
       data.at(i).style = (data.at(i).style)(i)
     }
     let mark-style-base = mark-style
-    if type(mark-style-base) == "function" {
+    if type(mark-style-base) == function {
       mark-style-base = (mark-style-base)(i)
     }
-    if type(data.at(i).mark-style) == "function" {
+    if type(data.at(i).mark-style) == function {
       data.at(i).mark-style = (data.at(i).mark-style)(i)
     }
     data.at(i).style = util.merge-dictionary(

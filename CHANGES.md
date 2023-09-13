@@ -1,3 +1,9 @@
+# 0.1.2
+CeTZ requires Typst 0.8.0.
+## Libs
+### Plot
+- Added `sample-at: (..)` option to `plot.add(..)` for specifying extra sample points
+
 # 0.1.1
 ## Libs
 ### Angle

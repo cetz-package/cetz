@@ -7,10 +7,14 @@
 #import "styles.typ"
 #import "path-util.typ"
 
+// Aliases for typst types/functions
+// because we override them.
+#let typst-length = length
+
 // Compute bounding box of points
 #let bounding-box(pts, init: none) = {
   let bounds = init
-  if type(pts) == "array" {
+  if type(pts) == array {
     for (i, pt) in pts.enumerate() {
       if init == none and i == 0 {
         bounds = (l: pt.at(0), r: pt.at(0), t: pt.at(1), b: pt.at(1))
@@ -20,7 +24,7 @@
       bounds.t = calc.min(bounds.t, pt.at(1))
       bounds.b = calc.max(bounds.b, pt.at(1))
     }
-    } else if type(pts) == "dictionary" {
+    } else if type(pts) == dictionary {
       if init == none {
         bounds = pts
       } else {
@@ -51,7 +55,7 @@
   if "style" in element {
     ctx.style = styles.resolve(
       ctx.style,
-      if type(element.style) == "function" {
+      if type(element.style) == function {
         (element.style)(ctx)
       } else {
         element.style
@@ -60,7 +64,7 @@
   }
 
   if "push-transform" in element {
-    if type(element.push-transform) == "function" {
+    if type(element.push-transform) == function {
       ctx.transform = (element.push-transform)(ctx)
     } else {
       ctx.transform = matrix.mul-mat(
@@ -73,7 +77,7 @@
   // Render children
   if "children" in element {
     let child-drawables = ()
-    let children = if type(element.children) == "function" {
+    let children = if type(element.children) == function {
       (element.children)(ctx)
     } else {
       element.children
@@ -116,7 +120,7 @@
     // If the element wants to calculate extra coordinates depending
     // on it's resolved coordinates, it can use "transform-coordinates".
     if "transform-coordinates" in element {
-      assert(type(element.transform-coordinates) == "function")
+      assert(type(element.transform-coordinates) == function)
 
       coordinates = (element.transform-coordinates)(ctx, ..coordinates)
     }
@@ -222,7 +226,7 @@
     }
   }
 
-  if "name" in element and type(element.name) == "string" {
+  if "name" in element and type(element.name) == str {
     ctx.nodes.insert(
       element.name, 
       (
@@ -253,7 +257,6 @@
   return (bounds: bounds, ctx: ctx, drawables: drawables)
 }
 
-
 #let canvas(length: 1cm,        /* Length of 1.0 canvas units */
             background: none,   /* Background paint */
             debug: false, body) = layout(ly => style(st => {
@@ -262,9 +265,9 @@
   }
 
   let length = length
-  assert(type(length) in ("length", "ratio"),
+  assert(type(length) in (typst-length, ratio),
          message: "length: Expected length, got " + type(length) + ".")
-  if type(length) == "ratio" {
+  if type(length) == ratio {
     // NOTE: Ratio length is based on width!
     length = ly.width * length
   } else {

@@ -58,7 +58,7 @@
 }
 
 #let def-arg(term, t, default: none, description) = {
-  if type(t) == "string" {
+  if type(t) == str {
     t = t.replace("?", "|none")
     t = `<` + t.split("|").map(s => {
       if s == "b" {

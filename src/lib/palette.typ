@@ -8,7 +8,7 @@
 /// - fills (array): List of fill styles.
 /// -> function
 #let new(stroke, fills) = {
-  if type(fills) != "array" {fills = (fills,)}
+  if type(fills) != array {fills = (fills,)}
   (index) => {
     if index == "len" {return fills.len()}
     return (stroke: stroke,

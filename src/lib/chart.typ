@@ -97,11 +97,11 @@
 
   assert(mode in barchart-modes,
     message: "Invalid barchart mode")
-  assert(type(label-key) in ("integer", "string"))
+  assert(type(label-key) in (int, str))
   if mode == "basic" {
-    assert(type(value-key) in ("integer", "string"))
+    assert(type(value-key) in (int, str))
   } else {
-    assert(type(value-key) in ("array"))
+    assert(type(value-key) == array)
   }
 
   if size.at(1) == auto {
@@ -193,7 +193,7 @@
                     frame: "set",
                     ..style.axes)
     if data.len() > 0 {
-      if type(bar-style) != "function" { bar-style = ((i) => bar-style) }
+      if type(bar-style) != function { bar-style = ((i) => bar-style) }
 
       axes.axis-viewport(size, x, y, {
         for (i, row) in data.enumerate() {
@@ -261,11 +261,11 @@
 
   assert(mode in barchart-modes,
     message: "Invalid columnchart mode")
-  assert(type(label-key) in ("integer", "string"))
+  assert(type(label-key) in (int, str))
   if mode == "basic" {
-    assert(type(value-key) in ("integer", "string"))
+    assert(type(value-key) in (int, str))
   } else {
-    assert(type(value-key) in ("array"))
+    assert(type(value-key) == array)
   }
 
   if size.at(0) == auto {
@@ -357,7 +357,7 @@
                     frame: "set",
                     ..style.axes)
     if data.len() > 0 {
-      if type(bar-style) != "function" { bar-style = ((i) => bar-style) }
+      if type(bar-style) != function { bar-style = ((i) => bar-style) }
 
       axes.axis-viewport(size, x, y, {
         for (i, row) in data.enumerate() {

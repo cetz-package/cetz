@@ -52,7 +52,7 @@
 /// - angled (angle): Angle to get the point at
 /// -> vector
 #let ellipse-point(center, radius, angle) = {
-  let (rx, ry) = if type(radius) == "array" {
+  let (rx, ry) = if type(radius) == array {
     radius
   } else {
     (radius, radius)
@@ -110,7 +110,7 @@
 }
 
 #let resolve-number(ctx, num) = {
-  if type(num) == "length" {
+  if type(num) == length {
     if repr(num).ends-with("em") {
       float(repr(num).slice(0, -2)) * ctx.em-size.width / ctx.length
     } else {
@@ -122,7 +122,7 @@
 }
 
 #let resolve-radius(radius) = {
-  return if type(radius) == "array" {radius} else {(radius, radius)}
+  return if type(radius) == array {radius} else {(radius, radius)}
 }
 
 /// Find minimum value of a, ignoring `none`
@@ -144,7 +144,7 @@
 /// - b (dictionary): Dictionary b
 /// -> dictionary
 #let merge-dictionary(a, b) = {
-  if type(a) == "dictionary" and type(b) == "dictionary" {
+  if type(a) == dictionary and type(b) == dictionary {
     let c = a
     for (k, v) in b {
       if not k in c {

@@ -7,7 +7,7 @@
   // (x, y)
   // (x, y, z)
   
-  return if type(c) == "array" {
+  return if type(c) == array {
     vector.as-vec(c)
   } else {
      (
@@ -25,10 +25,10 @@
   // (angle, radius)
   // (angle, (x-radius, y-radius))
 
-  let (angle, xr, yr) = if type(c) == "array" {
+  let (angle, xr, yr) = if type(c) == array {
     (
       c.first(),
-      ..if type(c.last()) == "array" {
+      ..if type(c.last()) == array {
         c.last()
       } else {
         (c.last(), c.last())
@@ -37,7 +37,7 @@
   } else {
     (
       c.angle,
-      ..if type(c.radius) == "array" {
+      ..if type(c.radius) == array {
         c.radius
       } else {
         (c.radius, c.radius)
@@ -57,7 +57,7 @@
   // "name.anchor"
   // "name"
 
-  let (name, anchor) = if type(c) == "string" {
+  let (name, anchor) = if type(c) == str {
     let parts = c.split(".")
     if parts.len() == 1 {
       (parts.first(), "default")
@@ -159,7 +159,7 @@
   // (horizontal, "-|", vertical)
   // (vertical, "|-", horizontal)
 
-  let (horizontal, vertical) = if type(c) == "array" {
+  let (horizontal, vertical) = if type(c) == array {
     if c.at(1) == "|-" {
       (c.first(), c.last())
     } else {
@@ -182,7 +182,7 @@
   // (a, number, b)
   // (a, number, angle, b)
 
-  let (a, number, angle, b, abs) = if type(c) == "array" {
+  let (a, number, angle, b, abs) = if type(c) == array {
     if c.len() == 3 {
       (
         ..c.slice(0, 2),
@@ -220,7 +220,7 @@
     )
   }
 
-  if type(number) == "length" {
+  if type(number) == length {
     number = util.resolve-number(ctx, number) / vector.len(vector.sub(b,a))
   }
 
@@ -246,12 +246,12 @@
 
 // Returns the given coordinate's system name
 #let resolve-system(c) = {
-  let t = if type(c) == "dictionary" {
+  let t = if type(c) == dictionary {
     let keys = c.keys()
     let len = c.len()
     if len in (1, 2, 3) and keys.all(k => k in ("x", "y", "z")) {
       "xyz"
-    } else if len == 2 and keys.all(k => k in ("angle", "radius")) and (type(c.radius) in ("integer", "float", "length") or (type(c.radius) == "array" and c.radius.len() == 2)) {
+    } else if len == 2 and keys.all(k => k in ("angle", "radius")) and (type(c.radius) in (int, float, length) or (type(c.radius) == array and c.radius.len() == 2)) {
       "polar"
     } else if len == 1 and keys == ("bary",) {
       "barycentric"
@@ -266,7 +266,7 @@
     } else if len in (3, 4) and keys.all(k => k in ("a", "number", "angle", "abs", "b")) {
       "lerp"
     }
-  } else if type(c) == "array" {
+  } else if type(c) == array {
     let len = c.len()
     let types = c.map(type)
     if len == 0 {
@@ -282,7 +282,7 @@
     } else if len >= 2 and types.first() == "function" {
       "function"
     }
-  } else if type(c) == "string" {
+  } else if type(c) == str {
     "anchor"
   }
 
