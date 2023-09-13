@@ -5,6 +5,8 @@
 #import "vector.typ"
 #import "matrix.typ"
 
+#let typst-content = content
+
 /// Layout and render tree nodes
 ///
 /// - root (array): Tree structure represented by nested lists
@@ -55,13 +57,13 @@
   if draw-node == auto or draw-node in ("rect",) {
     draw-node = (node, parent-name) => {
       let content = node.content
-      if type(content) == "string" {
+      if type(content) == str {
         content = [#content]
-      } else if type(content) in ("float", "integer") {
+      } else if type(content) in (float, int) {
         content = $#content$
-      } else if type(content) == "dictionary" and "content" in content {
+      } else if type(content) == dictionary and "content" in content {
         content = content.content
-      } else if type(content) != "content" {
+      } else if type(content) != typst-content {
         panic("Unsupported content type "+type(content)+"! "+
               "Provide your own `draw-node` implementation.")
       }
@@ -82,7 +84,7 @@
   let build-node(tree, depth: 0, sibling: 0) = {
     let children = ()
     let cnt = none
-    if type(tree) == "array" {
+    if type(tree) == array {
       children = tree.slice(1).enumerate().map(((n, c)) =>
         build-node(c, depth: depth + 1, sibling: n))
       cnt = tree.at(0)

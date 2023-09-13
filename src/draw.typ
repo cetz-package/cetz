@@ -10,6 +10,8 @@
 
 #let typst-rotate = rotate
 #let typst-measure = measure
+#let typst-angle = angle
+#let typst-center = center
 
 // Measure content in canvas coordinates
 #let measure(cnt, ctx) = {
@@ -70,14 +72,14 @@
 /// Rotate on z-axis (default) or specified axes if `angle` is of type
 /// dictionary.
 ///
-/// - angle (angle,dictionary): Angle (z-axis) or dictionary of the
-///                             form `(x: <angle>, y: <angle>, z: <angle>)`
-///                             specifying per axis rotation angle.
+/// - angle (typst-angle,dictionary): Angle (z-axis) or dictionary of the
+///                                   form `(x: <typst-angle>, y: <angle>, z: <angle>)`
+///                                   specifying per axis rotation typst-angle.
 #let rotate(angle) = {
-  let resolve-angle(angle) = {
-    return if type(angle) == "angle" {
+  let resolve-typst-angle(angle) = {
+    return if type(angle) == typst-angle {
       matrix.transform-rotate-z(-angle)
-    } else if type(angle) == "dictionary" {
+    } else if type(angle) == dictionary {
       matrix.transform-rotate-xyz(
           -angle.at("x", default: 0deg),
           -angle.at("y", default: 0deg),
@@ -88,14 +90,14 @@
     }
   }
 
-  let needs-resolve = (type(angle) == "array" and
-                       type(angle.first()) == "function")
+  let needs-resolve = (type(angle) == array and
+                       type(angle.first()) == function)
   return ((
     push-transform: if needs-resolve { 
-      ctx => matrix.mul-mat(ctx.transform, resolve-angle(
+      ctx => matrix.mul-mat(ctx.transform, resolve-typst-angle(
         coordinate.resolve-function(coordinate.resolve, ctx, angle)))
     } else {
-      resolve-angle(angle)
+      resolve-typst-angle(angle)
     }
   ),)
 }
@@ -116,13 +118,13 @@
 ///               - true:  `World = Translate * World`
 #let translate(vec, pre: true) = {
   let resolve-vec(vec) = {
-    let (x,y,z) = if type(vec) == "dictionary" {
+    let (x,y,z) = if type(vec) == dictionary {
       (
         vec.at("x", default: 0),
         vec.at("y", default: 0),
         vec.at("z", default: 0),
       )
-    } else if type(vec) == "array" {
+    } else if type(vec) == array {
       if vec.len() == 2 {
         vec + (0,)
       } else {
@@ -134,7 +136,7 @@
     return matrix.transform-translate(x, -y, z)
   }
 
-  let needs-resolve = type(vec) == "array" and type(vec.first()) == "function"
+  let needs-resolve = type(vec) == array and type(vec.first()) == function
   ((
     push-transform: if needs-resolve {
       if pre {
@@ -239,7 +241,7 @@
 /// - callback (function): Function of the form `ctx => ctx` that returns the
 ///                        new canvas context.
 #let set-ctx(callback) = {
-  assert(type(callback) == "function")
+  assert(type(callback) == function)
   ((
     before: callback,
   ),)
@@ -250,7 +252,7 @@
 /// - body (function): Function of the form `ctx => elements` that receives the
 ///                    current context and returns draw commands.
 #let get-ctx(body) = {
-  assert(type(body) == "function")
+  assert(type(body) == function)
   ((
     children: ctx => {
       let c = body(ctx)
@@ -668,13 +670,13 @@
   }
 
   let c = a
-  if type(angle) != "angle" {
+  if type(angle) != typst-angle {
     c = angle
     let _ = coordinate.resolve-system(c)
   }
 
   let get-angle(a, b) = {
-    if type(angle) != "angle" {
+    if type(angle) != typst-angle {
       return vector.angle2(a, b)
     }
     return angle
@@ -769,13 +771,15 @@
 
       let ct = if auto-size {
         let (width: width, height: height) = typst-measure(ct, ctx.typst-style)
-        box(width: width,
-            height: height,
-            ct)
+        block(width: width,
+              height: height,
+              inset: 0cm,
+              outset: 0cm,
+              ct)
       } else {
-        box(width: tw * ctx.length,
-            height: th * ctx.length,
-            ct)
+        block(width: tw * ctx.length,
+              height: th * ctx.length,
+              ct)
       }
 
       let frame-fn = if style.frame != none {
@@ -794,7 +798,7 @@
         move(
           dx: -width/2,
           dy: -height/2,
-          typst-rotate(angle, ct)
+          typst-rotate(angle, ct, origin: typst-center + horizon)
         )
       )
     }
@@ -925,7 +929,7 @@
   } else {
     name
   }
-  assert(type(name) == "string", message: "Name must be of type string")
+  assert(type(name) == str, message: "Name must be of type string")
 
   ((
     name: name,
@@ -1162,7 +1166,7 @@
       } else {
         style.stroke
       }
-      let (x-step, y-step) = if type(step) == "dictionary" {
+      let (x-step, y-step) = if type(step) == dictionary {
         (
           if "x" in step {step.x} else {1},
           if "y" in step {step.y} else {1},

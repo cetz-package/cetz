@@ -136,7 +136,7 @@
           fill: style.mark.fill, stroke: style.mark.stroke)
       }
 
-      let label = if type(label) == "function" {
+      let label = if type(label) == function {
         label(e - s)
       } else { label }
       if label != none {

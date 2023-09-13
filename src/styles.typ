@@ -1,18 +1,18 @@
 #let resolve(current, new, root: none) = {
   let global
-  if root != none and type(current) == "dictionary" {
+  if root != none and type(current) == dictionary {
     (global, current) = (current, current.at(root, default: (:)))
   }
   if new == auto {
     return current
-  } else if type(current) != "dictionary" {
+  } else if type(current) != dictionary {
     return new
   }
   assert.ne(current, none, message: repr((global, current, new, root)))
   for (k, v) in new {
     current.insert(
       k,
-      if k in current and type(current.at(k)) == "dictionary" and type(v) == "dictionary" {
+      if k in current and type(current.at(k)) == dictionary and type(v) == dictionary {
         resolve(current.at(k), v)
       } else {
         v
@@ -28,7 +28,7 @@
             k,
             global.at(k)
           )
-        } else if type(v) == "dictionary" {
+        } else if type(v) == dictionary {
           // panic(global, v, k)
           current.insert(k, resolve(global, v, root: k))
         }

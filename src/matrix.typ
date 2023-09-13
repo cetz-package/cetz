@@ -40,7 +40,7 @@
 
 // Return 4x4 scale matrix
 #let transform-scale(f) = {
-  let (x, y, z) = if type(f) != "dictionary" {
+  let (x, y, z) = if type(f) != dictionary {
     (f, f, f)
   } else {
     (f.at("x", default: 1),
