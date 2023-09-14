@@ -274,7 +274,7 @@
 ///
 /// - name (string): Element name
 /// - anchor (string): Element origin
-/// - body (draw,function): Children or function of the form (`ctx => elements`)
+/// - body (elements, function): Children or function of the form (`ctx => elements`)
 #let group(name: none, anchor: none, body) = {
   let body = if body == none { () } else { body }
   ((
@@ -304,6 +304,30 @@
         ctx.nodes.insert(name, nodes.at(name))
       }
       return ctx
+    }
+  ),)
+}
+
+/// Draw body on layer
+///
+/// This can be used to draw elements behind already drawn elements by
+/// using a lower layer value (i.e -1). The layer value can be seen as a z-index.
+/// 
+/// - layer (number): Layer to draw the children at. The base layer is at 0
+///                   and all layers are drawn from low to high.
+/// - body (elements, function): Child elements or function (`ctx => elements`)
+#let on-layer(layer, body) = {
+  assert(type(layer) in ("integer", "float"),
+    message: "Layer must be numeric, 0 being the default layer.")
+  ((
+    children: body,
+    finalize-children: (ctx, cmds) => {
+      cmds.map(c => {
+        if c.at("z-index", default: none) == none {
+          c.z-index = layer
+        }
+        return c
+      })
     }
   ),)
 }

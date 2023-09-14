@@ -378,7 +378,6 @@ merge-path({
 }, fill: white)
 ```
 
-
 #show-module-fn(draw-module, "group")
 ```example
 // Create group
@@ -440,6 +439,24 @@ for-each-anchor("demo", (name) => {
   circle("demo." + name, radius: .1, fill: black)
 })
 ```
+
+== Layers
+
+You can use layers to draw elements below or on top of other elements by using layers
+with a higher or lower index. When rendering, all draw commands are sorted by their layer (0 being the default).
+
+#show-module-fn(draw-module, "on-layer")
+```example
+// Draw something behind text
+set-style(stroke: none)
+content((0, 0), [This is an example.], name: "text")
+on-layer(-1, {
+  circle("text.top-left", radius: .3, fill: red)
+  circle("text.bottom", radius: .4, fill: green)
+  circle("text.top-right", radius: .2, fill: blue)
+})
+```
+
 
 == Transformations
 All transformation functions push a transformation matrix onto the current transform stack.
