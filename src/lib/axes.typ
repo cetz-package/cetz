@@ -9,6 +9,7 @@
 // Global defaults
 #let tic-limit = 100
 #let default-style = (
+(("axes",), (
   fill: none,
   stroke: black,
   label: (
@@ -27,14 +28,13 @@
   ),
   grid: (
     stroke: (paint: gray, dash: "dotted"),
-    fill: none
-  ),
-)
-
-#let default-style-schoolbook = util.merge-dictionary(default-style, (
+    fill: none)
+)),
+(("axes", "school-book",), (
   tick: (label: (offset: .1)),
   mark: (end: ">"),
-  padding: .4))
+  padding: .4)),
+)
 
 // Construct Axis Object
 //
@@ -307,8 +307,8 @@
     anchor("data-top-right",   (w, h))
 
     let style = style.named()
-    style = util.merge-dictionary(default-style,
-      styles.resolve(ctx.style, style, root: "axes"))
+    style = styles.resolve(ctx, styles.sorted(default-style + ctx.style),
+      style, element: "axes")
 
     let padding = (
       l: padding.at("left", default: 0),
@@ -437,6 +437,8 @@
 
 // Draw two axes in a "school book" style
 //
+// *Style element* axes > school-book
+//
 // - x-axis (axis): X axis
 // - y-axis (axis): Y axis
 // - size (array): Size (width, height)
@@ -454,8 +456,9 @@
 
   group(name: name, ctx => {
     let style = style.named()
-    style = util.merge-dictionary(default-style-schoolbook,
-      styles.resolve(ctx.style, style, root: "axes"))
+    let def-style = styles.sorted(default-style + ctx.style)
+    style = styles.resolve(ctx, def-style,
+      style, element: ("axes", "school-book"))
 
     let x-position = calc.min(calc.max(y-axis.min, x-position), y-axis.max)
     let y-position = calc.min(calc.max(x-axis.min, y-position), x-axis.max)
@@ -476,18 +479,18 @@
       (x-axis, "top",   (auto, x-y), (0, 1), "x"),
       (y-axis, "right", (y-x, auto), (1, 0), "y"),
     )
-
+    
     line((-padding.left, x-y), (w + padding.right, x-y),
-         ..util.merge-dictionary(style, style.at("x", default: (:))),
-         name: "x-axis")
+         ..styles.resolve(ctx, def-style, style.at("x", default: none),
+           element: ("axes", "school-book")), name: "x-axis")
     if "label" in x-axis and x-axis.label != none {
       content((rel: (0, -style.tick.label.offset), to: "x-axis.end"),
         anchor: "top-left", x-axis.label)
     }
 
     line((y-x, -padding.bottom), (y-x, h + padding.top),
-         ..util.merge-dictionary(style, style.at("y", default: (:))),
-         name: "y-axis")
+         ..styles.resolve(ctx, def-style, style.at("y", default: none),
+           element: ("axes", "school-book")), name: "y-axis")
     if "label" in y-axis and y-axis.label != none {
       content((rel: (-style.tick.label.offset, 0), to: "y-axis.end"),
         anchor: "bottom-right", y-axis.label)

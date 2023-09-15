@@ -21,7 +21,7 @@
 /// - spread (float): Sibling spread factor (default 1)
 #let tree(root, draw-node: auto, draw-edge: auto,
           direction: "down", parent-position: "center",
-          grow: 1, spread: 1, name: none, ..style) = {
+          grow: 1, spread: 1, name: none) = {
   assert(parent-position in ("begin", "center"))
   assert(grow > 0)
   assert(spread > 0)
@@ -203,7 +203,6 @@
 
   ((
     name: name,
-    style: style.named(),
     before: ctx => {
       ctx.groups.push((
         ctx: ctx,
@@ -227,7 +226,9 @@
     },
     children: (ctx) => {
       let self = ctx.groups.last()
-      render(self.tree-root, none)
+      draw.style-element("tree",
+        render(self.tree-root, none)
+      )
     },
   ),)
 }

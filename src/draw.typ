@@ -31,28 +31,47 @@
 
 /// Set current style
 ///
-/// - ..style (any): Style key/value pairs
+/// - ..style (tuple): Selector string and style dict pairs
+///
+///                    Selector: A selector this style should match to.
+///                    To apply `fill` to all `mark` elements in `line`
+///                    elements, pass `"line > mark"`; to set the style
+///                    for multiple selectors, separate them by `,`.
 #let set-style(..style) = {
-  assert.eq(style.pos().len(), 0,
-            message: "set-style takes no positional arguments" )
+  assert.eq(calc.rem(style.pos().len(), 2), 0,
+    message: ("set-style expects an event amount of arguments in the " +
+              "form [<selector-str>, <style-dict>]..."))
+  assert.eq(style.named().len(), 0,
+    message: ("set-style expects a list of <selector-str> <style-dict> pairs " +
+              "as positional arguments"))
+
+  let args = style.pos()
+
+  let sel = ()
+  for i in range(0, int(args.len() / 2), step: 2) {
+    sel +=  styles.parse-selector(args.at(i + 0)).map(s => {
+      (s, args.at(i + 1))
+    })
+  }
+
   ((
-    style: style.named()
+    style: sel,
   ),)
 }
 
 /// Set current fill style
 ///
-/// Shorthand for `set-style(fill: <fill>)`
+/// Shorthand for `set-style("*", (fill: <fill>))`
 ///
 /// - fill (paint): Fill style
-#let fill(fill) = ((style: (fill: fill)),)
+#let fill(fill) = set-style("*", (fill: fill))
 
 /// Set current stroke style
 ///
-/// Shorthand for `set-style(stroke: <fill>)`
+/// Shorthand for `set-style("*", (stroke: <fill>))`
 ///
 /// - stroke (stroke): Stroke style
-#let stroke(stroke) = ((style: (stroke: stroke)),)
+#let stroke(stroke) = set-style("*", (stroke: stroke))
 
 /// Set current coordinate
 ///
@@ -261,6 +280,29 @@
   ),)
 }
 
+/// Push an element scope
+///
+/// Use this to support nested styling for your custom elements.
+///
+/// - element (string): Element kind (line, rect, ...)
+#let style-element(element, body) = {
+  let body = if body == none { () } else { body }
+
+  assert(element != none)
+  assert(type(element) == str)
+  ((
+    children: body,
+    before: ctx => {
+      ctx.element.push(element)
+      return ctx
+    },
+    after: ctx => {
+      ctx.element.pop()
+      return ctx
+    },
+  ),)
+}
+
 /// Push a group
 ///
 /// A group has a local transformation matrix.
@@ -334,7 +376,7 @@
 
 /// Draw a mark or "arrow head" between two coordinates
 ///
-/// *Style root:* `mark`.
+/// *Style element:* `mark`.
 ///
 /// Its styling influences marks being drawn on paths (`line`, `bezier`, ...).
 ///
@@ -348,7 +390,7 @@
   ((
     coordinates: (from, to),
     render: (ctx, from, to) => {
-      let style = styles.resolve(ctx.style, style, root: "mark")
+      let style = styles.resolve(ctx, ctx.style, style, element: "mark")
       cmd.mark(from, to, style.symbol, fill: style.fill, stroke: style.stroke)
     }
   ),)
@@ -360,7 +402,7 @@
 /// If multiple coordinates are given, a line is drawn between each
 /// consecutive one.
 ///
-/// *Style root:* `line`.
+/// *Style element:* `line`.
 ///
 /// *Anchors:*
 ///   - start -- First coordinate
@@ -393,27 +435,34 @@
     },
     render: (ctx, ..pts) => {
       let pts = pts.pos()
-      let style = styles.resolve(ctx.style, style, root: "line")
+      let style = styles.resolve(ctx, ctx.style, style, element: "line")
       cmd.path(close: close, ("line", ..pts),
         fill: style.fill, stroke: style.stroke)
 
-      if style.mark.start != none or style.mark.end != none {
-        let style = style.mark
-        if style.start != none {
-          let (start, end) = (pts.at(1), pts.at(0))
-          let n = vector.scale(vector.norm(vector.sub(end, start)),
-                              style.size)
-          start = vector.sub(end, n)
-          cmd.mark(start, end, style.start,
-            fill: style.fill, stroke: style.stroke)
-        }
-        if style.end != none {
-          let (start, end) = (pts.at(-2), pts.at(-1))
-          let n = vector.scale(vector.norm(vector.sub(end, start)),
-            style.size)
-          start = vector.sub(end, n)
-          cmd.mark(start, end, style.end,
-            fill: style.fill, stroke: style.stroke)
+      if "mark" in style {
+        let mark-start = style.mark.at("start", default: none)
+        let mark-end = style.mark.at("end", default: none)
+
+        if mark-start != none or mark-end != none {
+          let style = styles.resolve(ctx, ctx.style, style.at("mark", default: none),
+            element: ("line", "mark"))
+          
+          if mark-start != none {
+            let (start, end) = (pts.at(1), pts.at(0))
+            let n = vector.scale(vector.norm(vector.sub(end, start)),
+                                style.size)
+            start = vector.sub(end, n)
+            cmd.mark(start, end, style.start,
+              fill: style.fill, stroke: style.stroke)
+          }
+          if mark-end != none {
+            let (start, end) = (pts.at(-2), pts.at(-1))
+            let n = vector.scale(vector.norm(vector.sub(end, start)),
+              style.size)
+            start = vector.sub(end, n)
+            cmd.mark(start, end, style.end,
+              fill: style.fill, stroke: style.stroke)
+          }
         }
       }
     }
@@ -422,7 +471,7 @@
 
 /// Draw a rect from `a` to `b`
 ///
-/// *Style root:* `rect`.
+/// *Style element:* `rect`.
 ///
 /// *Anchors*:
 /// - center: Center
@@ -468,7 +517,7 @@
       )
     },
     render: (ctx, a, b) => {
-      let style = styles.resolve(ctx.style, style, root: "rect")
+      let style = styles.resolve(ctx, ctx.style, style, element: "rect")
       let (x1, y1, z1) = a
       let (x2, y2, z2) = b
       cmd.path(close: true, fill: style.fill, stroke: style.stroke,
@@ -480,7 +529,7 @@
 
 /// Draw an arc
 ///
-/// *Style root:* `arc`.
+/// *Style element:* `arc`.
 ///
 /// Exactly two arguments of `start`, `stop` and `delta` must be set to a value other
 /// than `auto`. You can set the radius of the arc by setting the `radius` style option, which accepts a `float` or tuple of floats for setting the x/y radius.
@@ -518,7 +567,7 @@
     default-anchor: "start",
     coordinates: (position,),
     custom-anchors-ctx: (ctx, position) => {
-      let style = styles.resolve(ctx.style, style, root: "arc")
+      let style = styles.resolve(ctx, ctx.style, style, element: "arc")
       let (x, y, z) = position
       let (rx, ry) = util.resolve-radius(style.radius)
         .map(util.resolve-number.with(ctx))
@@ -537,7 +586,7 @@
       )
     },
     render: (ctx, position) => {
-      let style = styles.resolve(ctx.style, style, root: "arc")
+      let style = styles.resolve(ctx, ctx.style, style, element: "arc")
       let (rx, ry) = util.resolve-radius(style.radius)
         .map(util.resolve-number.with(ctx))
 
@@ -550,7 +599,7 @@
 
 /// Draw a circle or an ellipse
 ///
-/// *Style root:* `circle`.
+/// *Style element:* `circle`.
 ///
 /// The ellipses radii can be specified by its style field `radius`, which can be of
 /// type `float` or a tuple of two `float`'s specifying the x/y radius. 
@@ -571,7 +620,7 @@
     coordinates: (center, ),
     anchor: anchor,
     render: (ctx, center) => {
-      let style = styles.resolve(ctx.style, style, root: "circle")
+      let style = styles.resolve(ctx, ctx.style, style, element: "circle")
       let (x, y, z) = center
       let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
       cmd.ellipse(x, y, z, rx, ry, fill: style.fill, stroke: style.stroke)
@@ -602,7 +651,7 @@
 
 /// Draw a circle through three points
 ///
-/// *Style root:* `circle`.
+/// *Style element:* `circle`.
 ///
 /// *Anchors:*
 ///   - a -- Point a
@@ -630,7 +679,7 @@
       (a: a, b: b, c: c, center: center)
     },
     render: (ctx, a, b, c, center) => {
-      let style = styles.resolve(ctx.style, style.named(), root: "circle")
+      let style = styles.resolve(ctx, ctx.style, style.named(), element: "circle")
 
       let (x, y, ..) = center
       let r = vector.dist(a, (x, y, 0))
@@ -642,7 +691,7 @@
 
 /// Render content
 ///
-/// *Style root:* `content`.
+/// *Style element:* `content`.
 ///
 /// *Style keys:*
 ///   / padding (`float`): Set vertical and horizontal padding
@@ -725,7 +774,7 @@
     anchor: anchor,
     default-anchor: if auto-size { "center" } else { "top-left" },
     transform-coordinates: (ctx, a, b, c) => {
-      let style = styles.resolve(ctx.style, style, root: "content")
+      let style = styles.resolve(ctx, ctx.style, style, element: "content")
       let padding = util.resolve-number(ctx, style.padding)
       let angle = get-angle(a, c)
       let (w, h, ..) = if auto-size {
@@ -779,7 +828,7 @@
       }
 
       let (x, y, ..) = center 
-      let style = styles.resolve(ctx.style, style, root: "content")
+      let style = styles.resolve(ctx, ctx.style, style, element: "content")
       let padding = util.resolve-number(ctx, style.padding)
       let angle = get-angle(tl, tr)
       let (tw, th, ..) = if auto-size {
@@ -830,30 +879,30 @@
 }
 
 // Helper function for rendering marks for a cubic bezier
-#let _render-cubic-marks(start, end, c1, c2, style) = {
-  if style.mark != none {
-    let style = style.mark
-    let offset = 0.001
-    if style.start != none {
-      let dir = vector.scale(vector.norm(
-        vector.sub(cubic-point(start, end, c1, c2, 0 + offset),
-                   start)), style.size)
-      cmd.mark(vector.sub(start, dir), start, style.start,
-        fill: style.fill, stroke: style.stroke)
-    }
-    if style.end != none {
-      let dir = vector.scale(vector.norm(
-        vector.sub(cubic-point(start, end, c1, c2, 1 - offset),
-                   end)), style.size)
-      cmd.mark(vector.add(end, dir), end, style.end,
-        fill: style.fill, stroke: style.stroke)
-    }
+#let _render-cubic-marks(start, end, c1, c2, style, mark-style) = {
+  let mark-start = style.mark.at("start", default: none)
+  let mark-end = style.mark.at("end", default: none)
+
+  let offset = 0.001
+  if mark-start != none {
+    let dir = vector.scale(vector.norm(
+      vector.sub(cubic-point(start, end, c1, c2, 0 + offset),
+                 start)), mark-style.size)
+    cmd.mark(vector.sub(start, dir), start, mark-start,
+      fill: mark-style.fill, stroke: mark-style.stroke)
+  }
+  if mark-end != none {
+    let dir = vector.scale(vector.norm(
+      vector.sub(cubic-point(start, end, c1, c2, 1 - offset),
+                 end)), mark-style.size)
+    cmd.mark(vector.add(end, dir), end, mark-end,
+      fill: mark-style.fill, stroke: mark-style.stroke)
   }
 }
 
 /// Draw a quadratic or cubic bezier line
 ///
-/// *Style root:* `bezier`.
+/// *Style element:* `bezier`.
 ///
 /// *Anchors:*
 ///   - start    -- First coordinate
@@ -893,19 +942,24 @@
       return a
     },
     render: (ctx, start, end, c1, c2) => {
-      let style = styles.resolve(ctx.style, style, root: "bezier")
+      let style = styles.resolve(ctx, ctx.style, style, element: "bezier")
       cmd.path(
         ("cubic", start, end, c1, c2),
         fill: style.fill, stroke: style.stroke
       )
-      _render-cubic-marks(start, end, c1, c2, style)
+
+      if "mark" in style {
+        let mark-style = styles.resolve(ctx, ctx.style, style.at("mark", default: none),
+          element: ("bezier", "mark"))
+        _render-cubic-marks(start, end, c1, c2, style, mark-style)
+      }
     }
   ),)
 }
 
 /// Draw a quadratic bezier from a to c through b
 ///
-/// *Style root:* `bezier`.
+/// *Style element:* `bezier`.
 ///
 /// - s (coordinate): Start point
 /// - b (coordinate): Passthrough point
@@ -927,13 +981,16 @@
       return anchors
     },
     render: (ctx, s, e, ..c) => {
-      let style = styles.resolve(ctx.style, style.named(), root: "bezier")
-
+      let style = styles.resolve(ctx, ctx.style, style, element: "bezier")
       let c = c.pos()
       cmd.path(("cubic", s, e, ..c),
                fill: style.fill,
                stroke: style.stroke)
-      _render-cubic-marks(s, e, ..c, style)
+      if "mark" in style {
+        let mark-style = styles.resolve(ctx, ctx.style, style.at("mark", default: none),
+          element: ("bezier", "mark"))
+        _render-cubic-marks(s, e, ..c, style, mark-style)
+      }
     }
   ),)
 }
@@ -1006,7 +1063,7 @@
     return anchors
   },
   finalize-children: (ctx, children) => {
-    let style = styles.resolve(ctx.style, marks-style.named(), root: "mark")
+    let style = styles.resolve(ctx, ctx.style, marks-style.named(), element: "mark")
 
     let p = children.first()
     (p,);
@@ -1135,7 +1192,7 @@
         })
       }
       
-      let style = styles.resolve(ctx.style, style)
+      let style = styles.resolve(ctx, ctx.style, style)
       cmd.path(..segments, close: close, stroke: style.stroke, fill: style.fill)
     }
   ),)
@@ -1143,24 +1200,29 @@
 
 /// Render shadow of children by rendering them twice
 ///
-/// *Style root:* `shadow`.
+/// *Style element:* `shadow`.
 ///
 /// - body (canvas): Child elements
 /// - ..style (style): Style
 #let shadow(body, ..style) = {
   // No extra positional arguments from the style sink
-  assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
+  assert.eq(style.pos(), (),
+    message: "Unexpected positional arguments: " + repr(style.pos()))
   let style = style.named()
   ((
     children: ctx => {
-      let style = styles.resolve(ctx.style, style, root: "shadow")
+      let style = styles.resolve(ctx, ctx.style, style, element: "shadow")
+
+      assert.eq(style.offset.len(), 3,
+        message: "Shadow offset must be an array of length 3 (x, y, z)!")
+      let (x, y, z) = style.offset
       return (
-      ..group({
-        set-style(fill: style.color, stroke: style.color)
-        translate((style.offset-x, style.offset-y, 0))
-        body
-      }),
-      ..body,
+        ..group({
+          set-style(fill: style.color, stroke: style.color)
+          translate((x, y, z))
+          body
+        }),
+        ..body,
       )
     },
   ),)
@@ -1168,7 +1230,7 @@
 
 /// Draw a grid
 ///
-/// *Style root:* `grid`.
+/// *Style element:* `grid`.
 ///
 /// - from (coordinate): Start point
 /// - to (coordinate): End point
@@ -1184,7 +1246,7 @@
     name: name,
     coordinates: (from, to),
     render: (ctx, from, to) => {
-      let style = styles.resolve(ctx.style, style.named())
+      let style = styles.resolve(ctx, ctx.style, style.named())
       let stroke = if help-lines {
         0.2pt + gray
       } else {
@@ -1203,7 +1265,8 @@
         for x in range(int((to.at(0) - from.at(0)) / x-step)+1) {
           x *= x-step
           x += from.at(0)
-          cmd.path(("line", (x, from.at(1)), (x, to.at(1))), fill: style.fill, stroke: style.stroke)
+          cmd.path(("line", (x, from.at(1)), (x, to.at(1))),
+            fill: style.fill, stroke: style.stroke)
         }
       }
 
@@ -1211,7 +1274,8 @@
         for y in range(int((to.at(1) - from.at(1)) / y-step)+1) {
           y *= y-step
           y += from.at(1)
-          cmd.path(("line", (from.at(0), y), (to.at(0), y)), fill: style.fill, stroke: style.stroke)
+          cmd.path(("line", (from.at(0), y), (to.at(0), y)),
+            fill: style.fill, stroke: style.stroke)
         }
       }
     }

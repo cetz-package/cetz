@@ -192,7 +192,7 @@ Instead of having to specify the same styling for each time you want to draw an 
 rect((-1, -1), (1, 1))
 
 // Sets the global style to have a fill of red and a stroke of blue
-set-style(stroke: blue, fill: red)
+set-style("*", (stroke: blue, fill: red))
 circle((0,0))
 
 // Draws a green line despite the global stroke is blue
@@ -203,7 +203,7 @@ When using a dictionary for a style, it is important to note that they update ea
 
 ```example
 // Sets the stroke to red with a thickness of 5pt
-set-style(stroke: (paint: red, thickness: 5pt))
+set-style("*", (stroke: (paint: red, thickness: 5pt)))
 // Draws a line with the global stroke
 line((0,0), (1,0))
 // Draws a blue line with a thickness of 5pt because dictionaries update the style
@@ -215,13 +215,12 @@ line((0,0), (0,1), stroke: yellow)
 You can also specify styling for each type of element. Note that dictionary values will still update with its global value, the full hierarchy is `function > element type > global`. When the value of a style is `auto`, it will become exactly its parent style.
 
 ```example
-set-style(
-  // Global fill and stroke
-  fill: green,
-  stroke: (thickness: 5pt),
-  // Stroke and fill for only rectangles
-  rect: (stroke: (dash: "dashed"), fill: blue), 
-)
+// Global fill and stroke
+set-style("*", (fill: green,
+                stroke: (thickness: 5pt)))
+// Stroke and fill for only rectangles
+set-style("rect", (stroke: (dash: "dashed"), fill: blue))
+
 rect((0,0), (1,1))
 circle((0.5, -1.5))
 rect((0,-3), (1, -4), stroke: (thickness: 1pt))
@@ -229,16 +228,10 @@ rect((0,-3), (1, -4), stroke: (thickness: 1pt))
 
 ```example
 // Its a nice drawing okay
-set-style(
-  rect: (
-    fill: red,
-    stroke: none
-  ),
-  line: (
-    fill: blue,
-    stroke: (dash: "dashed")
-  ),
-)
+set-style("rect", (fill: red,
+                   stroke: none))
+set-style("line", (fill: blue,
+                   stroke: (dash: "dashed")))
 rect((0,0), (1,1))
 
 line((0, -1.5), (0.5, -0.5), (1, -1.5), close: true)
@@ -349,10 +342,10 @@ grid((0,0), (3,2), help-lines: true)
 #show-module-fn(draw-module, "mark")
 ```example
 line((1, 0), (1, 6), stroke: (paint: gray, dash: "dotted"))
-set-style(mark: (fill: none))
+set-style("mark", (fill: none))
 line((0, 6), (1, 6), mark: (end: "<"))
 line((0, 5), (1, 5), mark: (end: ">"))
-set-style(mark: (fill: black))
+set-style("mark", (fill: black))
 line((0, 4), (1, 4), mark: (end: "<>"))
 line((0, 3), (1, 3), mark: (end: "o"))
 line((0, 2), (1, 2), mark: (end: "|"))
@@ -448,7 +441,7 @@ with a higher or lower index. When rendering, all draw commands are sorted by th
 #show-module-fn(draw-module, "on-layer")
 ```example
 // Draw something behind text
-set-style(stroke: none)
+set-style("*", (stroke: none))
 content((0, 0), [This is an example.], name: "text")
 on-layer(-1, {
   circle("text.top-left", radius: .3, fill: red)
@@ -816,16 +809,17 @@ With the tree library, CeTZ provides a simple tree layout algorithm.
 ```example
 import cetz.tree
 
+set-style("tree>content", (padding: .1))
 let data = ([Root], ([A], [A-A], [A-B]), ([B], [B-A]))
-tree.tree(data, content: (padding: .1), line: (stroke: blue))
+tree.tree(data)
 ```
 
 ```example
 import cetz.tree
 
 let data = ([Root], ([\*], [A-A], [A-B]), ([B], [B-A]))
-tree.tree(data, content: (padding: .1), direction: "right",
-          mark: (end: ">", fill: none),
+set-style("tree", (padding: .1, mark: (end: ">", fill: none)))
+tree.tree(data, direction: "right",
           draw-node: (node, ..) => {
             circle((), radius: .35, fill: blue, stroke: none)
             content((), text(white, [#node.content]))
@@ -878,7 +872,7 @@ import cetz.palette
 
 // Axes can be styled!
 // Set the tick length to -.05:
-set-style(axes: (tick: (length: -.05)))
+set-style("axes", (tick: (length: -.05)))
 
 // Plot something
 plot.plot(size: (3,3), x-tick-step: 1, axis-style: "left", {
@@ -897,8 +891,8 @@ to style plot axes. Individual axes can be styled differently by
 using their axis name as key below the `axes` root.
 
 ```typc
-set-style(axes: ( /* Style for all axes */ ))
-set-style(axes: (bottom: ( /* Style axis "bottom" */)))
+set-style("axes", (/* Style for all axes */))
+set-style("axes", (bottom: (/* Style axis "bottom" */)))
 ```
 
 Axis names to be used for styling:
@@ -911,11 +905,8 @@ Axis names to be used for styling:
   - `bottom`: X-Axis
   - `top`: X2-Axis
 
-==== Default `scientific` Style
+==== Default Style
 #raw(repr(axes.default-style))
-
-==== Default `school-book` Style
-#raw(repr(axes.default-style-schoolbook))
 
 == Chart
 #let chart-module = tidy.parse-module(read("src/lib/chart.typ"), name: "Chart")
@@ -993,10 +984,7 @@ Charts share their axis system with plots and therefore can be
 styled the same way, see @plot.style.
 
 ==== Default `barchart` Style
-#raw(repr(chart.barchart-default-style))
-
-==== Default `columnchart` Style
-#raw(repr(chart.columnchart-default-style))
+#raw(repr(chart.default-style))
 
 == Palette <palette>
 #let palette-module = tidy.parse-module(read("src/lib/palette.typ"), name: "Palette")
@@ -1038,9 +1026,9 @@ import cetz.angle: angle
 let (a, b, c) = ((0,0), (-1,1), (1.5,0))
 line(a, b)
 line(a, c)
-set-style(angle: (radius: 1, label-radius: .5), stroke: blue)
+set-style("angle", (radius: 1, label-radius: .5, stroke: blue))
 angle(a, c, b, label: $alpha$, mark: (end: ">"), stroke: blue)
-set-style(stroke: red)
+set-style("*", (stroke: red))
 angle(a, b, c, label: n => $#{n/1deg} degree$,
   mark: (end: ">"), stroke: red, inner: false)
 ```

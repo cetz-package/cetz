@@ -144,6 +144,9 @@
 /// - b (dictionary): Dictionary b
 /// -> dictionary
 #let merge-dictionary(a, b) = {
+  if type(a) == arguments { a = a.named() }
+  if type(b) == arguments { b = b.named() }
+
   if type(a) == dictionary and type(b) == dictionary {
     let c = a
     for (k, v) in b {

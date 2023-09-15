@@ -462,7 +462,7 @@
     let (x, y) = d.axes.map(name => axis-dict.at(name))
     axes.axis-viewport(size, x, y, {
       draw.anchor("center", (0, 0))
-      draw.set-style(..d.style)
+      draw.set-style("*", d.style)
 
       if d.at("hypograph", default: false) {
         fill-segments-to(d.path, y.min)
@@ -476,37 +476,39 @@
     })
   }
 
-  if axis-style == "scientific" {
-    axes.scientific(
-      size: size,
-      bottom: axis-dict.at("x", default: none),
-      top: axis-dict.at("x2", default: auto),
-      left: axis-dict.at("y", default: none),
-      right: axis-dict.at("y2", default: auto),)
-  } else if axis-style == "left" {
-    axes.school-book(
-      size: size,
-      axis-dict.x,
-      axis-dict.y,
-      x-position: axis-dict.y.min,
-      y-position: axis-dict.x.min)
-  } else if axis-style == "school-book" {
-    axes.school-book(
-      size: size,
-      axis-dict.x,
-      axis-dict.y,)
-  }
+  draw.style-element("plot", {
+    if axis-style == "scientific" {
+      axes.scientific(
+        size: size,
+        bottom: axis-dict.at("x", default: none),
+        top: axis-dict.at("x2", default: auto),
+        left: axis-dict.at("y", default: none),
+        right: axis-dict.at("y2", default: auto),)
+    } else if axis-style == "left" {
+      axes.school-book(
+        size: size,
+        axis-dict.x,
+        axis-dict.y,
+        x-position: axis-dict.y.min,
+        y-position: axis-dict.x.min)
+    } else if axis-style == "school-book" {
+      axes.school-book(
+        size: size,
+        axis-dict.x,
+        axis-dict.y,)
+    }
+  })
 
   // Stroke + Mark data
   for d in data {
     let (x, y) = d.axes.map(name => axis-dict.at(name))
     axes.axis-viewport(size, x, y, {
-      draw.set-style(..d.style)
+      draw.set-style("*", d.style)
       stroke-segments(d.path)
     })
     if d.mark != none {
       axes.axis-viewport(size, x, y, {
-        draw.set-style(..d.style, ..d.mark-style)
+        draw.set-style("*", d.style, "*", d.mark-style)
         draw-marks(d.data, x, y, d.mark, d.mark-size)
       })
     }

@@ -9,9 +9,9 @@
   import draw: *
   import tree: *
 
-  set-style(content: (padding: .2),
-    fill: gray.lighten(70%),
-    stroke: gray.lighten(70%))
+  set-style(fill: gray.lighten(70%), stroke: gray.lighten(70%))
+  set-style(padding: .2, selector: "content")
+  set-style(stroke: gray.lighten(70%), selector: "mark")
 
   tree(data, spread: 2.5, grow: 1.5, draw-node: (node, _) => {
     circle((), radius: .45, stroke: none)

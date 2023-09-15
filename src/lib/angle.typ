@@ -6,17 +6,12 @@
 
 // Angle default-style
 #let default-style = (
+(("angle",),(
   fill: none,
-  stroke: auto,
   radius: .5,
   label-radius: .25,
-  mark: (
-    start: none,
-    end: none,
-    size: auto,
-    fill: none,
-    stroke: auto,
-  )
+  mark: (start: none, end: none)
+)),
 )
 
 /// Draw an angle between origin-a and origin-b
@@ -76,8 +71,8 @@
     default-anchor: "label",
     coordinates: (origin, a, b),
     transform-coordinates: (ctx, origin, a, b) => {
-      let style = util.merge-dictionary(default-style,
-        styles.resolve(ctx.style, style, root: "angle"))
+      let def-style = styles.sorted(default-style + ctx.style)
+      let style = styles.resolve(ctx, def-style, style, element: "angle")
       let (s, e, ss) = start-end(origin, a, b)
       let (x, y, z) = origin
       let (r, _) = util.resolve-radius(style.radius)
@@ -105,8 +100,8 @@
       )
     },
     render: (ctx, origin, a, b, start, end, pt-label) => {
-      let style = util.merge-dictionary(default-style,
-        styles.resolve(ctx.style, style, root: "angle"))
+      let def-style = styles.sorted(default-style + ctx.style)
+      let style = styles.resolve(ctx, def-style, style, element: "angle")
       let (s, e, _) = start-end(origin, a, b)
       let (r, _) = util.resolve-radius(style.radius)
         .map(util.resolve-number.with(ctx))
@@ -121,19 +116,26 @@
           mode: "OPEN", fill: none, stroke: style.stroke)
       }
 
-      if style.mark.start != none {
-        let f = vector.add(vector.scale(
-          (calc.cos(s + 90deg), calc.sin(s + 90deg), 0), style.mark.size),
-          start)
-        cmd.mark(f, start, style.mark.start,
-          fill: style.mark.fill, stroke: style.mark.stroke)
-      }
-      if style.mark.end != none {
-        let f = vector.add(vector.scale(
-          (calc.cos(e - 90deg), calc.sin(e - 90deg), 0), style.mark.size),
-          end)
-        cmd.mark(f, end, style.mark.end,
-          fill: style.mark.fill, stroke: style.mark.stroke)
+      if "mark" in style {
+        let style = styles.resolve(ctx, def-style, style.at("mark", default: none),
+          element: ("angle", "mark"))
+
+        let mark-start = style.at("start", default: none)
+        let mark-end = style.at("end", default: none)
+        if mark-start != none {
+          let f = vector.add(vector.scale(
+            (calc.cos(s + 90deg), calc.sin(s + 90deg), 0), style.size),
+            start)
+          cmd.mark(f, start, mark-start,
+            fill: style.fill, stroke: style.stroke)
+        }
+        if mark-end != none {
+          let f = vector.add(vector.scale(
+            (calc.cos(e - 90deg), calc.sin(e - 90deg), 0), style.size),
+            end)
+          cmd.mark(f, end, mark-end,
+            fill: style.fill, stroke: style.stroke)
+        }
       }
 
       let label = if type(label) == function {

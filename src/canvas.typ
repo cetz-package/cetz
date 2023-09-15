@@ -53,14 +53,12 @@
   }
 
   if "style" in element {
-    ctx.style = styles.resolve(
-      ctx.style,
-      if type(element.style) == function {
-        (element.style)(ctx)
-      } else {
-        element.style
-      }
-    )
+    let style = if type(element.style) == function {
+      (element.style)(ctx)
+    } else {
+      element.style
+    }
+    ctx.style = styles.merge-list(ctx.style + style)
   }
 
   if "push-transform" in element {
@@ -294,7 +292,7 @@
 
     em-size: measure(box(width: 1em, height: 1em), st),
 
-    style: styles.default,
+    style: styles.default-styles,
 
     // Current transform
     transform: matrix.mul-mat(
@@ -305,8 +303,11 @@
     // Nodes, stores anchors and paths
     nodes: (:),
 
-    // group stack
+    // Group stack
     groups: (),
+
+    // Element stack
+    element: (),
   )
   
   let draw-cmds = ()

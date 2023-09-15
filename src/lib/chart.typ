@@ -5,16 +5,14 @@
 #import "../draw.typ"
 
 // Styles
-#let barchart-default-style = (
-  axes: (tick: (length: 0))
-)
-#let columnchart-default-style = (
-  axes: (tick: (length: 0))
-)
-#let radarchart-default-style = (
+#let default-style = (
+((id: auto, elem: ("chart",), class: auto,), (
   grid: (stroke: (paint: gray, dash: "dashed")),
   mark: (size: .075, stroke: none, fill: black),
-  label-padding: .1,
+)),
+((id: auto, elem: ("chart", "axes"), class: auto,), (
+  tick: (length: 0),
+)),
 )
 
 // Valid bar- and columnchart modes
@@ -44,7 +42,7 @@
 /// rectangular bars that grow from left to right, proportional to the values
 /// they represent. For examples see @barchart-examples.
 ///
-/// *Style root*: `barchart`.
+/// *Style element*: `barchart`.
 ///
 /// - data (array): Array of data rows. A row can be of type array or
 ///                 dictionary, with `label-key` and `value-key` being
@@ -181,17 +179,13 @@
     if mode == "stacked100" {stacked100-draw-bar}
   )
 
-  group(ctx => {
-    let style = util.merge-dictionary(barchart-default-style,
-      styles.resolve(ctx.style, (:), root: "barchart"))
-
+  style-element("chart", group(ctx => {
     axes.scientific(size: size,
                     left: y,
                     right: none,
                     bottom: x,
                     top: none,
-                    frame: "set",
-                    ..style.axes)
+                    frame: "set")
     if data.len() > 0 {
       if type(bar-style) != function { bar-style = ((i) => bar-style) }
 
@@ -201,14 +195,14 @@
         }
       })
     }
-  })
+  }))
 }
 
 /// Draw a column chart. A bar chart is a chart that represents data with
 /// rectangular bars that grow from bottom to top, proportional to the values
 /// they represent. For examples see @columnchart-examples.
 ///
-/// *Style root*: `columnchart`.
+/// *Style element*: `columnchart`.
 ///
 /// - data (array): Array of data rows. A row can be of type array or
 ///                 dictionary, with `label-key` and `value-key` being
@@ -345,17 +339,13 @@
     if mode == "stacked100" {stacked100-draw-bar}
   )
 
-  group(ctx => {
-    let style = util.merge-dictionary(columnchart-default-style,
-      styles.resolve(ctx.style, (:), root: "columnchart"))
-
+  style-element("chart", group(ctx => {
     axes.scientific(size: size,
                     left: y,
                     right: none,
                     bottom: x,
                     top: none,
-                    frame: "set",
-                    ..style.axes)
+                    frame: "set")
     if data.len() > 0 {
       if type(bar-style) != function { bar-style = ((i) => bar-style) }
 
@@ -365,5 +355,5 @@
         }
       })
     }
-  })
+  }))
 }

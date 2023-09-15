@@ -53,7 +53,7 @@
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
-  set-style(content: (frame: "circle", stroke: 3pt), fill: blue)
+  set-style(frame: "circle", stroke: 3pt, fill: blue, selector: "content")
   content((0,0), (1,1), angle: 15deg,
     text(white, align(center+horizon)[With style!]))
 }))

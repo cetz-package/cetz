@@ -118,3 +118,16 @@
                     bar-style: palette.blue,
                     data2)
 }))
+
+#box(stroke: 2pt + red, canvas({
+  draw.set-style(bottom: (tick: (label: (angle: -90deg, anchor: "right"))),
+    selector: "chart > axes") 
+
+  chart.columnchart(mode: "stacked100",
+                    size: (auto, 4),
+                    label-key: 0,
+                    value-key: (..range(1, 5)),
+                    bar-width: .7,
+                    bar-style: palette.blue,
+                    data2)
+}))

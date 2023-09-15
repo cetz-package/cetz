@@ -5,10 +5,10 @@
 #box(stroke: 2pt + red, canvas({
   import draw: *
 
-  set-style(axes: (stroke: blue))
-  set-style(axes: (padding: .75))
-  set-style(axes: (x: (stroke: red)))
-  set-style(axes: (y: (stroke: green, tick: (stroke: blue, length: .3))))
+  set-style(stroke: blue, selector: "axes")
+  set-style(padding: .75, selector: "axes > school-book")
+  set-style(x: (stroke: red), selector: "axes")
+  set-style(y: (stroke: green, tick: (stroke: blue, length: .3)), selector: "axes")
   axes.school-book(size: (6, 6),
     axes.axis(min: -1, max: 1, ticks: (step: 1, minor-step: auto,
       grid: "both")),
@@ -20,14 +20,14 @@
 #box(stroke: 2pt + red, canvas({
   import draw: *
 
-  set-style(axes: (stroke: blue))
-  set-style(axes: (left: (tick: (stroke: green + 2pt))))
-  set-style(axes: (bottom: (tick: (stroke: red, length: .5,
-                                   label: (angle: -90deg,
-                                           anchor: "right")))))
-  set-style(axes: (right: (tick: (label: (offset: .2,
-                                          angle: 45deg,
-                                          anchor: "top-left"), length: -.1))))
+  set-style(stroke: blue, selector: "axes")
+  set-style(left: (tick: (stroke: green + 2pt)), selector: "axes")
+  set-style(bottom: (tick: (stroke: red, length: .5,
+              label: (angle: -90deg,
+              anchor: "right"))), selector: "axes")
+  set-style(right: (tick: (label: (offset: .2,
+              angle: 45deg,
+              anchor: "top-left"), length: -.1)), selector: "axes")
   axes.scientific(size: (6, 6),
     frame: "set",
     top: none,

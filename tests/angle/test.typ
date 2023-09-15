@@ -68,14 +68,14 @@
   let (a, b, c) = ((-1, 1), (0, 0), (1, 2))
 
   line(a, b, c)
-  set-style(angle: (stroke: red, label-radius: 1))
+  set-style(stroke: red, label-radius: 1, selector: "angle")
   angle(b, a, c, mark: (start: ">", end: ">"),
     inner: true, label: $omega$)
 
   translate((2,0,0))
 
   line(a, b, c)
-  set-style(angle: (stroke: blue, radius: 1, label-radius: .5))
+  set-style(stroke: blue, radius: 1, label-radius: .5, selector: "angle")
   angle(b, c, a, mark: (start: ">", end: ">"),
     inner: false, label: $alpha$, name: "alpha")
 
