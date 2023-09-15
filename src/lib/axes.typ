@@ -84,7 +84,7 @@
     return $#value$
   }
 
-  if type(value) in ("int", "float") {
+  if type(value) != typst-content {
     let format = tic-options.at("format", default: "float")
     if type(format) == function {
       value = (format)(value)
@@ -182,7 +182,7 @@
   if "list" in axis.ticks {
     for t in axis.ticks.list {
       let (v, label) = (none, none)
-      if type(t) in ("float", "integer") {
+      if type(t) in (float, int) {
         v = t
         label = format-tick-value(t, axis.ticks)
       } else {

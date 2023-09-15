@@ -271,3 +271,26 @@
         x => calc.pow(-1, int(x)))
     })
 }))
+
+/* Format tick values */
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  plot.plot(size: (6, 4),
+    x-tick-step: none,
+    x-ticks: (-1, 0, 1),
+    x-format: x => $x_(#x)$,
+    y-tick-step: none,
+    y-ticks: (-1, 0, 1),
+    y-format: x => $y_(#x)$,
+    x2-tick-step: none,
+    x2-ticks: (-1, 0, 1),
+    x2-format: x => $x_(2,#x)$,
+    y2-tick-step: none,
+    y2-ticks: (-1, 0, 1),
+    y2-format: x => $y_(2,#x)$,
+    {
+      plot.add(domain: (-1, 1), x => -x, axes: ("x", "y"))
+      plot.add(domain: (-1, 1), x => x, axes: ("x2", "y2"))
+    })
+}))
