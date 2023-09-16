@@ -4,7 +4,7 @@
 #import "util.typ"
 #import "path-util.typ"
 #import "coordinate.typ"
-#import "bezier.typ": to-abc, quadratic-through-3points, cubic-through-3points, quadratic-to-cubic, cubic-point
+#import "bezier.typ": to-abc, quadratic-through-3points, cubic-through-3points, quadratic-to-cubic, cubic-point, catmull-to-cubic
 #import "intersection.typ"
 #import "styles.typ"
 
@@ -934,6 +934,45 @@
                fill: style.fill,
                stroke: style.stroke)
       _render-cubic-marks(s, e, ..c, style)
+    }
+  ),)
+}
+
+/// Draw a catmull-rom curve through points
+///
+/// *Style root:* `catmull`
+///
+/// - ..points-style (coordinate, style): List of points
+/// - k (float): Tension > .1
+/// - close (bool): Close the path
+/// - name (string): Element name
+#let catmull(..points-style, k: .5, close: false, name: none) = {
+  let pts = points-style.pos()
+  let style = points-style.named()
+
+  assert(pts.len() >= 2,
+    message: "You have to pass at least two points.")
+
+  ((
+    name: name,
+    coordinates: pts,
+    custom-anchors: (..pts) => {
+      let pts = pts.pos()
+      let anchors = (start: pts.at(0), end: pts.at(-1))
+      for (i, pt) in pts.enumerate() {
+        anchors.insert("pt-" + str(i + 1), pt)
+      }
+      return anchors
+    },
+    render: (ctx, ..pts) => {
+      let style = styles.resolve(ctx.style, style, root: "catmull")
+
+      let curves = catmull-to-cubic(pts.pos(), k, close: close)
+        .map(c => ("cubic", ..c))
+      cmd.path(..curves,
+               fill: style.fill,
+               stroke: style.stroke,
+               close: close)
     }
   ),)
 }

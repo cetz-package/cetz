@@ -1,6 +1,15 @@
 // This file contains functions related to bezier curve calculation
 #import "vector.typ"
 
+// Map number v from range (ds, de) to (ts, te)
+#let _map(v, ds, de, ts, te) = {
+  let d1 = de - ds
+  let d2 = te - ts
+  let v2 = v - ds
+  let r = v2 / d1
+  return ts + d2 * r
+}
+
 /// Get point on quadratic bezier at position t
 ///
 /// - a (vector): Start point
@@ -244,4 +253,64 @@
     }
   }
   return (lo, hi)
+}
+
+/// Returns a cubic bezier between p2 and p3 for a catmull-rom curve
+/// through all four points.
+///
+/// - p1 (vector): Point 1
+/// - p2 (vector): Point 2
+/// - p3 (vector): Point 3
+/// - p4 (vector): Point 4
+/// - k  (float): Tension between 0 and 1
+/// -> (a, b, c1, c2)
+#let catmull-section-to-cubic(p1, p2, p3, p4, k) = {
+  k = if k < .5 {
+    1 / _map(k, .5, 0, 1, 10)
+  } else {
+    _map(k, .5, 1, 1, 10)
+  }
+  return (p2, p3,
+          vector.add(p2, vector.scale(vector.sub(p3, p1), 1/(k * 6))),
+          vector.sub(p3, vector.scale(vector.sub(p4, p2), 1/(k * 6))))
+}
+
+/// Returns a list of cubic beziert for a catmull curve through points
+///
+/// - points (array): Array of 2d points
+/// - k (float): Strength between 0 and oo
+#let catmull-to-cubic(points, k, close: false) = {
+  k = calc.max(k, 0.1)
+
+  let len = points.len()
+  if len == 2 {
+    return ((points.at(0), points.at(1),
+             points.at(0), points.at(1)),)
+  } else if len > 2 {
+    let curves = ()
+
+    let (i0, iN) = if close {
+      (-1, 0)
+    } else {
+      (0, -1)
+    }
+
+    curves.push(catmull-section-to-cubic(points.at(i0), points.at(0),
+                                         points.at(1), points.at(2), k))
+    for i in range(1, len - 2, step: 1) {
+      curves.push(catmull-section-to-cubic(
+        ..range(i - 1, i + 3).map(i => points.at(i)), k))
+    }
+
+    curves.push(catmull-section-to-cubic(
+      points.at(-3), points.at(-2), points.at(-1), points.at(iN), k))
+
+    if close {
+      curves.push(catmull-section-to-cubic(
+        points.at(-2), points.at(-1), points.at(0), points.at(1), k))
+    }
+
+    return curves
+  }
+  return ()
 }
