@@ -334,6 +334,12 @@ content((0,0), (2,1), par(justify: false)[This is a long text.], frame: "rect",
   fill: gray, stroke: none)
 ```
 
+#show-module-fn(draw-module, "catmull")
+```example
+catmull((0,0), (1,1), (2,-1), (3,0), k: .4, stroke: blue)
+catmull((0,0), (1,1), (2,-1), (3,0), k: .5, stroke: red)
+```
+
 #STYLING
 This draw element is not affected by fill or stroke styling.
 

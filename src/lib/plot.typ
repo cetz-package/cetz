@@ -5,6 +5,7 @@
 #import "../util.typ"
 #import "../draw.typ"
 #import "../vector.typ"
+#import "../bezier.typ"
 
 #let default-colors = (blue, red, green, yellow, black)
 
@@ -126,6 +127,11 @@
 ///                  type function.
 /// - sample-at (array): Array of x-values the function gets sampled at in addition
 ///                      to the default sampling.
+/// - smooth (bool, float): Smooth tension (high is less smooth).
+///                         If enabled (non false) a catmull-rom curve
+///                         through the data is sampled.
+///                         If set to true, the tension is `0.5`.
+/// - smooth-samples (int): Samples to use for sampling the smoothed data.
 /// - style (style): Style to use, can be used with a palette function
 /// - axes (array): Name of the axes to use ("x", "y"), note that not all
 ///                 plot styles are able to display a custom axis!
@@ -159,6 +165,8 @@
          mark-style: (:),
          samples: 100,
          sample-at: (),
+         smooth: false,
+         smooth-samples: 20,
          axes: ("x", "y"),
          data
          ) = {
@@ -189,6 +197,25 @@
     })
   }
 
+  // If data should be smoothed, sample a catmull curve through the
+  // data points
+  let smooth-data = none
+  if smooth != none and smooth != false {
+    let curves = if smooth == true {
+      bezier.catmull-to-cubic(data, .5)
+    } else {
+      bezier.catmull-to-cubic(data, smooth)
+    }
+
+    smooth-data = ()
+    for c in curves {
+      for t in range(0, smooth-samples + 1) {
+        let t = t / smooth-samples
+        smooth-data.push(bezier.cubic-point(..c, t))
+      }
+    }
+  }
+
   // Get x-domain
   let x-domain = (
     calc.min(..data.map(t => t.at(0))),
@@ -196,14 +223,18 @@
   )
 
   // Get y-domain
-  let y-domain = (
+  let y-domain = if smooth-data != none {(
+    calc.min(..smooth-data.map(t => t.at(1))),
+    calc.max(..smooth-data.map(t => t.at(1)))
+  )} else {(
     calc.min(..data.map(t => t.at(1))),
     calc.max(..data.map(t => t.at(1)))
-  )
+  )}
 
   ((
     type: "data",
     data: data,
+    smooth-data: smooth-data,
     axes: axes,
     x-domain: x-domain,
     y-domain: y-domain,
@@ -385,7 +416,13 @@
   // Compute poly-lines
   for i in range(data.len()) {
     let (x, y) = data.at(i).axes.map(name => axis-dict.at(name))
-    data.at(i).path = paths-for-points(data.at(i).data,
+
+    data.at(i).path = paths-for-points(
+      if data.at(i).smooth-data != none {
+        data.at(i).smooth-data
+      } else {
+        data.at(i).data
+      },
       x.min, x.max, y.min, y.max)
   }
 

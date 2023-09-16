@@ -294,3 +294,16 @@
       plot.add(domain: (-1, 1), x => x, axes: ("x2", "y2"))
     })
 }))
+
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  plot.plot(size: (6, 4),
+    {
+      plot.add(((0,0), (1,1), (2,-1), (3,3)), smooth: .40,
+                                              smooth-samples: 5)
+      plot.add(((0,0), (1,1), (2,-1), (3,3)), smooth: .47)
+      plot.add(((0,0), (1,1), (2,-1), (3,3)), smooth: true)
+      plot.add(((0,0), (1,1), (2,-1), (3,3)), smooth: .6)
+    })
+}))

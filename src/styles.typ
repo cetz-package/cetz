@@ -83,6 +83,10 @@
     stroke: auto,
     mark: auto,
   ),
+  catmull: (
+    fill: auto,
+    stroke: auto,
+  ),
   shadow: (
     color: gray,
     offset-x: .1,
