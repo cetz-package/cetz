@@ -943,10 +943,12 @@
 /// *Style root:* `catmull`
 ///
 /// - ..points-style (coordinate, style): List of points
-/// - k (float): Tension > .1
+/// - tension (float): Tension > .1, higher value means less curvature. The
+///                    value is linear mapped $t < .5 -> (0 < t < .5)$ and
+///                    $t > .5 -> (.5 < t < 10)$.
 /// - close (bool): Close the path
 /// - name (string): Element name
-#let catmull(..points-style, k: .5, close: false, name: none) = {
+#let catmull(..points-style, tension: .5, close: false, name: none) = {
   let pts = points-style.pos()
   let style = points-style.named()
 
@@ -967,7 +969,7 @@
     render: (ctx, ..pts) => {
       let style = styles.resolve(ctx.style, style, root: "catmull")
 
-      let curves = catmull-to-cubic(pts.pos(), k, close: close)
+      let curves = catmull-to-cubic(pts.pos(), tension, close: close)
         .map(c => ("cubic", ..c))
       cmd.path(..curves,
                fill: style.fill,
