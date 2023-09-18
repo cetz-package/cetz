@@ -1,10 +1,16 @@
 # 0.1.2
 CeTZ requires Typst 0.8.0.
 ## Draw
-- New `on-layer(layer, body)` function for drawing with a given z-index
+- New `on-layer(layer, body)` function for drawing with a given layer/z-index
+- New `catmull(..)` function for drawing catmull-rom curves
+- Fixed rect anchors if coordinates were swapped
+
 ## Libs
 ### Plot
 - Added `sample-at: (..)` option to `plot.add(..)` for specifying extra sample points
+- Added `line: <linear|spline|vh|hv|vhv>` support
+- The plot lib tries to linearize data to reduce draw calls
+- Fixed custom tick plot formatting
 
 # 0.1.1
 ## Libs
