@@ -127,11 +127,24 @@
 ///                  type function.
 /// - sample-at (array): Array of x-values the function gets sampled at in addition
 ///                      to the default sampling.
-/// - smooth (bool, float): Smooth tension (high is less smooth).
-///                         If enabled (non false) a catmull-rom curve
-///                         through the data is sampled.
-///                         If set to true, the tension is `0.5`.
-/// - smooth-samples (int): Samples to use for sampling the smoothed data.
+/// - line (string, dictionary): Line type to use. The following types are
+///                              supported:
+///                              / `"linear"`: Linear line segments
+///                              / `"spline"`: A smoothed line
+///                              / `"vh"`: Move vertical and then horizontal
+///                              / `"hv"`: Move horizontal and then vertical
+///                              / `"vhv"`: Add a vertical step in the middle
+///                              / `"raw"`: Like linear, but without linearization.
+///                                `"linear"` _should_ never look different than `"raw"`.
+///
+///                              If the value is a dictionary, the type must be
+///                              supplied via the `type` key. The following extra
+///                              attributes are supported:
+///                              / `"samples" <int>`: Samples of splines
+///                              / `"tension" <float>`: Tension of splines
+///                              / `"mid" <float>`: Mid-Point of vhv lines (0 to 1)
+///                              / `"epsilon" <float>`: Linearization slope epsilon for
+///                                use with `"linear"`, defaults to 0.
 /// - style (style): Style to use, can be used with a palette function
 /// - axes (array): Name of the axes to use ("x", "y"), note that not all
 ///                 plot styles are able to display a custom axis!
@@ -165,8 +178,7 @@
          mark-style: (:),
          samples: 100,
          sample-at: (),
-         smooth: false,
-         smooth-samples: 20,
+         line: "linear",
          axes: ("x", "y"),
          data
          ) = {
@@ -197,44 +209,134 @@
     })
   }
 
-  // If data should be smoothed, sample a catmull curve through the
-  // data points
-  let smooth-data = none
-  if smooth != none and smooth != false {
-    let curves = if smooth == true {
-      bezier.catmull-to-cubic(data, .5)
-    } else {
-      bezier.catmull-to-cubic(data, smooth)
+  // Simplify linear data by "detecting" linear sections
+  // and skipping points until the slope changes.
+  // This can have a huge impact on the number of lines
+  // getting rendered.
+  let linear-data(epsilon) = {
+    let pts = ()
+    // Current slope, set to none if infinite
+    let dx = none
+    // Previous point, last skipped point
+    let prev = none
+    let skipped = none
+    // Current direction
+    let dir = 0
+
+    let len = data.len()
+    for i in range(0, len) {
+      let pt = data.at(i)
+      if prev != none and i < len - 1 {
+        let new-dir = pt.at(0) - prev.at(0)
+        if new-dir == 0 and dx != none {
+          // Infinite slope
+          if skipped != none {pts.push(skipped); skipped = none}
+          pts.push(pt)
+          dx = none
+        } else {
+          // Push the previous and the current point
+          // if slope or direction changed
+          let new-dx = ((pt.at(1) - prev.at(1)) / new-dir)
+          if dx == none or calc.abs(new-dx - dx) > epsilon or (new-dir * dir) < 0 {
+            if skipped != none {pts.push(skipped); skipped = none}
+            pts.push(pt)
+
+            dx = new-dx
+            dir = new-dir
+          } else {
+            skipped = pt
+          }
+        }
+      } else {
+        if skipped != none {pts.push(skipped); skipped = none}
+        pts.push(pt)
+      }
+
+      prev = pt
     }
 
-    smooth-data = ()
+    return pts
+  }
+
+  let spline-data(tension, samples) = {
+    let curves = bezier.catmull-to-cubic(data, tension)
+    let pts = ()
     for c in curves {
-      for t in range(0, smooth-samples + 1) {
-        let t = t / smooth-samples
-        smooth-data.push(bezier.cubic-point(..c, t))
+      for t in range(0, samples + 1) {
+        let t = t / samples
+        pts.push(bezier.cubic-point(..c, t))
       }
     }
+    return pts
+  }
+
+  let vhv-data(t) = {
+    if type(t) == ratio {
+      t = t / 1%
+    }
+    t = calc.max(0, calc.min(t, 1))
+
+    let pts = ()
+
+    let len = data.len()
+    for i in range(0, len) {
+      pts.push(data.at(i))
+
+      if i < len - 1 {
+        let (a, b) = (data.at(i), data.at(i+1))
+        if t == 0 {
+          pts.push((a.at(0), b.at(1)))
+        } else if t == 1 {
+          pts.push((b.at(0), a.at(1)))
+        } else {
+          let x = a.at(0) + (b.at(0) - a.at(0)) * t
+          pts.push((x, a.at(1)))
+          pts.push((x, b.at(1)))
+        }
+      }
+    }
+    pts
+  }
+
+  if type(line) == str {
+    line = (type: line)
+  }
+
+  let line-type = line.at("type", default: "linear")
+  assert(line-type in ("raw", "linear", "spline", "vh", "hv", "vhv"))
+
+  // Transform data into line-data
+  let line-data = if line-type == "linear" {
+    linear-data(line.at("epsilon", default: 0))
+  } else if line-type == "spline" {
+    spline-data(line.at("tension", default: .5),
+                line.at("samples", default: 15))
+  } else if line-type == "vh" {
+    vhv-data(0)
+  } else if line-type == "hv" {
+    vhv-data(1)
+  } else if line-type == "vhv" {
+    vhv-data(line.at("mid", default: .5))
+  } else {
+    data
   }
 
   // Get x-domain
   let x-domain = (
-    calc.min(..data.map(t => t.at(0))),
-    calc.max(..data.map(t => t.at(0)))
+    calc.min(..line-data.map(t => t.at(0))),
+    calc.max(..line-data.map(t => t.at(0)))
   )
 
   // Get y-domain
-  let y-domain = if smooth-data != none {(
-    calc.min(..smooth-data.map(t => t.at(1))),
-    calc.max(..smooth-data.map(t => t.at(1)))
-  )} else {(
-    calc.min(..data.map(t => t.at(1))),
-    calc.max(..data.map(t => t.at(1)))
+  let y-domain = if line-data != none {(
+    calc.min(..line-data.map(t => t.at(1))),
+    calc.max(..line-data.map(t => t.at(1)))
   )}
 
   ((
     type: "data",
-    data: data,
-    smooth-data: smooth-data,
+    data: data, /* Raw data */
+    line-data: line-data, /* Transformed data */
     axes: axes,
     x-domain: x-domain,
     y-domain: y-domain,
@@ -418,11 +520,7 @@
     let (x, y) = data.at(i).axes.map(name => axis-dict.at(name))
 
     data.at(i).path = paths-for-points(
-      if data.at(i).smooth-data != none {
-        data.at(i).smooth-data
-      } else {
-        data.at(i).data
-      },
+      data.at(i).line-data,
       x.min, x.max, y.min, y.max)
   }
 

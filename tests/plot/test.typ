@@ -300,10 +300,42 @@
 
   plot.plot(size: (6, 4),
     {
-      plot.add(((0,0), (1,1), (2,-1), (3,3)), smooth: .40,
-                                              smooth-samples: 5)
-      plot.add(((0,0), (1,1), (2,-1), (3,3)), smooth: .47)
-      plot.add(((0,0), (1,1), (2,-1), (3,3)), smooth: true)
-      plot.add(((0,0), (1,1), (2,-1), (3,3)), smooth: .6)
+      plot.add(((0,0), (1,1), (2,-1), (3,3)), line: (type: "spline", tension: .40,
+                                                     samples: 5))
+      plot.add(((0,0), (1,1), (2,-1), (3,3)), line: (type: "spline", tension: .47))
+      plot.add(((0,0), (1,1), (2,-1), (3,3)), line: "spline")
+      plot.add(((0,0), (1,1), (2,-1), (3,3)), line: (type: "spline", tension: .5))
+    })
+}))
+
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  let data(i) = ((1, 2, 3, 4, 5).zip((1, 3, 2, 3, 1).map(v => v + i)))
+  plot.plot(size: (6, 4),
+    y-min: 0, y-max: 35,
+    x-tick-step: 1,
+    y-tick-step: 5,
+    {
+       plot.add(data(0), line: "linear", mark: "o")
+       plot.add(data(5), line: "spline", mark: "o")
+       plot.add(data(10), line: "hv", mark: "o")
+       plot.add(data(15), line: "vh", mark: "o")
+       plot.add(data(20), line: "vhv", mark: "o")
+       plot.add(data(25), line: (type: "vhv", mid: .25), mark: "o")
+       plot.add(data(30), line: (type: "vhv", mid: .75), mark: "o")
+    })
+}))
+
+// Test linearization
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  plot.plot(size: (6, 4),
+    {
+       plot.add(domain: (0, 360), x=>calc.sin(x * 1deg),
+         line: "raw", style: (stroke: 3pt))
+       plot.add(domain: (0, 360), x=>calc.sin(x * 1deg),
+         line: "linear")
     })
 }))
