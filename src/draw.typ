@@ -452,6 +452,15 @@
     default-anchor: "center",
     anchor: anchor,
     coordinates: (a, b),
+    transform-coordinates: (ctx, a, b) => {
+      let lo = (calc.min(a.at(0), b.at(0)),
+                calc.min(a.at(1), b.at(1)),
+                calc.min(a.at(2), b.at(2)))
+      let hi = (calc.max(a.at(0), b.at(0)),
+                calc.max(a.at(1), b.at(1)),
+                calc.max(a.at(2), b.at(2)))
+      return (lo, hi)
+    },
     custom-anchors: (a, b) => {
       let c = vector.sub(b, a)
       let (w, h, d) = c
