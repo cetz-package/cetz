@@ -134,6 +134,8 @@
 ///                              / `"vh"`: Move vertical and then horizontal
 ///                              / `"hv"`: Move horizontal and then vertical
 ///                              / `"vhv"`: Add a vertical step in the middle
+///                              / `"raw"`: Like linear, but without linearization.
+///                                `"linear"` _should_ never look different than `"raw"`.
 ///
 ///                              If the value is a dictionary, the type must be
 ///                              supplied via the `type` key. The following extra
@@ -141,6 +143,8 @@
 ///                              / `"samples" <int>`: Samples of splines
 ///                              / `"tension" <float>`: Tension of splines
 ///                              / `"mid" <float>`: Mid-Point of vhv lines (0 to 1)
+///                              / `"epsilon" <float>`: Linearization slope epsilon for
+///                                use with `"linear"`, defaults to 0.
 /// - style (style): Style to use, can be used with a palette function
 /// - axes (array): Name of the axes to use ("x", "y"), note that not all
 ///                 plot styles are able to display a custom axis!
@@ -205,6 +209,55 @@
     })
   }
 
+  // Simplify linear data by "detecting" linear sections
+  // and skipping points until the slope changes.
+  // This can have a huge impact on the number of lines
+  // getting rendered.
+  let linear-data(epsilon) = {
+    let pts = ()
+    // Current slope, set to none if infinite
+    let dx = none
+    // Previous point, last skipped point
+    let prev = none
+    let skipped = none
+    // Current direction
+    let dir = 0
+
+    let len = data.len()
+    for i in range(0, len) {
+      let pt = data.at(i)
+      if prev != none and i < len - 1 {
+        let new-dir = pt.at(0) - prev.at(0)
+        if new-dir == 0 and dx != none {
+          // Infinite slope
+          if skipped != none {pts.push(skipped); skipped = none}
+          pts.push(pt)
+          dx = none
+        } else {
+          // Push the previous and the current point
+          // if slope or direction changed
+          let new-dx = ((pt.at(1) - prev.at(1)) / new-dir)
+          if dx == none or calc.abs(new-dx - dx) > epsilon or (new-dir * dir) < 0 {
+            if skipped != none {pts.push(skipped); skipped = none}
+            pts.push(pt)
+
+            dx = new-dx
+            dir = new-dir
+          } else {
+            skipped = pt
+          }
+        }
+      } else {
+        if skipped != none {pts.push(skipped); skipped = none}
+        pts.push(pt)
+      }
+
+      prev = pt
+    }
+
+    return pts
+  }
+
   let spline-data(tension, samples) = {
     let curves = bezier.catmull-to-cubic(data, tension)
     let pts = ()
@@ -245,14 +298,16 @@
     pts
   }
 
-  // Transform data into line-data
   if type(line) == str {
     line = (type: line)
   }
 
   let line-type = line.at("type", default: "linear")
+  assert(line-type in ("raw", "linear", "spline", "vh", "hv", "vhv"))
+
+  // Transform data into line-data
   let line-data = if line-type == "linear" {
-    data
+    linear-data(line.at("epsilon", default: 0))
   } else if line-type == "spline" {
     spline-data(line.at("tension", default: .5),
                 line.at("samples", default: 15))
@@ -280,7 +335,7 @@
 
   ((
     type: "data",
-    data: data, /*  User provided data */
+    data: data, /* Raw data */
     line-data: line-data, /* Transformed data */
     axes: axes,
     x-domain: x-domain,

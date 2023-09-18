@@ -326,3 +326,16 @@
        plot.add(data(30), line: (type: "vhv", mid: .75), mark: "o")
     })
 }))
+
+// Test linearization
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  plot.plot(size: (6, 4),
+    {
+       plot.add(domain: (0, 360), x=>calc.sin(x * 1deg),
+         line: "raw", style: (stroke: 3pt))
+       plot.add(domain: (0, 360), x=>calc.sin(x * 1deg),
+         line: "linear")
+    })
+}))
