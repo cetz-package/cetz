@@ -228,10 +228,14 @@
       let pt = data.at(i)
       if prev != none and i < len - 1 {
         let new-dir = pt.at(0) - prev.at(0)
-        if new-dir == 0 and dx != none {
+        if new-dir == 0 {
           // Infinite slope
-          if skipped != none {pts.push(skipped); skipped = none}
-          pts.push(pt)
+          if dx != none {
+            if skipped != none {pts.push(skipped); skipped = none}
+            pts.push(pt)
+          } else {
+            skipped = pt
+          }
           dx = none
         } else {
           // Push the previous and the current point
