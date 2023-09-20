@@ -29,7 +29,7 @@
             if v == auto {
               v = global.at(k)
             } else if v == "inherit" and "inherit" in global {
-              global.inherit.at(k)
+              v = global.inherit.at(k)
             }
             if type(v) == dictionary {
               global.inherit = current
