@@ -23,20 +23,22 @@
   if root != none {
     for (k, v) in current {
       if k in global {
-        if v == auto {
-          current.insert(
-            k,
-            global.at(k)
-          )
-        } else if v == "inherit" and "inherit" in global {
-          current.insert(
-            k,
-            global.inherit.at(k)
-          )
-        } else if type(v) == dictionary {
-          global.inherit = current
-          current.insert(k, resolve(global, v, root: k))
-        }
+        current.insert(
+          k,
+          {
+            if v == auto {
+              v = global.at(k)
+            } else if v == "inherit" and "inherit" in global {
+              global.inherit.at(k)
+            }
+            if type(v) == dictionary {
+              global.inherit = current
+              resolve(global, v, root: k)
+            } else {
+              v
+            }
+          }
+        )
       }
     }
   }
