@@ -75,10 +75,12 @@
   translate((2,0,0))
 
   line(a, b, c)
-  set-style(angle: (stroke: blue, radius: 1, label-radius: .5))
+  set-style(stroke: blue)
+  set-style(angle: (stroke: auto, radius: 1, label-radius: .5))
   angle(b, c, a, mark: (start: ">", end: ">"),
     inner: false, label: $alpha$, name: "alpha")
 
+  set-style(stroke: black)
   circle("alpha.origin", radius: .15)
   circle("alpha.label", radius: .25)
   circle("alpha.start", radius: .25)

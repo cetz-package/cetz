@@ -1,89 +1,42 @@
-#let resolve(current, new, root: none) = {
-  let global
-  if root != none and type(current) == dictionary {
-    (global, current) = (current, current.at(root, default: (:)))
-  }
-  if new == auto {
-    return current
-  } else if type(current) != dictionary {
-    return new
-  }
-  assert.ne(current, none, message: repr((global, current, new, root)))
-  for (k, v) in new {
-    current.insert(
-      k,
-      if k in current and type(current.at(k)) == dictionary and type(v) == dictionary {
-        resolve(current.at(k), v)
-      } else {
-        v
-      }
-    )
-  }
-
-  if root != none {
-    for (k, v) in current {
-      if k in global {
-        if v == auto {
-          current.insert(
-            k,
-            global.at(k)
-          )
-        } else if type(v) == dictionary {
-          // panic(global, v, k)
-          current.insert(k, resolve(global, v, root: k))
-        }
-      }
-    }
-  }
-  return current
-}
+#import "util.typ"
 
 #let default = (
-  fill: none,
-  stroke: black + 1pt,
-  radius: 1,
+  root: (
+    fill: none,
+    stroke: black + 1pt,
+    radius: 1,
+  ),
+  line: (
+    mark: (
+      size: .15,
+      start: none,
+      end: none,
+      stroke: auto,
+      fill: none,
+    ),
+  ),
+  bezier: (
+    mark: (
+      size: .15,
+      start: none,
+      end: none,
+      stroke: auto,
+      fill: none,
+    ),
+  ),
   mark: (
     size: .15,
     start: none,
     end: none,
-    fill: auto,
-    stroke: auto
-  ),
-  line: (
-    fill: auto,
     stroke: auto,
-    mark: auto,
-  ),
-  rect: (
-    fill: auto,
-    stroke: auto,
+    fill: none,
   ),
   arc: (
-    fill: auto,
-    stroke: auto,
-
-    radius: auto,
     mode: "OPEN",
-  ),
-  circle: (
-    fill: auto,
-    stroke: auto,
-
-    radius: auto
   ),
   content: (
     padding: 0em,
     frame: none,
-
-    fill: auto,
-    stroke: auto,
-  ),
-  bezier: (
-    fill: auto,
-    stroke: auto,
-    mark: auto,
-  ),
-  catmull: (
     fill: auto,
     stroke: auto,
   ),
@@ -93,3 +46,55 @@
     offset-y: -.1,
   ),
 )
+
+#let resolve(current, new, root: none, base: none) = {
+  if base != none {
+    if root != none {
+      let default = default
+      default.insert(root, base)
+      base = default
+    } else {
+      base = util.merge-dictionary(default, base)
+    }
+  } else {
+    base = default
+  }
+
+  let resolve-auto(hier, dict) = {
+    if type(dict) != dictionary { return dict }
+    for (k, v) in dict {
+      if v == auto {
+        for i in range(0, hier.len()) {
+          let parent = hier.at(i)
+          if k in parent {
+            v = parent.at(k)
+            if v != auto {
+              dict.insert(k, v)
+              break
+            }
+          }
+        }
+      }
+      if type(v) == dictionary {
+        dict.insert(k, resolve-auto((dict,) + hier, v))
+      }
+    }
+    return dict
+  }
+
+  let s = base.root
+  if root != none and root in base {
+    s = util.merge-dictionary(s, base.at(root))
+  } else {
+    s = util.merge-dictionary(s, base)
+  }
+  if root != none and root in current {
+    s = util.merge-dictionary(s, current.at(root))
+  } else {
+    s = util.merge-dictionary(s, current)
+  }
+  
+  s = util.merge-dictionary(s, new)
+  s = resolve-auto((current, s, base.root), s)
+  return s
+}
