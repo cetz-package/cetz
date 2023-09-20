@@ -28,8 +28,13 @@
             k,
             global.at(k)
           )
+        } else if v == "inherit" and "inherit" in global {
+          current.insert(
+            k,
+            global.inherit.at(k)
+          )
         } else if type(v) == dictionary {
-          // panic(global, v, k)
+          global.inherit = current
           current.insert(k, resolve(global, v, root: k))
         }
       }

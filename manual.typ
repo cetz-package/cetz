@@ -10,7 +10,7 @@
 #let show-module-fn(module, fn, ..args) = {
   module.functions = module.functions.filter(f => f.name == fn)
   tidy.show-module(module, ..args.pos(), ..args.named(),
-                   show-module-name: false)
+                   show-module-name: false, show-outline: false)
 }
 
 #let canvas-background = gray.lighten(75%)
@@ -94,8 +94,6 @@
 #set heading(numbering: "1.")
 #set terms(indent: 1em)
 #show link: set text(blue)
-
-#let STYLING = heading(level: 4, numbering: none)[Styling]
 
 #align(center, text(16pt)[*The `CeTZ` package*])
 
@@ -255,7 +253,7 @@ line((-1.5, 0), (1.5, 0))
 line((0, -1.5), (0, 1.5))
 ```
 
-#STYLING
+*Styling*
 
 #def-arg("mark", `<dictionary> or <auto>`, default: auto, [The styling to apply to marks on the line, see `mark`])
 
@@ -272,7 +270,7 @@ arc((0,-0.5), start: 45deg, delta: 90deg, mode: "CLOSE")
 arc((0,-1), stop: 135deg, delta: 90deg, mode: "PIE")
 ```
 
-#STYLING
+*Styling*
 
 #def-arg("radius", `<number> or <array>`, default: 1, [The radius of the arc. This is also a global style shared with circle!])
 #def-arg("mode", `<string>`, default: `"OPEN"`, [The options are "OPEN" (the default, just the arc), "CLOSE" (a circular segment) and "PIE" (a circular sector).])
@@ -292,7 +290,7 @@ circle-through(a, b, c, name: "c")
 circle("c.center", radius: .05, fill: red)
 ```
 
-#STYLING
+*Styling*
 
 #def-arg("radius", `<number> or <length> or <array of <number> or <length>>`, default: "1", [The circle's radius. If an array is given an ellipse will be drawn where the first item is the `x` radius and the second item is the `y` radius. This is also a global style shared with arc!])
 
@@ -334,7 +332,7 @@ content((0,0), (2,1), par(justify: false)[This is a long text.], frame: "rect",
   fill: gray, stroke: none)
 ```
 
-#STYLING
+*Styling*
 This draw element is not affected by fill or stroke styling.
 
 #def-arg("padding", `<length>`, default: 0em, "")
@@ -365,12 +363,27 @@ line((0, 1), (1, 1), mark: (end: "<"))
 line((0, 0), (1, 0), mark: (end: ">"))
 ```
 
-#STYLING
+*Styling*
 
 #def-arg("symbol", `<string>`, default: ">", [The type of mark to draw when using the `mark` function.])
 #def-arg("start", `<string>`, [The type of mark to draw at the start of a path.])
 #def-arg("end", `<string>`, [The type of mark to draw at the end of a path.])
 #def-arg("size", `<number>`, default: "0.15", [The size of the marks.])
+
+Due to this element normally being a child of another element, there is a special key you can use to aid in styling fill and stroke. While `auto` resolve to the global style, the string `"inherit"` will resolve to the mark's parent's style.
+```example
+// Mark stroke is auto so resolve to global style which is red
+set-style(stroke: red)
+line((0,0), (1,0), mark: (end: ">"), stroke: blue)
+
+// Mark stroke is green
+set-style(stroke: red, mark: (stroke: green))
+line((0,-1), (1,-1), mark: (end: ">"), stroke: blue)
+
+// Mark stroke is "inherit" so resolve to parent style which is blue
+set-style(stroke: red, mark: (stroke: "inherit"))
+line((0,-2), (1,-2), mark: (end: ">"), stroke: blue)
+```
 
 == Path Transformations <path-transform>
 
