@@ -101,7 +101,7 @@
 
 #align(center)[
   #link("https://github.com/johannes-wolf")[Johannes Wolf] and #link("https://github.com/fenjalien")[fenjalien] \
-  https://github.com/johannes-wolf/typst-canvas \
+  https://github.com/johannes-wolf/cetz \
   Version #lib.version.map(v => str(v)).join(".")
 ]
 
