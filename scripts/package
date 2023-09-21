@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 set -eu
 
 PKG_PREFIX="cetz"
@@ -40,10 +40,10 @@ function read-toml() {
   local key="$2"
   # Read a key value pair in the format: <key> = "<value>"
   # stripping surrounding quotes.
-  awk -F= "/^${key}/ { sub(/^\\s*\"/, \"\", \$2); sub(/\"\\s*$/, \"\", \$2); print(\$2); }" "$file"
+  perl -lne "print \"\$1\" if /^${key}\\s*=\\s*\"(.*)\"/" < "$file"
 }
 
-SOURCE="$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")"
+SOURCE="$(cd "$(dirname "$0")"; pwd -P)/.." # macOS has no realpath
 TARGET="${1:?Missing target path or @local}"
 VERSION="$(read-toml "$SOURCE/typst.toml" "version")"
 
@@ -56,7 +56,7 @@ TMP="$(mktemp -d)"
 
 for f in "${files[@]}"; do
   mkdir -p "$TMP/$(dirname "$f")" 2>/dev/null
-  cp "$SOURCE/$f" "$TMP/$f" -r
+  cp -r "$SOURCE/$f" "$TMP/$f"
 done
 
 TARGET="${TARGET:?}/${PKG_PREFIX:?}/${VERSION:?}"
