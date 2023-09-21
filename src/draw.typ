@@ -499,12 +499,15 @@
 ///
 /// The arc curve is approximated using 1-4 cubic bezier curves.
 ///
-/// - position (coordinate): Start coordinate
+/// - position (coordinate): Coordinate relative to `anchor`, which by default is the
+///                          `"start"` anchor.
 /// - start (auto,angle): Start angle
 /// - stop (auto,angle): End angle
 /// - delta (auto,angle): Angle delta
 /// - name (none,string): Element name
-/// - anchor (none,string): Element anchor
+/// - anchor (none,string): Anchor to position the arc at. If you want `position` the
+///                         arc using its origin, pass the origin as `position` and
+///                         set the anchor to `"origin"`. Defaults to `"start"`.
 /// - ..style (style): Style
 #let arc(position, start: auto, stop: auto, delta: auto, name: none, anchor: none, ..style) = {
   // Start, stop, delta check
