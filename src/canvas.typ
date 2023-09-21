@@ -53,8 +53,8 @@
   }
 
   if "style" in element {
-    ctx.style = styles.resolve(
-      ctx.style,
+    ctx.style = util.merge-dictionary(
+      ctx.style, 
       if type(element.style) == function {
         (element.style)(ctx)
       } else {
@@ -294,7 +294,7 @@
 
     em-size: measure(box(width: 1em, height: 1em), st),
 
-    style: styles.default,
+    style: (:),
 
     // Current transform
     transform: matrix.mul-mat(

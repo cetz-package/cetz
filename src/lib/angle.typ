@@ -10,13 +10,7 @@
   stroke: auto,
   radius: .5,
   label-radius: .25,
-  mark: (
-    start: none,
-    end: none,
-    size: auto,
-    fill: none,
-    stroke: auto,
-  )
+  mark: styles.default.mark,
 )
 
 /// Draw an angle between origin-a and origin-b
@@ -76,8 +70,8 @@
     default-anchor: "label",
     coordinates: (origin, a, b),
     transform-coordinates: (ctx, origin, a, b) => {
-      let style = util.merge-dictionary(default-style,
-        styles.resolve(ctx.style, style, root: "angle"))
+      let style = styles.resolve(ctx.style, style, root: "angle", base: default-style)
+      //panic(ctx.style)
       let (s, e, ss) = start-end(origin, a, b)
       let (x, y, z) = origin
       let (r, _) = util.resolve-radius(style.radius)
@@ -105,8 +99,7 @@
       )
     },
     render: (ctx, origin, a, b, start, end, pt-label) => {
-      let style = util.merge-dictionary(default-style,
-        styles.resolve(ctx.style, style, root: "angle"))
+      let style = styles.resolve(ctx.style, style, root: "angle", base: default-style)
       let (s, e, _) = start-end(origin, a, b)
       let (r, _) = util.resolve-radius(style.radius)
         .map(util.resolve-number.with(ctx))

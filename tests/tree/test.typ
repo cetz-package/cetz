@@ -9,7 +9,9 @@
   import draw: *
   import tree: *
 
-  set-style(content: (padding: .2),
+  set-style(
+    mark: (fill: auto),
+    content: (padding: .2),
     fill: gray.lighten(70%),
     stroke: gray.lighten(70%))
 

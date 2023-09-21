@@ -10,7 +10,8 @@
 #let show-module-fn(module, fn, ..args) = {
   module.functions = module.functions.filter(f => f.name == fn)
   tidy.show-module(module, ..args.pos(), ..args.named(),
-                   show-module-name: false)
+                   show-module-name: false,
+                   show-outline: false)
 }
 
 #let canvas-background = gray.lighten(75%)

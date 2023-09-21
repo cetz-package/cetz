@@ -9,7 +9,7 @@
         move-to((rel: (-1, .25)))
     }
 
-    fill(blue)
+    set-style(fill: blue, mark: (fill: auto))
     rotate(-90deg)
 
     let marks = (">", "<", "|", "<>", "o")
