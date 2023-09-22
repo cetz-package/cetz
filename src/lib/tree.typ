@@ -12,7 +12,9 @@
 /// - root (array): Tree structure represented by nested lists
 ///                 Example: `([root], [child 1], ([child 2], [grandchild 1]))`
 /// - draw-node (function): Callback for rendering a node.
-///                         Signature: `node => elements`
+///                         Signature: `(node) => elements`. The nodes position
+///                         is accessible through the anchor `"center"` or the last
+///                         position `()`.
 /// - draw-edge (function): Callback for rendering edges between nodes
 ///                         Signature: `(source-name, target-name, target-node) => elements`
 /// - direction (string): Tree grow direction (top, bottom, left, right)

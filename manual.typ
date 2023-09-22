@@ -814,7 +814,7 @@ for-each-anchor("my-rect", (name) => {
 = Libraries
 
 == Tree
-#let tree-module = tidy.parse-module(read("src/tree.typ"), name: "Tree")
+#let tree-module = tidy.parse-module(read("src/lib/tree.typ"), name: "Tree")
 
 With the tree library, CeTZ provides a simple tree layout algorithm.
 
