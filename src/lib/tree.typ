@@ -1,9 +1,9 @@
 // CeTZ Library for Layouting Tree-Nodes
-#import "util.typ"
-#import "draw.typ"
-#import "coordinate.typ"
-#import "vector.typ"
-#import "matrix.typ"
+#import "../util.typ"
+#import "../draw.typ"
+#import "../coordinate.typ"
+#import "../vector.typ"
+#import "../matrix.typ"
 
 #let typst-content = content
 
