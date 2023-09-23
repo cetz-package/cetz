@@ -319,5 +319,5 @@
     resolve-function(resolve, ctx, c)
   } else {
     panic("Failed to resolve coordinate of format: " + repr(c))
-  }.map(util.resolve-number.with(ctx))
+  }.map((v) => if type(v) == bool { v } else { util.resolve-number(ctx, v) })
 }
