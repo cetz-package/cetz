@@ -6,39 +6,11 @@
 #import "coordinate.typ"
 #import "styles.typ"
 #import "path-util.typ"
+#import "aabb.typ"
 
 // Aliases for typst types/functions
 // because we override them.
 #let typst-length = length
-
-// Compute bounding box of points
-#let bounding-box(pts, init: none) = {
-  let bounds = init
-  if type(pts) == array {
-    for (i, pt) in pts.enumerate() {
-      if init == none and i == 0 {
-        bounds = (l: pt.at(0), r: pt.at(0), t: pt.at(1), b: pt.at(1))
-      }
-      bounds.l = calc.min(bounds.l, pt.at(0))
-      bounds.r = calc.max(bounds.r, pt.at(0))
-      bounds.t = calc.min(bounds.t, pt.at(1))
-      bounds.b = calc.max(bounds.b, pt.at(1))
-    }
-    } else if type(pts) == dictionary {
-      if init == none {
-        bounds = pts
-      } else {
-        bounds.l = calc.min(bounds.l, pts.l)
-        bounds.r = calc.max(bounds.r, pts.r)
-        bounds.t = calc.min(bounds.t, pts.t)
-        bounds.b = calc.max(bounds.b, pts.b)
-      }
-    } else {
-      panic("Expected array of vectors or bbox dictionary, got: " + repr(pts))
-    }
-  return bounds
-}
-
 
 // Recursive element traversal function which takes the current ctx, bounds and also returns them (to allow modifying function locals of the root scope)
 #let process-element(element, ctx) = {
@@ -86,7 +58,7 @@
       let r = process-element(child, ctx)
       if r != none {
         if r.bounds != none {
-          bounds = bounding-box(r.bounds, init: bounds)
+          bounds = aabb.aabb(r.bounds, init: bounds)
         }
 
         ctx = r.ctx
@@ -140,7 +112,7 @@
         drawable.bounds = drawable.bounds.map(util.apply-transform.with(ctx.transform));
       }
 
-      bounds = bounding-box(drawable.bounds, init: bounds)
+      bounds = aabb.aabb(drawable.bounds, init: bounds)
 
       // Push draw command
       drawables.push(drawable)
@@ -149,18 +121,18 @@
 
   // Add default anchors
   if bounds != none and element.at("add-default-anchors", default: true) {
-    let mid-x = (bounds.l + bounds.r) / 2
-    let mid-y = (bounds.t + bounds.b) / 2
+    let mid = aabb.mid(bounds)
+    let (low: low, high: high) = bounds
     anchors += (
-      center: (mid-x, mid-y, 0),
-      left: (bounds.l, mid-y, 0),
-      right: (bounds.r, mid-y, 0),
-      top: (mid-x, bounds.t, 0),
-      bottom: (mid-x, bounds.b, 0),
-      top-left: (bounds.l, bounds.t, 0),
-      top-right: (bounds.r, bounds.t, 0),
-      bottom-left: (bounds.l, bounds.b, 0),
-      bottom-right: (bounds.r, bounds.b, 0),
+      center: mid,
+      left: (low.at(0), mid.at(1), 0),
+      right: (high.at(0), mid.at(1), 0),
+      top: (mid.at(0), low.at(1), 0),
+      bottom: (mid.at(0), high.at(1), 0),
+      top-left: (low.at(0), low.at(1), 0),
+      top-right: (high.at(0), low.at(1), 0),
+      bottom-left: (low.at(0), high.at(1), 0),
+      bottom-right: (high.at(0), high.at(1), 0),
     )
 
     // Add alternate names
@@ -211,18 +183,8 @@
     }
 
     bounds = if bounds != none {
-      bounding-box(
-        (
-          vector.add(
-            translate,
-            (bounds.l, bounds.t)
-          ),
-          vector.add(
-            translate,
-            (bounds.r, bounds.b)
-          )
-        ),
-      )
+      aabb.aabb((vector.add(translate, (bounds.low.at(0), bounds.low.at(1))),
+                 vector.add(translate, (bounds.high.at(0), bounds.high.at(1)))))
     }
   }
 
@@ -242,10 +204,10 @@
         stroke: red, 
         fill: none, 
         close: true, 
-        ("line", (bounds.l, bounds.t),
-                 (bounds.r, bounds.t),
-                 (bounds.r, bounds.b),
-                 (bounds.l, bounds.b))
+        ("line", bounds.low,
+                 (bounds.high.at(0), bounds.low.at(1)),
+                 bounds.high,
+                 (bounds.low.at(0), bounds.high.at(1)))
       ).first()
     )
   }
@@ -314,7 +276,7 @@
     let r = process-element(element, ctx)
     if r != none {
       if r.bounds != none {
-        bounds = bounding-box(r.bounds, init: bounds)
+        bounds = aabb.aabb(r.bounds, init: bounds)
       }
       ctx = r.ctx
       draw-cmds += r.drawables
@@ -331,13 +293,12 @@
   })
 
   // Final canvas size
-  let width = calc.abs(bounds.r - bounds.l) * length
-  let height = calc.abs(bounds.t - bounds.b) * length
+  let (width, height, ..) = vector.scale(aabb.size(bounds), length)
   
   // Offset all element by canvas grow to the bottom/left
   let transform = matrix.transform-translate(
-    -bounds.l, 
-    -bounds.t, 
+    -bounds.low.at(0), 
+    -bounds.low.at(1), 
     0
   )
   box(
