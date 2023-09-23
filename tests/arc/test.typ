@@ -20,3 +20,18 @@
     })
   }
 }))
+
+
+#box(stroke: 2pt + red, canvas(length: .5cm, {
+  import draw: *
+
+  arc((0, 0), start: 45deg, delta: 270deg, radius: (5, 2), name: "c",
+      anchor: "origin")
+  for-each-anchor("c", a => {
+    if not a in ("below", "above", "default") {
+      circle("c." + a, radius: .1, fill: green)
+      content((rel: (0, .5), to: "c." + a), [#a], frame: "rect",
+              fill: white, stroke: none)
+    }
+  })
+}))
