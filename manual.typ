@@ -594,9 +594,9 @@ circle((rel: (0, -1)), stroke: red)
 ```
 
 == Polar
-Defines a point a `radius` distance away from the origin at the given `angle`. An angle of zero degrees. An angle of zero degrees is to the right, a degree of 90 is upward.
+Defines a point a `radius` distance away from the origin at the given `angle`.
 
-#def-arg("angle", `<angle>`, [The angle of the coordinate.])
+#def-arg("angle", `<angle>`, [The angle of the coordinate. An angle of `0deg` is to the right, a degree of `90deg` is upward. See https://typst.app/docs/reference/layout/angle/ for details.])
 #def-arg("radius", `<number> or <length> or <array of length or number>`, [The distance from the origin. An array can be given, in the form `(x, y)` to define the `x` and `y` radii of an ellipse instead of a circle.])
 
 ```example
