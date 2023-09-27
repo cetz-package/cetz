@@ -293,7 +293,11 @@
 }
 
 
-
+/// Resolve a coordinate to a vector
+///
+/// - ctx (context): CeTZ context object (see get-ctx or group)
+/// - c (coordinate): Coordinate
+/// -> vector
 #let resolve(ctx, c) = {
   let t = resolve-system(c)
 

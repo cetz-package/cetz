@@ -41,6 +41,7 @@
 /// - a (path): Path a
 /// - b (path): Path b
 /// - samples (int): Number of samples to use for bezier curves
+/// -> array List of vectors
 #let path-path(a, b, samples: 25) = {
   import "bezier.typ"
 

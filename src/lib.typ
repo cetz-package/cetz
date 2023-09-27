@@ -3,6 +3,7 @@
 #import "canvas.typ": canvas
 #import "draw.typ"
 #import "coordinate.typ"
+#import "styles.typ"
 
 // Libraries
 #import "lib/axes.typ"
