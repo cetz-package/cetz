@@ -63,3 +63,16 @@
     line((0,0), (calc.sqrt(2*calc.pow(2,2)),0))
   })
 })
+
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  intersections(name: "i", {
+    content((0, 0), [Das ist\ ein Text!], frame: "circle", name: "a")
+    content((2, 1), [Hallo!], frame: "circle", name: "b")
+    // Invisible intersection line
+    line("a", "b", stroke: none)
+  })
+  line("i.0", "i.1", mark: (end: ">"))
+}))
+

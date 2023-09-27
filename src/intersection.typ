@@ -60,12 +60,14 @@
     let pts = ()
     let av = linearize-segment(a)
     let bv = linearize-segment(b)
-    for ai in range(0, av.len() - 1) {
-      for bi in range(0, bv.len() - 1) {
-        let isect = line-line(av.at(ai), av.at(ai + 1),
-                              bv.at(bi), bv.at(bi + 1))
-        if isect != none {
-          pts.push(isect)
+    if av != none and bv != none {
+      for ai in range(0, av.len() - 1) {
+        for bi in range(0, bv.len() - 1) {
+          let isect = line-line(av.at(ai), av.at(ai + 1),
+                                bv.at(bi), bv.at(bi + 1))
+          if isect != none {
+            pts.push(isect)
+          }
         }
       }
     }
