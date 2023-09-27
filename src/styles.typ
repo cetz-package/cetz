@@ -9,6 +9,7 @@
   line: (
     mark: (
       size: .15,
+      angle: 45deg,
       start: none,
       end: none,
       stroke: auto,
@@ -18,6 +19,7 @@
   bezier: (
     mark: (
       size: .15,
+      angle: 45deg,
       start: none,
       end: none,
       stroke: auto,
@@ -26,6 +28,7 @@
   ),
   mark: (
     size: .15,
+    angle: 45deg,
     start: none,
     end: none,
     stroke: auto,

@@ -199,6 +199,105 @@
   return (s, e, c1, c2)
 }
 
+/// Split a cubic bezier into two cubic beziers at t
+///
+/// - s  (vector): Curve start
+/// - e  (vector): Curve end
+/// - c1 (vector): Control point 1
+/// - c2 (vector): Control point 2
+/// - t  (float): t 0..1
+/// -> ((s, e, c1, c2), (s, e, c1, c2))
+#let split(s, e, c1, c2, t) = {
+  t = calc.max(0, calc.min(t, 1))
+
+  let split-rec(pts, t, left, right) = {
+    if pts.len() == 1 {
+      left.push(pts.at(0))
+      right.push(pts.at(0))
+    } else {
+      let new-pts = ()
+      for i in range(0, pts.len() - 1) {
+        if i == 0 {
+          left.push(pts.at(i))
+        }
+        if i == pts.len() - 2 {
+          right.push(pts.at(i + 1))
+        }
+        new-pts.push(vector.add(vector.scale(pts.at(i), (1 - t)),
+                                vector.scale(pts.at(i + 1), t)))
+      }
+      (left, right) = split-rec(new-pts, t, left, right)
+    }
+    return (left, right)
+  }
+  let (left, right) = split-rec((s, c1, c2, e), t, (), ())
+
+  return ((left.at(0), left.at(3), left.at(1), left.at(2)),
+          (right.at(0), right.at(3), right.at(1), right.at(2)))
+}
+
+/// Shorten curve by length d. A negative length shortens from the end.
+///
+/// - s  (vector): Curve start
+/// - e  (vector): Curve end
+/// - c1 (vector): Control point 1
+/// - c2 (vector): Control point 2
+/// - d  (float): Distance to shorten by
+/// -> (s, e, c1, c2) Shortened curve
+#let shorten(s, e, c1, c2, d) = {
+  if d == 0 {
+    return (s, e, c1, c2)
+  }
+
+  let num-samples = 6
+  let split-t = 0
+  if d > 0 {
+    let travel = 0
+    let last = cubic-point(s, e, c1, c2, 0)
+
+    for t in range(0, num-samples + 1) {
+      let t = t / num-samples
+      let curr = cubic-point(s, e, c1, c2, t)
+      let dist = calc.abs(vector.dist(last, curr))
+      travel += dist
+      if travel >= d {
+        split-t = t - (travel - d) / num-samples
+        break
+      }
+      last = curr
+    }
+  } else {
+    let travel = 0
+    let last = cubic-point(s, e, c1, c2, 1)
+
+    for t in range(num-samples, -1, step: -1) {
+      let t = t / num-samples
+      let curr = cubic-point(s, e, c1, c2, t)
+      let dist = calc.abs(vector.dist(last, curr))
+      travel -= dist
+      if travel <= d {
+        split-t = t - (travel - d) / num-samples
+        break
+      }
+      last = curr
+    }
+  }
+
+  let (left, right) = split(s, e, c1, c2, split-t)
+  return if d > 0 { right } else { left }
+}
+
+/// Align curve points pts to the line start-end
+#let align(pts, start, end) = {
+  let (x, y, _) = start
+  let a = -calc.atan2(end.at(1) - y, end.at(0) - x)
+  return pts.map(p => {
+    ((p.at(0) - x) * calc.cos(-a) - (pt.at(1) - y) * calc.sin(-a),
+     (p.at(0) - x) * calc.sin(-a) - (pt.at(1) - y) * calc.cos(-a),
+     p.at(2))
+  })
+}
+
 /// Find cubic extrema
 ///
 /// -> (vector, ..) List of extrema points

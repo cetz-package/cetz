@@ -27,6 +27,9 @@ CeTZ requires Typst 0.8.0.
 - Added `mark: (..)` support for `bezier` and `bezier-through`
 - Changed `content` to allow for a second coordinate to span content between
 - Added `content: (frame: "rect"|"circle")` style for drawing a frame around content
+- Default triangle mark angle changed. It can now be set via the style attribute `angle`.
+- Arrowheads on lines are now offset so the tip of the triangle points exactly on the
+  target position
 
 # 0.1.0
 ## Plot

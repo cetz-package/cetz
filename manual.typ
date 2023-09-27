@@ -372,6 +372,7 @@ line((0, 0), (1, 0), mark: (end: ">"))
 #def-arg("start", `<string>`, [The type of mark to draw at the start of a path.])
 #def-arg("end", `<string>`, [The type of mark to draw at the end of a path.])
 #def-arg("size", `<number>`, default: "0.15", [The size of the marks.])
+#def-arg("angle", `<angle>`, default: 45deg, [Angle for triangle style marks ("<" and ">")])
 
 == Path Transformations <path-transform>
 
