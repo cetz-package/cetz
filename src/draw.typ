@@ -549,6 +549,25 @@
   ),)
 }
 
+// Return anchor dictionary of an ellipse with
+// parameters center, x-radius and y-radius.
+#let _circle-anchors(center, rx, ry) = {
+  let (cx, cy, cz) = center
+  let (ox, oy) = (calc.cos(45deg) * rx,
+                  calc.sin(45deg) * ry)
+  return (
+    top: (cx, cy - ry, cz),
+    top-left: (cx - ox, cy + oy, cz),
+    top-right: (cx + ox, cy + oy, cz),
+    bottom: (cx, cy + ry, cz),
+    bottom-left: (cx - ox, cy - oy, cz),
+    bottom-right: (cx + ox, cy - oy, cz),
+    left: (cx - rx, cy, cz),
+    right: (cx + rx, cy, cz),
+    center: center
+  )
+}
+
 /// Draw an arc
 ///
 /// *Style root:* `arc`.
@@ -596,19 +615,17 @@
       let (x, y, z) = position
       let (rx, ry) = util.resolve-radius(style.radius)
         .map(util.resolve-number.with(ctx))
-      (
-        start: position,
-        end: (
-          x - rx*calc.cos(start-angle) + rx*calc.cos(stop-angle),
-          y - ry*calc.sin(start-angle) + ry*calc.sin(stop-angle),
-          z,
-        ),
-        origin: (
-          x - rx*calc.cos(start-angle),
-          y - ry*calc.sin(start-angle),
-          z,
-        )
-      )
+      let origin = (x - rx * calc.cos(start-angle),
+                    y - ry * calc.sin(start-angle), z)
+
+      let anchors = _circle-anchors(origin, rx, ry)
+      anchors.origin = origin
+      anchors.start = position
+      anchors.end = (
+        x - rx * calc.cos(start-angle) + rx * calc.cos(stop-angle),
+        y - ry * calc.sin(start-angle) + ry * calc.sin(stop-angle),
+        z)
+      return anchors
     },
     render: (ctx, position) => {
       let style = styles.resolve(ctx.style, style, root: "arc")
@@ -644,6 +661,11 @@
     name: name,
     coordinates: (center, ),
     anchor: anchor,
+    custom-anchors-ctx: (ctx, center) => {
+      let style = styles.resolve(ctx.style, style, root: "circle")
+      let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
+      return _circle-anchors(center, rx, ry)
+    },
     render: (ctx, center) => {
       let style = styles.resolve(ctx.style, style, root: "circle")
       let (x, y, z) = center
@@ -700,8 +722,14 @@
 
       (a, b, c, center)
     },
-    custom-anchors: (a, b, c, center) => {
-      (a: a, b: b, c: c, center: center)
+    custom-anchors-ctx: (ctx, a, b, c, center) => {
+      let style = styles.resolve(ctx.style, style.named(), root: "circle")
+      let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
+      let anchors = _circle-anchors(center, rx, ry)
+      anchors.a = a
+      anchors.b = b
+      anchors.c = c
+      return anchors
     },
     render: (ctx, a, b, c, center) => {
       let style = styles.resolve(ctx.style, style.named(), root: "circle")
