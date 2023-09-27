@@ -1054,3 +1054,34 @@ angle(a, b, c, label: n => $#{n/1deg} degree$,
 
 ==== Default `angle` Style
 #raw(repr(angle.default-style))
+
+= Advanced Functions
+
+== Coordinate
+
+#let coord-module = tidy.parse-module(read("src/coordinate.typ"), name: "Coordinate")
+#show-module-fn(coord-module, "resolve")
+
+```example
+line((0,0), (1,1), name: "l")
+get-ctx(ctx => {
+  // Get the vector of coordinate "l.center"
+  content("l", [#cetz.coordinate.resolve(ctx, "l.center")], frame: "rect",
+          stroke: none, fill: white)
+})
+```
+
+== Styles
+
+#let style-module = tidy.parse-module(read("src/styles.typ"), name: "Styles")
+#show-module-fn(style-module, "resolve")
+
+```example
+get-ctx(ctx => {
+  // Get the current line style
+  content((0,0), [#cetz.styles.resolve(ctx.style, (:), root: "line")],
+          frame: "rect",
+          stroke: none, fill: white)
+})
+```
+

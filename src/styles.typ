@@ -50,6 +50,13 @@
   ),
 )
 
+/// Resolve the current style root
+///
+/// - current (style): Current context style (`ctx.style`).
+/// - new (style): Style values overwriting the current style (or an empty dict).
+///                I.e. inline styles passed with an element: `line(.., stroke: red)`.
+/// - root (none, str): Style root element name.
+/// - base (none, style): Base style. For use with custom elements, see `lib/angle.typ` as an example.
 #let resolve(current, new, root: none, base: none) = {
   if base != none {
     if root != none {
