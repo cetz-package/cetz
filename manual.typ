@@ -961,7 +961,7 @@ chart.barchart(size: (10, auto), mode: "clustered",
 ```typc
 import cetz.chart
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-chart.barchart(size: (10, auto), mode: "clustered",
+chart.barchart(size: (10, auto), mode: "stacked",
                x-tick-step: 10, value-key: (..range(1, 4)), data)
 ```)
 
