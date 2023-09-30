@@ -298,27 +298,40 @@
   })
 }
 
-/// Find cubic extrema
+/// Find cubic curve extrema by calculating
+/// the roots of the curves first derivative.
 ///
-/// -> (vector, ..) List of extrema points
+/// -> (array of vector) List of extrema points
 #let cubic-extrema(s, e, c1, c2) = {
-  // Compute roots of d/dx
+  // Compute roots of a single dimension (x, y, z) of the
+  // curve by using the abc formula for finding roots of
+  // the curves first derivative.
   let dim-extrema(a, b, c1, c2) = {
-    if a == b + 3 * c1 - 3 * c2 and b + c1 != 2 * c2 {
-      return ((b + 2 * c1 - 3 * c2) / (2 * (b + c1 - 2 * c2)),)
+    let f0 = 3*(c1 - a)
+    let f1 = 6*(c2 - 2*c1 + a)
+    let f2 = 3*(b - 3*c2 + 3*c1 - a)
+
+    if f1 == 0 and f2 == 0 {
+      return ()
     }
-    if a + 3 * c2 != b + 3 * c1 {
-      let ts = ()
-      for s in (-1, 1) {
-        let r = a * b - a * c2 - b * c1 + c1 * c1 - c1 * c2 + c2 * c2
-        if r >= 0 and (a - b - 3 * c1 + 3 * c2) != 0 {
-          ts.push((s * calc.sqrt(r) + a - 2 * c1 + c2) /
-                  (a - b - 3 * c1 + 3 * c2))
-        }
-      }
-      return ts
+
+    // Linear function
+    if f2 == 0 {
+      return (-f0 / f1,)
     }
-    return ()
+
+    // No real roots
+    let discriminant = f1*f1 - 4*f0*f2
+    if discriminant < 0 {
+      return ()
+    }
+
+    if discriminant == 0 {
+      return (-f1 / (2*f2),)
+    }
+    
+    return ((-f1 - calc.sqrt(discriminant)) / (2*f2),
+            (-f1 + calc.sqrt(discriminant)) / (2*f2))
   }
 
   let pts = ()
@@ -327,6 +340,7 @@
     let ts = dim-extrema(s.at(dim, default: 0), e.at(dim, default: 0),
                          c1.at(dim, default: 0), c2.at(dim, default: 0))
     for t in ts {
+      // Discard any root outside the bezier range
       if t >= 0 and t <= 1 {
         pts.push(cubic-point(s, e, c1, c2, t))
       }
