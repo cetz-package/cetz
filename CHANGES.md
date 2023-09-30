@@ -3,7 +3,13 @@ CeTZ requires Typst 0.8.0.
 ## Draw
 - New `on-layer(layer, body)` function for drawing with a given layer/z-index
 - New `catmull(..)` function for drawing catmull-rom curves
+- Changed default anchors of circles and arcs to anchors on the elliptical path
+- Added style option to specify triangle mark angle
 - Fixed rect anchors if coordinates were swapped
+- Fixed bezier extrema/aabb calculation
+- Fixed bug with `content` and `intersections`
+- Fixed automatic mark offset for lines
+- Fixed problems with style inheritance
 
 ## Libs
 ### Plot
@@ -11,6 +17,10 @@ CeTZ requires Typst 0.8.0.
 - Added `line: <linear|spline|vh|hv|vhv>` support
 - The plot lib tries to linearize data to reduce draw calls
 - Fixed custom tick plot formatting
+- Allow plots without data
+
+### Decorations
+- New decoration library by @RubixDev for drawing braces
 
 # 0.1.1
 ## Libs
