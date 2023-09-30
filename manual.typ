@@ -1055,6 +1055,34 @@ angle(a, b, c, label: n => $#{n/1deg} degree$,
 ==== Default `angle` Style
 #raw(repr(angle.default-style))
 
+== Decorations <decorations>
+#let decorations-module = tidy.parse-module(read("src/lib/decorations.typ"), name: "Decorations")
+
+Various pre-made shapes and lines.
+
+#show-module-fn(decorations-module, "brace")
+```example
+import cetz.decorations: brace
+brace((0, 0), (4, -.5), pointiness: 25deg, amplitude: .8, debug: true)
+brace((0, -.5), (0, -3.5), name: "brace")
+content("brace.content", [$P_1$])
+
+// styling can be passed to the underlying `merge-path` call
+brace((1.5, -2), (4.5, -2), amplitude: 1, pointiness: .5, stroke: orange + 2pt, fill: maroon, close: true, name: "saloon")
+content((rel: (0, -.15), to: "saloon.center"), text(12pt, fill: orange, font: "Linux Libertine", smallcaps[*Saloon*]))
+
+// as part of another path
+set-origin((3, -3))
+merge-path({
+  brace((+1, .5), (+1, -.5), amplitude: .3, pointiness: .5)
+  brace((-1, .5), (-1, -.5), amplitude: .3, pointiness: .5, flip: true)
+}, fill: white, close: true)
+content((0, 0), text(.8em)[Hello, World!])
+```
+
+==== Default `brace` Style
+#decorations.brace-default-style
+
 = Advanced Functions
 
 == Coordinate
