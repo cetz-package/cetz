@@ -12,6 +12,7 @@
 #import "lib/palette.typ"
 #import "lib/angle.typ"
 #import "lib/tree.typ"
+#import "lib/decorations.typ"
 
 // Utility
 #import "vector.typ"
