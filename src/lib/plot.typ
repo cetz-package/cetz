@@ -440,6 +440,8 @@
           ) = draw.group(name: name, ctx => {
   let data = ()
   let anchors = ()
+  let body = if body != none { body } else { () }
+
   for cmd in body {
     assert(type(cmd) == dictionary and "type" in cmd,
            message: "Expected plot sub-command in plot body")
@@ -450,8 +452,9 @@
   assert(axis-style in ("scientific", "school-book", "left"),
          message: "Invalid plot style")
 
-  // Create axes
   let axis-dict = (:)
+
+  // Create axes for data
   for d in data {
     for (i, name) in d.axes.enumerate() {
       if not name in axis-dict {
@@ -465,6 +468,15 @@
       axis.max = util.max(axis.max, ..domain)
 
       axis-dict.at(name) = axis
+    }
+  }
+
+  // Create axes for anchors
+  for a in anchors {
+    for (i, name) in a.axes.enumerate() {
+      if not name in axis-dict {
+        axis-dict.insert(name, axes.axis(min: none, max: none))
+      }
     }
   }
 
