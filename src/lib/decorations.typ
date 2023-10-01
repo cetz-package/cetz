@@ -169,5 +169,5 @@
     }
   })
   // move to end point so the current position after this is the end position
-  move-to(end)
+  move-to(if flip { start } else { end })
 }
