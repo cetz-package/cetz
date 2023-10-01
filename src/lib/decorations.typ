@@ -37,7 +37,7 @@
 ///
 /// - start (coordinate): Start point
 /// - end (coordinate): End point
-/// - flip (bool): Flip the brace around, same as swapping the start and end points
+/// - flip (bool): Flip the brace around
 /// - debug (bool): Show debug lines and points
 /// - name (string, none): Element name
 /// - ..style (style): Style attributes
@@ -51,11 +51,6 @@
 ) = {
   // validate coordinates
   let t = (start, end).map(coordinate.resolve-system)
-
-  // flipping is achieved by swapping the start and end points, the parameter is just for convenience
-  if flip {
-    (start, end) = (end, start)
-  }
 
   group(name: name, ctx => {
     // get styles and validate types and values
@@ -100,6 +95,13 @@
       type(content-offset) in (int, float),
       message: "content-offset must be a number",
     )
+
+    // we flip the brace by inverting the amplitude and pointiness values
+    if flip {
+      amplitude *= -1
+      pointiness *= -1
+      outer-pointiness *= -1
+    }
 
     // 'abcd' is a rectangle with the base line 'ab' and the height 'amplitude'
     let a = start
@@ -169,5 +171,5 @@
     }
   })
   // move to end point so the current position after this is the end position
-  move-to(if flip { start } else { end })
+  move-to(end)
 }

@@ -1077,12 +1077,12 @@ content((rel: (0, -.15), to: "saloon.center"), text(fill: orange, smallcaps[*Sal
 set-origin((2, -5))
 merge-path({
   brace((+1, .5), (+1, -.5), amplitude: .3, pointiness: .5)
-  brace((-1, .5), (-1, -.5), amplitude: .3, pointiness: .5, flip: true)
+  brace((-1, -.5), (-1, .5), amplitude: .3, pointiness: .5)
 }, fill: white, close: true)
 content((0, 0), text(size: 10pt)[Hello, World!])
 
 brace((-1.5, -2.5), (2, -2.5), pointiness: 1, outer-pointiness: 1, stroke: olive, fill: green, name: "hill")
-content((rel: (.3, .1), to: "hill.center"), text[εїз])
+content((rel: (.3, .1), to: "hill.center"), text[*εїз*])
 ```
 
 #STYLING
