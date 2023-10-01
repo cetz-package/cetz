@@ -1083,6 +1083,58 @@ content((0, 0), text(.8em)[Hello, World!])
 ==== Default `brace` Style
 #decorations.brace-default-style
 
+#show-module-fn(decorations-module, "flat-brace")
+```example
+import cetz.decorations: flat-brace
+
+flat-brace((), (x: 5))
+flat-brace((0, 0), (5, 0), flip: true, aspect: .3)
+flat-brace((), (rel: (-2, -1)), name: "a")
+flat-brace((), (0, 0), amplitude: 1, curves: 1.5, outer-curves: .5)
+content("a.content", [$P_2$])
+
+flat-brace((0, -3), (5, -3), debug: true, amplitude: 1, aspect: .4, curves: (1.5, .9, 1, .1), outer-curves: (1, .3, .1, .7))
+
+// triangle and square braces
+flat-brace((0, -4), (2.4, -4), curves: (auto, 0, 0, 0))
+flat-brace((2.6, -4), (5, -4), curves: 0)
+
+merge-path(close: true, fill: white, {
+  move-to((.5, -6))
+  flat-brace((), (rel: (1, 1)))
+  flat-brace((), (rel: (2, 0)), flip: true, name: "top")
+  flat-brace((), (rel: (1, -1)))
+  flat-brace((), (rel: (-1, -1)))
+  flat-brace((), (rel: (-2, 0)), flip: true, name: "bottom")
+  flat-brace((), (rel: (-1, 1)))
+})
+content(("top.spike", .5, "bottom.spike"), [Hello, World!])
+```
+
+#STYLING
+
+#def-arg("amplitude", `<number>`, default: decorations.flat-brace-default-style.amplitude, [Determines how much the brace rises above the base line.])
+#def-arg("aspect", `<number>`, default: decorations.flat-brace-default-style.aspect, [Determines the fraction of the total length where the spike will be placed.])
+#block(breakable: false, def-arg("curves", `<array> or <number>`, default: decorations.flat-brace-default-style.curves, [
+  Customizes the control points of the curved parts.
+  Setting a single number is the same as setting ```typc (num, auto, auto, auto)```.
+  Setting any item to #auto will use its default value.
+  The first item specifies the curve widths as a fraction of the amplitude.
+  The second item specifies the length of the green and blue debug lines as a fraction of the curve's width.
+  The third item specifies the vertical offset of the red and purple debug lines as a fraction of the curve's height.
+  The fourth item specifies the horizontal offset of the red and purple debug lines as a fraction of the curve's width.
+]))
+#def-arg("outer-curves", `<array> or <number> or <auto>`, default: decorations.flat-brace-default-style.outer-curves, [
+  Customizes the control points of just the outer two curves.
+  Overrides settings from `curves`.
+  Setting the entire value or individual items to #auto uses the values from `curves` as fallbacks.
+])
+#def-arg("content-offset", `<number>`, default: decorations.flat-brace-default-style.content-offset, [Offset of the `content` anchor from the spike.])
+#def-arg("debug-text-size", `<length>`, default: decorations.flat-brace-default-style.debug-text-size, [Font size of displayed debug points when `debug` is #true.])
+
+==== Default `flat-brace` Style
+#decorations.flat-brace-default-style
+
 = Advanced Functions
 
 == Coordinate
