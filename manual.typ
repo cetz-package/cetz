@@ -1091,6 +1091,7 @@ content((rel: (.3, .1), to: "hill.center"), text[*εїз*])
 #def-arg("pointiness", `<number> or <angle>`, default: 15deg, [How pointy the spike should be. #0deg or `0` for maximum pointiness, #90deg or `1` for minimum.])
 #def-arg("outer-pointiness", `<number> or <angle> or <auto>`, default: 0, [How pointy the outer edges should be. #0deg or `0` for maximum pointiness (allowing for a smooth transition to a straight line), #90deg or `1` for minimum. Setting this to #auto will use the value set for `pointiness`.])
 #def-arg("content-offset", `<number>`, default: .3, [Offset of the `content` anchor from the spike.])
+#def-arg("debug-text-size", `<length>`, default: 6pt, [Font size of displayed debug points when `debug` is #true.])
 
 ==== Default `brace` Style
 #decorations.brace-default-style
