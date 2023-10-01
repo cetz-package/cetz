@@ -1063,22 +1063,34 @@ Various pre-made shapes and lines.
 #show-module-fn(decorations-module, "brace")
 ```example
 import cetz.decorations: brace
-brace((0, 0), (4, -.5), pointiness: 25deg, amplitude: .8, debug: true)
+let text = text.with(size: 12pt, font: "Linux Libertine")
+
+brace((0, 0), (4, -.5), pointiness: 25deg, outer-pointiness: auto, amplitude: .8, debug: true)
 brace((0, -.5), (0, -3.5), name: "brace")
 content("brace.content", [$P_1$])
 
 // styling can be passed to the underlying `merge-path` call
-brace((1.5, -2), (4.5, -2), amplitude: 1, pointiness: .5, stroke: orange + 2pt, fill: maroon, close: true, name: "saloon")
-content((rel: (0, -.15), to: "saloon.center"), text(12pt, fill: orange, font: "Linux Libertine", smallcaps[*Saloon*]))
+brace((1, -3), (4, -3), amplitude: 1, pointiness: .5, stroke: orange + 2pt, fill: maroon, close: true, name: "saloon")
+content((rel: (0, -.15), to: "saloon.center"), text(fill: orange, smallcaps[*Saloon*]))
 
 // as part of another path
-set-origin((3, -3))
+set-origin((2, -5))
 merge-path({
   brace((+1, .5), (+1, -.5), amplitude: .3, pointiness: .5)
   brace((-1, .5), (-1, -.5), amplitude: .3, pointiness: .5, flip: true)
 }, fill: white, close: true)
-content((0, 0), text(.8em)[Hello, World!])
+content((0, 0), text(size: 10pt)[Hello, World!])
+
+brace((-1.5, -2.5), (2, -2.5), pointiness: 1, outer-pointiness: 1, stroke: olive, fill: green, name: "hill")
+content((rel: (.3, .1), to: "hill.center"), text[εїз])
 ```
+
+#STYLING
+
+#def-arg("amplitude", `<number>`, default: .7, [Determines how much the brace rises above the base line.])
+#def-arg("pointiness", `<number> or <angle>`, default: 15deg, [How pointy the spike should be. #0deg or `0` for maximum pointiness, #90deg or `1` for minimum.])
+#def-arg("outer-pointiness", `<number> or <angle> or <auto>`, default: 0, [How pointy the outer edges should be. #0deg or `0` for maximum pointiness (allowing for a smooth transition to a straight line), #90deg or `1` for minimum. Setting this to #auto will use the value set for `pointiness`.])
+#def-arg("content-offset", `<number>`, default: .3, [Offset of the `content` anchor from the spike.])
 
 ==== Default `brace` Style
 #decorations.brace-default-style
