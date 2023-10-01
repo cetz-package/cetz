@@ -20,6 +20,7 @@
   pointiness: 15deg,
   outer-pointiness: 0,
   content-offset: .3,
+  debug-text-size: 6pt,
 )
 
 /// Draw a curly brace between two points.
@@ -166,7 +167,7 @@
     // label all points in debug mode
     if debug {
       for (name, point) in points {
-        content(point, box(fill: luma(240), inset: .5pt, text(6pt, raw(name))))
+        content(point, box(fill: luma(240), inset: .5pt, text(style.debug-text-size, raw(name))))
       }
     }
   })
