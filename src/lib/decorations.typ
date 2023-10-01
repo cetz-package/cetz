@@ -60,7 +60,7 @@
     let amplitude = style.amplitude
     assert(
       type(amplitude) in (int, float),
-      message: "amplitude must be a number",
+      message: "amplitude must be a number, got " + repr(amplitude),
     )
 
     let pointiness = style.pointiness
@@ -69,7 +69,7 @@
         and pointiness >= 0 and pointiness <= 1
       or type(pointiness) == angle
         and pointiness >= 0deg and pointiness <= 90deg,
-      message: "pointiness must be a factor between 0 and 1 or an angle between 0deg and 90deg",
+      message: "pointiness must be a factor between 0 and 1 or an angle between 0deg and 90deg, got " + repr(pointiness),
     )
     let pointiness = if type(pointiness) == angle { pointiness } else { pointiness * 90deg }
 
@@ -80,7 +80,7 @@
         and outer-pointiness >= 0 and outer-pointiness <= 1
       or type(outer-pointiness) == angle
         and outer-pointiness >= 0deg and outer-pointiness <= 90deg,
-      message: "outer-pointiness must be a factor between 0 and 1 or an angle between 0deg and 90deg or auto",
+      message: "outer-pointiness must be a factor between 0 and 1 or an angle between 0deg and 90deg or auto, got " + repr(outer-pointiness),
     )
     let outer-pointiness = if outer-pointiness == auto {
       pointiness
@@ -93,7 +93,7 @@
     let content-offset = style.content-offset
     assert(
       type(content-offset) in (int, float),
-      message: "content-offset must be a number",
+      message: "content-offset must be a number, got " + repr(content-offset),
     )
 
     // we flip the brace by inverting the amplitude and pointiness values
