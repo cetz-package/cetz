@@ -1125,7 +1125,7 @@ content(("top.spike", .5, "bottom.spike"), [Hello, World!])
   The fourth item specifies the horizontal offset of the red and purple debug lines as a fraction of the curve's width.
 ]))
 #def-arg("outer-curves", `<array> or <number> or <auto>`, default: decorations.flat-brace-default-style.outer-curves, [
-  Customizes the control points of just the outer two curves.
+  Customizes the control points of just the outer two curves (just the blue and purple debug lines).
   Overrides settings from `curves`.
   Setting the entire value or individual items to #auto uses the values from `curves` as fallbacks.
 ])
