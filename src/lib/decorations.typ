@@ -174,3 +174,187 @@
   // move to end point so the current position after this is the end position
   move-to(end)
 }
+
+#let flat-brace-default-style = (
+  amplitude: .3,
+  aspect: .5,
+  curves: (1, .5, .6, .15),
+  outer-curves: auto,
+  content-offset: .3,
+  debug-text-size: 6pt,
+)
+
+/// Draw a flat curly brace between two points.
+///
+/// This mimics the braces from TikZ's `decorations.pathreplacing` library#footnote[https://github.com/pgf-tikz/pgf/blob/6e5fd71581ab04351a89553a259b57988bc28140/tex/generic/pgf/libraries/decorations/pgflibrarydecorations.pathreplacing.code.tex#L136-L185].
+/// In contrast to @@brace(), these braces use straight line segments, resulting
+/// in better looks for long braces with a small amplitude.
+///
+/// *Style root:* `flat-brace`.
+///
+/// *Anchors:*
+///   / start:   Where the brace starts, same as the `start` parameter.
+///   / end:     Where the brace end, same as the `end` parameter.
+///   / spike:   Point of the spike's top.
+///   / content: Point to place content/text at, in front of the spike.
+///   / center:  Center of the enclosing rectangle.
+///   / (a-h):   Debug points `a` through `h`.
+///
+/// - start (coordinate): Start point
+/// - end (coordinate): End point
+/// - flip (bool): Flip the brace around
+/// - debug (bool): Show debug lines and points
+/// - name (string, none): Element name
+/// - ..style (style): Style attributes
+#let flat-brace(
+  start,
+  end,
+  flip: false,
+  debug: false,
+  name: none,
+  ..style,
+) = {
+  // validate coordinates
+  let t = (start, end).map(coordinate.resolve-system)
+
+  group(name: name, ctx => {
+    // get styles and validate their types and values
+    let style = util.merge-dictionary(flat-brace-default-style,
+      styles.resolve(ctx.style, style.named(), root: "flat-brace"))
+
+    let amplitude = style.amplitude
+    assert(
+      type(amplitude) in (int, float),
+      message: "amplitude must be a number, got " + repr(amplitude),
+    )
+    // we achieve flipping by inverting the amplitude
+    if flip { amplitude *= -1 }
+
+    let aspect = style.aspect
+    assert(
+      type(aspect) in (int, float)
+        and aspect >= 0 and aspect <= 1,
+      message: "aspect must be a factor between 0 and 1, got " + repr(aspect),
+    )
+
+    let inner-curves = style.curves
+    assert(
+      type(inner-curves) in (int, float)
+      or type(inner-curves) == array
+        and inner-curves.all(v => type(v) in (int, float, type(auto))),
+      message: "curves must be a number, or an array of numbers or auto, got " + repr(inner-curves),
+    )
+    if type(inner-curves) in (int, float) { inner-curves = (inner-curves,) }
+    while inner-curves.len() < flat-brace-default-style.curves.len() {
+      inner-curves.push(auto)
+    }
+    inner-curves = inner-curves.enumerate().map(((idx, v)) => if v == auto {
+      flat-brace-default-style.curves.at(idx)
+    } else { v })
+
+    let outer-curves = style.outer-curves
+    assert(
+      type(outer-curves) in (int, float, type(auto))
+      or type(outer-curves) == array
+        and outer-curves.all(v => type(v) in (int, float, type(auto))),
+      message: "outer-curves must be auto, a number, or an array of numbers or auto, got " + repr(outer-curves),
+    )
+    if outer-curves == auto {
+      outer-curves = inner-curves
+    } else {
+      if type(outer-curves) in (int, float) { outer-curves = (outer-curves,) }
+      while outer-curves.len() < inner-curves.len() { outer-curves.push(auto) }
+      outer-curves = outer-curves.enumerate()
+        .map(((idx, v)) => if v == auto { inner-curves.at(idx) } else { v })
+    }
+
+    let content-offset = style.content-offset
+    assert(
+      type(content-offset) in (int, float),
+      message: "content-offset must be a number, got " + repr(content-offset),
+    )
+
+    // all the following code assumes the brace to start at (0, 0), growing to the right,
+    // pointing upwards, so we set the origin and rotate the entire group accordingly
+    let start = coordinate.resolve(ctx, start)
+    let end = coordinate.resolve(ctx, end)
+    set-origin(start)
+    rotate(vector.angle2(start, end))
+
+    let length = vector.dist(start, end)
+    let middle = aspect * length
+    let horizon = amplitude / 2
+
+    let normal-outer = calc.abs(amplitude * outer-curves.at(0))
+    let normal-inner = calc.abs(amplitude * inner-curves.at(0))
+    let length-left  =          middle
+    let length-right = length - middle
+
+    // width of left-outer, left-inner, right-inner, right-outer curve segments
+    let lo = if 2 * normal-outer > length-left  { length-left  / 2 } else { normal-outer }
+    let li = if 2 * normal-inner > length-left  { length-left  / 2 } else { normal-inner }
+    let ri = if 2 * normal-inner > length-right { length-right / 2 } else { normal-inner }
+    let ro = if 2 * normal-outer > length-right { length-right / 2 } else { normal-outer }
+
+    // 'a' and 'b' are start and end
+    let a = (     0, 0)
+    let b = (length, 0)
+    // 'c' is the spike's top
+    let c = (middle, amplitude)
+    // 'de' is the left line, 'fg' is the right line
+    let d = (         lo, horizon)
+    let e = (middle - li, horizon)
+    let f = (middle + ri, horizon)
+    let g = (length - ro, horizon)
+    // 'h' is where to place content, above the spike
+    let h = (middle, amplitude + content-offset)
+
+    // list of all named points to show in debug mode
+    let points = (a: a, b: b, c: c, d: d, e: e, f: f, g: g, h: h)
+
+    // bezier control points: in 'dlc' 'd' stands for the point 'd' where the control point is used,
+    // 'l' stands for left of spike, 'c' stands for control point
+    let dlc = (         (1 - outer-curves.at(1)) * lo, horizon)
+    let elc = (middle - (1 - inner-curves.at(1)) * li, horizon)
+    let frc = (middle + (1 - inner-curves.at(1)) * ri, horizon)
+    let grc = (length - (1 - outer-curves.at(1)) * ro, horizon)
+    let alc = (              outer-curves.at(3)  * lo,      outer-curves.at(2) / 2  * amplitude)
+    let clc = (middle -      inner-curves.at(3)  * li, (1 - inner-curves.at(2) / 2) * amplitude)
+    let crc = (middle +      inner-curves.at(3)  * ri, (1 - inner-curves.at(2) / 2) * amplitude)
+    let brc = (length -      outer-curves.at(3)  * ro,      outer-curves.at(2) / 2  * amplitude)
+
+    merge-path({
+      bezier(a, d, alc, dlc)
+      bezier(e, c, elc, clc)
+      bezier(c, f, crc, frc)
+      bezier(g, b, grc, brc)
+    })
+    // define some named anchors
+    anchor("spike", c)
+    anchor("content", h)
+    anchor("start", a)
+    anchor("end", b)
+    anchor("center", (d, .5, g))
+    // define anchors for all points
+    for (name, point) in points {
+      anchor(name, point)
+    }
+    if debug {
+      // show bezier control points using colored lines
+      line(stroke: purple, a, alc)
+      line(stroke: blue,   d, dlc)
+      line(stroke: olive,  e, elc)
+      line(stroke: red,    c, clc)
+      line(stroke: red,    c, crc)
+      line(stroke: olive,  f, frc)
+      line(stroke: blue,   g, grc)
+      line(stroke: purple, b, brc)
+      // show all named points
+      for (name, point) in points {
+        content(point, box(fill: luma(240), inset: .5pt, text(style.debug-text-size, raw(name))))
+      }
+    }
+  })
+  // move to end point so the current position after this is the end position
+  move-to(end)
+}
