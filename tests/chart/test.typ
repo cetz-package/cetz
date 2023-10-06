@@ -118,3 +118,40 @@
                     bar-style: palette.blue,
                     data2)
 }))
+
+#box(stroke: 2pt + red, canvas({
+  chart.columnchart(
+    size: (auto, 2),
+    y-tick-step: .5,
+    y-max: 1.0,
+    (([$ cal(P)_+ $], 4 / 13), ([$ cal(P)_- $], 9 / 13))
+  )
+  
+  draw.set-origin((4, 0))
+
+  chart.barchart(
+    size: (3, auto),
+    x-tick-step: .5,
+    x-max: 1.0,
+    (([$ cal(P)_+ $], 4 / 13), ([$ cal(P)_- $], 9 / 13))
+  )
+}))
+
+
+#box(stroke: 2pt + red, canvas({
+  chart.columnchart(
+    size: (auto, 2),
+    y-tick-step: .5,
+    y-max: 1.0,
+    (([$ cal(P)_+ $], -4 / 13), ([$ cal(P)_- $], 9 / 13))
+  )
+
+  draw.set-origin((4, 0))
+
+  chart.barchart(
+    size: (3, auto),
+    x-tick-step: .5,
+    x-max: 1.0,
+    (([$ cal(P)_+ $], 4 / 13), ([$ cal(P)_- $], -9 / 13))
+  )
+}))

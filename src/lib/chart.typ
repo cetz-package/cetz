@@ -40,6 +40,24 @@
   }
 )
 
+// Functions for min value calculation
+#let barchart-min-value-fn = (
+  basic: (data, value-key) => {
+    calc.min(0, ..data.map(t => t.at(value-key)))
+  },
+  clustered: (data, value-key) => {
+    calc.min(0, ..data.map(t => calc.max(
+      ..value-key.map(k => t.at(k)))))
+  },
+  stacked: (data, value-key) => {
+    calc.min(0, ..data.map(t =>
+      value-key.map(k => t.at(k)).sum()))
+  },
+  stacked100: (..) => {
+    0
+  }
+)
+
 /// Draw a bar chart. A bar chart is a chart that represents data with
 /// rectangular bars that grow from left to right, proportional to the values
 /// they represent. For examples see @barchart-examples.
@@ -78,6 +96,8 @@
 ///                    
 ///                    `(1, 5, 10)` or `((1, [One]), (2, [Two]), (10, [Ten]))`
 /// - x-unit (content,auto): Tick suffix added to each tick label
+/// - x-min (number,auto): X axis minimum value
+/// - x-max (number,auto): X axis maximum value
 /// - x-label (content,none): X axis label
 /// - y-label (content,none): Y axis label
 #let barchart(data,
@@ -90,6 +110,8 @@
               x-tick-step: auto,
               x-ticks: (),
               x-unit: auto,
+              x-min: auto,
+              x-max: auto,
               x-label: none,
               y-label: none,
               ) = {
@@ -109,6 +131,13 @@
   }
 
   let max-value = (barchart-max-value-fn.at(mode))(data, value-key)
+  if x-max != auto {
+    max-value = x-max
+  }
+  let min-value = (barchart-min-value-fn.at(mode))(data, value-key)
+  if x-min != auto {
+    min-value = x-min
+  }
 
   let y-tic-list = data.enumerate().map(((i, t)) => {
     (i, t.at(label-key))
@@ -119,7 +148,7 @@
     x-unit = if mode == "stacked100" {[%]} else []
   }
   
-  let x = axes.axis(min: 0, max: max-value,
+  let x = axes.axis(min: min-value, max: max-value,
                     label: x-label,
                     ticks: (grid: true, step: x-tick-step,
                             minor-step: none,
@@ -243,6 +272,8 @@
 ///                    `(1, 5, 10)` or `((1, [One]), (2, [Two]), (10, [Ten]))`
 /// - y-unit (content,auto): Tick suffix added to each tick label
 /// - y-label (content,none): Y axis label
+/// - y-min (number,auto): Y axis minimum value
+/// - y-max (number,auto): Y axis maximum value
 /// - x-label (content,none): x axis label
 #let columnchart(data,
                  label-key: 0,
@@ -256,6 +287,8 @@
                  y-ticks: (),
                  y-unit: auto,
                  y-label: none,
+                 y-min: auto,
+                 y-max: auto,
                  ) = {
   import draw: *
 
@@ -273,6 +306,13 @@
   }
 
   let max-value = (barchart-max-value-fn.at(mode))(data, value-key)
+  if y-max != auto {
+    max-value = y-max
+  }
+  let min-value = (barchart-min-value-fn.at(mode))(data, value-key)
+  if y-min != auto {
+    min-value = y-min
+  }
 
   let x-tic-list = data.enumerate().map(((i, t)) => {
     (i, t.at(label-key))
@@ -289,7 +329,7 @@
                             step: none,
                             minor-step: none,
                             list: x-tic-list))
-  let y = axes.axis(min: 0, max: max-value,
+  let y = axes.axis(min: min-value, max: max-value,
                     label: y-label,
                     ticks: (grid: true, step: y-tick-step,
                             minor-step: none,
