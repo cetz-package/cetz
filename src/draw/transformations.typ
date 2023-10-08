@@ -1,5 +1,7 @@
 #import "/src/coordinate.typ"
 #import "/src/matrix.typ"
+#import "/src/vector.typ"
+#import "/src/util.typ"
 
 #let rotate(angle) = {
   (

@@ -10,11 +10,19 @@
 #import "styles.typ"
 #import "process.typ"
 
-#let canvas(length: 1cm, debug: false, background: none, body) = style(st => {
+#let canvas(length: 1cm, debug: false, background: none, body) = layout(ly => style(st => {
   assert(
     type(body) == "array",
     message: "Incorrect type for body: " + repr(type(body)),
   )
+
+  assert(type(length) in (typst-length, ratio), message: "Expected `length` to be of type length or ratio, got " + repr(length))
+  let length = if type(length) == ratio {
+    length * ly.width
+  } else {
+    measure(line(length: length), st).width
+  }
+
 
   let ctx = (
     typst-style: st,
@@ -105,4 +113,4 @@
       })
     }
   }))
-})
+}))

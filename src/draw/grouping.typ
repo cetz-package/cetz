@@ -1,6 +1,12 @@
 #import "/src/process.typ"
 #import "transformations.typ": move-to
 #import "/src/intersection.typ"
+#import "/src/path-util.typ"
+#import "/src/styles.typ"
+#import "/src/drawable.typ"
+#import "/src/vector.typ"
+#import "/src/util.typ"
+#import "/src/coordinate.typ"
 
 #let intersections(name, body, samples: 10) = {
   samples = calc.clamp(samples, 2, 2500)
@@ -51,6 +57,7 @@
       return (
         ctx: ctx,
         name: name,
+        anchor: anchor,
         anchors: group-ctx.groups.last().anchors,
         // bounds: bounds,
         drawables: drawables,
@@ -106,7 +113,7 @@
   assert(type(name) == str, message: "Name must be of type string")
   
   return (ctx => {
-    let (ctx, drawables) = process.many(ctx, path, do-transform: false)
+    let (ctx, drawables) = process.many(ctx, path)
     
     let out = (:)
     assert(drawables.first().type == "path")
@@ -123,7 +130,7 @@
 
 #let set-ctx(callback) = {
   assert(type(callback) == function)
-  (ctx => (ctx: callback(ctx)))
+  return (ctx => (ctx: callback(ctx)),)
 }
 
 #let get-ctx(callback) = {
@@ -159,6 +166,49 @@
     return (
       ctx: ctx,
       drawables: drawables
+    )
+  },)
+}
+
+#let place-marks(path, ..marks-style, name: none) = {
+  let (marks, style) = (marks-style.pos(), marks-style.named())
+  assert(type(path) == array and path.len() == 1 and type(path.first()) == function)
+  path = path.first()
+  return (ctx => {
+    let (ctx, drawables) = process.element(ctx, path)
+    let paths = drawables.filter(d => d.type == "path")
+    assert(paths.len() > 0, message: "Cannot place marks on an element with no path.")
+
+    let path = paths.first()
+    let anchors = (
+      start: path-util.point-on-path(path.segments, 0),
+      end: path-util.point-on-path(path.segments, 1)
+    )
+
+    let style = styles.resolve(ctx.style, style, root: "mark")
+
+    for mark in marks {
+      let (pos, dir) = path-util.direction(path.segments, mark.pos)
+      drawables.push(
+        drawable.mark(
+          vector.add(pos, dir),
+          pos,
+          mark.mark,
+          style.size,
+          fill: style.fill,
+          stroke: style.stroke
+        )
+      )
+      if "name" in mark {
+        anchors.insert(m.name, path-util.point-on-path(path, mark.pos))
+      }
+    }
+
+    return (
+      ctx: ctx,
+      name: name,
+      drawables: drawables,
+      anchors: anchors,
     )
   },)
 }

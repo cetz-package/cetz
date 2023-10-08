@@ -1,6 +1,6 @@
 // CeTZ Library for drawing graph axes
 #import "../util.typ"
-#import "../draw.typ"
+#import "../draw/mod.typ" as draw
 #import "../vector.typ"
 #import "../styles.typ"
 
@@ -431,10 +431,10 @@
             position, 
             axis.label, 
             angle: angle, 
-            anchor: anchor, 
+            // anchor: anchor, 
             padding: style.label.offset
           ),
-          anchor: anchor
+          anchor: anchor, 
         )
       }
     }

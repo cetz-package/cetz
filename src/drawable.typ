@@ -13,6 +13,8 @@
       })
     } else if drawable.type == "content" {
       drawable.pos = util.apply-transform(transform, drawable.pos)
+    } else {
+      panic()
     }
     (drawable,)
   }

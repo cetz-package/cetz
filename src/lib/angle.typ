@@ -26,8 +26,7 @@
 
   return (ctx => {
     let style = styles.resolve(ctx.style, style, root: "angle", base: default-style)
-    let (ctx, coordinates) = coordinate.resolve-many(ctx, (origin, a, b))
-    let (origin, a, b) = coordinates
+    let (ctx, origin, a, b) = coordinate.resolve(ctx, origin, a, b)
     assert(
       origin.at(2, default: 0) == 0 and
       a.at(2, default: 0) == 0 and
@@ -139,7 +138,7 @@
     return (
       ctx: ctx,
       name: name,
-      anchors: util.apply-transform-many(ctx.transform, (
+      anchors: util.apply-transform(ctx.transform, (
         origin: origin,
         a: a,
         b: b,

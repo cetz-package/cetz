@@ -14,6 +14,7 @@
 #import "lib/chart.typ"
 #import "lib/palette.typ"
 #import "lib/angle.typ"
+#import "lib/tree.typ"
 
 // // These are aliases to prevent name collisions
 // // You can use them for importing the module into the

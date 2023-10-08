@@ -2,7 +2,9 @@
 
 #import "axes.typ"
 #import "palette.typ"
-#import "../draw.typ"
+#import "../draw/mod.typ" as draw
+#import "../util.typ"
+#import "../styles.typ"
 
 // Styles
 #let barchart-default-style = (
@@ -119,12 +121,19 @@
     x-unit = if mode == "stacked100" {[%]} else []
   }
   
-  let x = axes.axis(min: 0, max: max-value,
-                    label: x-label,
-                    ticks: (grid: true, step: x-tick-step,
-                            minor-step: none,
-                            unit: x-unit, decimals: 1,
-                            list: x-ticks))
+  let x = axes.axis(
+    min: 0,
+    max: max-value,
+    label: x-label,
+    ticks: (
+      grid: true, 
+      step: x-tick-step,
+      minor-step: none,
+      unit: x-unit,
+      decimals: 1,
+      list: x-ticks
+    )
+  )
   let y = axes.axis(min: data.len(), max: -1,
                     label: y-label,
                     ticks: (grid: true,
@@ -133,9 +142,11 @@
                             list: y-tic-list))
 
   let basic-draw-bar(idx, y, item, ..style) = {
-    rect((0, y - bar-width / 2),
-         (rel: (item.at(value-key), bar-width)),
-         ..bar-style(idx))
+    rect(
+      (0, y - bar-width / 2),
+      (rel: (item.at(value-key), bar-width)),
+      ..bar-style(idx)
+    )
   }
 
   let clustered-draw-bar(idx, y, item, ..style) = {
@@ -144,9 +155,11 @@
     let bar-width = bar-width / sub-values.len()
 
     for (sub-idx, sub) in sub-values.enumerate() {
-      rect((0, y - y-offset + sub-idx * bar-width),
-           (rel: (sub, bar-width)),
-           ..bar-style(sub-idx))
+      rect(
+        (0, y - y-offset + sub-idx * bar-width),
+        (rel: (sub, bar-width)),
+        ..bar-style(sub-idx)
+      )
     }
   }
 
@@ -185,16 +198,17 @@
     let style = util.merge-dictionary(barchart-default-style,
       styles.resolve(ctx.style, (:), root: "barchart"))
 
-    axes.scientific(size: size,
-                    left: y,
-                    right: none,
-                    bottom: x,
-                    top: none,
-                    frame: "set",
-                    ..style.axes)
+    axes.scientific(
+      size: size,
+      left: y,
+      right: none,
+      bottom: x,
+      top: none,
+      frame: "set",
+      ..style.axes
+    )
     if data.len() > 0 {
       if type(bar-style) != function { bar-style = ((i) => bar-style) }
-
       axes.axis-viewport(size, x, y, {
         for (i, row) in data.enumerate() {
           draw-data(i, i, row)

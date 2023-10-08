@@ -194,9 +194,11 @@
   // .. sy .. .
   // .. .. sz .
   // .. .. .. 1
-  let sx = ctx.transform.at(0).at(0)
-  let sy = ctx.transform.at(1).at(1)
+  // let sx = ctx.transform.at(0).at(0)
+  // let sy = ctx.transform.at(1).at(1)
 
-  return (calc.abs(size.width / ctx.length / sx),
-          calc.abs(size.height / ctx.length / sy))
+  return (
+    calc.abs(size.width / ctx.length),
+    calc.abs(size.height / ctx.length)
+  )
 }

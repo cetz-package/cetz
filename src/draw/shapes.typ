@@ -7,7 +7,12 @@
 #import "/src/path-util.typ"
 #import "/src/util.typ"
 #import "/src/vector.typ"
+#import "/src/process.typ"
 #import "/src/bezier.typ" as bezier_
+
+#import "transformations.typ": *
+#import "styling.typ": *
+#import "grouping.typ": *
 
 
 
@@ -178,8 +183,7 @@
 }
 
 #let line(..pts-style, close: false, name: none) = {
-  // Extra positional arguments from the pts-style
-  // sink are interpreted as coordinates.
+  // Extra positional arguments from the pts-style sink are interpreted as coordinates.
   let pts = pts-style.pos()
   let style = pts-style.named()
   
@@ -191,6 +195,10 @@
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
     let style = styles.resolve(ctx.style, style, root: "line")
+    let anchors = (
+      start: pts.first(),
+      end: pts.last()
+    )
     
     let drawables = (drawable.path(
       (path-util.line-segment(pts),),
@@ -222,6 +230,7 @@
     return (
       ctx: ctx,
       name: name,
+      anchors: util.apply-transform(ctx.transform, anchors),
       drawables: drawable.apply-transform(ctx.transform, drawables)
     )
   },)
@@ -402,12 +411,13 @@
     drawables.push(
       drawable.content(
         anchors.center,
-        calc.abs(calc.sin(angle) * height + calc.cos(angle) * width) + padding * 2,
-        calc.abs(calc.cos(angle) * height + calc.sin(angle) * width) + padding * 2,
+        calc.abs(calc.sin(angle) * height + calc.cos(angle) * width),
+        calc.abs(calc.cos(angle) * height + calc.sin(angle) * width),
         typst-rotate(angle, 
           block(
             width: width * ctx.length,
             height: height * ctx.length,
+            inset: padding * ctx.length,
             body
           )
         )
@@ -488,7 +498,7 @@
         ctx: ctx,
         name: name,
         anchor: anchor,
-        anchors: anchors,
+        anchors: util.apply-transform(ctx.transform, anchors),
         drawables: drawable.apply-transform(ctx.transform, drawables),
       )
     },
@@ -662,4 +672,28 @@
       )
     },
   )
+}
+
+#let shadow(body, ..style) = {
+  assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
+  style = style.named()
+  return (ctx => {
+    let style = styles.resolve(ctx.style, style, root: "shadow")
+
+    let body = {
+      group({
+        set-style(fill: style.color, stroke: style.color)
+        translate((style.offset-x, style.offset-y, 0))
+        body
+      })
+      body
+    }
+
+    let (ctx, drawables, ..) = process.many(ctx, body)
+
+    return (
+      ctx: ctx,
+      drawables: drawables
+    )
+  },)
 }

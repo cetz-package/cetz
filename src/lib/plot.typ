@@ -3,7 +3,7 @@
 #import "axes.typ"
 #import "palette.typ"
 #import "../util.typ"
-#import "../draw.typ"
+#import "../draw/mod.typ" as draw
 #import "../vector.typ"
 #import "../bezier.typ"
 
