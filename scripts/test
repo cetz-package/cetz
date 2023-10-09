@@ -18,7 +18,7 @@ while :; do
 done
 
 
-TYPST_VERSION="v0.6.0"
+TYPST_VERSION="v0.8.0"
 TYPST_BASE_URL="https://github.com/typst/typst/releases/download"
 TYPST_ARCHIVE="typst-x86_64-unknown-linux-musl.tar.xz"
 
@@ -117,7 +117,7 @@ function run_test()
   if (
     cd "$1"
     local NAME
-    NAME="$(basename "$1")"
+    NAME="$(realpath "$1" --relative-to "$TEST_ROOT")"
 
     echo "[TEST] ${NAME} ..."
 
@@ -152,7 +152,7 @@ if ! hash parallel 2>/dev/null; then
 fi
 
 function tests() {
-  find "$TEST_ROOT" -type d
+  find "$TEST_ROOT" -type f -name "test.typ" -exec dirname {} \;
 }
 if [[ "$MODE" == "test" ]]; then
   tests | parallel 'run_test {}'
