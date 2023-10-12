@@ -34,7 +34,8 @@
                     box-width: 0.75,
                     whisker-width: 0.5,
                     mark: "*",
-                    mark-size: 0.15) = {
+                    mark-size: 0.15,
+                    label: none) = {
   // Add multiple boxes as multiple calls to
   // add-boxwhisker
   if type(data) == array {
@@ -102,6 +103,7 @@
     x-domain: (data.x - calc.max(whisker-width, box-width),
                data.x + calc.max(whisker-width, box-width)),
     y-domain: (min-value, max-value),
+    label: label,
   ) + (if "outliers" in data { (
     type: "boxwhisker-outliers",
     data: data.outliers.map(it => (data.x, it)),

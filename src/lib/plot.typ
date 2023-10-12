@@ -1,17 +1,18 @@
 // CeTZ Library for drawing plots
+#import "/src/util.typ"
+#import "/src/draw.typ"
+#import "/src/vector.typ"
+#import "/src/bezier.typ"
 #import "axes.typ"
 #import "palette.typ"
-#import "../util.typ"
-#import "../draw.typ"
 
 #import "plot/sample.typ": sample-fn, sample-fn2
 #import "plot/line.typ": add, add-hline, add-vline
 #import "plot/contour.typ": add-contour
 #import "plot/boxwhisker.typ": add-boxwhisker
+#import "plot/legend.typ": draw-legend
+#import "plot/mark.typ"
 
-#import "../draw.typ"
-#import "../vector.typ"
-#import "../bezier.typ"
 
 #let default-colors = (blue, red, green, yellow, black)
 
@@ -91,6 +92,18 @@
 ///                                This style gets inherited by all plots.
 /// - fill-below (bool): Fill functions below the axes (draw axes above fills)
 /// - name (string): Element name
+/// - legend (none, auto, coordinate): Position to place the legend at.
+///                                    The following anchors are considered optimal
+///                                    for legend placement:
+///                                    - `legend.north`, `legend.south`, `legend.east`, `legend.west`
+///                                    - `legend.north-east`, `legend.north-west`, `legend.south-east`, `legend.south-west`
+///                                    - `legend.inner-north`, `legend.inner-south`, `legend.inner-east`, `legend.inner-west`
+///                                    - `legend.inner-north-east`, `legend.inner-north-west`, `legend.inner-south-east`, `legend.inner-south-west`
+///
+///                                    If set to `auto`, the placement is read from the legend style (root `legend`).
+/// - legend-anchor (auto, string): Anchor of the legend group to use as origin of the
+///                                 legend group.
+/// - legend-style (style): Legend style orverwrites.
 /// - ..options (any): The following options are supported per axis
 ///                    and must be prefixed by `<axis-name>-`, e.G.
 ///                    `x-min: 0`.
@@ -109,201 +122,222 @@
           plot-style: default-plot-style,
           mark-style: default-mark-style,
           fill-below: true,
+          legend: auto,
+          legend-anchor: auto,
+          legend-style: (:),
           ..options
           ) = draw.group(name: name, ctx => {
-  import "plot/mark.typ"
+  assert(axis-style in ("scientific", "school-book", "left"),
+         message: "Invalid plot style")
 
   let data = ()
   let anchors = ()
   let body = if body != none { body } else { () }
-
   for cmd in body {
     assert(type(cmd) == dictionary and "type" in cmd,
            message: "Expected plot sub-command in plot body")
     if cmd.type == "anchor" { anchors.push(cmd) } else { data.push(cmd) }
   }
 
-  assert(axis-style in ("scientific", "school-book", "left"),
-         message: "Invalid plot style")
+  // Group containing everything but the optional
+  // legend.
+  draw.group(name: "plot", {
+    draw.anchor("origin", (0,0))
+    draw.anchor("max",    size)
 
-  let axis-dict = (:)
+    let axis-dict = (:)
 
-  // Create axes for data
-  for d in data {
-    for (i, name) in d.axes.enumerate() {
-      if not name in axis-dict {
-        axis-dict.insert(name, axes.axis(
-          min: none, max: none))
+    // Create axes for data
+    for d in data {
+      for (i, name) in d.axes.enumerate() {
+        if not name in axis-dict {
+          axis-dict.insert(name, axes.axis(
+            min: none, max: none))
+        }
+
+        let axis = axis-dict.at(name)
+        let domain = if i == 0 {
+          d.at("x-domain", default: (0, 0))
+        } else {
+          d.at("y-domain", default: (0, 0))
+        }
+        axis.min = util.min(axis.min, ..domain)
+        axis.max = util.max(axis.max, ..domain)
+
+        axis-dict.at(name) = axis
       }
+    }
 
-      let axis = axis-dict.at(name)
-      let domain = if i == 0 {
-        d.at("x-domain", default: (0, 0))
-      } else {
-        d.at("y-domain", default: (0, 0))
+    // Create axes for anchors
+    for a in anchors {
+      for (i, name) in a.axes.enumerate() {
+        if not name in axis-dict {
+          axis-dict.insert(name, axes.axis(min: none, max: none))
+        }
       }
-      axis.min = util.min(axis.min, ..domain)
-      axis.max = util.max(axis.max, ..domain)
+    }
+
+    let options = options.named()
+    let get-axis-option(axis-name, name, default) = {
+      let v = options.at(axis-name + "-" + name, default: default)
+      if v == auto { default } else { v }
+    }
+
+    // Set axis options
+    for (name, axis) in axis-dict {
+      if not "ticks" in axis { axis.ticks = () }
+
+      axis.label = get-axis-option(name, "label", $#name$)
+      axis.min = get-axis-option(name, "min", axis.min)
+      axis.max = get-axis-option(name, "max", axis.max)
+
+      axis.ticks.list = get-axis-option(name, "ticks", ())
+      axis.ticks.step = get-axis-option(name, "tick-step", axis.ticks.step)
+      axis.ticks.minor-step = get-axis-option(name, "minor-tick-step", axis.ticks.minor-step)
+      axis.ticks.decimals = get-axis-option(name, "decimals", 2)
+      axis.ticks.unit = get-axis-option(name, "unit", [])
+      axis.ticks.format = get-axis-option(name, "format", axis.ticks.format)
+      axis.ticks.grid = get-axis-option(name, "grid", false)
+
+      // Sanity checks
+      if axis.min == axis.max {
+        axis.min -= 1
+        axis.max += 1
+      }
+      assert(axis.min != auto and axis.min != none and
+            axis.max != auto and axis.max != none,
+        message: "Axis min and max must be set.")
+      assert(axis.min < axis.max,
+        message: "Axis min. must be < max.")
 
       axis-dict.at(name) = axis
     }
-  }
 
-  // Create axes for anchors
-  for a in anchors {
-    for (i, name) in a.axes.enumerate() {
-      if not name in axis-dict {
-        axis-dict.insert(name, axes.axis(min: none, max: none))
+    // Prepare styles
+    for i in range(data.len()) {
+      let style-base = plot-style
+      if type(style-base) == function {
+        style-base = (style-base)(i)
+      }
+      if type(data.at(i).style) == function {
+        data.at(i).style = (data.at(i).style)(i)
+      }
+      data.at(i).style = util.merge-dictionary(
+        style-base, data.at(i).style)
+
+      if "mark-style" in data.at(i) {
+        let mark-style-base = mark-style
+        if type(mark-style-base) == function {
+          mark-style-base = (mark-style-base)(i)
+        }
+        if type(data.at(i).mark-style) == function {
+          data.at(i).mark-style = (data.at(i).mark-style)(i)
+        }
+        data.at(i).mark-style = util.merge-dictionary(
+          mark-style-base, data.at(i).mark-style)
       }
     }
-  }
 
-  let options = options.named()
-  let get-axis-option(axis-name, name, default) = {
-    let v = options.at(axis-name + "-" + name, default: default)
-    if v == auto { default } else { v }
-  }
-
-  // Set axis options
-  for (name, axis) in axis-dict {
-    if not "ticks" in axis { axis.ticks = () }
-
-    axis.label = get-axis-option(name, "label", $#name$)
-    axis.min = get-axis-option(name, "min", axis.min)
-    axis.max = get-axis-option(name, "max", axis.max)
-
-    axis.ticks.list = get-axis-option(name, "ticks", ())
-    axis.ticks.step = get-axis-option(name, "tick-step", axis.ticks.step)
-    axis.ticks.minor-step = get-axis-option(name, "minor-tick-step", axis.ticks.minor-step)
-    axis.ticks.decimals = get-axis-option(name, "decimals", 2)
-    axis.ticks.unit = get-axis-option(name, "unit", [])
-    axis.ticks.format = get-axis-option(name, "format", axis.ticks.format)
-    axis.ticks.grid = get-axis-option(name, "grid", false)
-
-    // Sanity checks
-    if axis.min == axis.max {
-      axis.min -= 1
-      axis.max += 1
-    }
-    assert(axis.min != auto and axis.min != none and
-           axis.max != auto and axis.max != none,
-      message: "Axis min and max must be set.")
-    assert(axis.min < axis.max,
-      message: "Axis min. must be < max.")
-
-    axis-dict.at(name) = axis
-  }
-
-  // Prepare styles
-  for i in range(data.len()) {
-    let style-base = plot-style
-    if type(style-base) == function {
-      style-base = (style-base)(i)
-    }
-    if type(data.at(i).style) == function {
-      data.at(i).style = (data.at(i).style)(i)
-    }
-    data.at(i).style = util.merge-dictionary(
-      style-base, data.at(i).style)
-
-    if "mark-style" in data.at(i) {
-      let mark-style-base = mark-style
-      if type(mark-style-base) == function {
-        mark-style-base = (mark-style-base)(i)
-      }
-      if type(data.at(i).mark-style) == function {
-        data.at(i).mark-style = (data.at(i).mark-style)(i)
-      }
-      data.at(i).mark-style = util.merge-dictionary(
-        mark-style-base, data.at(i).mark-style)
-    }
-  }
-
-  // Prepare
-  for i in range(data.len()) {
-    let (x, y) = data.at(i).axes.map(name => axis-dict.at(name))
-    let plot-ctx = (x: x, y: y)
-
-    if "plot-prepare" in data.at(i) {
-      data.at(i) = (data.at(i).plot-prepare)(data.at(i), plot-ctx)
-    }
-  }
-
-  // Fill
-  if fill-below {
-    for d in data {
-      let (x, y) = d.axes.map(name => axis-dict.at(name))
+    // Prepare
+    for i in range(data.len()) {
+      let (x, y) = data.at(i).axes.map(name => axis-dict.at(name))
       let plot-ctx = (x: x, y: y)
 
-      axes.axis-viewport(size, x, y, name: "fill", {
+      if "plot-prepare" in data.at(i) {
+        data.at(i) = (data.at(i).plot-prepare)(data.at(i), plot-ctx)
+      }
+    }
+
+    // Fill
+    if fill-below {
+      for d in data {
+        let (x, y) = d.axes.map(name => axis-dict.at(name))
+        let plot-ctx = (x: x, y: y)
+
+        axes.axis-viewport(size, x, y, name: "fill", {
+          draw.anchor("center", (0, 0))
+          draw.set-style(..d.style)
+
+          if "plot-fill" in d {
+            (d.plot-fill)(d, (x: x, y: y))
+          }
+        })
+      }
+    }
+
+    if axis-style == "scientific" {
+      axes.scientific(
+        size: size,
+        bottom: axis-dict.at("x", default: none),
+        top: axis-dict.at("x2", default: auto),
+        left: axis-dict.at("y", default: none),
+        right: axis-dict.at("y2", default: auto),)
+    } else if axis-style == "left" {
+      axes.school-book(
+        size: size,
+        axis-dict.x,
+        axis-dict.y,
+        x-position: axis-dict.y.min,
+        y-position: axis-dict.x.min)
+    } else if axis-style == "school-book" {
+      axes.school-book(
+        size: size,
+        axis-dict.x,
+        axis-dict.y,)
+    }
+
+    // Stroke + Mark data
+    for d in data {
+      let (x, y) = d.axes.map(name => axis-dict.at(name))
+      axes.axis-viewport(size, x, y, name: "stroke + mark", {
         draw.anchor("center", (0, 0))
         draw.set-style(..d.style)
 
-        if "plot-fill" in d {
+        if not fill-below and "plot-fill" in d {
           (d.plot-fill)(d, (x: x, y: y))
         }
+        if "plot-stroke" in d {
+          (d.plot-stroke)(d, (x: x, y: y))
+        }
       })
+      if "mark" in d and d.mark != none {
+        axes.axis-viewport(size, x, y, {
+          draw.set-style(..d.style, ..d.mark-style)
+          mark.draw-mark(d.data, x, y, d.mark, d.mark-size, size)
+        })
+      }
+    }
+
+    // Place anchors
+    for a in anchors {
+      let (x, y) = a.axes.map(name => axis-dict.at(name))
+      assert(x != none,
+        message: "Axis " + name + " does not exist")
+      assert(y != none,
+        message: "Axis " + name + " does not exist")
+
+      axes.axis-viewport(name: "anchors", size, x, y, {
+        let (ax, ay) = a.position
+        if ax == "min" {ax = x.min} else if ax == "max" {ax = x.max}
+        if ay == "min" {ay = y.min} else if ay == "max" {ay = y.max}
+        draw.anchor("default", (0,0))
+        draw.anchor(a.name, (ax, ay))
+      })
+      draw.copy-anchors("anchors", filter: (a.name,))
+    }
+  })
+
+  // Draw legend
+  if legend != none {
+    let items = data.filter(d => "label" in d and d.label != none)
+    if items.len() > 0 {
+      draw-legend(ctx, legend-style,
+        items, size, "plot", legend, legend-anchor)
     }
   }
 
-  if axis-style == "scientific" {
-    axes.scientific(
-      size: size,
-      bottom: axis-dict.at("x", default: none),
-      top: axis-dict.at("x2", default: auto),
-      left: axis-dict.at("y", default: none),
-      right: axis-dict.at("y2", default: auto),)
-  } else if axis-style == "left" {
-    axes.school-book(
-      size: size,
-      axis-dict.x,
-      axis-dict.y,
-      x-position: axis-dict.y.min,
-      y-position: axis-dict.x.min)
-  } else if axis-style == "school-book" {
-    axes.school-book(
-      size: size,
-      axis-dict.x,
-      axis-dict.y,)
-  }
-
-  // Stroke + Mark data
-  for d in data {
-    let (x, y) = d.axes.map(name => axis-dict.at(name))
-    axes.axis-viewport(size, x, y, name: "stroke + mark", {
-      draw.anchor("center", (0, 0))
-      draw.set-style(..d.style)
-
-      if not fill-below and "plot-fill" in d {
-        (d.plot-fill)(d, (x: x, y: y))
-      }
-      if "plot-stroke" in d {
-        (d.plot-stroke)(d, (x: x, y: y))
-      }
-    })
-    if "mark" in d and d.mark != none {
-      axes.axis-viewport(size, x, y, {
-        draw.set-style(..d.style, ..d.mark-style)
-        mark.draw-mark(d.data, x, y, d.mark, d.mark-size, size)
-      })
-    }
-  }
-
-  // Place anchors
-  for a in anchors {
-    let (x, y) = a.axes.map(name => axis-dict.at(name))
-    assert(x != none,
-      message: "Axis " + name + " does not exist")
-    assert(y != none,
-      message: "Axis " + name + " does not exist")
-
-    axes.axis-viewport(name: "anchors", size, x, y, {
-      let (ax, ay) = a.position
-      if ax == "min" {ax = x.min} else if ax == "max" {ax = x.max}
-      if ay == "min" {ay = y.min} else if ay == "max" {ay = y.max}
-      draw.anchor("default", (0,0))
-      draw.anchor(a.name, (ax, ay))
-    })
-    draw.copy-anchors("anchors", filter: (a.name,))
+  // Copy inner anchors to outer group
+  if name != none {
+    draw.copy-anchors("plot")
   }
 })

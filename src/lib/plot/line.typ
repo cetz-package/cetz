@@ -207,6 +207,7 @@
          sample-at: (),
          line: "linear",
          axes: ("x", "y"),
+         label: none,
          data
          ) = {
   // If data is of type function, sample it
@@ -244,6 +245,7 @@
     mark: mark,
     mark-size: mark-size,
     mark-style: mark-style,
+    label: label,
     plot-prepare: _prepare,
     plot-stroke: _stroke,
     plot-fill: _fill,
@@ -259,6 +261,7 @@
 #let add-hline(..y,
                axes: ("x", "y"),
                style: (:),
+               label: none,
                ) = {
   assert(y.pos().len() >= 1,
          message: "Specify at least one y value")
@@ -284,6 +287,7 @@
     y-domain: (calc.min(..y.pos()), calc.max(..y.pos())),
     axes: axes,
     style: style,
+    label: label,
     plot-prepare: prepare,
     plot-stroke: stroke,
   ),)
@@ -298,6 +302,7 @@
 #let add-vline(..x,
                axes: ("x", "y"),
                style: (:),
+               label: none,
                ) = {
   assert(x.pos().len() >= 1,
          message: "Specify at least one x value")
@@ -323,6 +328,7 @@
     x-domain: (calc.min(..x.pos()), calc.max(..x.pos())),
     axes: axes,
     style: style,
+    label: label,
     plot-prepare: prepare,
     plot-stroke: stroke
   ),)

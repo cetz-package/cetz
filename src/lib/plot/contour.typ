@@ -280,6 +280,7 @@
                  style: (:),
                  fill: false,
                  limit: 50,
+                 label: none,
   ) = {
   // Sample a x/y function
   if type(data) == function {
@@ -298,7 +299,8 @@
   let contours = ()
   let z = if type(z) == array { z } else { (z,) }
   for z in z {
-    for contour in find-contours(data, z, op: op, interpolate: interpolate) {
+    for contour in find-contours(data, z, op: op,
+      interpolate: interpolate, contour-limit: limit) {
       let line-data = contour.map(pt => {
         (pt.at(0) * dx + x-min,
          pt.at(1) * dy + y-min)
@@ -321,6 +323,7 @@
     fill: fill,
     mark: none,
     mark-style: none,
+    label: label,
     plot-prepare: _prepare,
     plot-stroke: _stroke,
     plot-fill: _fill,
