@@ -136,9 +136,8 @@
 ///
 /// Must be called from the body of a `plot(..)` command.
 ///
-/// - domain (array): Domain tuple of the plot. If `data` is a function,
-///                   domain must be specified, as `data` is sampled
-///                   for x-values in `domain`. Values must be numbers.
+/// - domain (domain): Domain of `data`, if `data` is a function. Has no effect
+///                    if `data` is not a function.
 /// - hypograph (bool): Fill hypograph; uses the `hypograph` style key for
 ///                     drawing
 /// - epigraph (bool): Fill epigraph; uses the `epigraph` style key for
@@ -172,7 +171,7 @@
 ///                              / `"epsilon" <float>`: Linearization slope epsilon for
 ///                                use with `"linear"`, defaults to 0.
 /// - style (style): Style to use, can be used with a palette function
-/// - axes (array): Name of the axes to use ("x", "y"), note that not all
+/// - axes (array): Name of the axes to use for plotting, note that not all
 ///                 plot styles are able to display a custom axis!
 /// - mark (string): Mark symbol to place at each distinct value of the
 ///                  graph. Uses the `mark` style key of `style` for drawing.
@@ -253,7 +252,7 @@
 /// Add horizontal lines at values y
 ///
 /// - ..y (number): Y axis value(s) to add a line at
-/// - axes (array): Name of the axes to use ("x", "y"), note that not all
+/// - axes (array): Name of the axes to use for plotting, note that not all
 ///                 plot styles are able to display a custom axis!
 /// - style (style): Style to use, can be used with a palette function
 #let add-hline(..y,
@@ -292,7 +291,7 @@
 /// Add vertical lines at values x.
 ///
 /// - ..x (number): X axis values to add a line at
-/// - axes (array): Name of the axes to use ("x", "y"), note that not all
+/// - axes (array): Name of the axes to use for plotting, note that not all
 ///                 plot styles are able to display a custom axis!
 /// - style (style): Style to use, can be used with a palette function
 #let add-vline(..x,
@@ -325,5 +324,104 @@
     style: style,
     plot-prepare: prepare,
     plot-stroke: stroke
+  ),)
+}
+
+/// Fill the area between two graphs. This behaves same as `plot` but takes
+/// a pair of data instead of a single data array/function.
+/// The area between both function plots gets filled.
+///
+/// This can be used to display an error-band of a function.
+///
+/// - domain (domain): Domain of both `data-a` and `data-b`. The domain is used for
+///                    sampling functions only and has no effect on data arrays.
+/// - samples (int): Number of times the `data-a` and `data-b` function gets called for
+///                  sampling y-values. Only used if `data-a` or `data-b` is of
+///                  type function.
+/// - sample-at (array): Array of x-values the function(s) get sampled at in addition
+///                      to the default sampling.
+/// - line (string, dictionary): Line type to use, see `add`
+/// - style (style): Style to use, can be used with a palette function
+/// - axes (array): Name of the axes to use for plotting, note that not all
+///                 plot styles are able to display a custom axis!
+/// - data-a (array,function): Data of the first plot, see `add`
+/// - data-b (array,function): Data of the second plot, see `add`
+#let add-fill-between(data-a,
+                      data-b,
+                      domain: auto,
+                      samples: 50,
+                      sample-at: (),
+                      line: "linear",
+                      axes: ("x", "y"),
+                      style: (:)) = {
+  // If data is of type function, sample it
+  if type(data-a) == function {
+    data-a = sample.sample-fn(data-a, domain, samples, sample-at: sample-at)
+  }
+  if type(data-b) == function {
+    data-b = sample.sample-fn(data-b, domain, samples, sample-at: sample-at)
+  }
+
+  // Transform data
+  let line-a-data = transform-lines(data-a, line)
+  let line-b-data = transform-lines(data-b, line)
+
+  // Get x-domain
+  let x-domain = (
+    calc.min(..line-a-data.map(t => t.at(0)),
+             ..line-b-data.map(t => t.at(0))),
+    calc.max(..line-a-data.map(t => t.at(0)),
+             ..line-b-data.map(t => t.at(0)))
+  )
+
+  // Get y-domain
+  let y-domain = if line-a-data != none and line-b-data != none {(
+    calc.min(..line-a-data.map(t => t.at(1)),
+             ..line-b-data.map(t => t.at(1))),
+    calc.max(..line-a-data.map(t => t.at(1)),
+             ..line-b-data.map(t => t.at(1)))
+  )}
+
+  let prepare(self, ctx) = {
+    let (x, y) = (ctx.x, ctx.y)
+
+    // Generate stroke paths
+    self.stroke-paths = (
+      a: util.compute-stroke-paths(self.line-data.a,
+        (x.min, y.min), (x.max, y.max)),
+      b: util.compute-stroke-paths(self.line-data.b,
+        (x.min, y.min), (x.max, y.max))
+    )
+
+    // Generate fill paths
+    self.fill-paths = util.compute-fill-paths(self.line-data.a + self.line-data.b.rev(),
+      (x.min, y.min), (x.max, y.max))
+
+    return self
+  }
+
+  let stroke(self, ctx) = {
+    for p in self.stroke-paths.a {
+      draw.line(..p, fill: none)
+    }
+    for p in self.stroke-paths.b {
+      draw.line(..p, fill: none)
+    }
+  }
+
+  let fill(self, ctx) = {
+    fill-shape(self.fill-paths)
+  }
+
+  ((
+    type: "fill-between",
+    axes: axes,
+    line-data: (a: line-a-data, b: line-b-data),
+    x-domain: x-domain,
+    y-domain: y-domain,
+    style: style,
+    plot-prepare: prepare,
+    plot-stroke: stroke,
+    plot-fill: fill,
   ),)
 }

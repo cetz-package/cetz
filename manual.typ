@@ -863,6 +863,12 @@ The node itselfes can be of type `content` or `dictionary` with a key `content`.
 
 The library `plot` of CeTZ allows plotting 2D data.
 
+=== Types
+
+Types commonly used by function of the `plot` library:
+/ `domain`: Tuple representing a functions domain as closed interval.
+            Example domains are: `(0, 1)` for $[0, 1]$ or
+            `(-calc.pi, calc.pi)` for $[-pi, pi]$.
 
 #tidy.show-module(plot-module, show-module-name: false)
 #tidy.show-module(plot-module-line, show-module-name: false)

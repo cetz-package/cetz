@@ -6,8 +6,7 @@
 /// must be a tuple.
 ///
 /// - fn (function): Function to sample of the form `(x) => y` or `(x) => (x, y)`.
-/// - domain (array): X domain tuple (min, max), that is the minimum and maximum
-///                   x value the function gets sampled at.
+/// - domain (domain): Domain of `fn` used as bounding interval for the sampling points.
 /// - samples (int): Number of samples in domain.
 /// - sample-at (array): List of x values the function gets sampled at in addition
 ///                      to the `samples` number of samples. Values outsides the
@@ -47,10 +46,10 @@
 /// an array.
 ///
 /// - fn (function): Function of the form `(x, y) => z` with all values being numbers.
-/// - x-domain (array): X domain tuple (min, max), that is the range of
-///                     x values the function gets sampled between.
-/// - y-domain (array): Y domain tuple (min, max), that is the range of
-///                     y values the function gets sampled between.
+/// - x-domain (domain): Domain used as bounding interval for sampling point's x
+///                      values.
+/// - y-domain (domain): Domain used as bounding interval for sampling point's y
+///                      values.
 /// - x-samples (int): Number of samples in the x-domain.
 /// - y-samples (int): Number of samples in the y-domain.
 /// -> array: Array of z scalars
