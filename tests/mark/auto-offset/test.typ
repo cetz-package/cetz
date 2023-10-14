@@ -1,7 +1,7 @@
 #set page(width: auto, height: auto)
 #import "/src/lib.typ": *
 
-#for a in range(30, 180 + 30, step: 30) {
+#for a in range(0, 180 + 30, step: 30) {
   let a = a * 1deg
   box(stroke: 2pt + red, canvas({
     import draw: *

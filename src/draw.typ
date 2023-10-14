@@ -353,10 +353,13 @@
     }
 
     if join == "miter" {
-      let miter = if style.angle == 180deg {
+      let angle = calc.abs(style.angle)
+      let miter = if angle == 180deg {
         width / 2
+      } else if angle == 0deg or angle == 360deg {
+        0
       } else {
-        (1 / calc.sin(style.angle / 2) * width / 2)
+        (1 / calc.sin(angle / 2) * width / 2)
       }
 
       if calc.abs(2 * miter / width) <= limit {
