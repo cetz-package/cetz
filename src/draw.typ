@@ -332,14 +332,12 @@
   if mark in ("<", ">") {
     let sign = if mark == "<" {1} else {-1}
 
-    let (width, limit, join) = if type(style.stroke) == dictionary {
-      (style.stroke.at("thickness", default: 1pt),
-       style.stroke.at("miter-limit", default: 4),
-       style.stroke.at("join", default: "miter"))
-    } else if type(style.stroke) == stroke {
-      (style.stroke.thickness,
-       style.stroke.miter-limit,
-       style.stroke.join)
+    // This is the only way to "cast" to a stroke type in typst <= 8.0
+    let stroke = line(stroke: style.stroke).stroke
+    let (width, limit, join) = if type(stroke) == typst-stroke {
+      (stroke.thickness,
+       stroke.miter-limit,
+       stroke.join)
     } else {
       (1pt, 4, "miter")
     }
@@ -355,9 +353,13 @@
     }
 
     if join == "miter" {
-      let miter = (calc.tan(90deg - style.angle / 2) +
-                   calc.sin(style.angle / 2)) * width / 2
-      if 2 * miter / width <= limit {
+      let miter = if style.angle == 180deg {
+        width / 2
+      } else {
+        (1 / calc.sin(style.angle / 2) * width / 2)
+      }
+
+      if calc.abs(2 * miter / width) <= limit {
         return miter * sign
       } else {
         // If the miter limit kicks in, use bevel calculation
