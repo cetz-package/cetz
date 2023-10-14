@@ -134,10 +134,6 @@
       bottom-left: (low.at(0), high.at(1), 0),
       bottom-right: (high.at(0), high.at(1), 0),
     )
-
-    // Add alternate names
-    anchors.above = anchors.top
-    anchors.below = anchors.bottom
   }
 
   // Query element for (relative) anchors

@@ -148,7 +148,7 @@ stroke(none)
 circle("circle.left", radius: 0.3)
 ```
 
-All elements will have default anchors based on their bounding box, they are: `center`, `left`, `right`, `above`/`top` and `below`/`bottom`, `top-left`, `top-right`, `bottom-left`, `bottom-right`. Some elements will have their own anchors.
+All elements will have default anchors based on their bounding box, they are: `center`, `left`, `right`, `top` and `bottom`, `top-left`, `top-right`, `bottom-left`, `bottom-right`. Some elements will have their own anchors.
 
 Elements can be placed relative to their own anchors.
 ```example
@@ -487,7 +487,7 @@ rect((0,0), (1,1))
 // Outer rect
 rect((0,0), (2,2), name: "r")
 // Move origin to top edge
-set-origin("r.above")
+set-origin("r.top")
 circle((0, 0), radius: .1)
 ```
 
@@ -804,7 +804,7 @@ circle((v => cetz.vector.add(v, (0, -1)), "c.right"), radius: 0.3)
 // Label nodes anchors
 rect((0, 0), (2,2), name: "my-rect")
 for-each-anchor("my-rect", (name) => {
-  if not name in ("above", "below", "default") {
+  if not name in ("top", "bottom", "default") {
 
   content((), box(inset: 1pt, fill: white, text(8pt, [#name])),
           angle: -45deg)

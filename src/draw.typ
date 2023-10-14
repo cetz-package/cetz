@@ -12,21 +12,14 @@
 #let typst-measure = measure
 #let typst-angle = angle
 #let typst-center = center
+#let typst-stroke = stroke
 
 // Measure content in canvas coordinates
 #let measure(cnt, ctx) = {
   let size = typst-measure(cnt, ctx.typst-style)
 
-  // Transformation matrix:
-  // sx .. .. .
-  // .. sy .. .
-  // .. .. sz .
-  // .. .. .. 1
-  let sx = ctx.transform.at(0).at(0)
-  let sy = ctx.transform.at(1).at(1)
-
-  return (calc.abs(size.width / ctx.length / sx),
-          calc.abs(size.height / ctx.length / sy))
+  return (calc.abs(size.width / ctx.length),
+          calc.abs(size.height / ctx.length))
 }
 
 /// Set current style
@@ -351,6 +344,12 @@
       (1pt, 4, "miter")
     }
 
+    // For some reason typst can have those set to
+    // auto!
+    if width == auto { width = 1pt }
+    if limit == auto { limit = 4 }
+    if join == auto  { join = "miter" }
+
     if type(width) == length {
       width /= ctx.length
     }
@@ -556,10 +555,10 @@
   let (ox, oy) = (calc.cos(45deg) * rx,
                   calc.sin(45deg) * ry)
   return (
-    top: (cx, cy - ry, cz),
+    top: (cx, cy + ry, cz),
     top-left: (cx - ox, cy + oy, cz),
     top-right: (cx + ox, cy + oy, cz),
-    bottom: (cx, cy + ry, cz),
+    bottom: (cx, cy - ry, cz),
     bottom-left: (cx - ox, cy - oy, cz),
     bottom-right: (cx + ox, cy - oy, cz),
     left: (cx - rx, cy, cz),
