@@ -10,6 +10,7 @@ CeTZ requires Typst 0.8.0.
 - Fixed bug with `content` and `intersections`
 - Fixed automatic mark offset for lines
 - Fixed problems with style inheritance
+- Removed default anchors `above` and `below`. Use `top` and `bottom` instead
 
 ## Libs
 ### Plot
