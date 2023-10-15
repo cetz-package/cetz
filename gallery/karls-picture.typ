@@ -30,7 +30,7 @@
 
   for (x, ct) in ((-1, $ -1 $), (-0.5, $ -1/2 $), (1, $ 1 $)) {
     line((x, 3pt), (x, -3pt))
-    content((), anchor: "above", ct)
+    content((), anchor: "top", ct)
   }
 
   for (y, ct) in ((-1, $ -1 $), (-0.5, $ -1/2 $), (0.5, $ 1/2 $), (1, $ 1 $)) {

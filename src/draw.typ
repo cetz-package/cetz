@@ -868,9 +868,7 @@
       return (
         center:       center,
         bottom:       bottom,
-        below:        bottom,
         top:          top,
-        above:        top,
         left:         left,
         right:        right,
         bottom-left:  bl,
