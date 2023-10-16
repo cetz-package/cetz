@@ -854,10 +854,19 @@ The node itselfes can be of type `content` or `dictionary` with a key `content`.
 
 == Plot
 #let plot-module = tidy.parse-module(read("src/lib/plot.typ"), name: "Plot")
+#let plot-module-line = tidy.parse-module(read("src/lib/plot/line.typ"),
+  name: "Plot - Line")
+#let plot-module-contour = tidy.parse-module(read("src/lib/plot/contour.typ"),
+  name: "Plot - Contour")
+#let plot-module-sample = tidy.parse-module(read("src/lib/plot/sample.typ"),
+  name: "Plot - Sample")
 
 The library `plot` of CeTZ allows plotting 2D data as linechart.
 
 #tidy.show-module(plot-module, show-module-name: false)
+#tidy.show-module(plot-module-line, show-module-name: false)
+#tidy.show-module(plot-module-contour, show-module-name: false)
+#tidy.show-module(plot-module-sample, show-module-name: false)
 
 === Examples
 
@@ -884,8 +893,8 @@ import cetz.plot
 import cetz.palette
 
 // Axes can be styled!
-// Set the tick length to -.05:
-set-style(axes: (tick: (length: -.05)))
+// Set the tick length to .1:
+set-style(axes: (tick: (length: .1)))
 
 // Plot something
 plot.plot(size: (3,3), x-tick-step: 1, axis-style: "left", {
@@ -894,6 +903,17 @@ plot.plot(size: (3,3), x-tick-step: 1, axis-style: "left", {
       x => calc.exp(-(calc.pow(x + i, 2))),
       fill: true, style: palette.tango)
   }
+})
+```
+
+```example
+import cetz.plot
+plot.plot(size: (3,2), x-tick-step: 1, y-tick-step: 1, {
+  let z(x, y) = {
+    (1 - x/2 + calc.pow(x,5) + calc.pow(y,3)) * calc.exp(-(x*x) - (y*y))
+  }
+  plot.add-contour(x-domain: (-2, 3), y-domain: (-3, 3),
+                   z, z: (.1, .4, .7), fill: true)
 })
 ```
 

@@ -1,3 +1,13 @@
+# 0.1.3
+
+## Libs
+### Plot
+- Added `plot.add-contour(..)` for plotting contour plots
+- Added `plot.add-hline(..)` and `plot.add-vline(..)` for plotting h/v lines
+- Added `fill-type` option to `plot.add(..)` for specifying a fill type (axis or shape)
+- Changed default samples from 100 to 50!
+- Fixed plot filling in some cases
+
 # 0.1.2
 CeTZ requires Typst 0.8.0.
 ## Draw

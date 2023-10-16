@@ -1,5 +1,5 @@
 #set page(width: auto, height: auto)
-#import "../../src/lib.typ": *
+#import "/src/lib.typ": *
 
 #let data = (..(for x in range(-360, 360 + 1) {
   ((x, calc.sin(x * 1deg)),)
@@ -71,50 +71,6 @@
     y-tick-step: 1,
     {
       plot.add(data)
-    })
-}))
-
-/* Epigraph */
-#box(stroke: 2pt + red, canvas({
-  import draw: *
-
-  plot.plot(size: (5, 4),
-    axis-style: "school-book",
-    x-tick-step: 180,
-    x-unit: $degree$,
-    y-tick-step: 1,
-    plot-style: (stroke: black),
-    {
-      plot.add(domain: (-360, 360), epigraph: true,
-        x => calc.sin(x * 1deg), style: (fill: blue))
-      plot.add(domain: (-360, 360), hypograph: true,
-        x => calc.cos(x * 1deg), style: (fill: red))
-      plot.add(domain: (-180, 180), fill: true,
-        x => calc.sin(x * 1deg), style: (fill: green))
-    })
-}))
-
-/* Marks */
-#box(stroke: 2pt + red, canvas({
-  import draw: *
-  
-  plot.plot(size: (5, 4),
-    axis-style: "scientific",
-    y-max: 2,
-    y-min: -2,
-    x-tick-step: 360,
-    y-tick-step: 1,
-    style: plot.palette.red,
-    mark-style: plot.palette.red,
-    {
-      for (i, m) in ("o", "square", "x", "triangle", "|", "-").enumerate() {
-        plot.add(domain: (i * 180, (i + 1) * 180),
-          samples: 12,
-          style: (stroke: none),
-          mark: m,
-          mark-size: .3,
-          x => calc.sin(x * 1deg))
-      }
     })
 }))
 
@@ -277,62 +233,6 @@
     {
       plot.add(domain: (-1, 1), x => -x, axes: ("x", "y"))
       plot.add(domain: (-1, 1), x => x, axes: ("x2", "y2"))
-    })
-}))
-
-#box(stroke: 2pt + red, canvas({
-  import draw: *
-
-  plot.plot(size: (6, 4),
-    {
-      plot.add(((0,0), (1,1), (2,-1), (3,3)), line: (type: "spline", tension: .40,
-                                                     samples: 5))
-      plot.add(((0,0), (1,1), (2,-1), (3,3)), line: (type: "spline", tension: .47))
-      plot.add(((0,0), (1,1), (2,-1), (3,3)), line: "spline")
-      plot.add(((0,0), (1,1), (2,-1), (3,3)), line: (type: "spline", tension: .5))
-    })
-}))
-
-#box(stroke: 2pt + red, canvas({
-  import draw: *
-
-  let data(i) = ((1, 2, 3, 4, 5).zip((1, 3, 2, 3, 1).map(v => v + i)))
-  plot.plot(size: (6, 4),
-    y-min: 0, y-max: 35,
-    x-tick-step: 1,
-    y-tick-step: 5,
-    {
-       plot.add(data(0), line: "linear", mark: "o")
-       plot.add(data(5), line: "spline", mark: "o")
-       plot.add(data(10), line: "hv", mark: "o")
-       plot.add(data(15), line: "vh", mark: "o")
-       plot.add(data(20), line: "vhv", mark: "o")
-       plot.add(data(25), line: (type: "vhv", mid: .25), mark: "o")
-       plot.add(data(30), line: (type: "vhv", mid: .75), mark: "o")
-    })
-}))
-
-// Test linearization
-#box(stroke: 2pt + red, canvas({
-  import draw: *
-
-  plot.plot(size: (6, 4),
-    {
-       plot.add(domain: (0, 360), x=>calc.sin(x * 1deg),
-         line: "raw", style: (stroke: 3pt))
-       plot.add(domain: (0, 360), x=>calc.sin(x * 1deg),
-         line: "linear")
-    })
-}))
-
-// Test linearization for vertical lines
-#box(stroke: 2pt + red, canvas({
-  import draw: *
-
-  plot.plot(size: (6, 4),
-    x-min: -1, x-max: 2, y-min: -1, y-max: 2,
-    {
-       plot.add(((0,0), (1,0), (1,0.1), (1,0.2), (1,0.5), (1,1), (0,1), (0,0)))
     })
 }))
 
