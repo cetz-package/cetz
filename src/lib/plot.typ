@@ -2,11 +2,13 @@
 #import "axes.typ"
 #import "palette.typ"
 #import "../util.typ"
-#import "../draw.typ"
 
 #import "plot/sample.typ": sample-fn, sample-fn2
 #import "plot/line.typ": add, add-hline, add-vline
 #import "plot/contour.typ": add-contour
+#import "../draw.typ"
+#import "../vector.typ"
+#import "../bezier.typ"
 
 #let default-colors = (blue, red, green, yellow, black)
 

@@ -1,6 +1,5 @@
 #set page(width: auto, height: auto)
-#import "../../src/canvas.typ": *
-#import "../../src/bezier.typ" as bez
+#import "../../src/lib.typ": *
 
 #box(stroke: 2pt + red, canvas({
   import draw: *

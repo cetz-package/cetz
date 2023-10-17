@@ -425,11 +425,17 @@
         } else {
           ("axes." + side, "-|", "axes.center")
         }
-
         // Use a group to get non-rotated anchors
-        group(content(position, axis.label,
-                      angle: angle, padding: style.label.offset),
-                      anchor: anchor)
+        group(
+          content(
+            position, 
+            axis.label, 
+            angle: angle, 
+            // anchor: anchor, 
+            padding: style.label.offset
+          ),
+          anchor: anchor, 
+        )
       }
     }
   })
@@ -454,8 +460,12 @@
 
   group(name: name, ctx => {
     let style = style.named()
-    style = styles.resolve(ctx.style, style, root: "axes",
-                           base: default-style-schoolbook)
+    style = styles.resolve(
+      ctx.style,
+      style,
+      root: "axes",
+      base: default-style-schoolbook
+    )
 
     let x-position = calc.min(calc.max(y-axis.min, x-position), y-axis.max)
     let y-position = calc.min(calc.max(x-axis.min, y-position), x-axis.max)

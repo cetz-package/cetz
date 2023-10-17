@@ -1,6 +1,6 @@
 #import "util.typ"
 #import "sample.typ"
-#import "../../draw.typ"
+#import "/src/draw.typ"
 
 // Transform points
 //
