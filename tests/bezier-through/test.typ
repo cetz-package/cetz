@@ -8,8 +8,6 @@
     group(name: "g", {
       line(a, b, c, stroke: gray)
       bezier-through(a, b, c)
-
-      let (a, b, c1, c2) = cubic-through-3points(a, b, c)
     })
     set-origin((c.at(0) + .1, 0))
   }

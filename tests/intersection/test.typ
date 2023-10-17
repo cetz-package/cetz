@@ -5,7 +5,7 @@
   import draw: *
 
   group({
-    intersections(name: "i", samples: 10, {
+    intersections("i", samples: 10, {
       body
     })
     for-each-anchor("i", (name) => {
@@ -67,7 +67,7 @@
 #box(stroke: 2pt + red, canvas({
   import draw: *
 
-  intersections(name: "i", {
+  intersections("i", {
     content((0, 0), [Das ist\ ein Text!], frame: "circle", name: "a")
     content((2, 1), [Hallo!], frame: "circle", name: "b")
     // Invisible intersection line

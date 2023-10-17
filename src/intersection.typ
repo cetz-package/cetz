@@ -52,7 +52,8 @@
       return s.slice(1)
     } else if t == "cubic" {
       return range(samples + 1).map(
-        t => bezier.cubic-point(..s.slice(1), t/samples))
+        t => bezier.cubic-point(..s.slice(1), t/samples)
+      )
     }
   }
 
@@ -61,14 +62,16 @@
     let pts = ()
     let av = linearize-segment(a)
     let bv = linearize-segment(b)
-    if av != none and bv != none {
-      for ai in range(0, av.len() - 1) {
-        for bi in range(0, bv.len() - 1) {
-          let isect = line-line(av.at(ai), av.at(ai + 1),
-                                bv.at(bi), bv.at(bi + 1))
-          if isect != none {
-            pts.push(isect)
-          }
+    for ai in range(0, av.len() - 1) {
+      for bi in range(0, bv.len() - 1) {
+        let isect = line-line(
+          av.at(ai),
+          av.at(ai + 1),
+          bv.at(bi),
+          bv.at(bi + 1)
+        )
+        if isect != none {
+          pts.push(isect)
         }
       }
     }
