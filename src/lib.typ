@@ -3,10 +3,10 @@
 #import "canvas.typ": canvas
 #import "draw.typ"
 
-// #import "coordinate.typ"
-// #import "vector.typ"
-// #import "matrix.typ"
-// #import "tree.typ"
+#import "styles.typ"
+#import "coordinate.typ"
+#import "vector.typ"
+#import "matrix.typ"
 
 // Libraries
 #import "lib/axes.typ"

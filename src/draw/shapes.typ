@@ -585,7 +585,7 @@
 
     let (start, end, ..control) = bezier_.cubic-through-3points(start, pass-through, end)
 
-    return bezier(start, end, ..control, ..style).first()(ctx)
+    return bezier(start, end, ..control, ..style, name: name).first()(ctx)
   },)
 }
 
