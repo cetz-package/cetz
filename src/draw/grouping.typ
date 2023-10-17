@@ -143,7 +143,7 @@
 
 #let for-each-anchor(name, callback) = {
   get-ctx(ctx => {
-    for (anchor, _) in ctx.nodes.at(name).at("anchors", default: (:)) {
+    for anchor in (ctx.nodes.at(name).at("anchors", default: (:)))(()) {
       move-to(name + "." + anchor)
       callback(anchor)
     }

@@ -193,3 +193,7 @@
     calc.abs(size.height / ctx.length)
   )
 }
+
+#let assert-anchors(anchors, element-name, anchor) = {
+  assert(anchor in anchors or anchor == none, message: "Anchor '" + anchor + "' not in anchors " + repr(anchors) + if element-name != none { " for element " + element-name })
+}

@@ -7,6 +7,7 @@
 #import "/src/path-util.typ"
 #import "/src/util.typ"
 #import "/src/vector.typ"
+#import "/src/matrix.typ"
 #import "/src/process.typ"
 #import "/src/bezier.typ" as bezier_
 
@@ -17,6 +18,21 @@
 
 
 #let circle(position, name: none, anchor: none, ..style) = {
+  let anchor-names = (
+    "north",
+    "north-east",
+    "east",
+    "south-east",
+    "south",
+    "south-west",
+    "west",
+    "north-west"
+  )
+  let check-anchors = util.assert-anchors.with(
+    anchor-names,
+    name
+  )
+  check-anchors(anchor)
   // No extra positional arguments from the style sink
   assert.eq(
     style.pos(),
@@ -28,14 +44,53 @@
   (ctx => {
     let (ctx, pos) = coordinate.resolve(ctx, position)
     let style = styles.resolve(ctx.style, style, root: "circle")
+    let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
+
+    let calculate-anchors(transform, anchor) = {
+      if anchor == () {
+        return anchor-names
+      }
+      check-anchors(anchor)
+      let (cx, cy, cz) = pos
+      let (ox, oy) = (calc.cos(45deg) * rx, calc.sin(45deg) * ry)
+      return util.apply-transform(
+        transform, 
+        if type(anchor) == str {
+          (
+            north: (cx, cy + ry),
+            north-east: (cx + ox, cy + oy),
+            east: (cx + rx, cy),
+            south-east: (cx + ox, cy - oy),
+            south: (cx, cy - ry),
+            south-west: (cx - ox, cy - oy),
+            west: (cx - rx, cy),
+            north-west: (cx - ox, cy + oy),
+          ).at(anchor)
+          (cz,)
+        }
+      )
+    }
+
+    let transform = ctx.transform
+
+    if anchor != none {
+      transform = matrix.mul-mat(
+        transform,
+        matrix.transform-translate(
+          ..calculate-anchors(transform, anchor)
+        )
+      )
+    }
+
     
     return (
       ctx: ctx,
       name: name,
-      anchor: anchor,
-      drawables: drawable.apply-transform(ctx.transform, drawable.ellipse(
+      // anchor: anchor,
+      anchors: calculate-anchors.with(transform),
+      drawables: drawable.apply-transform(transform, drawable.ellipse(
         ..pos,
-        ..util.resolve-radius(style.radius).map(util.resolve-number.with(ctx)),
+        rx, ry,
         fill: style.fill,
         stroke: style.stroke,
       )),
