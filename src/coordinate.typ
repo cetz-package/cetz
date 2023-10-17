@@ -71,16 +71,11 @@
   // Check if node is known
   assert(name in ctx.nodes, message: "Unknown element '" + name + "' in elements " + repr(ctx.nodes.keys()))
   let node = ctx.nodes.at(name)
-  // Check if anchor is known
-  assert(anchor in node.anchors, message: "Unknown anchor '" + anchor + "' in anchors " + repr(node.anchors.keys()) + " for node " + name)
+  let pos = (node.anchors)(anchor)
 
   return util.revert-transform(
     ctx.transform,
-    if anchor != none {
-      node.anchors.at(anchor)
-    } else {
-      node.anchors.default
-    }
+    pos
   )
 }
 
@@ -246,6 +241,10 @@
   (ctx, ..c) = resolve(ctx, ..c)
   func(..c)
   // (c.first())()
+}
+
+#let resolve-pos(ctx, c) = {
+  // (name: str, pos: float, auto?: left|right, swap?: bool)
 }
 
 // Returns the given coordinate's system name
