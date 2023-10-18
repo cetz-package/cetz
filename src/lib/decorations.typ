@@ -2,6 +2,8 @@
 #import "../matrix.typ"
 #import "../util.typ"
 #import "../draw.typ": *
+#import "../coordinate.typ"
+#import "../styles.typ"
 
 /// Rotates the vector 'ab' around 'a' and scales it to 'len', returns the absolute point 'c'.
 #let _rotate-around(a, b, angle: 90deg, len: auto) = {
@@ -276,8 +278,7 @@
 
     // all the following code assumes the brace to start at (0, 0), growing to the right,
     // pointing upwards, so we set the origin and rotate the entire group accordingly
-    let start = coordinate.resolve(ctx, start)
-    let end = coordinate.resolve(ctx, end)
+    let (_, start, end) = coordinate.resolve(ctx, start, end)
     set-origin(start)
     rotate(vector.angle2(start, end))
 

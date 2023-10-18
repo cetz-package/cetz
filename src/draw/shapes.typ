@@ -648,7 +648,7 @@
         let r = process.element(ctx, element)
         if r != none {
           ctx = r.ctx
-          if segments != () {
+          if segments != () and r.drawables != () {
             assert.eq(r.drawables.first().type, "path")
             let start = path-util.segment-end(segments.last())
             let end = path-util.segment-start(r.drawables.first().segments.first())
