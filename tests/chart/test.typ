@@ -1,5 +1,5 @@
 #set page(width: auto, height: auto)
-#import "../../src/lib.typ": *
+#import "/src/lib.typ": *
 
 #let data0 = (
   ([1], 1),
@@ -23,6 +23,12 @@
   ([35-44], 35.5, 26.5, 29.4, 25.8),
   ([45-54], 25.0, 20.6, 22.4, 22.0),
   ([55+],   19.9, 18.2, 19.2, 16.4),
+)
+
+#let data3 = (
+  (1, 0.001),
+  (2, 0.002),
+  (3, 0.003),
 )
 
 #box(stroke: 2pt + red, canvas({
@@ -126,7 +132,7 @@
     y-max: 1.0,
     (([$ cal(P)_+ $], 4 / 13), ([$ cal(P)_- $], 9 / 13))
   )
-  
+
   draw.set-origin((4, 0))
 
   chart.barchart(
@@ -136,7 +142,6 @@
     (([$ cal(P)_+ $], 4 / 13), ([$ cal(P)_- $], 9 / 13))
   )
 }))
-
 
 #box(stroke: 2pt + red, canvas({
   chart.columnchart(
@@ -154,4 +159,36 @@
     x-max: 1.0,
     (([$ cal(P)_+ $], 4 / 13), ([$ cal(P)_- $], -9 / 13))
   )
+}))
+
+#box(stroke: 2pt + red, canvas({
+  chart.columnchart(
+    size: (auto, 2),
+    y-tick-step: 0.001,
+    y-format: "sci",
+    data3)
+}))
+
+#box(stroke: 2pt + red, canvas({
+  chart.columnchart(
+    size: (auto, 2),
+    y-tick-step: 0.001,
+    y-decimals: 3,
+    data3)
+}))
+
+#box(stroke: 2pt + red, canvas({
+  chart.barchart(
+    size: (5, auto),
+    x-tick-step: 0.001,
+    x-format: "sci",
+    data3)
+}))
+
+#box(stroke: 2pt + red, canvas({
+  chart.barchart(
+    size: (5, auto),
+    x-tick-step: 0.001,
+    x-decimals: 3,
+    data3)
 }))
