@@ -19,10 +19,10 @@
 // String that gets prefixed to every example code
 // for compilation only!
 #let example-preamble = "import lib.draw: *;"
-#let example-scope = (cetz: lib, lib: lib, char: lib.chart)
+#let example-scope = (cetz: lib, lib: lib)
 
 #let example(source, ..args, vertical: false) = {
-  let picture = canvas(eval((example-preamble + source.text),
+  let picture = canvas(eval(example-preamble + source.text,
                             scope: example-scope), ..args)
   block(if vertical {
     align(
@@ -95,8 +95,6 @@
 #set heading(numbering: (..num) => if num.pos().len() < 4 { numbering("1.1", ..num) })
 #set terms(indent: 1em)
 #show link: set text(blue)
-
-// #let STYLING = heading(level: 4, numbering: none)[Styling]
 
 #align(center, text(16pt)[*The `CeTZ` package*])
 
@@ -315,7 +313,7 @@ line(a, b, c, stroke: gray)
 bezier-through(a, b, c, name: "b")
 
 // Show calculated control points
-line(a, "b.ctrl-1", "b.ctrl-2", c, stroke: gray)
+line(a, "b.ctrl-0", "b.ctrl-1", c, stroke: gray)
 ```
 
 #show-module-fn(draw-module, "content")
@@ -436,7 +434,7 @@ place-marks(bezier-through((0,0), (1,1), (2,0)),
 
 #show-module-fn(draw-module, "intersections")
 ```example
-intersections(name: "demo", {
+intersections("demo", {
   circle((0, 0))
   bezier((0,0), (3,0), (1,-1), (2,1))
   line((0,-1), (0,1))
@@ -861,7 +859,8 @@ The node itselfes can be of type `content` or `dictionary` with a key `content`.
 #let plot-module-sample = tidy.parse-module(read("src/lib/plot/sample.typ"),
   name: "Plot - Sample")
 
-The library `plot` of CeTZ allows plotting 2D data as linechart.
+The library `plot` of CeTZ allows plotting 2D data.
+
 
 #tidy.show-module(plot-module, show-module-name: false)
 #tidy.show-module(plot-module-line, show-module-name: false)
@@ -1105,7 +1104,7 @@ brace((-1.5, -2.5), (2, -2.5), pointiness: 1, outer-pointiness: 1, stroke: olive
 content((rel: (.3, .1), to: "hill.center"), text[*εїз*])
 ```
 
-#STYLING
+==== Styling
 
 #def-arg("amplitude", `<number>`, default: .7, [Determines how much the brace rises above the base line.])
 #def-arg("pointiness", `<number> or <angle>`, default: 15deg, [How pointy the spike should be. #0deg or `0` for maximum pointiness, #90deg or `1` for minimum.])
@@ -1144,7 +1143,7 @@ merge-path(close: true, fill: white, {
 content(("top.spike", .5, "bottom.spike"), [Hello, World!])
 ```
 
-#STYLING
+==== Styling
 
 #def-arg("amplitude", `<number>`, default: decorations.flat-brace-default-style.amplitude, [Determines how much the brace rises above the base line.])
 #def-arg("aspect", `<number>`, default: decorations.flat-brace-default-style.aspect, [Determines the fraction of the total length where the spike will be placed.])
@@ -1179,7 +1178,7 @@ content(("top.spike", .5, "bottom.spike"), [Hello, World!])
 line((0,0), (1,1), name: "l")
 get-ctx(ctx => {
   // Get the vector of coordinate "l.center"
-  content("l", [#cetz.coordinate.resolve(ctx, "l.center")], frame: "rect",
+  content("l", [#cetz.coordinate.resolve(ctx, "l.center").at(1)], frame: "rect",
           stroke: none, fill: white)
 })
 ```
