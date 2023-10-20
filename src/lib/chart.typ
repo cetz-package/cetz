@@ -98,6 +98,9 @@
 ///                    
 ///                    `(1, 5, 10)` or `((1, [One]), (2, [Two]), (10, [Ten]))`
 /// - x-unit (content,auto): Tick suffix added to each tick label
+/// - x-decimals (int): Number of x axis tick decimals
+/// - x-format (string,function): X axis tick format, `"float"`, `"sci"`
+///                               or a callback of the form `float => content`.
 /// - x-min (number,auto): X axis minimum value
 /// - x-max (number,auto): X axis maximum value
 /// - x-label (content,none): X axis label
@@ -112,6 +115,8 @@
               x-tick-step: auto,
               x-ticks: (),
               x-unit: auto,
+              x-decimals: 1,
+              x-format: "float",
               x-min: auto,
               x-max: auto,
               x-label: none,
@@ -154,8 +159,8 @@
                     label: x-label,
                     ticks: (grid: true, step: x-tick-step,
                             minor-step: none,
-                            unit: x-unit, decimals: 1,
-                            list: x-ticks))
+                            unit: x-unit, decimals: x-decimals,
+                            format: x-format, list: x-ticks))
   let y = axes.axis(min: data.len(), max: -1,
                     label: y-label,
                     ticks: (grid: true,
@@ -279,6 +284,9 @@
 ///                    `(1, 5, 10)` or `((1, [One]), (2, [Two]), (10, [Ten]))`
 /// - y-unit (content,auto): Tick suffix added to each tick label
 /// - y-label (content,none): Y axis label
+/// - y-decimals (int): Number of y axis tick decimals
+/// - y-format (string,function): Y axis tick format, `"float"`, `"sci"`
+///                               or a callback of the form `float => content`.
 /// - y-min (number,auto): Y axis minimum value
 /// - y-max (number,auto): Y axis maximum value
 /// - x-label (content,none): x axis label
@@ -293,6 +301,8 @@
                  y-tick-step: auto,
                  y-ticks: (),
                  y-unit: auto,
+                 y-format: "float",
+                 y-decimals: 1,
                  y-label: none,
                  y-min: auto,
                  y-max: auto,
@@ -340,8 +350,8 @@
                     label: y-label,
                     ticks: (grid: true, step: y-tick-step,
                             minor-step: none,
-                            unit: y-unit, decimals: 1,
-                            list: y-ticks))
+                            unit: y-unit, decimals: y-decimals,
+                            format: y-format, list: y-ticks))
 
   let basic-draw-bar(idx, x, item, ..style) = {
     rect((x - bar-width / 2, 0),
