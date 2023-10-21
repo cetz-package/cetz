@@ -54,31 +54,71 @@
 
 
 #let resolve-anchor(ctx, c) = {
-  // (name: <string>, anchor: <string> or <none>)
-  // "name.anchor"
+  // (name: <string>, anchor: <string> or <none>, offset: <int> or <none>)
+  // "name.anchor[+-]*"
   // "name"
 
-  let (name, anchor) = if type(c) == str {
+  // Count the number of + and - characters at the end of
+  // name, and return the name without the character and
+  // the offset as tuple.
+  let parse-offset(name) = {
+    let offset = 0
+    while name.len() > 1 {
+      if name.ends-with("+") {
+        offset += 1
+        name = name.slice(0, -1)
+      } else if name.ends-with("-") {
+        offset -= 1
+        name = name.slice(0, -1)
+      } else {
+        break
+      }
+    }
+    return (name, offset)
+  }
+
+  let (name, anchor, offset) = if type(c) == str {
     let parts = c.split(".")
     if parts.len() == 1 {
-      (parts.first(), "default")
+      (parts.first(), "default", 0)
     } else {
-      (parts.slice(0, -1).join("."), parts.last())
+      (parts.slice(0, -1).join("."), ..parse-offset(parts.last()))
     }
   } else {
-    (c.name, c.at("anchor", default: "default"))
+    (c.name, c.at("anchor", default: "default"), c.at("offset", default: 0))
   }
 
   // Check if node is known
-  assert(
-    name in ctx.nodes,
-    message: strfmt("Unknown element '{}' in elements {}", name, repr(ctx.nodes.keys()))
-  )
+  assert(name in ctx.nodes,
+    message: "Unknown element '" + name + "' in elements " + repr(ctx.nodes.keys()))
+  // Check if anchor is known
+  let node = ctx.nodes.at(name)
+  assert(anchor in node.anchors,
+    message: "Unknown anchor '" + anchor + "' in anchors " + repr(node.anchors.keys()) + " for node " + name)
 
-  return util.revert-transform(
+  let pos = util.revert-transform(
     ctx.transform,
     (ctx.nodes.at(name).anchors)(anchor)
   )
+
+  // Add the offset as offset in direction
+  // from node center to the current anchor.
+  if offset != 0 {
+    // TODO: This means, every node must/should have an center that
+    // is suitable for this operation which is not true for the new
+    // tikz like anchors. Maye we add an addidional anchor for this
+    // purpose? For arcs i.e. this should be the origin/segment-center.
+    let offset = if "center" in node.anchors {
+      vector.scale(vector.norm(vector.sub(
+        pos,
+        util.revert-transform(ctx.transform, node.anchors.center))),
+        offset * 1) // TODO: This should come from style or ctx!
+    } else { (0, 0, 0) } // TODO: Either do nothing or have a default direction?
+
+    pos = vector.add(pos, offset)
+  }
+
+  return pos
 }
 
 #let resolve-barycentric(ctx, c) = {
