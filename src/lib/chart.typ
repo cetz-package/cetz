@@ -407,3 +407,171 @@
     }
   })
 }
+
+// Styles
+#let boxwhisker-default-style = (
+  axes: (tick: (length: -0.1)),
+  grid: none,
+)
+
+// Valid box and whiskey chart modes
+#let boxwhisker-modes = (
+  "basic", "clustered"
+)
+
+// Functions for max value calculation
+#let boxwhisker-max-value-fn = (
+  basic: (data, value-key) => {
+    calc.max(0, ..data.map(t => 1.2*t.max))
+  },
+  clustered: (data, value-key) => {
+    calc.max(0, 
+      ..data.map( u => calc.max(
+        ..u.map( t => t.max)
+      ))
+    )
+  },
+)
+
+// Functions for min value calculation
+#let boxwhisker-min-value-fn = (
+  basic: (data, value-key) => {
+    calc.min(0, ..data.map(t => 1.2*t.min))
+  },
+  clustered: (data, value-key) => {
+    calc.min(0, 
+      ..data.map( u => calc.min(
+        ..u.map( t => t.max)
+      ))
+    )
+  },
+)
+
+#let boxwhisker( data,
+                 label-key: 0,
+                 value-key: 1,
+                 mode: "basic",
+                 size: (auto, 1),
+                 bar-width: .8,
+                 bar-style: palette.red,
+                 x-label: none,
+                 y-tick-step: auto,
+                 y-ticks: (),
+                 y-unit: auto,
+                 y-label: none,
+                 y-min: auto,
+                 y-max: auto,
+                 ) = {
+  import draw: *
+
+  assert(mode in boxwhisker-modes,
+    message: "Invalid boxwhisker mode")
+    assert(type(label-key) in (int, str))
+  // TODO: Assert value-key type for other modes
+
+  if size.at(1) == auto {
+    size.at(1) = (data.len() + 1)
+  }
+
+  let max-value = (boxwhisker-max-value-fn.at(mode))(data, value-key)
+  if y-max != auto {
+    max-value = y-max
+  }
+  let min-value = (boxwhisker-min-value-fn.at(mode))(data, value-key)
+  if y-min != auto {
+    min-value = y-min
+  }
+
+  let x-tic-list = if mode == "basic" {
+    data.enumerate().map(((i, t)) => {
+      (i, t.at(label-key))
+    })
+  } else if mode == "clustered" {
+    ()
+  }
+
+  let y-unit = y-unit
+  if y-unit == auto {y-unit =  []}
+
+  let x = axes.axis(min: -1, max: data.len(),
+                    label: x-label,
+                    ticks: (grid: none,
+                            step: none,
+                            minor-step: none,
+                            list: x-tic-list))
+  let y = axes.axis(min: min-value, max: max-value,
+                    label: y-label,
+                    ticks: (grid: none, step: y-tick-step,
+                            minor-step: none,
+                            unit: y-unit, decimals: 1,
+                            list: y-ticks))
+
+  let basic-draw-boxwhisker( idx, x, item, bar-width: bar-width, ..style) = {
+
+    // Box
+    rect((x - bar-width / 2, item.q1),
+         (x + bar-width / 2, item.q3),
+         ..bar-style(idx))
+
+    // Mean
+    line((x - bar-width / 2, item.q2),
+         (x + bar-width / 2, item.q2),
+         ..bar-style(idx))
+
+    // whiskers
+    let whisker(x, item, start-key, end-key, arrow-width, ..args) = {
+      line((x, item.at(start-key)),(x, item.at(end-key)),..args)
+      line((x - arrow-width, item.at(end-key)),
+           (x + arrow-width, item.at(end-key)),..args)
+    }
+
+    whisker(x, item, "q3", "max", bar-width/5, ..bar-style(idx))
+    whisker(x, item, "q1", "min", bar-width/5, ..bar-style(idx))
+
+    // Outliers
+    if (item.at("outliers", default: ()).len() > 0) {
+      for outlier in item.outliers {
+        content((x,outlier), [#sym.square.filled.tiny])
+      }
+    }
+  }
+
+  let clustered-draw-boxwhisker(idx, x, item, ..style) = {
+    let x-offset = bar-width / 2
+    let sub-values = item
+    let bar-width = bar-width / sub-values.len()
+
+    for (sub-idx, sub) in item.enumerate() {
+      basic-draw-boxwhisker( idx, 
+        x - x-offset + sub-idx * bar-width, 
+        sub, bar-width: bar-width , ..style)
+    }
+  }
+
+  let draw-data = (
+    if mode == "basic" {basic-draw-boxwhisker} else 
+    if mode == "clustered" {clustered-draw-boxwhisker} 
+  )
+
+  group(ctx => {
+    let style = util.merge-dictionary(boxwhisker-default-style,
+      styles.resolve(ctx.style, (:), root: "boxwhisker"))
+
+    axes.scientific(size: size,
+                    left: y,
+                    right: none,
+                    bottom: x,
+                    top: none,
+                    frame: "set",
+                    ..style.axes)
+    if data.len() > 0 {
+      if type(bar-style) != function { bar-style = ((i) => bar-style) }
+
+      axes.axis-viewport(size, x, y, {
+        for (i, row) in data.enumerate() {
+          draw-data(i, i, row)
+        }
+      })
+    }
+  })
+}
