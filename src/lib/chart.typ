@@ -463,6 +463,7 @@
                  y-max: auto,
                  ) = {
   import draw: *
+  import "plot/mark.typ"
 
   assert(mode in boxwhisker-modes,
     message: "Invalid boxwhisker mode")
@@ -493,13 +494,13 @@
   let y-unit = y-unit
   if y-unit == auto {y-unit =  []}
 
-  let x = axes.axis(min: -1, max: data.len(),
+  let x-axis = axes.axis(min: -1, max: data.len(),
                     label: x-label,
                     ticks: (grid: none,
                             step: none,
                             minor-step: none,
                             list: x-tic-list))
-  let y = axes.axis(min: min-value, max: max-value,
+  let y-axis = axes.axis(min: min-value, max: max-value,
                     label: y-label,
                     ticks: (grid: none, step: y-tick-step,
                             minor-step: none,
@@ -530,9 +531,8 @@
 
     // Outliers
     if (item.at("outliers", default: ()).len() > 0) {
-      for outlier in item.outliers {
-        content((x,outlier), [#sym.square.filled.tiny])
-      }
+      // TODO: Allow custom marker styles
+      mark.draw-mark(item.outliers.map( y=>(x,y)), x-axis, y-axis, "*", 0.1, size)
     }
   }
 
@@ -558,16 +558,16 @@
       styles.resolve(ctx.style, (:), root: "boxwhisker"))
 
     axes.scientific(size: size,
-                    left: y,
+                    left: y-axis,
                     right: none,
-                    bottom: x,
+                    bottom: x-axis,
                     top: none,
                     frame: "set",
                     ..style.axes)
     if data.len() > 0 {
       if type(bar-style) != function { bar-style = ((i) => bar-style) }
 
-      axes.axis-viewport(size, x, y, {
+      axes.axis-viewport(size, x-axis, y-axis, {
         for (i, row) in data.enumerate() {
           draw-data(i, i, row)
         }
