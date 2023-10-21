@@ -59,7 +59,7 @@
     if x >= 0 and x < n-cols and y >= 0 and y < n-rows {
       return float(data.at(y).at(x))
     }
-    return 0
+    return none
   }
 
   // Get case (0 to 15)
@@ -69,6 +69,8 @@
 
   let lerp(a, b) = {
     if a == b { return a }
+    else if a == none { return 1 }
+    else if b == none { return 0 }
     return (offset - a) / (b - a)
   }
 
