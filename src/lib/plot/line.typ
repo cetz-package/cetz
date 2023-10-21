@@ -264,8 +264,10 @@
   assert(y.named().len() == 0)
 
   let prepare(self, ctx) = {
-    let (min, max) = (ctx.x.min, ctx.x.max)
-    self.lines = self.y.map(y => ((min, y), (max, y)))
+    let (x-min, x-max) = (ctx.x.min, ctx.x.max)
+    let (y-min, y-max) = (ctx.y.min, ctx.y.max)
+    self.lines = self.y.filter(y => y >= y-min and y <= y-max)
+      .map(y => ((x-min, y), (x-max, y)))
     return self
   }
 
@@ -278,6 +280,7 @@
   ((
     type: "hline",
     y: y.pos(),
+    y-domain: (calc.min(..y.pos()), calc.max(..y.pos())),
     axes: axes,
     style: style,
     plot-prepare: prepare,
@@ -300,8 +303,10 @@
   assert(x.named().len() == 0)
 
   let prepare(self, ctx) = {
-    let (min, max) = (ctx.y.min, ctx.y.max)
-    self.lines = self.x.map(x => ((x, min), (x, max)))
+    let (x-min, x-max) = (ctx.x.min, ctx.x.max)
+    let (y-min, y-max) = (ctx.y.min, ctx.y.max)
+    self.lines = self.x.filter(x => x >= x-min and x <= x-max)
+      .map(x => ((x, y-min), (x, y-max)))
     return self
   }
 
@@ -314,6 +319,7 @@
   ((
     type: "vline",
     x: x.pos(),
+    x-domain: (calc.min(..x.pos()), calc.max(..x.pos())),
     axes: axes,
     style: style,
     plot-prepare: prepare,
