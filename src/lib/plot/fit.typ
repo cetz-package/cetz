@@ -5,7 +5,7 @@
   "linear",
 )
 
-#let add-lobf(
+#let add-fit(
     data, 
     x-key: 0, y-key: 1,
     mode: "linear",
