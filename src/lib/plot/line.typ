@@ -131,6 +131,9 @@
 
 /// Add data to a plot environment.
 ///
+/// Note: You can use this for scatter plots by setting
+///       the stroke style to `none`: `add(..., style: (stroke: none))`.
+///
 /// Must be called from the body of a `plot(..)` command.
 ///
 /// - domain (array): Domain tuple of the plot. If `data` is a function,
@@ -157,7 +160,7 @@
 ///                              / `"hv"`: Move horizontal and then vertical
 ///                              / `"vhv"`: Add a vertical step in the middle
 ///                              / `"raw"`: Like linear, but without linearization.
-///                                `"linear"` _should_ never look different than `"raw"`.
+///                              / `"linear"` _should_ never look different than `"raw"`.
 ///
 ///                              If the value is a dictionary, the type must be
 ///                              supplied via the `type` key. The following extra
