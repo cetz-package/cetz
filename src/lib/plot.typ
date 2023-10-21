@@ -6,6 +6,7 @@
 
 #import "plot/sample.typ": sample-fn, sample-fn2
 #import "plot/line.typ": add, add-hline, add-vline
+#import "plot/lobf.typ": add-lobf
 #import "plot/contour.typ": add-contour
 
 #let default-colors = (blue, red, green, yellow, black)
