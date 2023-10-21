@@ -67,6 +67,9 @@
 }
 
 #let anchor(name, position) = {
+  assert(not name.ends-with(regex("[-+]+")),
+    message: "Anchors must not end with '-' or '+'!")
+
   coordinate.resolve-system(position)
   return (ctx => {
     assert(
