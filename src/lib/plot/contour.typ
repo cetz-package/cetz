@@ -5,11 +5,14 @@
 // Find contours of a 2D array by using marching squares algorithm
 //
 // - data (array): 2D float array (rows => columns)
-// - offset (float): Value (offset) a cell must be greater or equal to to count as true
+// - offset (float): Z value (offset) of a cell compare with `op` to, to count as true
+// - op (auto,string): Z value comparison oparator: `">", ">=", "<", "<=", "!=", "=="`.
+//                     If set to `auto`, ">=" is used for positive z values, "<=" for
+//                     negative z values.
 // - interpolate (bool): Enable cell interpolation for smoother lines
 // - contour-limit (int): Contour limit after which the algorithm panics
 // -> array: Array of contour point arrays
-#let find-contours(data, offset, interpolate: true, contour-limit: 50) = {
+#let find-contours(data, offset, op: auto, interpolate: true, contour-limit: 50) = {
   assert(data != none)
   assert(type(data) == array)
   assert(type(offset) in (int, float))
@@ -20,13 +23,24 @@
     return ()
   }
 
+  assert(op in (auto, "<", "<=", ">", ">=", "==", "!="))
+  if op == auto {
+    op = if offset < 0 { "<=" } else { ">=" }
+  }
+
   // Return if data is set
-  let is-set(v) = {
-    return if offset < 0 {
-      v <= offset
-    } else {
-      v >= offset
-    }
+  let is-set = if op == "==" {
+    v => v == offset
+  } else if op == "!=" {
+    v => v != offset
+  } else if op == "<" {
+    v => v < offset
+  } else if op == "<=" {
+    v => v <= offset
+  } else if op == ">" {
+    v => v > offset
+  } else if op == ">=" {
+    v => v >= offset
   }
 
   // Build a binary map that has 0 for unset and 1 for set cells
@@ -228,6 +242,9 @@
 /// - x-samples (int): X axis domain samples (2 < n)
 /// - y-samples (int): Y axis domain samples (2 < n)
 /// - interpolate (bool): Use linear interpolation between sample values
+/// - op (auto,string): Z value comparison oparator: `">", ">=", "<", "<=", "!=", "=="`.
+///                     If set to `auto`, ">=" is used for positive z values, "<=" for
+///                     negative z values.
 /// - fill (bool): Fill each contour
 /// - style (style): Style to use, can be used with a palette function
 /// - axes (array): Name of the axes to use ("x", "y"), note that not all
@@ -240,6 +257,7 @@
                  x-samples: 25,
                  y-samples: 25,
                  interpolate: true,
+                 op: auto,
                  axes: ("x", "y"),
                  style: (:),
                  fill: false,
@@ -262,7 +280,7 @@
   let contours = ()
   let z = if type(z) == array { z } else { (z,) }
   for z in z {
-    for contour in find-contours(data, z, interpolate: interpolate) {
+    for contour in find-contours(data, z, op: op, interpolate: interpolate) {
       let line-data = contour.map(pt => {
         (pt.at(0) * dx + x-min,
          pt.at(1) * dy + y-min)
