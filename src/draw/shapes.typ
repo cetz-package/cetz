@@ -495,7 +495,7 @@
   } else if args.len() == 3 {
     args
   } else {
-    panic("Expected 2 or 3 positional arguments, got " + str(args.len))
+    panic("Expected 2 or 3 positional arguments, got " + str(args.len()))
   }
 
   coordinate.resolve-system(a)
