@@ -389,6 +389,53 @@
   },)
 }
 
+/// TODO
+#let arc-through(
+  a,
+  b,
+  c,
+  name: none,
+  ..style,
+) = get-ctx(ctx => {
+  let (ctx, a) = coordinate.resolve(ctx, a)
+  let (ctx, b) = coordinate.resolve(ctx, b)
+  let (ctx, c) = coordinate.resolve(ctx, c)
+  assert(a.at(2) == b.at(2) and b.at(2) == c.at(2),
+    message: "The z coordinate of all points must be equal, but is: " + repr((a, b, c).map(v => v.at(2))))
+
+  let center = util.calculate-circle-center-3pt(a, b, c)
+  let radius = vector.dist(center, a)
+  let start = {
+    let (x, y, ..) = vector.sub(a, center)
+    calc.atan2(x, y) // Typst's atan2 is (x,y) order!
+  }
+  let delta = vector.angle(a, center, c)
+
+  let side-on-line(a, b, pt) = {
+    let (x1, y1, ..) = a
+    let (x2, y2, ..) = b
+    let (x,  y, ..)  = pt
+    return (x - x1) * (y2 - y1) - (y - y1) * (x2 - x1)
+  }
+
+  let center-is-left = side-on-line(a, c, center) < 0
+  let b-is-left = side-on-line(a, c, b) < 0
+
+  // If the center and point b are on the same side of a-c,
+  // the arcs delta must be > 180deg
+  if center-is-left == b-is-left {
+    delta = 360deg - delta
+  }
+
+  // If b is left of a-c, swap a-c to c-a by using a negative delta
+  if b-is-left {
+    delta *= -1
+  }
+
+  return arc(a, start: start, delta: delta, radius: radius,
+    anchor: "arc-start", name: name, ..style)
+})
+
 /// Draws a single mark pointing at a target coordinate
 ///
 /// #example(```
