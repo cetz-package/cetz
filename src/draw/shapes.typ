@@ -530,6 +530,8 @@
       angle
     }
 
+    // Typst's `rotate` function is clockwise relative to x-axis, which is backwards from us
+    angle = angle * -1
 
     let (width, height, ..) = if auto-size {
       util.measure(ctx, body)
