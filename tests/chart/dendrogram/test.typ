@@ -3,9 +3,10 @@
 
 #let data = (
 /* x1, x2, h */
-  (1,  2,  1), // blue
-  (2,  4,  2), // red
-  (3,  5,  3), // green
+  (4,  5,  1), // blue
+  (1,  3,  1), // red
+  (6,  7,  2), // green
+  (2,  8,  2.5)
 )
 
 #let settings = (
@@ -16,6 +17,13 @@
     if idx == 2 { return (stroke: green) }
     return (stroke: black)
   },
+  /*x-ticks: (
+    (1,[4]),
+    (2,[5]),
+    (3,[1]),
+    (4,[3]),
+    (5,[2]),
+  )*/
 )
 
 #box(stroke: 2pt + red, canvas({
