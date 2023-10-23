@@ -6,9 +6,12 @@
 //
 // - data (array): 2D float array (rows => columns)
 // - offset (float): Z value (offset) of a cell compare with `op` to, to count as true
-// - op (auto,string): Z value comparison oparator: `">", ">=", "<", "<=", "!=", "=="`.
-//                     If set to `auto`, ">=" is used for positive z values, "<=" for
-//                     negative z values.
+// - op (auto,string,funciton): Z value comparison oparator:
+//     / `">", ">=", "<", "<=", "!=", "=="`: Use the passed operator to compare z.
+//     / `auto`: Use ">=" for positive z values, "<=" for negative z values.
+//     / `<function>`: If set to a function, that function gets called
+//       with two arguments, the z value `z1` to compare against and
+//       the z value `z2` of the data and must return a boolean: `(z1, z2) => boolean`.
 // - interpolate (bool): Enable cell interpolation for smoother lines
 // - contour-limit (int): Contour limit after which the algorithm panics
 // -> array: Array of contour point arrays
@@ -23,13 +26,17 @@
     return ()
   }
 
-  assert(op in (auto, "<", "<=", ">", ">=", "==", "!="))
-  if op == auto {
-    op = if offset < 0 { "<=" } else { ">=" }
+  if type(op) != function {
+    assert(op in (auto, "<", "<=", ">", ">=", "==", "!="))
+    if op == auto {
+      op = if offset < 0 { "<=" } else { ">=" }
+    }
   }
 
   // Return if data is set
-  let is-set = if op == "==" {
+  let is-set = if type(op) == function {
+    v => op(offset, v)
+  } else if op == "==" {
     v => v == offset
   } else if op == "!=" {
     v => v != offset
@@ -244,9 +251,12 @@
 /// - x-samples (int): X axis domain samples (2 < n)
 /// - y-samples (int): Y axis domain samples (2 < n)
 /// - interpolate (bool): Use linear interpolation between sample values
-/// - op (auto,string): Z value comparison oparator: `">", ">=", "<", "<=", "!=", "=="`.
-///                     If set to `auto`, ">=" is used for positive z values, "<=" for
-///                     negative z values.
+/// - op (auto,string,funciton): Z value comparison oparator:
+///   / `">", ">=", "<", "<=", "!=", "=="`: Use the operator for comparison.
+///   / `auto`: Use ">=" for positive z values, "<=" for negative z values.
+///   / `<function>`: Call comparison function of the format `(plot-z, data-z) => boolean`,
+///                   where `plot-z` is the z-value from the plots `z` argument and `data-z`
+///                   is the z-value of the data getting plotted.
 /// - fill (bool): Fill each contour
 /// - style (style): Style to use, can be used with a palette function
 /// - axes (array): Name of the axes to use ("x", "y"), note that not all
