@@ -50,23 +50,7 @@
 
   // Get case (0 to 15)
   let get-case(tl, tr, bl, br) = {
-    let case = int(tl) * 1000 + int(tr) * 100 + int(bl) * 10 + int(br)
-    return if case == 0000 {  0 }
-      else if case == 0010 {  1 }
-      else if case == 0001 {  2 }
-      else if case == 0011 {  3 }
-      else if case == 0100 {  4 }
-      else if case == 0110 {  5 }
-      else if case == 0101 {  6 }
-      else if case == 0111 {  7 }
-      else if case == 1000 {  8 }
-      else if case == 1010 {  9 }
-      else if case == 1001 { 10 }
-      else if case == 1011 { 11 }
-      else if case == 1100 { 12 }
-      else if case == 1110 { 13 }
-      else if case == 1101 { 14 }
-      else if case == 1111 { 15 }
+    int(tl) * 8 + int(tr) * 4 + int(br) * 2 + int(bl)
   }
 
   let lerp(a, b) = {
