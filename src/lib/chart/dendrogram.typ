@@ -53,6 +53,26 @@
 ///                           rows `.at(..)` function.
 /// - mode (string): Chart mode:
 ///                  - `"vertical"` -- Vertically displayed dendrogram
+/// - size (array): Chart size as width and height tuple in canvas units;
+///                 height can be set to `auto`.
+/// - line-style (style,function): Style or function (idx => style) to use for
+///                               each leaf, accepts a palette function.
+/// - x-label (content,none): X axis label
+/// - y-tick-step (float): Step size of y axis ticks 
+/// - x-ticks (array): List of tick values or value/label tuples
+///
+///                    *Example*
+///                    
+///                    `(1, 5, 10)` or `((1, [One]), (2, [Two]), (10, [Ten]))`
+/// - y-ticks (array): List of tick values or value/label tuples
+///
+///                    *Example*
+///                    
+///                    `(1, 5, 10)` or `((1, [One]), (2, [Two]), (10, [Ten]))`
+/// - y-unit (content,auto): Tick suffix added to each tick label
+/// - y-label (content,none): Y axis label
+/// - y-min (number,auto): Y axis minimum value
+/// - y-max (number,auto): Y axis maximum value
 #let dendrogram(data,
                  x1-key: 0,
                  x2-key: 1,
@@ -61,7 +81,6 @@
                  size: (auto, 1),
                  line-style: (stroke: black + 1pt),
                  x-label: none,
-                 x-tick-step: none,
                  y-tick-step: auto,
                  x-ticks: auto,
                  y-ticks: (),
@@ -78,7 +97,7 @@
     assert(type(height-key) in (int, str))
 
     if size.at(0) == auto {
-      size.at(0) = (data.len() + 1)
+      size.at(0) = (data.len() + 2)
     }
 
     let max-value = (dendrogram-max-value-fn.at(mode))(data, height-key)
@@ -106,7 +125,7 @@
                       max: data.len() + 2,
                       label: x-label,
                       ticks: (list: x-ticks,
-                              grid: none, step: x-tick-step,
+                              grid: none, step: none,
                               minor-step: none,
                       ))
     let y = axes.axis(min: min-value, max: max-value,
