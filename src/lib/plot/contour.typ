@@ -214,7 +214,7 @@
 #let _stroke(self, ctx) = {
   for c in self.contours {
     for p in c.stroke-paths {
-      draw.line(..p, fill: none)
+      draw.line(..p, fill: none, close: p.first() == p.last())
     }
   }
 }
@@ -224,7 +224,7 @@
   if not self.fill { return }
   for c in self.contours {
     for p in c.fill-paths {
-      draw.line(..p, stroke: none)
+      draw.line(..p, stroke: none, close: p.first() == p.last())
     }
   }
 }
