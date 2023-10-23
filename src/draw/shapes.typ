@@ -10,29 +10,13 @@
 #import "/src/matrix.typ"
 #import "/src/process.typ"
 #import "/src/bezier.typ" as bezier_
+#import "/src/anchor.typ" as anchor_
 
 #import "transformations.typ": *
 #import "styling.typ": *
 #import "grouping.typ": *
 
-
-
-#let circle(position, name: none, anchor: none, ..style) = {
-  let anchor-names = (
-    "north",
-    "north-east",
-    "east",
-    "south-east",
-    "south",
-    "south-west",
-    "west",
-    "north-west"
-  )
-  let check-anchors = util.assert-anchors.with(
-    anchor-names,
-    name
-  )
-  check-anchors(anchor)
+#let circle(position, name: none, anchor: none, ..style) = {  
   // No extra positional arguments from the style sink
   assert.eq(
     style.pos(),
@@ -45,51 +29,54 @@
     let (ctx, pos) = coordinate.resolve(ctx, position)
     let style = styles.resolve(ctx.style, style, root: "circle")
     let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
+    let (cx, cy, cz) = pos
+    let (ox, oy) = (calc.cos(45deg) * rx, calc.sin(45deg) * ry)
 
-    let calculate-anchors(transform, anchor) = {
-      if anchor == () {
-        return anchor-names
-      }
-      check-anchors(anchor)
-      let (cx, cy, cz) = pos
-      let (ox, oy) = (calc.cos(45deg) * rx, calc.sin(45deg) * ry)
-      return util.apply-transform(
-        transform, 
-        if type(anchor) == str {
-          (
-            north: (cx, cy + ry),
-            north-east: (cx + ox, cy + oy),
-            east: (cx + rx, cy),
-            south-east: (cx + ox, cy - oy),
-            south: (cx, cy - ry),
-            south-west: (cx - ox, cy - oy),
-            west: (cx - rx, cy),
-            north-west: (cx - ox, cy + oy),
-          ).at(anchor)
-          (cz,)
-        }
+    let calculate-anchor = anchor_.calculate.with(
+      (anchor) => {
+        (
+          north: (cx, cy + ry),
+          north-east: (cx + ox, cy + oy),
+          east: (cx + rx, cy),
+          south-east: (cx + ox, cy - oy),
+          south: (cx, cy - ry),
+          south-west: (cx - ox, cy - oy),
+          west: (cx - rx, cy),
+          north-west: (cx - ox, cy + oy),
+          center: (cx, cy)
+        ).at(anchor)
+        (cz,)
+      },
+      (
+        "north",
+        "north-east",
+        "east",
+        "south-east",
+        "south",
+        "south-west",
+        "west",
+        "north-west",
+        "center",
+      ),
+      default: "center",
+      name: name
+    )
+
+    let transform = if anchor != none {
+      matrix.translate(
+        ctx.transform,
+        calculate-anchor(ctx.transform, anchor)
       )
+    } else {
+      ctx.transform
     }
 
-    let transform = ctx.transform
-
-    if anchor != none {
-      transform = matrix.mul-mat(
-        transform,
-        matrix.transform-translate(
-          ..calculate-anchors(transform, anchor)
-        )
-      )
-    }
-
-    
     return (
       ctx: ctx,
       name: name,
-      // anchor: anchor,
-      anchors: calculate-anchors.with(transform),
+      anchors: calculate-anchor.with(transform),
       drawables: drawable.apply-transform(transform, drawable.ellipse(
-        ..pos,
+        cx, cy, cz,
         rx, ry,
         fill: style.fill,
         stroke: style.stroke,
@@ -109,33 +96,62 @@
 
     let center = util.calculate-circle-center-3pt(a, b, c)
 
-    let anchors = (
-      a: a,
-      b: b,
-      c: c,
-      center: center,
+    let style = styles.resolve(ctx.style, style, root: "circle")
+    let (cx, cy, cz) = center
+    let r = vector.dist(a, (cx, cy))
+    let (ox, oy) = (calc.cos(45deg) * r, calc.sin(45deg) * r)
+
+    let calculate-anchor = anchor_.calculate.with(
+      (anchor) => {
+        (
+          north: (cx, cy + r),
+          north-east: (cx + ox, cy + oy),
+          east: (cx + r, cy),
+          south-east: (cx + ox, cy - oy),
+          south: (cx, cy - r),
+          south-west: (cx - ox, cy - oy),
+          west: (cx - r, cy),
+          north-west: (cx - ox, cy + oy),
+          center: (cx, cy)
+        ).at(anchor)
+        (cz,)
+      },
+      (
+        "north",
+        "north-east",
+        "east",
+        "south-east",
+        "south",
+        "south-west",
+        "west",
+        "north-west",
+        "center",
+      ),
+      default: "center",
+      name: name
     )
 
-    let (x, y, ..) = center
-    let r = vector.dist(a, (x, y))
-    let style = styles.resolve(ctx.style, style, root: "circle")
+    let transform = if anchor != none {
+      matrix.translate(
+        ctx.transform,
+        calculate-anchor(ctx.transform, anchor)
+      )
+    } else {
+      ctx.transform
+    }
 
     return (
       ctx: ctx,
       name: name,
-      anchor: anchor,
       anchors: util.apply-transform(
-        ctx.transform,
+        transform,
         anchors
       ),
       drawables: drawable.apply-transform(
-        ctx.transform,
+        transform,
         drawable.ellipse(
-          x,
-          y,
-          0,
-          r,
-          r,
+          cx, cy, 0,
+          r, r,
           fill: style.fill,
           stroke: style.stroke
         )
@@ -174,40 +190,122 @@
   let stop-angle = if stop == auto { start + delta } else { stop }
   
   return (ctx => {
+    let style = styles.resolve(ctx.style, style, root: "arc")
+    assert(style.mode in ("OPEN", "PIE", "CLOSE"))
     let (ctx, position) = coordinate.resolve(ctx, position)
     let (x, y, z) = position
     
-    let style = styles.resolve(ctx.style, style, root: "arc")
     let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
     
-    let anchors = (
-      start: position,
-      end: (
-        x - rx * calc.cos(start-angle) + rx * calc.cos(stop-angle),
-        y - ry * calc.sin(start-angle) + ry * calc.sin(stop-angle),
-        z,
-      ),
-      origin: (x - rx * calc.cos(start-angle), y - ry * calc.sin(start-angle), z,),
+    // let anchors = (
+    //   start: position,
+    //   end: (
+    //     x - rx * calc.cos(start-angle) + rx * calc.cos(stop-angle),
+    //     y - ry * calc.sin(start-angle) + ry * calc.sin(stop-angle),
+    //     z,
+    //   ),
+    //   origin: (x - rx * calc.cos(start-angle), y - ry * calc.sin(start-angle), z,),
+    // )
+
+    let path = (drawable.arc(
+      x, y, z,
+      start-angle,
+      stop-angle,
+      rx,
+      ry,
+      stroke: style.stroke,
+      fill: style.fill,
+      mode: style.mode,
+    ),)
+
+    let sector-center = (
+      x - rx * calc.cos(start-angle),
+      y - ry * calc.sin(start-angle),
+      z
     )
+    let arc-end = (
+      sector-center.first() + rx * calc.cos(stop-angle),
+      sector-center.at(1) + ry * calc.sin(stop-angle),
+      z
+    )
+    let chord-center = vector.lerp(position, arc-end, 0.5)
+    let arc-center = (
+      sector-center.first() + rx * calc.cos((stop-angle + start-angle)/2),
+      sector-center.at(1) + ry * calc.sin((stop-angle + start-angle)/2),
+      z
+    )
+    let center = if style.mode == "PIE" { 
+      vector.lerp(
+        arc-center, 
+        sector-center,
+        if (stop-angle + start-angle) > 180deg { (stop-angle + start-angle) } else { (stop-angle + start-angle) + 180deg } / 720deg
+      )
+    } else {
+      vector.lerp(
+        arc-center,
+        chord-center,
+        0.5
+      )
+    }
+    let border = anchor_.border.with(center, 2*rx, 2*ry, path + if style.mode == "OPEN" {
+      (drawable.path(path-util.line-segment((position, arc-end))),)
+    })
+
+    let calculate-anchor = anchor_.calculate.with(
+      (anchor) => {
+        (
+          arc-start: position,
+          sector-center: sector-center,
+          arc-end: arc-end,
+          arc-center: arc-center,
+          chord-center: chord-center,
+          center: center,
+          north: border(90deg),
+          north-east: border(45deg),
+          east: border(0deg),
+          south-east: border(-45deg),
+          south: border(-90deg),
+          south-west: border(-135deg),
+          west: border(180deg),
+          north-west: border(135deg)
+        ).at(anchor)
+      },
+      (
+        "north",
+        "north-east",
+        "east",
+        "south-east",
+        "south",
+        "south-west",
+        "west",
+        "north-west",
+        "center",
+        "arc-center",
+        "chord-center",
+        "sector-center",
+        "arc-start",
+        "arc-end"
+      ),
+      default: "arc-start",
+      name: name
+    )
+
+    let transform = if anchor != none {
+      matrix.translate(
+        ctx.transform,
+        calculate-anchor(ctx.transform, anchor)
+      )
+    } else {
+      ctx.transform
+    }
     
     return (
       ctx: ctx,
       name: name,
-      anchor: anchor,
-      default-anchor: "start",
-      anchors: util.apply-transform(ctx.transform, anchors),
+      anchors: calculate-anchor.with(transform),
       drawables: drawable.apply-transform(
-        ctx.transform,
-        drawable.arc(
-          ..position,
-          start-angle,
-          stop-angle,
-          rx,
-          ry,
-          stroke: style.stroke,
-          fill: style.fill,
-          mode: style.mode,
-        ),
+        transform,
+        path,
       )
     )
   },)
@@ -250,9 +348,18 @@
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
     let style = styles.resolve(ctx.style, style, root: "line")
-    let anchors = (
-      start: pts.first(),
-      end: pts.last()
+    let calculate-anchors = anchor_.calculate-anchors.with(
+      (anchor) => {
+        (
+          start: pts.first(),
+          end: pts.last()
+        ).at(anchor)
+      },
+      (
+        "start",
+        "end"
+      ),
+      name: name,
     )
     
     let drawables = (drawable.path(
@@ -282,10 +389,11 @@
         stroke: style.mark.stroke,
       ))
     }
+
     return (
       ctx: ctx,
       name: name,
-      anchors: util.apply-transform(ctx.transform, anchors),
+      anchors: calculate-anchors.with(ctx.transform),
       drawables: drawable.apply-transform(ctx.transform, drawables)
     )
   },)
@@ -299,6 +407,12 @@
 
   return (ctx => {
     let (ctx, from, to) = coordinate.resolve(ctx, from, to)
+
+    (from, to) = (
+      (calc.min(from.at(0), to.at(0)), calc.min(from.at(1), to.at(1))),
+      (calc.max(from.at(0), to.at(0)), calc.max(from.at(1), to.at(1)))
+    )
+
     let style = styles.resolve(ctx.style, style)
     if help-lines {
       style.stroke = 0.2pt + gray
@@ -341,9 +455,39 @@
       }
     }
 
+    let center = ((from.first() + to.first()) / 2, (from.last() + to.last()) / 2)
+    let calculate-anchor = anchor_.calculate.with(
+      (anchor) => {
+        (
+          north: (center.first(), to.last()),
+          north-east: to,
+          east: (to.first(), center.last()),
+          south-east: (to.first(), from.last()),
+          south: (center.first(), from.last()),
+          south-west: from,
+          west: (from.first(), center.last()),
+          north-west: (from.first(), to.last()),
+          center: center,
+        ).at(anchor)
+        (0,)
+      },
+      (
+        "north",
+        "north-east",
+        "east",
+        "south-east",
+        "south",
+        "south-west",
+        "west",
+        "north-west",
+        "center"
+      )
+    )
+
     return (
       ctx: ctx,
       name: name,
+      anchors: calculate-anchor.with(ctx.transform),
       drawables: drawable.apply-transform(
         ctx.transform,
         drawables
@@ -410,29 +554,50 @@
     height = calc.abs(height) + 2 * padding
 
     let anchors = {
-      let x-dir = vector.scale((calc.cos(angle), -calc.sin(angle)), width/2)
-      let y-dir = vector.scale((calc.sin(angle), calc.cos(angle)), height/2)
-      let tr-dir = vector.add(x-dir, y-dir)
-      let tl-dir = vector.sub(x-dir, y-dir)
+      // let x-dir = vector.scale((calc.cos(angle), -calc.sin(angle)), width/2)
+      // let y-dir = vector.scale((calc.sin(angle), calc.cos(angle)), height/2)
+      // let tr-dir = vector.add(x-dir, y-dir)
+      // let tl-dir = vector.sub(x-dir, y-dir)
 
+      // let center = if auto-size {
+      //   a
+      // } else {
+      //   vector.add(a, (width / 2, -height / 2))
+      // }
+
+      // (
+      //   center: center,
+      //   top-left: vector.sub(center, tl-dir),
+      //   top-right: vector.add(center, tr-dir),
+      //   bottom-left: vector.sub(center, tr-dir),
+      //   bottom-right: vector.add(center, tl-dir),
+      //   left: vector.sub(center, x-dir),
+      //   right: vector.add(center, x-dir),
+      //   bottom: vector.sub(center, y-dir),
+      //   top: vector.add(center, y-dir),
+      // )
+      let w = width/2
+      let h = height/2
       let center = if auto-size {
         a
       } else {
-        vector.add(a, (width / 2, -height / 2))
+        vector.add(a, (w, -h))
       }
-
       (
         center: center,
-        top-left: vector.sub(center, tl-dir),
-        top-right: vector.add(center, tr-dir),
-        bottom-left: vector.sub(center, tr-dir),
-        bottom-right: vector.add(center, tl-dir),
-        left: vector.sub(center, x-dir),
-        right: vector.add(center, x-dir),
-        bottom: vector.sub(center, y-dir),
-        top: vector.add(center, y-dir),
+        north: vector.add(center, (0, h)),
+        north-east: vector.add(center, (w, h)),
+        east: vector.add(center, (w, 0)),
+        south-east: vector.add(center, (w, -h)),
+        south: vector.add(center, (0, -h)),
+        south-west: vector.add(center, (-w, -h)),
+        west: vector.add(center, (-w, 0)),
+        north-west: vector.add(center, (-w, h)),
       )
+      
     }
+
+    
 
     let drawables = ()
 
@@ -441,18 +606,18 @@
         if style.frame == "rect" {
           drawable.path(
             path-util.line-segment((
-              anchors.top-left,
-              anchors.top-right,
-              anchors.bottom-right,
-              anchors.bottom-left
+              anchors.north-west,
+              anchors.north-east,
+              anchors.south-east,
+              anchors.south-west
             )),
             close: true,
             stroke: style.stroke,
             fill: style.fill
           )
         } else if style.frame == "circle" {
-          let (x, y, z) = util.calculate-circle-center-3pt(anchors.top-left, anchors.bottom-left, anchors.bottom-right)
-          let r = vector.dist((x, y, z), anchors.top-left)
+          let (x, y, z) = util.calculate-circle-center-3pt(anchors.north-west, anchors.south-west, anchors.south-east)
+          let r = vector.dist((x, y, z), anchors.north-west)
           drawable.ellipse(
             x, y, z,
             r, r,
@@ -462,6 +627,8 @@
         }
       )
     }
+
+    
 
     drawables.push(
       drawable.content(
@@ -479,15 +646,34 @@
       )
     )
 
+    let anchors = anchor_.calculate.with(
+      (anchor) => {
+        anchors.at(anchor)
+      },
+      anchors.keys(),
+      default: if auto-size { "center" } else { "top-left" },
+      name: name,
+    )
+    let transform = matrix.mul-mat(
+      matrix.transform-rotate-z(angle),
+      if anchor != none {
+        matrix.translate(
+          ctx.transform,
+          anchors(ctx.transform, anchor)
+        )
+      } else {
+        ctx.transform
+      }
+    )
+    anchors = anchors.with(transform)
+
 
     return (
       ctx: ctx,
       name: name,
-      anchor: anchor,
-      default-anchor: if auto-size { "center" } else { "top-left" },
-      anchors: util.apply-transform(ctx.transform, anchors),
+      anchors: anchors,
       drawables: drawable.apply-transform(
-        ctx.transform,
+        transform,
         drawables
       )
     )
@@ -523,19 +709,24 @@
         )
         (lo, hi)
       }
-      
-      let c = vector.sub(b, a)
-      let (w, h, d) = c
-      let anchors = (
-        bottom-left: a,
-        bottom: vector.add(a, (w / 2, 0, d / 2)),
-        bottom-right: vector.add(a, (w, 0, d)),
-        top-left: vector.sub(b, (w, 0, d)),
-        top: vector.sub(b, (w / 2, 0, d / 2)),
-        top-right: b,
-        left: vector.add(a, (0, h / 2, d / 2)),
-        right: vector.sub(b, (0, h / 2, d / 2)),
-        center: vector.add(a, (w / 2, h / 2, d / 2)),
+      let anchors = anchor_.calculate.with(
+        (anchor) => {
+          let (w, h, d) = vector.sub(b, a)
+          (
+            south-west: a,
+            south: vector.add(a, (w / 2, 0, d / 2)),
+            south-east: vector.add(a, (w, 0, d)),
+            north-west: vector.sub(b, (w, 0, d)),
+            north: vector.sub(b, (w / 2, 0, d / 2)),
+            north-east: b,
+            east: vector.add(a, (0, h / 2, d / 2)),
+            west: vector.sub(b, (0, h / 2, d / 2)),
+            center: vector.add(a, (w / 2, h / 2, d / 2)),
+          ).at(anchor)
+        },
+        ("north", "south-west", "south", "south-east", "north-west", "north-east", "east", "west", "center"),
+        default: "center",
+        name: name
       )
       
       let style = styles.resolve(ctx.style, style, root: "rect")
@@ -547,14 +738,22 @@
         stroke: style.stroke,
         close: true,
       )
+
+      let transform = if anchor != none {
+        matrix.translate(
+          ctx.transform,
+          calculate-anchor(ctx.transform, anchor)
+        )
+      } else {
+        ctx.transform
+      }
       
       
       return (
         ctx: ctx,
         name: name,
-        anchor: anchor,
-        anchors: util.apply-transform(ctx.transform, anchors),
-        drawables: drawable.apply-transform(ctx.transform, drawables),
+        anchors: anchors.with(transform),
+        drawables: drawable.apply-transform(transform, drawables),
       )
     },
   )
@@ -583,7 +782,20 @@
         (start, end, ..ctrl) = bezier_.quadratic-to-cubic(start, end, ..ctrl)
       }
       
-      let anchors = (start: start, end: end, ctrl-0: ctrl.at(0), ctrl-1: ctrl.at(1))
+      // let anchors = (start: start, end: end, ctrl-0: ctrl.at(0), ctrl-1: ctrl.at(1))
+      let anchors = anchor_.calculate.with(
+        anchor => {
+          (
+            start: start,
+            end: end,
+            ctrl-0: ctrl.at(0),
+            ctrl-1: ctrl.at(1),
+          ).at(anchor)
+        },
+        ("start", "end", "ctrl-0", "ctrl-1"),
+        default: "start",
+        name: name
+      )
       let style = styles.resolve(ctx.style, style, root: "bezier")
 
       let drawables = (drawable.path(
@@ -617,12 +829,21 @@
         }
       }
 
+      let transform = if anchor != none {
+        matrix.translate(
+          ctx.transform,
+          calculate-anchor(ctx.transform, anchor)
+        )
+      } else {
+        ctx.transform
+      }
+
       return (
         ctx: ctx, 
         name: name,
-        anchors: util.apply-transform(ctx.transform, anchors),
+        anchors: anchors.with(transform),
         drawables: drawable.apply-transform(
-          ctx.transform,
+          transform,
           drawables
         )
       )
@@ -654,23 +875,41 @@
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
 
-    let anchors = (
-      start: pts.first(),
-      end: pts.last(),
-    )
-    for (i, pt) in pts.enumerate() {
-      anchors.insert("pt-" + str(i + 1), pt)
+    let anchors = {
+      let a = (
+        start: pts.first(),
+        end: pts.last(),
+      )
+      for (i, pt) in pts.enumerate() {
+        a.insert("pt-" + str(i + 1), pt)
+      }
+      anchor_.calculate.with(
+        anchor => {
+          a.at(anchor)
+        },
+        a.keys(),
+        name: name,
+        default: "start"
+      )
     }
 
     let style = styles.resolve(ctx.style, style, root: "catmull")
-    // let curves = catmull-to-cubic()
+
+    let transform = if anchor != none {
+      matrix.translate(
+        ctx.transform,
+        calculate-anchor(ctx.transform, anchor)
+      )
+    } else {
+      ctx.transform
+    }
 
     return (
       ctx: ctx,
       name: name,
-      anchors: util.apply-transform(ctx.transform, anchors),
+      anchors: anchors.with(transform),
       drawables: drawable.apply-transform(
-        ctx.transform,
+        transform,
         drawable.path(
           bezier_.catmull-to-cubic(
             pts,
