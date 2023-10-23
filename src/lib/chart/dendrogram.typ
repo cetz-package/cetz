@@ -8,30 +8,56 @@
 
 // Valid dendrogram modes
 #let dendrogram-modes = (
-  "basic",
+  "vertical",
 )
 
 // Functions for max value calculation
 #let dendrogram-max-value-fn = (
-  basic: (data, value-key) => {
+  vertical: (data, value-key) => {
     calc.max(0, ..data.map(t => t.at(value-key)))
   },
 )
 
 // Functions for min value calculation
 #let dendrogram-min-value-fn = (
-  basic: (data, value-key) => {
+  vertical: (data, value-key) => {
     calc.min(0, ..data.map(t => t.at(value-key)))
   },
 )
 
 // TODO:
 
+/// Draw a dendrogram. A dendrogram is a chat that relative distances higher
+/// dimensional spaces. It if often used by data scientists in clustering
+/// analyses.
+///
+/// *Style root*: `dendrogram`.
+///
+/// - data (array): Array of data rows, with each entry representing a leaf on
+///                 the dendrogram.A row can be of type array or dictionary,
+///                 with `x1-key`, `x2-key`, and `height-key` being the keys
+///                 used to axcess a row's links and heights.
+///
+///                 *Example*
+///                 ```typc
+///                 ((1, 2, 0.5),(3, 4, 1),(6, 7, 2),(5, 8, 2.5))
+///                 ```
+/// - x1-key (int,string): Key to access the first cluster of a data row. This 
+///                        key is used as argument to the rows `.at(..)` 
+///                        function.
+/// - x2-key (int,string): Key to access the second cluster of a data row. 
+///                        This key is used as argument to the rows `.at(..)` 
+///                        function.
+/// - value-key (int,string): Key(s) to access value(s) of data row.
+///                           These keys are used as argument to the
+///                           rows `.at(..)` function.
+/// - mode (string): Chart mode:
+///                  - `"vertical"` -- Vertically displayed dendrogram
 #let dendrogram(data,
                  x1-key: 0,
                  x2-key: 1,
                  height-key: 2,
-                 mode: "basic",
+                 mode: "vertical",
                  size: (auto, 1),
                  line-style: (stroke: black + 1pt),
                  x-label: none,
@@ -90,7 +116,7 @@
                               unit: y-unit, decimals: 1,
                               list: y-ticks))
 
-    let basic-draw-dendrogram(data, ..style) = {
+    let vertical-draw-dendrogram(data, ..style) = {
 
         let data-mut = data // Mutable
         let line-style = line-style;
@@ -106,13 +132,13 @@
             let y2 = 0
 
             if ( x1 > (data.len()+1) ){
-                let child = data_mut.at(x1 - 2)
+                let child = data-mut.at(x1 - 2)
                 x1 = child.at(x1-key)
                 y1 = child.at(height-key)
             }
 
             if ( x2 > (data.len())+1){
-                let child = data_mut.at(x2 - 2)
+                let child = data-mut.at(x2 - 2)
                 x2 = child.at(x1-key)
                 y2 = child.at(height-key)
             }
@@ -121,7 +147,7 @@
               line((x1, y1),(x1, height),(x2, height),(x2, y2)),
               ..style, ..line-style(idx))
 
-            data_mut.push((
+            data-mut.push((
                 (x1 + x2)/2,
                 (x1 + x2)/2,
                 height
@@ -132,7 +158,7 @@
     }
 
     let draw-data = (
-      if mode == "basic" {basic-draw-dendrogram}
+      if mode == "vertical" {vertical-draw-dendrogram}
     )
 
     group(ctx => {
