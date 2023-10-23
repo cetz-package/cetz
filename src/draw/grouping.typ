@@ -7,6 +7,7 @@
 #import "/src/vector.typ"
 #import "/src/util.typ"
 #import "/src/coordinate.typ"
+#import "@preview/oxifmt:0.2.0": strfmt
 
 #let intersections(name, body, samples: 10) = {
   samples = calc.clamp(samples, 2, 2500)
@@ -143,7 +144,11 @@
 
 #let for-each-anchor(name, callback) = {
   get-ctx(ctx => {
-    for anchor in (ctx.nodes.at(name).at("anchors", default: (:)))(()) {
+    assert(
+      name in ctx.nodes,
+      message: strfmt("Unknown element {} in elements {}", name, repr(ctx.nodes.keys()))
+    )
+    for anchor in (ctx.nodes.at(name).anchors)(()) {
       move-to(name + "." + anchor)
       callback(anchor)
     }

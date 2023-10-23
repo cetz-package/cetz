@@ -1,6 +1,9 @@
+#import "@preview/oxifmt:0.2.0": strfmt
+
 #import "matrix.typ"
 #import "vector.typ"
 #import "bezier.typ"
+
 
 /// Constant to be used as float rounding error
 #let float-epsilon = 0.000001
@@ -194,6 +197,3 @@
   )
 }
 
-#let assert-anchors(anchors, element-name, anchor) = {
-  assert(anchor in anchors or anchor == none, message: "Anchor '" + anchor + "' not in anchors " + repr(anchors) + if element-name != none { " for element " + element-name })
-}

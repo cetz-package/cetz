@@ -176,3 +176,13 @@
 
   return inverted
 }
+
+// Translate the matrix by the vector
+#let translate(mat, vec) = {
+  return mul-mat(
+    mat,
+    transform-translate(
+      ..vec
+    )
+  )
+}
