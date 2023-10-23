@@ -118,9 +118,27 @@
 
   let x-ticks = x-ticks
   if (x-ticks == auto) {
-    x-ticks = range(0, data.len()*2 - 1).map(it => {
-      (it, it)
-    })
+    // Pre-calculate order of leaf indices
+    let x-counter = 0
+    let ticks = ()
+
+    for (idx, entry) in data.enumerate() {
+      let x1 = entry.at(x1-key)
+      let x2 = entry.at(x2-key)
+
+      // Only check relevent entries
+      if ( x1 < (data.len() + 2) ){
+        x-counter = x-counter + 1
+        ticks.push( (x-counter, x1 ))
+      }
+
+      if ( x2 < (data.len() + 2) ){
+        x-counter = x-counter + 1
+        ticks.push( (x-counter, x2 ))
+      }
+    }
+
+    x-ticks = ticks
   }
 
   let y-unit = y-unit
@@ -151,8 +169,12 @@
     let line-style = line-style;
     if type(line-style) != function { line-style = ((i) => line-style) }
 
+    let x-counter = 0
+    let x-array = (false,) * (data.len() + 1)
+
     for (idx, entry) in data.enumerate() {
       let height = entry.at(height-key)
+
       let x1 = entry.at(x1-key)
       let x2 = entry.at(x2-key)
 
@@ -163,12 +185,34 @@
           let child = data-mut.at(x1 - 2)
           x1 = child.at(x1-key)
           y1 = child.at(height-key)
+      } else {
+        // x2 is a ground-level leave
+        // Does it have an assigned x?
+        let possible-id = x-array.at(x1, default: false)
+        if ( possible-id == false ){
+          x-counter = x-counter + 1
+          x-array.insert(x1, x-counter)
+          x1 = x-counter
+        } else {
+          x1 = possible-id
+        }
       }
 
       if (x2 > (data.len()) + 1){
           let child = data-mut.at(x2 - 2)
           x2 = child.at(x1-key)
           y2 = child.at(height-key)
+      } else {
+        // x2 is a ground-level leave
+        // Does it have an assigned x?
+        let possible-id = x-array.at(x2, default: false)
+        if ( possible-id == false ){
+          x-counter = x-counter + 1
+          x-array.insert(x2, x-counter)
+          x2 = x-counter
+        } else {
+          x2 = possible-id
+        }
       }
 
       line((x1, y1), (x1, height), (x2, height), (x2, y2),
@@ -187,8 +231,12 @@
     let line-style = line-style;
     if type(line-style) != function { line-style = ((i) => line-style) }
 
+    let x-counter = 0
+    let x-array = (false,) * (data.len() + 1)
+
     for (idx, entry) in data.enumerate() {
       let height = entry.at(height-key)
+
       let x1 = entry.at(x1-key)
       let x2 = entry.at(x2-key)
 
@@ -196,15 +244,37 @@
       let y2 = 0
 
       if (x1 > (data.len() + 1)){
-        let child = data-mut.at(x1 - 2)
-        x1 = child.at(x1-key)
-        y1 = child.at(height-key)
+          let child = data-mut.at(x1 - 2)
+          x1 = child.at(x1-key)
+          y1 = child.at(height-key)
+      } else {
+        // x2 is a ground-level leave
+        // Does it have an assigned x?
+        let possible-id = x-array.at(x1, default: false)
+        if ( possible-id == false ){
+          x-counter = x-counter + 1
+          x-array.insert(x1, x-counter)
+          x1 = x-counter
+        } else {
+          x1 = possible-id
+        }
       }
 
       if (x2 > (data.len()) + 1){
-        let child = data-mut.at(x2 - 2)
-        x2 = child.at(x1-key)
-        y2 = child.at(height-key)
+          let child = data-mut.at(x2 - 2)
+          x2 = child.at(x1-key)
+          y2 = child.at(height-key)
+      } else {
+        // x2 is a ground-level leave
+        // Does it have an assigned x?
+        let possible-id = x-array.at(x2, default: false)
+        if ( possible-id == false ){
+          x-counter = x-counter + 1
+          x-array.insert(x2, x-counter)
+          x2 = x-counter
+        } else {
+          x2 = possible-id
+        }
       }
 
       line((y1, x1), (height, x1), (height, x2), (y2, x2),
