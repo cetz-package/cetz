@@ -1,5 +1,5 @@
 #set page(width: auto, height: auto)
-#import "../../../src/lib.typ": *
+#import "/src/lib.typ": *
 
 #let dendrogram-data = (
     (1, 2, 0.5000),
