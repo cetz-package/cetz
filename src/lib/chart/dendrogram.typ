@@ -117,11 +117,9 @@
                 y2 = child.at(height-key)
             }
 
-            merge-path({
-                line((x1, y1), (x1, height))
-                line((x1, height), (x2, height))
-                line((x2, height),(x2, y2))
-            }, ..style, ..dendrogram-style(idx))
+            merge-path(
+              line((x1, y1),(x1, height),(x2, height),(x2, y2)),
+              ..style, ..dendrogram-style(idx))
 
             data_mut.push((
                 (x1 + x2)/2,
