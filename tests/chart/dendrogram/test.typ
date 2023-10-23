@@ -18,7 +18,7 @@
         (4,[B2]),
         (5,[Control])
     ),
-    dendrogram-style: (idx)=>{
+    line-style: (idx)=>{
         if idx in (0,){ return (stroke: red + 1pt)}
         if idx in (1,){ return (stroke: green + 1pt)}
         //if idx in (2,){ return (stroke: blue + 1pt)}

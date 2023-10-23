@@ -3,7 +3,7 @@
 #import "../../draw.typ"
 
 #let dendrogram-default-style = (
-  axes: (tick: (length: 0))
+  axes: (:)
 )
 
 // Valid dendrogram modes
@@ -33,7 +33,7 @@
                  height-key: 2,
                  mode: "basic",
                  size: (auto, 1),
-                 dendrogram-style: (stroke: black + 1pt),
+                 line-style: (stroke: black + 1pt),
                  x-label: none,
                  x-tick-step: none,
                  y-tick-step: auto,
@@ -93,8 +93,8 @@
     let basic-draw-dendrogram(data, ..style) = {
 
         let data_mut = data // Mutable
-        let dendrogram-style = dendrogram-style;
-        if type(dendrogram-style) != function { dendrogram-style = ((i) => dendrogram-style) }
+        let line-style = line-style;
+        if type(line-style) != function { line-style = ((i) => line-style) }
         
         for (idx, entry) in data.enumerate() {
 
@@ -119,7 +119,7 @@
 
             merge-path(
               line((x1, y1),(x1, height),(x2, height),(x2, y2)),
-              ..style, ..dendrogram-style(idx))
+              ..style, ..line-style(idx))
 
             data_mut.push((
                 (x1 + x2)/2,
