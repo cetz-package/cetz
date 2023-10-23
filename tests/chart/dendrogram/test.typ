@@ -1,38 +1,33 @@
 #set page(width: auto, height: auto)
 #import "/src/lib.typ": *
 
-#let dendrogram-data = (
-    (1, 2, 0.5000),
-    (3, 4, 1.0000),
-    (6, 7, 2.0616),
-    (5, 8, 2.5000)
+#let data = (
+/* x1, x2, h */
+  (1,  2,  1), // blue
+  (2,  4,  2), // red
+  (3,  5,  3), // green
 )
 
 #let settings = (
-    size: (auto, 6),
-    x-ticks: (
-        (1,[S1]),
-        (2,[S2]),
-        (3,[B1]),
-        (4,[B2]),
-        (5,[Control])
-    ),
-    line-style: (idx)=>{
-        if idx in (0,){ return (stroke: red)}
-        if idx in (1,){ return (stroke: green)}
-        return (stroke: black)
-    },
+  size: (auto, 6),
+  line-style: (idx)=>{
+    if idx == 0 { return (stroke: blue) }
+    if idx == 1 { return (stroke: red) }
+    if idx == 2 { return (stroke: green) }
+    return (stroke: black)
+  },
 )
 
 #box(stroke: 2pt + red, canvas({
   chart.dendrogram(
-    ..settings,
-    dendrogram-data)
+    mode: "vertical",
+    data,
+    ..settings)
 }))
 
 #box(stroke: 2pt + red, canvas({
   chart.dendrogram(
-    ..settings,
-    dendrogram-data,
-    mode:"horizontal")
+    mode:"horizontal",
+    data,
+    ..settings)
 }))
