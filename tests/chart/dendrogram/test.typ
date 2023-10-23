@@ -8,9 +8,8 @@
     (5, 8, 2.5000)
 )
 
-#canvas({
-  chart.dendrogram(
-    size: (10, 10),
+#let settings = (
+    size: (auto, 6),
     x-ticks: (
         (1,[S1]),
         (2,[S2]),
@@ -19,9 +18,21 @@
         (5,[Control])
     ),
     line-style: (idx)=>{
-        if idx in (0,){ return (stroke: red + 1pt)}
-        if idx in (1,){ return (stroke: green + 1pt)}
-        //if idx in (2,){ return (stroke: blue + 1pt)}
+        if idx in (0,){ return (stroke: red)}
+        if idx in (1,){ return (stroke: green)}
+        return (stroke: black)
     },
+)
+
+#box(stroke: 2pt + red, canvas({
+  chart.dendrogram(
+    ..settings,
     dendrogram-data)
-})
+}))
+
+#box(stroke: 2pt + red, canvas({
+  chart.dendrogram(
+    ..settings,
+    dendrogram-data,
+    mode:"horizontal")
+}))

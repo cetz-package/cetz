@@ -8,7 +8,7 @@
 
 // Valid dendrogram modes
 #let dendrogram-modes = (
-  "vertical",
+  "vertical", "horizontal"
 )
 
 // Functions for max value calculation
@@ -16,11 +16,17 @@
   vertical: (data, value-key) => {
     calc.max(0, ..data.map(t => t.at(value-key)))
   },
+  horizontal: (data, value-key) => {
+    calc.max(0, ..data.map(t => t.at(value-key)))
+  },
 )
 
 // Functions for min value calculation
 #let dendrogram-min-value-fn = (
   vertical: (data, value-key) => {
+    calc.min(0, ..data.map(t => t.at(value-key)))
+  },
+  horizontal: (data, value-key) => {
     calc.min(0, ..data.map(t => t.at(value-key)))
   },
 )
@@ -135,6 +141,12 @@
                               unit: y-unit, decimals: 1,
                               list: y-ticks))
 
+    if mode == "horizontal" {
+      let temp = x
+      x = y
+      y=temp
+    }
+
     let vertical-draw-dendrogram(data, ..style) = {
 
         let data-mut = data // Mutable
@@ -176,8 +188,50 @@
 
     }
 
+    let horizontal-draw-dendrogram(data, ..style) = {
+
+        let data-mut = data // Mutable
+        let line-style = line-style;
+        if type(line-style) != function { line-style = ((i) => line-style) }
+        
+        for (idx, entry) in data.enumerate() {
+
+            let height = entry.at(height-key)
+            let x1 = entry.at(x1-key)
+            let x2 = entry.at(x2-key)
+
+            let y1 = 0
+            let y2 = 0
+
+            if ( x1 > (data.len()+1) ){
+                let child = data-mut.at(x1 - 2)
+                x1 = child.at(x1-key)
+                y1 = child.at(height-key)
+            }
+
+            if ( x2 > (data.len())+1){
+                let child = data-mut.at(x2 - 2)
+                x2 = child.at(x1-key)
+                y2 = child.at(height-key)
+            }
+
+            merge-path(
+              line((y1, x1),(height,x1),(height,x2),(y2,x2)),
+              ..style, ..line-style(idx))
+
+            data-mut.push((
+                (x1 + x2)/2,
+                (x1 + x2)/2,
+                height
+            ))
+
+        }
+
+    }
+
     let draw-data = (
-      if mode == "vertical" {vertical-draw-dendrogram}
+      if mode == "vertical" {vertical-draw-dendrogram} else
+      if mode == "horizontal" {horizontal-draw-dendrogram}
     )
 
     group(ctx => {
