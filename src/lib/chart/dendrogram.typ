@@ -92,7 +92,7 @@
 
     let basic-draw-dendrogram(data, ..style) = {
 
-        let data_mut = data // Mutable
+        let data-mut = data // Mutable
         let line-style = line-style;
         if type(line-style) != function { line-style = ((i) => line-style) }
         
