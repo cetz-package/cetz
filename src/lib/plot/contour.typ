@@ -4,8 +4,8 @@
 
 // Find contours of a 2D array by using marching squares algorithm
 //
-// - data (array): 2D float array (rows => columns)
-// - offset (float): Z value (offset) of a cell compare with `op` to, to count as true
+// - data (array): A 2D array of floats where the first index is the row and the second index is the column
+// - offset (float): Z value threshold of a cell compare with `op` to, to count as true
 // - op (auto,string,funciton): Z value comparison oparator:
 //     / `">", ">=", "<", "<=", "!=", "=="`: Use the passed operator to compare z.
 //     / `auto`: Use ">=" for positive z values, "<=" for negative z values.
@@ -16,9 +16,10 @@
 // - contour-limit (int): Contour limit after which the algorithm panics
 // -> array: Array of contour point arrays
 #let find-contours(data, offset, op: auto, interpolate: true, contour-limit: 50) = {
-  assert(data != none)
-  assert(type(data) == array)
-  assert(type(offset) in (int, float))
+  assert(data != none and type(data) == array,
+    message: "Data must be of type array")
+  assert(type(offset) in (int, float),
+    message: "Offset must be numeric")
 
   let n-rows = data.len()
   let n-cols = data.at(0).len()
@@ -26,11 +27,14 @@
     return ()
   }
 
-  if type(op) != function {
-    assert(op in (auto, "<", "<=", ">", ">=", "==", "!="))
-    if op == auto {
-      op = if offset < 0 { "<=" } else { ">=" }
-    }
+  assert(op == auto or type(op) in (str, function),
+    message: "Operator must be of type auto, string or function")
+  if op == auto {
+    op = if offset < 0 { "<=" } else { ">=" }
+  }
+  if type(op) == str {
+    assert(op in ("<", "<=", ">", ">=", "==", "!="),
+      message: "Operator must be one of: <, <=, >, >=, != or ==")
   }
 
   // Return if data is set
@@ -238,7 +242,9 @@
 
 /// Add a contour plot of a sampled function or a matrix.
 ///
-/// - data (array, function): Matrix or `(x, y) => z` function
+/// - data (array, function): A function of the signature `(x, y) => z`
+///                           or an array of floats where the first
+///                           index is the row and the second index is the column.
 ///
 ///                           *Examples:*
 ///                           - `(x, y) => x > 0`
