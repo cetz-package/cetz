@@ -11,7 +11,6 @@
 
 #let settings = (
   line-style: (idx)=>{(stroke: (blue, red, green).at(idx, default: black))},
-  y-min: 0,
   size: (6, 6)
 )
 

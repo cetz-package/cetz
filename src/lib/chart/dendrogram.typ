@@ -41,26 +41,26 @@
 /// - mode (string): Chart mode:
 ///                  - `"vertical"` -- Vertically displayed dendrogram
 ///                  - `"horizontal"` -- Horizontally displayed dendrogram
+///                  - `"radial"` -- Radially displayed dendrogram
 /// - size (array): Chart size as width and height tuple in canvas units;
 ///                 height can be set to `auto`.
 /// - line-style (style,function): Style or function (idx => style) to use for
 ///                               each leaf, accepts a palette function.
-/// - x-label (content,none): X axis label
-/// - y-tick-step (float): Step size of y axis ticks 
-/// - x-ticks (array): List of tick values or value/label tuples
+/// - leaf-axis-label (content,none): Leaf axis label
+/// - leaf-axis-ticks (array): List of tick values or value/label tuples
 ///
 ///                    *Example*
 ///                    
 ///                    `(1, 5, 10)` or `((1, [One]), (2, [Two]), (10, [Ten]))`
-/// - y-ticks (array): List of tick values or value/label tuples
+/// - height-axis-ticks (array): List of tick values or value/label tuples
 ///
 ///                    *Example*
 ///                    
 ///                    `(1, 5, 10)` or `((1, [One]), (2, [Two]), (10, [Ten]))`
-/// - y-unit (content,auto): Tick suffix added to each tick label
-/// - y-label (content,none): Y axis label
-/// - y-min (number,auto): Y axis minimum value
-/// - y-max (number,auto): Y axis maximum value
+/// - height-axis-unit (content,auto): Tick suffix added to each tick label
+/// - height-axis-label (content,none): Height axis label
+/// - height-axis-min (number,auto): Height-axis minimum value
+/// - height-axis-max (number,auto): Height-axis maximum value
 #let dendrogram(data,
                 x1-key: 0,
                 x2-key: 1,
@@ -68,14 +68,14 @@
                 size: auto,
                 mode: "vertical",
                 line-style: (stroke: black + 1pt),
-                x-label: none,
-                y-tick-step: auto,
-                x-ticks: auto,
-                y-ticks: (),
-                y-unit: none,
-                y-label: none,
-                y-min: auto,
-                y-max: auto,
+                leaf-axis-label: none,
+                leaf-axis-ticks: auto,
+                height-axis-tick-step: auto,
+                height-axis-ticks: (),
+                height-axis-unit: none,
+                height-axis-label: none,
+                height-axis-min: auto,
+                height-axis-max: auto,
                 ) = {
   import draw: *
 
@@ -100,10 +100,10 @@
     size.at(size-node-axis-index) = (data.len() + 2)
   }
 
-  let max-value = (if y-max != auto {y-max} else {calc.max(..data.map(data => data.at(height-key)))})
-  let min-value = (if y-min != auto {y-min} else {calc.min(0, ..data.map(data => data.at(height-key)))})
+  let max-value = (if height-axis-max != auto {height-axis-max} else {calc.max(..data.map(data => data.at(height-key)))})
+  let min-value = (if height-axis-min != auto {height-axis-min} else {calc.min(0, ..data.map(data => data.at(height-key)))})
 
-  if x-ticks == auto {
+  if leaf-axis-ticks == auto {
     // Pre-calculate order of leaf indices
     let x-counter = 0
     let ticks = ()
@@ -124,22 +124,22 @@
       }
     }
 
-    x-ticks = ticks
+    leaf-axis-ticks = ticks
   }
 
   let x = axes.axis(min: 0,
                     max: if mode == "radial" {max-value + 1} else {data.len() + 2},
-                    label: x-label,
-                    ticks: (list: x-ticks,
+                    label: leaf-axis-label,
+                    ticks: (list: leaf-axis-ticks,
                             grid: none, step: none,
                             minor-step: none,
                     ))
   let y = axes.axis(min: min-value, max: max-value,
-                    label: y-label,
-                    ticks: (grid: true, step: y-tick-step,
+                    label: height-axis-label,
+                    ticks: (grid: true, step: height-axis-tick-step,
                             minor-step: none,
-                            unit: y-unit, decimals: 1,
-                            list: y-ticks))
+                            unit: height-axis-unit, decimals: 1,
+                            list: height-axis-ticks))
 
   // Calculates the (x,y) position of a leaf
   let get-xy(x-key, entry, x-array, x-counter, data-mut) = {
@@ -208,7 +208,7 @@
       if mode == "radial" {
         let angle-scale =  ((calc.pi))
 
-        // x-ticks
+        // leaf-axis-ticks
 
         let draw-twig(x1, y1, height) = line(
           (angle: x1 / angle-scale, radius: max-value - y1),
@@ -221,7 +221,7 @@
               (angle: x / angle-scale, radius: max-value),
               angle: (-x / angle-scale) * 1rad,
               anchor: "left",
-              [#x-ticks.filter(k=>k.at(0)==x).at(0).at(1)],
+              [#leaf-axis-ticks.filter(k=>k.at(0)==x).at(0).at(1)],
             )
         }
 
