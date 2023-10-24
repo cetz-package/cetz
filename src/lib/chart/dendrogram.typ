@@ -13,16 +13,6 @@
   "horizontal"
 )
 
-// Functions for max value calculation
-#let dendrogram-max-value-fn = (data, value-key) => {
-  calc.max(0, ..data.map(t => t.at(value-key)))
-}
-
-// Functions for min value calculation
-#let dendrogram-min-value-fn = (data, value-key) => {
-    calc.min(0, ..data.map(t => t.at(value-key)))
-}
-
 /// Draw a dendrogram. A dendrogram is a chart that plots relative distances in 
 /// higher dimensional spaces. It is often used by data scientists in clustering
 /// analyses.
