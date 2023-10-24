@@ -154,13 +154,14 @@
       let x = child.at(x-key) // Center of cluster, memoized further down
       let y = child.at(height-key)
       return (x, y, false) // Return positions, don't increment counter
-
+      
     // Otherwise, if it a starting leaf
     } else {
 
       // Check if this is the first time we are seeing this leaf
       let possible-id = x-array.at(x, default: false)
       if not possible-id {
+
 
         // Memoize it and return position
         x-array.insert(x, x-counter + 1)
@@ -190,6 +191,8 @@
     for (idx, entry) in data.enumerate() {
       // Calculate all the needed positions
       let height = entry.at(height-key)
+      let x1 = entry.at(x1-key)
+      let x2 = entry.at(x2-key)
 
       let (x1, y1, increment-x ) = get-xy(x1-key, entry, x-array, x-counter, data)
       if increment-x  { x-counter += 1 }
