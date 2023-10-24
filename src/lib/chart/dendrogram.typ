@@ -160,60 +160,48 @@
                             unit: y-unit, decimals: 1,
                             list: y-ticks))
 
-  if mode == "horizontal" {
-    (x, y) = (y, x)
+  let x-array = (false,) * (data.len() + 1)
+  let get-xy(x-key, entry, x-array, x-counter, data-mut) = {
+    let x = entry.at(x-key)
+    let y = 0
+
+    if (x > (data.len() + 1)){
+      let child = data-mut.at(x - 2)
+      x = child.at(x-key)
+      y = child.at(height-key)
+    } else {
+      let possible-id = x-array.at(x, default: false)
+      if ( possible-id == false ){
+        x-array.insert(x, x-counter + 1)
+        x = x-counter + 1
+        return (x,y, true)
+      } else {
+        x = possible-id
+      }
+    }
+    return (x,y, false)
   }
 
   let vertical-draw-dendrogram(data, ..style) = {
-    let data-mut = data // Mutable
+
+    // Allow palletes as linestyle
     let line-style = line-style;
     if type(line-style) != function { line-style = ((i) => line-style) }
 
+    // Mutable variables
+    let data-mut = data
     let x-counter = 0
     let x-array = (false,) * (data.len() + 1)
 
+    // Main loop
     for (idx, entry) in data.enumerate() {
       let height = entry.at(height-key)
 
-      let x1 = entry.at(x1-key)
-      let x2 = entry.at(x2-key)
+      let (x1, y1, inc) = get-xy(x1-key, entry, x-array, x-counter, data-mut)
+      if ( inc ) { x-counter += 1 }
 
-      let y1 = 0
-      let y2 = 0
-
-      if (x1 > (data.len() + 1)){
-          let child = data-mut.at(x1 - 2)
-          x1 = child.at(x1-key)
-          y1 = child.at(height-key)
-      } else {
-        // x2 is a ground-level leave
-        // Does it have an assigned x?
-        let possible-id = x-array.at(x1, default: false)
-        if ( possible-id == false ){
-          x-counter = x-counter + 1
-          x-array.insert(x1, x-counter)
-          x1 = x-counter
-        } else {
-          x1 = possible-id
-        }
-      }
-
-      if (x2 > (data.len()) + 1){
-          let child = data-mut.at(x2 - 2)
-          x2 = child.at(x1-key)
-          y2 = child.at(height-key)
-      } else {
-        // x2 is a ground-level leave
-        // Does it have an assigned x?
-        let possible-id = x-array.at(x2, default: false)
-        if ( possible-id == false ){
-          x-counter = x-counter + 1
-          x-array.insert(x2, x-counter)
-          x2 = x-counter
-        } else {
-          x2 = possible-id
-        }
-      }
+      let (x2, y2, inc) = get-xy(x2-key, entry, x-array, x-counter, data-mut)
+      if ( inc ) { x-counter += 1 }
 
       line((x1, y1), (x1, height), (x2, height), (x2, y2),
         ..style, ..line-style(idx))
@@ -227,55 +215,24 @@
   }
 
   let horizontal-draw-dendrogram(data, ..style) = {
-    let data-mut = data // Mutable
+    // Allow palletes as linestyle
     let line-style = line-style;
     if type(line-style) != function { line-style = ((i) => line-style) }
 
+    // Mutable variables
+    let data-mut = data
     let x-counter = 0
     let x-array = (false,) * (data.len() + 1)
 
+    // Main loop
     for (idx, entry) in data.enumerate() {
       let height = entry.at(height-key)
 
-      let x1 = entry.at(x1-key)
-      let x2 = entry.at(x2-key)
+      let (x1, y1, inc) = get-xy(x1-key, entry, x-array, x-counter, data-mut)
+      if ( inc ) { x-counter += 1 }
 
-      let y1 = 0
-      let y2 = 0
-
-      if (x1 > (data.len() + 1)){
-          let child = data-mut.at(x1 - 2)
-          x1 = child.at(x1-key)
-          y1 = child.at(height-key)
-      } else {
-        // x2 is a ground-level leave
-        // Does it have an assigned x?
-        let possible-id = x-array.at(x1, default: false)
-        if ( possible-id == false ){
-          x-counter = x-counter + 1
-          x-array.insert(x1, x-counter)
-          x1 = x-counter
-        } else {
-          x1 = possible-id
-        }
-      }
-
-      if (x2 > (data.len()) + 1){
-          let child = data-mut.at(x2 - 2)
-          x2 = child.at(x1-key)
-          y2 = child.at(height-key)
-      } else {
-        // x2 is a ground-level leave
-        // Does it have an assigned x?
-        let possible-id = x-array.at(x2, default: false)
-        if ( possible-id == false ){
-          x-counter = x-counter + 1
-          x-array.insert(x2, x-counter)
-          x2 = x-counter
-        } else {
-          x2 = possible-id
-        }
-      }
+      let (x2, y2, inc) = get-xy(x2-key, entry, x-array, x-counter, data-mut)
+      if ( inc ) { x-counter += 1 }
 
       line((y1, x1), (height, x1), (height, x2), (y2, x2),
         ..style, ..line-style(idx))
@@ -295,6 +252,11 @@
 
   group(ctx => {
     let style = styles.resolve(ctx.style, default-style, root: "dendrogram")
+
+    let (x, y) = (x, y)
+    if mode == "horizontal" {
+      (x, y) = (y, x)
+    }
 
     axes.scientific(size: size,
                     left: y,
