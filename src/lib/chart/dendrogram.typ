@@ -14,27 +14,17 @@
 )
 
 // Functions for max value calculation
-#let dendrogram-max-value-fn = (
-  vertical: (data, value-key) => {
-    calc.max(0, ..data.map(t => t.at(value-key)))
-  },
-  horizontal: (data, value-key) => {
-    calc.max(0, ..data.map(t => t.at(value-key)))
-  },
-)
+#let dendrogram-max-value-fn = (data, value-key) => {
+  calc.max(0, ..data.map(t => t.at(value-key)))
+}
 
 // Functions for min value calculation
-#let dendrogram-min-value-fn = (
-  vertical: (data, value-key) => {
+#let dendrogram-min-value-fn = (data, value-key) => {
     calc.min(0, ..data.map(t => t.at(value-key)))
-  },
-  horizontal: (data, value-key) => {
-    calc.min(0, ..data.map(t => t.at(value-key)))
-  },
-)
+}
 
-/// Draw a dendrogram. A dendrogram is a chat that relative distances higher
-/// dimensional spaces. It is often used by data scientists in clustering
+/// Draw a dendrogram. A dendrogram is a chart that plots relative distances in 
+/// higher dimensional spaces. It is often used by data scientists in clustering
 /// analyses.
 ///
 /// *Style root*: `dendrogram`.
@@ -54,11 +44,12 @@
 /// - x2-key (int,string): Key to access the second cluster of a data row. 
 ///                        This key is used as argument to the rows `.at(..)` 
 ///                        function.
-/// - value-key (int,string): Key(s) to access value(s) of data row.
+/// - height-key (int,string): Key to access height of a cluster.
 ///                           These keys are used as argument to the
 ///                           rows `.at(..)` function.
 /// - mode (string): Chart mode:
 ///                  - `"vertical"` -- Vertically displayed dendrogram
+///                  - `"horizontal"` -- Horizontally displayed dendrogram
 /// - size (array): Chart size as width and height tuple in canvas units;
 ///                 height can be set to `auto`.
 /// - line-style (style,function): Style or function (idx => style) to use for
@@ -83,14 +74,14 @@
                 x1-key: 0,
                 x2-key: 1,
                 height-key: 2,
-                size: (auto, 1),
+                size: auto,
                 mode: "vertical",
                 line-style: (stroke: black + 1pt),
                 x-label: none,
                 y-tick-step: auto,
                 x-ticks: auto,
                 y-ticks: (),
-                y-unit: auto,
+                y-unit: none,
                 y-label: none,
                 y-min: auto,
                 y-max: auto,
@@ -99,24 +90,31 @@
 
   assert(mode in dendrogram-modes,
     message: "Invalid dendrogram mode. Use: " + repr(dendrogram-modes))
-  assert(type(x1-key) in (int, str))
-  assert(type(x2-key) in (int, str))
-  assert(type(height-key) in (int, str))
+  assert(type(x1-key) in (int, str),
+    message: "Invalid x1-key type. Must be a integer or a string")
+  assert(type(x2-key) in (int, str),
+    message: "Invalid x2-key type. Must be a integer or a string")
+  assert(type(height-key) in (int, str),
+    message: "Invalid height-key type. Must be a integer or a string")
 
-  if size.at(0) == auto {
-    size.at(0) = (data.len() + 2)
+  if ( size == auto ){
+    if mode == "vertical" {size = (auto, 1)} 
+    if mode == "horizontal" {size = (1, auto)}
   }
 
-  let max-value = (dendrogram-max-value-fn.at(mode))(data, height-key)
-  if y-max != auto {
-    max-value = y-max
-  }
-  let min-value = (dendrogram-min-value-fn.at(mode))(data, height-key)
-  if y-min != auto {
-    min-value = y-min
+  let size-node-axis-index = 0
+  if ( mode == "horizontal" ){size-node-axis-index = 1}
+
+  if size.at(size-node-axis-index) == auto {
+    size.at(size-node-axis-index) = (data.len() + 2)
   }
 
-  let x-ticks = x-ticks
+  let max-value = dendrogram-max-value-fn(data, height-key)
+  if y-max != auto { max-value = y-max }
+
+  let min-value = dendrogram-min-value-fn(data, height-key)
+  if y-min != auto { min-value = y-min }
+
   if (x-ticks == auto) {
     // Pre-calculate order of leaf indices
     let x-counter = 0
@@ -141,11 +139,6 @@
     x-ticks = ticks
   }
 
-  let y-unit = y-unit
-  if y-unit == auto {
-    y-unit = []
-  }
-
   let x = axes.axis(min: 0,
                     max: data.len() + 2,
                     label: x-label,
@@ -160,7 +153,6 @@
                             unit: y-unit, decimals: 1,
                             list: y-ticks))
 
-  let x-array = (false,) * (data.len() + 1)
   let get-xy(x-key, entry, x-array, x-counter, data-mut) = {
     let x = entry.at(x-key)
     let y = 0
@@ -182,7 +174,7 @@
     return (x,y, false)
   }
 
-  let vertical-draw-dendrogram(data, ..style) = {
+  let basic-draw-dendrogram(data, ..style) = {
 
     // Allow palletes as linestyle
     let line-style = line-style;
@@ -197,47 +189,20 @@
     for (idx, entry) in data.enumerate() {
       let height = entry.at(height-key)
 
-      let (x1, y1, inc) = get-xy(x1-key, entry, x-array, x-counter, data-mut)
+      let (x1, y1, inc) = get-xy(x1-key, entry, x-array, x-counter, data)
       if ( inc ) { x-counter += 1 }
 
-      let (x2, y2, inc) = get-xy(x2-key, entry, x-array, x-counter, data-mut)
+      let (x2, y2, inc) = get-xy(x2-key, entry, x-array, x-counter, data)
       if ( inc ) { x-counter += 1 }
 
-      line((x1, y1), (x1, height), (x2, height), (x2, y2),
-        ..style, ..line-style(idx))
+      // Calculate line segments
+      let line-path = ((x1, y1), (x1, height), (x2, height), (x2, y2))
+      
+      // Reflect coordinates for horizontal mode
+      if ( mode == "horizontal" ){line-path=line-path.map(it=>(it.at(1),it.at(0)))}
+      line(..line-path,..style, ..line-style(idx))
 
-      data-mut.push((
-        (x1 + x2) / 2,
-        (x1 + x2) / 2,
-        height
-      ))
-    }
-  }
-
-  let horizontal-draw-dendrogram(data, ..style) = {
-    // Allow palletes as linestyle
-    let line-style = line-style;
-    if type(line-style) != function { line-style = ((i) => line-style) }
-
-    // Mutable variables
-    let data-mut = data
-    let x-counter = 0
-    let x-array = (false,) * (data.len() + 1)
-
-    // Main loop
-    for (idx, entry) in data.enumerate() {
-      let height = entry.at(height-key)
-
-      let (x1, y1, inc) = get-xy(x1-key, entry, x-array, x-counter, data-mut)
-      if ( inc ) { x-counter += 1 }
-
-      let (x2, y2, inc) = get-xy(x2-key, entry, x-array, x-counter, data-mut)
-      if ( inc ) { x-counter += 1 }
-
-      line((y1, x1), (height, x1), (height, x2), (y2, x2),
-        ..style, ..line-style(idx))
-
-      data-mut.push((
+      data.push((
         (x1 + x2) / 2,
         (x1 + x2) / 2,
         height
@@ -246,17 +211,16 @@
   }
 
   let draw-data = (
-    if mode == "vertical" {vertical-draw-dendrogram} else
-    if mode == "horizontal" {horizontal-draw-dendrogram}
+    if mode == "vertical" {basic-draw-dendrogram} else
+    if mode == "horizontal" {basic-draw-dendrogram}
   )
 
   group(ctx => {
-    let style = styles.resolve(ctx.style, default-style, root: "dendrogram")
 
+    // Setup axes
+    let style = styles.resolve(ctx.style, default-style, root: "dendrogram")
     let (x, y) = (x, y)
-    if mode == "horizontal" {
-      (x, y) = (y, x)
-    }
+    if mode == "horizontal" {(x, y) = (y, x)}
 
     axes.scientific(size: size,
                     left: y,
@@ -265,10 +229,10 @@
                     top: none,
                     frame: "set",
                     ..style.axes)
+
+    // Render
     if data.len() > 0 {
-      axes.axis-viewport(size, x, y, {
-        draw-data(data)
-      })
+      axes.axis-viewport(size, x, y, {draw-data(data)})
     }
   })
 }

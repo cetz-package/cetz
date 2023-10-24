@@ -10,20 +10,9 @@
 )
 
 #let settings = (
-  size: (auto, 6),
-  line-style: (idx)=>{
-    if idx == 0 { return (stroke: blue) }
-    if idx == 1 { return (stroke: red) }
-    if idx == 2 { return (stroke: green) }
-    return (stroke: black)
-  },
-  /*x-ticks: (
-    (1,[4]),
-    (2,[5]),
-    (3,[1]),
-    (4,[3]),
-    (5,[2]),
-  )*/
+  line-style: (idx)=>{(stroke: (blue, red, green).at(idx, default: black))},
+  y-min: 0,
+  size: (6, 6)
 )
 
 #box(stroke: 2pt + red, canvas({
