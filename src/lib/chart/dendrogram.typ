@@ -97,7 +97,7 @@
   assert(type(height-key) in (int, str),
     message: "Invalid height-key type. Must be a integer or a string")
 
-  if ( size == auto ){
+  if size == auto {
     if mode == "vertical" {size = (auto, 1)} 
     if mode == "horizontal" {size = (1, auto)}
   }
@@ -109,13 +109,10 @@
     size.at(size-node-axis-index) = (data.len() + 2)
   }
 
-  let max-value = dendrogram-max-value-fn(data, height-key)
-  if y-max != auto { max-value = y-max }
+  let max-value = (if y-max != auto {y-max} else {calc.max(..data.map(data => data.at(height-key)))})
+  let min-value = (if y-min != auto {y-min} else {calc.min(0, ..data.map(data => data.at(height-key)))})
 
-  let min-value = dendrogram-min-value-fn(data, height-key)
-  if y-min != auto { min-value = y-min }
-
-  if (x-ticks == auto) {
+  if x-ticks == auto {
     // Pre-calculate order of leaf indices
     let x-counter = 0
     let ticks = ()
@@ -125,14 +122,14 @@
       let x2 = entry.at(x2-key)
 
       // Only check relevent entries
-      if ( x1 < (data.len() + 2) ){
-        x-counter = x-counter + 1
-        ticks.push( (x-counter, x1 ))
+      if  x1 < (data.len() + 2) {
+        x-counter += 1
+        ticks.push( (x-counter, x1) )
       }
 
-      if ( x2 < (data.len() + 2) ){
+      if x2 < (data.len() + 2) {
         x-counter = x-counter + 1
-        ticks.push( (x-counter, x2 ))
+        ticks.push( (x-counter, x2) )
       }
     }
 
@@ -153,25 +150,39 @@
                             unit: y-unit, decimals: 1,
                             list: y-ticks))
 
+  // Calculates the (x,y) position of a leaf
   let get-xy(x-key, entry, x-array, x-counter, data-mut) = {
-    let x = entry.at(x-key)
-    let y = 0
 
-    if (x > (data.len() + 1)){
+    // What we assume to be the leaf's x-coordinate
+    let x = entry.at(x-key)
+
+    // If the leaf is actually a cluster...
+    if x > (data.len() + 1){
+
+      // It starts at the height of that cluster, in its center
       let child = data-mut.at(x - 2)
-      x = child.at(x-key)
-      y = child.at(height-key)
+      let x = child.at(x-key) // Center of cluster, memoized further down
+      let y = child.at(height-key)
+      return (x, y, false) // Return positions, don't increment counter
+
+    // Otherwise, if it a starting leaf
     } else {
+
+      // Check if this is the first time we are seeing this leaf
       let possible-id = x-array.at(x, default: false)
-      if ( possible-id == false ){
+      if not possible-id {
+
+        // Memoize it and return position
         x-array.insert(x, x-counter + 1)
         x = x-counter + 1
-        return (x,y, true)
+        return (x, 0, true) // Return position on x-axis, increment counter
+
+      // therefore, we've seen it before
       } else {
-        x = possible-id
+        x = possible-id // so return memoized position
+        return (possible-id, 0, false)
       }
     }
-    return (x,y, false)
   }
 
   let basic-draw-dendrogram(data, ..style) = {
@@ -187,20 +198,25 @@
 
     // Main loop
     for (idx, entry) in data.enumerate() {
+      // Calculate all the needed positions
       let height = entry.at(height-key)
 
-      let (x1, y1, inc) = get-xy(x1-key, entry, x-array, x-counter, data)
-      if ( inc ) { x-counter += 1 }
+      let (x1, y1, increment-x ) = get-xy(x1-key, entry, x-array, x-counter, data)
+      if increment-x  { x-counter += 1 }
 
-      let (x2, y2, inc) = get-xy(x2-key, entry, x-array, x-counter, data)
-      if ( inc ) { x-counter += 1 }
+      let (x2, y2, increment-x ) = get-xy(x2-key, entry, x-array, x-counter, data)
+      if increment-x { x-counter += 1 }
 
       // Calculate line segments
       let line-path = ((x1, y1), (x1, height), (x2, height), (x2, y2))
       
       // Reflect coordinates for horizontal mode
-      if ( mode == "horizontal" ){line-path=line-path.map(it=>(it.at(1),it.at(0)))}
-      line(..line-path,..style, ..line-style(idx))
+      if mode == "horizontal" {
+        line-path=line-path.map( it => (it.at(1), it.at(0)) )
+      }
+
+      // Render line segments
+      line(..line-path, ..style, ..line-style(idx))
 
       data.push((
         (x1 + x2) / 2,
@@ -211,16 +227,16 @@
   }
 
   let draw-data = (
-    if mode == "vertical" {basic-draw-dendrogram} else
-    if mode == "horizontal" {basic-draw-dendrogram}
+    if mode in ("vertical", "horizontal") {basic-draw-dendrogram}
   )
 
   group(ctx => {
 
     // Setup axes
     let style = styles.resolve(ctx.style, default-style, root: "dendrogram")
-    let (x, y) = (x, y)
-    if mode == "horizontal" {(x, y) = (y, x)}
+
+    // If horizontal mode, reflect coordinates about y=x.
+    let (x, y) = ( if mode == "vertical" {(x, y)} else {(y, x)} )
 
     axes.scientific(size: size,
                     left: y,
