@@ -10,7 +10,8 @@
 // Valid dendrogram modes
 #let dendrogram-modes = (
   "vertical",
-  "horizontal"
+  "horizontal",
+  "radial"
 )
 
 /// Draw a dendrogram. A dendrogram is a chart that plots relative distances in 
@@ -127,7 +128,7 @@
   }
 
   let x = axes.axis(min: 0,
-                    max: data.len() + 2,
+                    max: if mode == "radial" {max-value + 1} else {data.len() + 2},
                     label: x-label,
                     ticks: (list: x-ticks,
                             grid: none, step: none,
@@ -178,6 +179,8 @@
 
   let basic-draw-dendrogram(data, ..style) = {
 
+    let data-len = data.len()
+
     // Allow palletes as linestyle
     let line-style = line-style;
     if type(line-style) != function { line-style = ((i) => line-style) }
@@ -194,22 +197,64 @@
       let x1 = entry.at(x1-key)
       let x2 = entry.at(x2-key)
 
-      let (x1, y1, increment-x ) = get-xy(x1-key, entry, x-array, x-counter, data)
-      if increment-x  { x-counter += 1 }
+      let (x1, y1, increment-x1) = get-xy(x1-key, entry, x-array, x-counter, data)
+      if increment-x1  { x-counter += 1 }
 
-      let (x2, y2, increment-x ) = get-xy(x2-key, entry, x-array, x-counter, data)
-      if increment-x { x-counter += 1 }
+      let (x2, y2, increment-x2) = get-xy(x2-key, entry, x-array, x-counter, data)
+      if increment-x2 { x-counter += 1 }
 
-      // Calculate line segments
-      let line-path = ((x1, y1), (x1, height), (x2, height), (x2, y2))
-      
-      // Reflect coordinates for horizontal mode
-      if mode == "horizontal" {
-        line-path=line-path.map( it => (it.at(1), it.at(0)) )
+
+      // Radialize coordinates for radial mode
+      if mode == "radial" {
+        let angle-scale =  ((calc.pi))
+
+        // x-ticks
+
+        let draw-twig(x1, y1, height) = line(
+          (angle: x1 / angle-scale, radius: max-value - y1),
+          (angle: x1 / angle-scale, radius: max-value - height)
+        )
+
+        let draw-name(key, x) = {
+          //if type(x) == int {
+            content( 
+              (angle: x / angle-scale, radius: max-value),
+              angle: (-x / angle-scale) * 1rad,
+              anchor: "left",
+              [#x-ticks.filter(k=>k.at(0)==x).at(0).at(1)],
+            )
+        }
+
+        merge-path({
+          draw-twig(x1, y1, height)
+          arc(
+            (angle: x1 / angle-scale, radius: max-value - height),
+            radius: max-value - height,
+            start: (x1 / angle-scale) * 1rad,
+            stop: (x2 / angle-scale) * 1rad,
+          )
+          draw-twig(x2, y2, height)
+        })
+
+        if increment-x1 {draw-name(x1-key, x1)}
+        if increment-x2 {draw-name(x2-key, x2)}
+
+      // Otherwise, for horizontal and vertical 
+      } else {
+
+        // Calculate line segments
+        let line-path = ((x1, y1), (x1, height), (x2, height), (x2, y2))
+
+        // Reflect coordinates for horizontal mode
+        if mode == "horizontal" {
+          line-path=line-path.map( it => (it.at(1), it.at(0)) )
+        }
+
+        // Render line segments
+        line(..line-path, ..style, ..line-style(idx))
+
       }
-
-      // Render line segments
-      line(..line-path, ..style, ..line-style(idx))
+    
 
       data.push((
         (x1 + x2) / 2,
@@ -219,10 +264,6 @@
     }
   }
 
-  let draw-data = (
-    if mode in ("vertical", "horizontal") {basic-draw-dendrogram}
-  )
-
   group(ctx => {
 
     // Setup axes
@@ -231,17 +272,20 @@
     // If horizontal mode, reflect coordinates about y=x.
     let (x, y) = ( if mode == "vertical" {(x, y)} else {(y, x)} )
 
-    axes.scientific(size: size,
-                    left: y,
-                    right: none,
-                    bottom: x,
-                    top: none,
-                    frame: "set",
-                    ..style.axes)
+    if mode in ("vertical", "horizontal") {
+      axes.scientific(
+        size: size,
+        left: y,
+        right: none,
+        bottom: x,
+        top: none,
+        frame: "set",
+        ..style.axes)
+    }
 
     // Render
     if data.len() > 0 {
-      axes.axis-viewport(size, x, y, {draw-data(data)})
+      axes.axis-viewport(size, x, y, {basic-draw-dendrogram(data)})
     }
   })
 }

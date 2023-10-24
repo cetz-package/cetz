@@ -28,3 +28,24 @@
     data,
     ..settings)
 }))
+
+#let phylo = (
+/* x1, x2, h */
+  (1, 2,  1), // blue
+  (3, 4,  1), // red
+  (5, 6,  2), // green
+  (7, 8,  2.5),
+  (9, 10,  3),
+  (11, 12, 4),
+  (13, 16, 5),
+  (15, 14, 6),
+  (17, 18, 8),
+)
+
+#box(stroke: 2pt + red, canvas({
+  chart.dendrogram(
+    mode:"radial",
+    phylo,
+    ..settings)
+}))
+
