@@ -10,31 +10,12 @@
 // Valid dendrogram modes
 #let dendrogram-modes = (
   "vertical",
-  "horizontal"
+  "horizontal",
+  "radial"
 )
 
-// Functions for max value calculation
-#let dendrogram-max-value-fn = (
-  vertical: (data, value-key) => {
-    calc.max(0, ..data.map(t => t.at(value-key)))
-  },
-  horizontal: (data, value-key) => {
-    calc.max(0, ..data.map(t => t.at(value-key)))
-  },
-)
-
-// Functions for min value calculation
-#let dendrogram-min-value-fn = (
-  vertical: (data, value-key) => {
-    calc.min(0, ..data.map(t => t.at(value-key)))
-  },
-  horizontal: (data, value-key) => {
-    calc.min(0, ..data.map(t => t.at(value-key)))
-  },
-)
-
-/// Draw a dendrogram. A dendrogram is a chat that relative distances higher
-/// dimensional spaces. It is often used by data scientists in clustering
+/// Draw a dendrogram. A dendrogram is a chart that plots relative distances in 
+/// higher dimensional spaces. It is often used by data scientists in clustering
 /// analyses.
 ///
 /// *Style root*: `dendrogram`.
@@ -54,70 +35,75 @@
 /// - x2-key (int,string): Key to access the second cluster of a data row. 
 ///                        This key is used as argument to the rows `.at(..)` 
 ///                        function.
-/// - value-key (int,string): Key(s) to access value(s) of data row.
+/// - height-key (int,string): Key to access height of a cluster.
 ///                           These keys are used as argument to the
 ///                           rows `.at(..)` function.
 /// - mode (string): Chart mode:
 ///                  - `"vertical"` -- Vertically displayed dendrogram
+///                  - `"horizontal"` -- Horizontally displayed dendrogram
+///                  - `"radial"` -- Radially displayed dendrogram
 /// - size (array): Chart size as width and height tuple in canvas units;
 ///                 height can be set to `auto`.
 /// - line-style (style,function): Style or function (idx => style) to use for
 ///                               each leaf, accepts a palette function.
-/// - x-label (content,none): X axis label
-/// - y-tick-step (float): Step size of y axis ticks 
-/// - x-ticks (array): List of tick values or value/label tuples
+/// - leaf-axis-label (content,none): Leaf axis label
+/// - leaf-axis-ticks (array): List of tick values or value/label tuples
 ///
 ///                    *Example*
 ///                    
 ///                    `(1, 5, 10)` or `((1, [One]), (2, [Two]), (10, [Ten]))`
-/// - y-ticks (array): List of tick values or value/label tuples
+/// - height-axis-ticks (array): List of tick values or value/label tuples
 ///
 ///                    *Example*
 ///                    
 ///                    `(1, 5, 10)` or `((1, [One]), (2, [Two]), (10, [Ten]))`
-/// - y-unit (content,auto): Tick suffix added to each tick label
-/// - y-label (content,none): Y axis label
-/// - y-min (number,auto): Y axis minimum value
-/// - y-max (number,auto): Y axis maximum value
+/// - height-axis-unit (content,auto): Tick suffix added to each tick label
+/// - height-axis-label (content,none): Height axis label
+/// - height-axis-min (number,auto): Height-axis minimum value
+/// - height-axis-max (number,auto): Height-axis maximum value
 #let dendrogram(data,
                 x1-key: 0,
                 x2-key: 1,
                 height-key: 2,
-                size: (auto, 1),
+                size: auto,
                 mode: "vertical",
                 line-style: (stroke: black + 1pt),
-                x-label: none,
-                y-tick-step: auto,
-                x-ticks: auto,
-                y-ticks: (),
-                y-unit: auto,
-                y-label: none,
-                y-min: auto,
-                y-max: auto,
+                leaf-axis-label: none,
+                leaf-axis-ticks: auto,
+                height-axis-tick-step: auto,
+                height-axis-ticks: (),
+                height-axis-unit: none,
+                height-axis-label: none,
+                height-axis-min: auto,
+                height-axis-max: auto,
                 ) = {
   import draw: *
 
   assert(mode in dendrogram-modes,
     message: "Invalid dendrogram mode. Use: " + repr(dendrogram-modes))
-  assert(type(x1-key) in (int, str))
-  assert(type(x2-key) in (int, str))
-  assert(type(height-key) in (int, str))
+  assert(type(x1-key) in (int, str),
+    message: "Invalid x1-key type. Must be a integer or a string")
+  assert(type(x2-key) in (int, str),
+    message: "Invalid x2-key type. Must be a integer or a string")
+  assert(type(height-key) in (int, str),
+    message: "Invalid height-key type. Must be a integer or a string")
 
-  if size.at(0) == auto {
-    size.at(0) = (data.len() + 2)
+  if size == auto {
+    if mode == "vertical" {size = (auto, 1)} 
+    if mode == "horizontal" {size = (1, auto)}
   }
 
-  let max-value = (dendrogram-max-value-fn.at(mode))(data, height-key)
-  if y-max != auto {
-    max-value = y-max
-  }
-  let min-value = (dendrogram-min-value-fn.at(mode))(data, height-key)
-  if y-min != auto {
-    min-value = y-min
+  let size-node-axis-index = 0
+  if ( mode == "horizontal" ){size-node-axis-index = 1}
+
+  if size.at(size-node-axis-index) == auto {
+    size.at(size-node-axis-index) = (data.len() + 2)
   }
 
-  let x-ticks = x-ticks
-  if (x-ticks == auto) {
+  let max-value = (if height-axis-max != auto {height-axis-max} else {calc.max(..data.map(data => data.at(height-key)))})
+  let min-value = (if height-axis-min != auto {height-axis-min} else {calc.min(0, ..data.map(data => data.at(height-key)))})
+
+  if leaf-axis-ticks == auto {
     // Pre-calculate order of leaf indices
     let x-counter = 0
     let ticks = ()
@@ -127,186 +113,181 @@
       let x2 = entry.at(x2-key)
 
       // Only check relevent entries
-      if ( x1 < (data.len() + 2) ){
-        x-counter = x-counter + 1
-        ticks.push( (x-counter, x1 ))
+      if  x1 < (data.len() + 2) {
+        x-counter += 1
+        ticks.push( (x-counter, x1) )
       }
 
-      if ( x2 < (data.len() + 2) ){
+      if x2 < (data.len() + 2) {
         x-counter = x-counter + 1
-        ticks.push( (x-counter, x2 ))
+        ticks.push( (x-counter, x2) )
       }
     }
 
-    x-ticks = ticks
-  }
-
-  let y-unit = y-unit
-  if y-unit == auto {
-    y-unit = []
+    leaf-axis-ticks = ticks
   }
 
   let x = axes.axis(min: 0,
-                    max: data.len() + 2,
-                    label: x-label,
-                    ticks: (list: x-ticks,
+                    max: if mode == "radial" {max-value + 1} else {data.len() + 2},
+                    label: leaf-axis-label,
+                    ticks: (list: leaf-axis-ticks,
                             grid: none, step: none,
                             minor-step: none,
                     ))
   let y = axes.axis(min: min-value, max: max-value,
-                    label: y-label,
-                    ticks: (grid: true, step: y-tick-step,
+                    label: height-axis-label,
+                    ticks: (grid: true, step: height-axis-tick-step,
                             minor-step: none,
-                            unit: y-unit, decimals: 1,
-                            list: y-ticks))
+                            unit: height-axis-unit, decimals: 1,
+                            list: height-axis-ticks))
 
-  if mode == "horizontal" {
-    (x, y) = (y, x)
+  // Calculates the (x,y) position of a leaf
+  let get-xy(x-key, entry, x-array, x-counter, data-mut) = {
+
+    // What we assume to be the leaf's x-coordinate
+    let x = entry.at(x-key)
+
+    // If the leaf is actually a cluster...
+    if x > (data.len() + 1){
+
+      // It starts at the height of that cluster, in its center
+      let child = data-mut.at(x - 2)
+      let x = child.at(x-key) // Center of cluster, memoized further down
+      let y = child.at(height-key)
+      return (x, y, false) // Return positions, don't increment counter
+      
+    // Otherwise, if it a starting leaf
+    } else {
+
+      // Check if this is the first time we are seeing this leaf
+      let possible-id = x-array.at(x, default: false)
+      if not possible-id {
+
+
+        // Memoize it and return position
+        x-array.insert(x, x-counter + 1)
+        x = x-counter + 1
+        return (x, 0, true) // Return position on x-axis, increment counter
+
+      // therefore, we've seen it before
+      } else {
+        x = possible-id // so return memoized position
+        return (possible-id, 0, false)
+      }
+    }
   }
 
-  let vertical-draw-dendrogram(data, ..style) = {
-    let data-mut = data // Mutable
+  let basic-draw-dendrogram(data, ..style) = {
+
+    let data-len = data.len()
+
+    // Allow palletes as linestyle
     let line-style = line-style;
     if type(line-style) != function { line-style = ((i) => line-style) }
 
+    // Mutable variables
+    let data-mut = data
     let x-counter = 0
     let x-array = (false,) * (data.len() + 1)
 
+    // Main loop
     for (idx, entry) in data.enumerate() {
+      // Calculate all the needed positions
       let height = entry.at(height-key)
-
       let x1 = entry.at(x1-key)
       let x2 = entry.at(x2-key)
 
-      let y1 = 0
-      let y2 = 0
+      let (x1, y1, increment-x1) = get-xy(x1-key, entry, x-array, x-counter, data)
+      if increment-x1  { x-counter += 1 }
 
-      if (x1 > (data.len() + 1)){
-          let child = data-mut.at(x1 - 2)
-          x1 = child.at(x1-key)
-          y1 = child.at(height-key)
-      } else {
-        // x2 is a ground-level leave
-        // Does it have an assigned x?
-        let possible-id = x-array.at(x1, default: false)
-        if ( possible-id == false ){
-          x-counter = x-counter + 1
-          x-array.insert(x1, x-counter)
-          x1 = x-counter
-        } else {
-          x1 = possible-id
+      let (x2, y2, increment-x2) = get-xy(x2-key, entry, x-array, x-counter, data)
+      if increment-x2 { x-counter += 1 }
+
+
+      // Radialize coordinates for radial mode
+      if mode == "radial" {
+        let angle-scale =  ((calc.pi)) 
+
+        // leaf-axis-ticks
+
+        let draw-twig(x1, y1, height) = line(
+          (angle: x1 / angle-scale, radius: max-value - y1),
+          (angle: x1 / angle-scale, radius: max-value - height),
+        )
+
+        let draw-name(key, x) = {
+          //if type(x) == int {
+            let fgd = leaf-axis-ticks.filter(k=>{k.at(0)==x})
+            if fgd.len() == 0 { return }
+            content( 
+              (angle: x / angle-scale, radius: max-value + 0.3),
+              angle: (-x / angle-scale) * 1rad,
+              anchor: "left",
+              [#leaf-axis-ticks.filter(k=>{k.at(0)==x}).at(0).at(1)],
+            )
         }
-      }
 
-      if (x2 > (data.len()) + 1){
-          let child = data-mut.at(x2 - 2)
-          x2 = child.at(x1-key)
-          y2 = child.at(height-key)
+        merge-path({
+          draw-twig(x1, y1, height)
+          arc(
+            (angle: x1 / angle-scale, radius: max-value - height),
+            radius: max-value - height,
+            start: (x1 / angle-scale) * 1rad,
+            stop: (x2 / angle-scale) * 1rad,
+          )
+          draw-twig(x2, y2, height)
+        }, ..style, ..line-style(idx))
+
+        if increment-x1 {draw-name(x1-key, x1)}
+        if increment-x2 {draw-name(x2-key, x2)}
+
+      // Otherwise, for horizontal and vertical 
       } else {
-        // x2 is a ground-level leave
-        // Does it have an assigned x?
-        let possible-id = x-array.at(x2, default: false)
-        if ( possible-id == false ){
-          x-counter = x-counter + 1
-          x-array.insert(x2, x-counter)
-          x2 = x-counter
-        } else {
-          x2 = possible-id
+
+        // Calculate line segments
+        let line-path = ((x1, y1), (x1, height), (x2, height), (x2, y2))
+
+        // Reflect coordinates for horizontal mode
+        if mode == "horizontal" {
+          line-path=line-path.map( it => (it.at(1), it.at(0)) )
         }
+
+        // Render line segments
+        line(..line-path, ..style, ..line-style(idx))
+
       }
+    
 
-      line((x1, y1), (x1, height), (x2, height), (x2, y2),
-        ..style, ..line-style(idx))
-
-      data-mut.push((
+      data.push((
         (x1 + x2) / 2,
         (x1 + x2) / 2,
         height
       ))
     }
   }
-
-  let horizontal-draw-dendrogram(data, ..style) = {
-    let data-mut = data // Mutable
-    let line-style = line-style;
-    if type(line-style) != function { line-style = ((i) => line-style) }
-
-    let x-counter = 0
-    let x-array = (false,) * (data.len() + 1)
-
-    for (idx, entry) in data.enumerate() {
-      let height = entry.at(height-key)
-
-      let x1 = entry.at(x1-key)
-      let x2 = entry.at(x2-key)
-
-      let y1 = 0
-      let y2 = 0
-
-      if (x1 > (data.len() + 1)){
-          let child = data-mut.at(x1 - 2)
-          x1 = child.at(x1-key)
-          y1 = child.at(height-key)
-      } else {
-        // x2 is a ground-level leave
-        // Does it have an assigned x?
-        let possible-id = x-array.at(x1, default: false)
-        if ( possible-id == false ){
-          x-counter = x-counter + 1
-          x-array.insert(x1, x-counter)
-          x1 = x-counter
-        } else {
-          x1 = possible-id
-        }
-      }
-
-      if (x2 > (data.len()) + 1){
-          let child = data-mut.at(x2 - 2)
-          x2 = child.at(x1-key)
-          y2 = child.at(height-key)
-      } else {
-        // x2 is a ground-level leave
-        // Does it have an assigned x?
-        let possible-id = x-array.at(x2, default: false)
-        if ( possible-id == false ){
-          x-counter = x-counter + 1
-          x-array.insert(x2, x-counter)
-          x2 = x-counter
-        } else {
-          x2 = possible-id
-        }
-      }
-
-      line((y1, x1), (height, x1), (height, x2), (y2, x2),
-        ..style, ..line-style(idx))
-
-      data-mut.push((
-        (x1 + x2) / 2,
-        (x1 + x2) / 2,
-        height
-      ))
-    }
-  }
-
-  let draw-data = (
-    if mode == "vertical" {vertical-draw-dendrogram} else
-    if mode == "horizontal" {horizontal-draw-dendrogram}
-  )
 
   group(ctx => {
+
+    // Setup axes
     let style = styles.resolve(ctx.style, default-style, root: "dendrogram")
 
-    axes.scientific(size: size,
-                    left: y,
-                    right: none,
-                    bottom: x,
-                    top: none,
-                    frame: "set",
-                    ..style.axes)
+    // If horizontal mode, reflect coordinates about y=x.
+    let (x, y) = ( if mode == "vertical" {(x, y)} else {(y, x)} )
+
+    //if mode in ("vertical", "horizontal") {
+      axes.scientific(
+        size: size,
+        left: y,
+        right: none,
+        bottom: x,
+        top: none,
+        frame: "set",
+        ..style.axes)
+    //}
+
+    // Render
     if data.len() > 0 {
-      axes.axis-viewport(size, x, y, {
-        draw-data(data)
-      })
+      axes.axis-viewport(size, x, y, {basic-draw-dendrogram(data)})
     }
   })
 }

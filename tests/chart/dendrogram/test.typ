@@ -10,20 +10,8 @@
 )
 
 #let settings = (
-  size: (auto, 6),
-  line-style: (idx)=>{
-    if idx == 0 { return (stroke: blue) }
-    if idx == 1 { return (stroke: red) }
-    if idx == 2 { return (stroke: green) }
-    return (stroke: black)
-  },
-  /*x-ticks: (
-    (1,[4]),
-    (2,[5]),
-    (3,[1]),
-    (4,[3]),
-    (5,[2]),
-  )*/
+  line-style: (idx)=>{(stroke: (blue, red, green).at(idx, default: black))},
+  size: (6, 6)
 )
 
 #box(stroke: 2pt + red, canvas({
@@ -39,3 +27,32 @@
     data,
     ..settings)
 }))
+
+#let phylo = (
+/* x1, x2, h */
+  (1, 2,  0.5), // blue
+  (3, 4,  0.2), // red
+  (5, 6,  0.15), // green
+  (7, 8,  2.5),
+  (9, 10,  1.9),
+  (11, 12, 0.7),
+  (13, 16, 1.5),
+  (15, 14, 6),
+  (17, 18, 8),
+)
+
+#box(stroke: 2pt + red, canvas({
+  chart.dendrogram(
+    mode:"radial",
+    leaf-axis-ticks: (
+      (1, [Humans]),
+      (2, [Apes]),
+      (3, [Cats]),
+      (4, [Dogs]),
+      (5, "whale"),
+      (6, [Dolphin]),
+    ),
+    phylo,
+    ..settings)
+}))
+
