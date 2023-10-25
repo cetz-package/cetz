@@ -16,6 +16,18 @@
     assert( "q3" in data, message: "Specify the q3, the upper quartile")
     assert( "max" in data, message: "Specify the q1, the minimum excluding outliers")
 
+    // Calculate y-domain
+
+    let max-value = calc.max(
+        0,data.max,
+        ..data.at("outliers", default: (0,))
+    )
+
+    let max-value = calc.min(
+        0,data.min,
+        ..data.at("outliers", default: (0,))
+    )
+
     let prepare(self, ctx) = {
         return self
     }
@@ -53,6 +65,8 @@
         plot-stroke: stroke,
         mark: (if "outliers" in data {mark}),
         mark-size: mark-size,
-        mark-style: (:)
+        mark-style: (:),
+        x-domain: (data.x - 1, data.x + 1),
+        y-domain: (min-value, max-value),
     ),)
 }
