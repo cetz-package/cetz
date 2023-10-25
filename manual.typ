@@ -731,8 +731,8 @@ The palette library provides some predefined palettes.
 
 #let show-palette(p) = {
   canvas({
-    import draw: *
-    for i in range(p("len")) {
+    import lib.draw: *
+    for i in range(0, p("len")) {
       if calc.rem(i, 10) == 0 { move-to((rel: (0, -.5))) }
       rect((), (rel: (1,.5)), name: "r", ..p(i))
       move-to("r.south-west")
@@ -743,7 +743,16 @@ The palette library provides some predefined palettes.
 === List of predefined palettes
 - `gray` #show-palette(palette.gray)
 - `red` #show-palette(palette.red)
+- `orange` #show-palette(palette.orange)
+- `light-green` #show-palette(palette.light-green)
+- `dark-green` #show-palette(palette.dark-green)
+- `turquoise` #show-palette(palette.turquoise)
+- `cyan` #show-palette(palette.cyan)
 - `blue` #show-palette(palette.blue)
+- `indigo` #show-palette(palette.indigo)
+- `purple` #show-palette(palette.purple)
+- `magenta` #show-palette(palette.magenta)
+- `pink` #show-palette(palette.pink)
 - `rainbow` #show-palette(palette.rainbow)
 - `tango-light` #show-palette(palette.tango-light)
 - `tango` #show-palette(palette.tango)
