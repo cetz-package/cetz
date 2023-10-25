@@ -9,6 +9,22 @@
     mark: "*",
     mark-size: 0.2
 ) = {
+
+    if type(data) == array {
+        for it in data{
+            add-boxwhisker(
+                it,
+                axes:axes,
+                style: style,
+                box-width: box-width,
+                whisker-width: whisker-width,
+                mark: mark,
+                mark-size: mark-size
+            )
+        }
+        return
+    }
+
     assert( "x" in data, message: "Specify the x value at which to display the box and whisker")
     assert( "min" in data, message: "Specify the q1, the minimum excluding outliers")
     assert( "q1" in data, message: "Specify the q1, the lower quartile")
@@ -23,7 +39,7 @@
         ..data.at("outliers", default: (0,))
     )
 
-    let max-value = calc.min(
+    let min-value = calc.min(
         0,data.min,
         ..data.at("outliers", default: (0,))
     )
