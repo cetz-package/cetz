@@ -177,7 +177,7 @@ canvas(background: none, length: 1cm, debug: false, body)
 You can style draw elements by passing the relevant named arguments to their draw functions. All elements have stroke and fill styling unless said otherwise.
 
 #def-arg("fill", [`<color>` or `<none>`], default: "none", [How to fill the draw element.])
-#def-arg("stroke", [`<none>` or `<auto>` or `<length>` \ or `<color>` or `<dicitionary>` or `<stroke>`], default: "black + 1pt", [How to stroke the border or the path of the draw element. See Typst's line documentation for more details: https://typst.app/docs/reference/visualize/line/#parameters-stroke])
+#def-arg("stroke", [`<none>` or `<auto>` or `<length>` \ or `<color>` or `<dictionary>` or `<stroke>`], default: "black + 1pt", [How to stroke the border or the path of the draw element. See Typst's line documentation for more details: https://typst.app/docs/reference/visualize/line/#parameters-stroke])
 
 ```example
 // Draws a red circle with a blue border
