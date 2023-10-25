@@ -4,6 +4,8 @@
 #import "palette.typ"
 #import "../draw.typ"
 
+#import "chart/boxwhisker.typ": boxwhisker
+
 // Styles
 #let barchart-default-style = (
   axes: (tick: (length: 0))
