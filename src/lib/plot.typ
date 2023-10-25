@@ -182,8 +182,11 @@
       axis.min -= 1
       axis.max += 1
     }
-    assert(axis.min <= axis.max,
-           message: "Axis min. must be <= max.")
+    assert(axis.min != auto and axis.min != none and
+           axis.max != auto and axis.max != none,
+      message: "Axis min and max must be set.")
+    assert(axis.min < axis.max,
+      message: "Axis min. must be < max.")
 
     axis-dict.at(name) = axis
   }

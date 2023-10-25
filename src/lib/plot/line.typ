@@ -160,7 +160,8 @@
 ///                              / `"hv"`: Move horizontal and then vertical
 ///                              / `"vhv"`: Add a vertical step in the middle
 ///                              / `"raw"`: Like linear, but without linearization.
-///                              / `"linear"` _should_ never look different than `"raw"`.
+///
+///                              `"linear"` _should_ never look different than `"raw"`.
 ///
 ///                              If the value is a dictionary, the type must be
 ///                              supplied via the `type` key. The following extra
