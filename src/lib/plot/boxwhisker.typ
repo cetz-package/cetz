@@ -66,7 +66,9 @@
         mark: (if "outliers" in data {mark}),
         mark-size: mark-size,
         mark-style: (:),
-        x-domain: (data.x - 1, data.x + 1),
+        x-domain: (
+            data.x - calc.max(whisker-width, box-width), 
+            data.x + calc.max(whisker-width, box-width)),
         y-domain: (min-value, max-value),
     ),)
 }
