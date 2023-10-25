@@ -7,6 +7,7 @@
 #import "plot/sample.typ": sample-fn, sample-fn2
 #import "plot/line.typ": add, add-hline, add-vline
 #import "plot/contour.typ": add-contour
+#import "plot/boxwhisker.typ": add-boxwhisker
 
 #let default-colors = (blue, red, green, yellow, black)
 
