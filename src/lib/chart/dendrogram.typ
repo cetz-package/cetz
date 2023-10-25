@@ -206,22 +206,24 @@
 
       // Radialize coordinates for radial mode
       if mode == "radial" {
-        let angle-scale =  ((calc.pi))
+        let angle-scale =  ((calc.pi)) 
 
         // leaf-axis-ticks
 
         let draw-twig(x1, y1, height) = line(
           (angle: x1 / angle-scale, radius: max-value - y1),
-          (angle: x1 / angle-scale, radius: max-value - height)
+          (angle: x1 / angle-scale, radius: max-value - height),
         )
 
         let draw-name(key, x) = {
           //if type(x) == int {
+            let fgd = leaf-axis-ticks.filter(k=>{k.at(0)==x})
+            if fgd.len() == 0 { return }
             content( 
-              (angle: x / angle-scale, radius: max-value),
+              (angle: x / angle-scale, radius: max-value + 0.3),
               angle: (-x / angle-scale) * 1rad,
               anchor: "left",
-              [#leaf-axis-ticks.filter(k=>k.at(0)==x).at(0).at(1)],
+              [#leaf-axis-ticks.filter(k=>{k.at(0)==x}).at(0).at(1)],
             )
         }
 
@@ -234,7 +236,7 @@
             stop: (x2 / angle-scale) * 1rad,
           )
           draw-twig(x2, y2, height)
-        })
+        }, ..style, ..line-style(idx))
 
         if increment-x1 {draw-name(x1-key, x1)}
         if increment-x2 {draw-name(x2-key, x2)}
@@ -272,7 +274,7 @@
     // If horizontal mode, reflect coordinates about y=x.
     let (x, y) = ( if mode == "vertical" {(x, y)} else {(y, x)} )
 
-    if mode in ("vertical", "horizontal") {
+    //if mode in ("vertical", "horizontal") {
       axes.scientific(
         size: size,
         left: y,
@@ -281,7 +283,7 @@
         top: none,
         frame: "set",
         ..style.axes)
-    }
+    //}
 
     // Render
     if data.len() > 0 {
