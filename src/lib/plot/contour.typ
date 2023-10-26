@@ -6,7 +6,7 @@
 //
 // - data (array): A 2D array of floats where the first index is the row and the second index is the column
 // - offset (float): Z value threshold of a cell compare with `op` to, to count as true
-// - op (auto,string,funciton): Z value comparison oparator:
+// - op (auto,string,function): Z value comparison oparator:
 //     / `">", ">=", "<", "<=", "!=", "=="`: Use the passed operator to compare z.
 //     / `auto`: Use ">=" for positive z values, "<=" for negative z values.
 //     / `<function>`: If set to a function, that function gets called
@@ -257,7 +257,7 @@
 /// - x-samples (int): X axis domain samples (2 < n)
 /// - y-samples (int): Y axis domain samples (2 < n)
 /// - interpolate (bool): Use linear interpolation between sample values
-/// - op (auto,string,funciton): Z value comparison oparator:
+/// - op (auto,string,function): Z value comparison oparator:
 ///   / `">", ">=", "<", "<=", "!=", "=="`: Use the operator for comparison.
 ///   / `auto`: Use ">=" for positive z values, "<=" for negative z values.
 ///   / `<function>`: Call comparison function of the format `(plot-z, data-z) => boolean`,
