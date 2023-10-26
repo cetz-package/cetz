@@ -16,13 +16,14 @@
 ///                             See `plot.add-boxwhisker` for more details.
 ///
 ///                             *Examples:*
-///                             - ```(x: 1 // Location on x-axis
-///                                   outliers: (7, 65, 69), // Optional
-///                                   min: 15, max: 60 // Minimum and maximum
-///                                   q1: 25, // Quartiles
-///                                   q2: 35,
-///                                   q3: 50
-///                                  )```
+///                             - ```typc
+///                               (x: 1                   // Location on x-axis
+///                                outliers: (7, 65, 69), // Optional outliers
+///                                min: 15, max: 60       // Minimum and maximum
+///                                q1: 25,                // Quartiles: Lower
+///                                q2: 35,                //            Median
+///                                q3: 50)                //            Upper
+///                                ```
 /// - size (array) : Size of chart. If the second entry is auto, it automatically scales to accommodate the number of entries plotted
 /// - y-min (float) : Lower end of y-axis range. If auto, defaults to lowest outlier or lowest min.
 /// - y-max (float) : Upper end of y-axis range. If auto, defaults to greatest outlier or greatest max.
