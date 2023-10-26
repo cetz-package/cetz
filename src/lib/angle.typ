@@ -3,6 +3,7 @@
 #import "../vector.typ"
 #import "../util.typ"
 #import "../coordinate.typ"
+#import "../anchor.typ" as anchor_
 
 // Angle default-style
 #let default-style = (
@@ -133,22 +134,29 @@
       )
     }
 
-
+    let (transform, anchors) = anchor_.setup(
+      anchor => {
+        (
+          origin: origin,
+          a: a,
+          b: b,
+          start: start,
+          end: end,
+          label: pt-label
+        ).at(anchor)
+      },
+      ("origin", "a", "b", "start", "end", "label"),
+      transform: ctx.transform,
+      name: name,
+      default: "label"
+    )
 
     return (
       ctx: ctx,
       name: name,
-      anchors: util.apply-transform(ctx.transform, (
-        origin: origin,
-        a: a,
-        b: b,
-        start: start,
-        end: end,
-        label: pt-label
-      )),
-      default-anchor: "label",
+      anchors: anchors,
       drawables: drawable.apply-transform(
-        ctx.transform,
+        transform,
         drawables
       )
     )

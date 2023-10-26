@@ -1,5 +1,6 @@
+#import "@preview/oxifmt:0.2.0": strfmt
+
 #import "/src/process.typ"
-#import "transformations.typ": move-to
 #import "/src/intersection.typ"
 #import "/src/path-util.typ"
 #import "/src/styles.typ"
@@ -7,7 +8,10 @@
 #import "/src/vector.typ"
 #import "/src/util.typ"
 #import "/src/coordinate.typ"
-#import "@preview/oxifmt:0.2.0": strfmt
+#import "/src/aabb.typ"
+#import "/src/anchor.typ" as anchor_
+
+#import "transformations.typ": move-to
 
 #let intersections(name, body, samples: 10) = {
   samples = calc.clamp(samples, 2, 2500)
@@ -38,7 +42,14 @@
     return (
       ctx: ctx,
       name: name,
-      anchors: anchors,
+      anchors: anchor_.setup(
+        anchor => {
+          anchors.at(anchor)
+        },
+        anchors.keys(),
+        transform: none,
+        name: name
+      ).last(),
       drawables: drawables
     )
   },)
@@ -54,13 +65,32 @@
       let group-ctx = ctx
       group-ctx.groups.push((anchors: (:)))
       (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, if type(body) == function {body(ctx)} else {body})
+
+      let (transform, anchors) = anchor_.setup(
+        anchor => {
+          let mid = aabb.mid(bounds)
+          (group-ctx.groups.last().anchors + (
+            north: (mid.at(0), bounds.high.at(1)),
+            north-east: bounds.high,
+            east: (bounds.high.at(0), mid.at(1)),
+            south-east: (bounds.high.at(0), bounds.low.at(1)),
+            south: (mid.at(0), bounds.low.at(0)),
+            south-west: bounds.low,
+            west: (bounds.low.at(0), mid.at(1)),
+            north-west: (bounds.low.at(0), bounds.high.at(1)),
+            center: mid,
+          )).at(anchor)
+        },
+        group-ctx.groups.last().anchors.keys() + ("north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west", "center"),
+        name: name,
+        default: "center",
+        offset-anchor: anchor
+      )
       
       return (
         ctx: ctx,
         name: name,
-        anchor: anchor,
-        anchors: group-ctx.groups.last().anchors,
-        // bounds: bounds,
+        anchors: anchors,
         drawables: drawables,
       )
     },
@@ -77,7 +107,7 @@
     let (ctx, position) = coordinate.resolve(ctx, position)
     position = util.apply-transform(ctx.transform, position)
     ctx.groups.last().anchors.insert(name, position)
-    return (ctx: ctx, name: name, anchors: (default: position))
+    return (ctx: ctx, name: name, anchors: anchor_.setup(anchor => position, ("default",), default: "default", name: name, transform: ctx.transform).last())
   },)
 }
 
@@ -91,16 +121,32 @@
       element in ctx.nodes,
       message: "copy-anchors: Could not find element '" + element + "'",
     )
-    
-    if filter == auto {
-      ctx.groups.last().anchors += ctx.nodes.at(element).anchors
-    } else {
-      let d = (:)
-      for k in filter {
-        d.insert(k, ctx.nodes.at(element).anchors.at(k))
-      }
-      ctx.groups.last().anchors += d
+
+    let calc-anchors = ctx.nodes.at(element).anchors
+    let anchors = calc-anchors(())
+    if filter != auto {
+      anchors = anchors.filter(a => a in filter)
     }
+
+    ctx.groups.last().anchors += {
+      let d = (:)
+      for a in anchors {
+        d.insert(a, calc-anchors(a))
+      }
+      d
+    }
+
+    // ctx.groups.last().anchors = 
+    
+    // if filter == auto {
+    //   ctx.groups.last().anchors += ctx.nodes.at(element).anchors
+    // } else {
+    //   let d = (:)
+    //   for k in filter {
+    //     d.insert(k, ctx.nodes.at(element).anchors.at(k))
+    //   }
+    //   ctx.groups.last().anchors += d
+    // }
     return (ctx: ctx)
   },)
 }
@@ -116,15 +162,30 @@
   return (ctx => {
     let (ctx, drawables) = process.many(ctx, path)
     
-    let out = (:)
+    // let out = (:)
     assert(drawables.first().type == "path")
     let s = drawables.first().segments
+    
+    let out = (:)
     for a in anchors.pos() {
       assert("name" in a, message: "Anchor must have a name set")
       out.insert(a.name, path-util.point-on-path(s, a.pos))
     }
+
     
-    return (ctx: ctx, name: name, anchors: out, drawables: drawables)
+    return (
+      ctx: ctx,
+      name: name,
+      anchors: anchor_.setup(
+        anchor => {
+          out.at(anchor)
+        },
+        out.keys(),
+        name: name,
+        transform: none
+      ).last(),
+      drawables: drawables
+    )
   },)
 }
 
@@ -137,8 +198,12 @@
 #let get-ctx(callback) = {
   assert(type(callback) == function)
   (ctx => {
-    let (ctx, drawables) = process.many(ctx, callback(ctx))
-    return (ctx: ctx, drawables: drawables)
+    let body = callback(ctx)
+    if body != none {
+      let (ctx, drawables) = process.many(ctx, callback(ctx))
+      return (ctx: ctx, drawables: drawables)
+    }
+    return (ctx: ctx)
   },)
 }
 

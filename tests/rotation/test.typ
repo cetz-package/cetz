@@ -13,8 +13,8 @@
     })
 
     stroke(green)
-    circle("g.top-left", radius: .1)
-    circle("g.top-right", radius: .1)
-    circle("g.bottom-left", radius: .1)
-    circle("g.bottom-right", radius: .1)
+    circle("g.north-west", radius: .1)
+    circle("g.north-east", radius: .1)
+    circle("g.south-west", radius: .1)
+    circle("g.south-east", radius: .1)
 }))

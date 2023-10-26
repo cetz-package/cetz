@@ -152,7 +152,7 @@ Elements can be placed relative to their own anchors.
 ```example
 // An element does not have to be named 
 // in order to use its own anchors.
-circle((0,0), anchor: "left")
+circle((0,0), anchor: "west")
 
 // Draw a smaller red circle at the origin
 fill(red)
@@ -674,7 +674,7 @@ grid((0,0), (3,2), help-lines: true)
 
 circle((3,2), name: "a", radius: 2pt)
 circle((1,1), name: "c", radius: 0.75)
-content("c", $ c $, anchor: "top-right", padding: .1)
+content("c", $ c $, anchor: "north-east", padding: .1)
 
 stroke(red)
 line("a", (element: "c", point: "a", solution: 1),
@@ -695,7 +695,7 @@ content((30deg, 1), $ p_1 $, name: "p1")
 content((75deg, 1), $ p_2 $, name: "p2")
 
 line((-0.2, 0), (1.2, 0), name: "xline")
-content("xline.end", $ q_1 $, anchor: "left")
+content("xline.end", $ q_1 $, anchor: "west")
 line((2, -0.2), (2, 1.2), name: "yline")
 content("yline.end", $ q_2 $, anchor: "bottom")
 
@@ -998,7 +998,7 @@ group(name: "a", {
 // Center
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
 set-origin("a.bottom-right")
-group(name: "b", anchor: "bottom-left", {
+group(name: "b", anchor: "south-west", {
   anchor("default", (0,0))
   chart.columnchart(size: (auto, 4),
     mode: "clustered", value-key: (1,2,3), data)
@@ -1006,7 +1006,7 @@ group(name: "b", anchor: "bottom-left", {
 // Right
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
 set-origin("b.bottom-right")
-group(name: "c", anchor: "bottom-left", {
+group(name: "c", anchor: "south-west", {
   anchor("default", (0,0))
   chart.columnchart(size: (auto, 4),
     mode: "stacked", value-key: (1,2,3), data)
