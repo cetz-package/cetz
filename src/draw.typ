@@ -556,10 +556,10 @@
   let (ox, oy) = (calc.cos(45deg) * rx,
                   calc.sin(45deg) * ry)
   return (
-    top: (cx, cy - ry, cz),
+    top: (cx, cy + ry, cz),
     top-left: (cx - ox, cy + oy, cz),
     top-right: (cx + ox, cy + oy, cz),
-    bottom: (cx, cy + ry, cz),
+    bottom: (cx, cy - ry, cz),
     bottom-left: (cx - ox, cy - oy, cz),
     bottom-right: (cx + ox, cy - oy, cz),
     left: (cx - rx, cy, cz),
