@@ -21,20 +21,6 @@
 
     if size.at(1) == auto {size.at(1) = (data.len() + 1)}
 
-    let max-value = calc.max(
-        0, 
-        ..data.map(t => t.max),
-        ..data.map(t => calc.max(..t.at("outliers", default: (0,))))
-    )
-    if y-max == auto { y-max = max-value }
-
-    let min-value = calc.min(
-        0, 
-        ..data.map(t => t.max),
-        ..data.map(t => calc.min(..t.at("outliers", default: (0,))))
-    )
-    if y-min == auto { y-min = min-value}
-
     let x-tic-list = data.enumerate().map(((i, t)) => {
         (i + 1, t.at(label-key, default: i))
     })
@@ -45,7 +31,7 @@
         x-ticks: x-tic-list,
         y-min: y-min,
         y-max: y-max,
-        x-max: data.len() + 1,
+        x-label: none,
         ..arguments,
         {
             for (i, row) in data.enumerate() {

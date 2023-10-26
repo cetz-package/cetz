@@ -14,10 +14,8 @@
   import draw: *
 
   plot.plot(size: (10, 10),
-    x-tick-step: auto,
-    y-tick-step: auto,
+    y-min: 0,
     y-max: 100,
-    x-max: 2,
   {
     plot.add-boxwhisker((x: 1, ..data))
   })
@@ -27,8 +25,7 @@
   import draw: *
 
   plot.plot(size: (10, 10),
-    x-tick-step: auto,
-    y-tick-step: auto,
+    y-min: 0,
     y-max: 100,
   {
     plot.add-boxwhisker((

@@ -1,4 +1,5 @@
 #import "../../draw.typ"
+#import "../../util.typ"
 
 #let add-boxwhisker(
     data,
@@ -43,6 +44,9 @@
         0,data.min,
         ..data.at("outliers", default: (0,))
     )
+
+    let max-value = util.max(data.max, ..data.at("outliers", default: ()))
+    let min-value = util.min(data.min, ..data.at("outliers", default: ()))
 
     let prepare(self, ctx) = {
         return self
