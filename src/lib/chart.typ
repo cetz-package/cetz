@@ -3,6 +3,8 @@
 #import "axes.typ"
 #import "palette.typ"
 #import "../draw.typ"
+#import "../util.typ"
+#import "../styles.typ"
 
 #import "chart/boxwhisker.typ": boxwhisker
 
@@ -98,6 +100,9 @@
 ///                    
 ///                    `(1, 5, 10)` or `((1, [One]), (2, [Two]), (10, [Ten]))`
 /// - x-unit (content,auto): Tick suffix added to each tick label
+/// - x-decimals (int): Number of x axis tick decimals
+/// - x-format (string,function): X axis tick format, `"float"`, `"sci"`
+///                               or a callback of the form `float => content`.
 /// - x-min (number,auto): X axis minimum value
 /// - x-max (number,auto): X axis maximum value
 /// - x-label (content,none): X axis label
@@ -112,6 +117,8 @@
               x-tick-step: auto,
               x-ticks: (),
               x-unit: auto,
+              x-decimals: 1,
+              x-format: "float",
               x-min: auto,
               x-max: auto,
               x-label: none,
@@ -154,8 +161,8 @@
                     label: x-label,
                     ticks: (grid: true, step: x-tick-step,
                             minor-step: none,
-                            unit: x-unit, decimals: 1,
-                            list: x-ticks))
+                            unit: x-unit, decimals: x-decimals,
+                            format: x-format, list: x-ticks))
   let y = axes.axis(min: data.len(), max: -1,
                     label: y-label,
                     ticks: (grid: true,
@@ -164,9 +171,11 @@
                             list: y-tic-list))
 
   let basic-draw-bar(idx, y, item, ..style) = {
-    rect((0, y - bar-width / 2),
-         (rel: (item.at(value-key), bar-width)),
-         ..bar-style(idx))
+    rect(
+      (0, y - bar-width / 2),
+      (rel: (item.at(value-key), bar-width)),
+      ..bar-style(idx)
+    )
   }
 
   let clustered-draw-bar(idx, y, item, ..style) = {
@@ -175,9 +184,11 @@
     let bar-width = bar-width / sub-values.len()
 
     for (sub-idx, sub) in sub-values.enumerate() {
-      rect((0, y - y-offset + sub-idx * bar-width),
-           (rel: (sub, bar-width)),
-           ..bar-style(sub-idx))
+      rect(
+        (0, y - y-offset + sub-idx * bar-width),
+        (rel: (sub, bar-width)),
+        ..bar-style(sub-idx)
+      )
     }
   }
 
@@ -216,16 +227,17 @@
     let style = util.merge-dictionary(barchart-default-style,
       styles.resolve(ctx.style, (:), root: "barchart"))
 
-    axes.scientific(size: size,
-                    left: y,
-                    right: none,
-                    bottom: x,
-                    top: none,
-                    frame: "set",
-                    ..style.axes)
+    axes.scientific(
+      size: size,
+      left: y,
+      right: none,
+      bottom: x,
+      top: none,
+      frame: "set",
+      ..style.axes
+    )
     if data.len() > 0 {
       if type(bar-style) != function { bar-style = ((i) => bar-style) }
-
       axes.axis-viewport(size, x, y, {
         for (i, row) in data.enumerate() {
           draw-data(i, i, row)
@@ -274,6 +286,9 @@
 ///                    `(1, 5, 10)` or `((1, [One]), (2, [Two]), (10, [Ten]))`
 /// - y-unit (content,auto): Tick suffix added to each tick label
 /// - y-label (content,none): Y axis label
+/// - y-decimals (int): Number of y axis tick decimals
+/// - y-format (string,function): Y axis tick format, `"float"`, `"sci"`
+///                               or a callback of the form `float => content`.
 /// - y-min (number,auto): Y axis minimum value
 /// - y-max (number,auto): Y axis maximum value
 /// - x-label (content,none): x axis label
@@ -288,6 +303,8 @@
                  y-tick-step: auto,
                  y-ticks: (),
                  y-unit: auto,
+                 y-format: "float",
+                 y-decimals: 1,
                  y-label: none,
                  y-min: auto,
                  y-max: auto,
@@ -335,8 +352,8 @@
                     label: y-label,
                     ticks: (grid: true, step: y-tick-step,
                             minor-step: none,
-                            unit: y-unit, decimals: 1,
-                            list: y-ticks))
+                            unit: y-unit, decimals: y-decimals,
+                            format: y-format, list: y-ticks))
 
   let basic-draw-bar(idx, x, item, ..style) = {
     rect((x - bar-width / 2, 0),

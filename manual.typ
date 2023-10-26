@@ -19,10 +19,10 @@
 // String that gets prefixed to every example code
 // for compilation only!
 #let example-preamble = "import lib.draw: *;"
-#let example-scope = (cetz: lib, lib: lib, char: lib.chart)
+#let example-scope = (cetz: lib, lib: lib)
 
 #let example(source, ..args, vertical: false) = {
-  let picture = canvas(eval((example-preamble + source.text),
+  let picture = canvas(eval(example-preamble + source.text,
                             scope: example-scope), ..args)
   block(if vertical {
     align(
@@ -92,11 +92,9 @@
   header: align(right)[The `CeTZ` package],
 )
 
-#set heading(numbering: "1.")
+#set heading(numbering: (..num) => if num.pos().len() < 4 { numbering("1.1", ..num) })
 #set terms(indent: 1em)
 #show link: set text(blue)
-
-#let STYLING = heading(level: 4, numbering: none)[Styling]
 
 #align(center, text(16pt)[*The `CeTZ` package*])
 
@@ -177,7 +175,7 @@ canvas(background: none, length: 1cm, debug: false, body)
 You can style draw elements by passing the relevant named arguments to their draw functions. All elements have stroke and fill styling unless said otherwise.
 
 #def-arg("fill", [`<color>` or `<none>`], default: "none", [How to fill the draw element.])
-#def-arg("stroke", [`<none>` or `<auto>` or `<length>` \ or `<color>` or `<dicitionary>` or `<stroke>`], default: "black + 1pt", [How to stroke the border or the path of the draw element. See Typst's line documentation for more details: https://typst.app/docs/reference/visualize/line/#parameters-stroke])
+#def-arg("stroke", [`<none>` or `<auto>` or `<length>` \ or `<color>` or `<dictionary>` or `<stroke>`], default: "black + 1pt", [How to stroke the border or the path of the draw element. See Typst's line documentation for more details: https://typst.app/docs/reference/visualize/line/#parameters-stroke])
 
 ```example
 // Draws a red circle with a blue border
@@ -256,7 +254,7 @@ line((-1.5, 0), (1.5, 0))
 line((0, -1.5), (0, 1.5))
 ```
 
-#STYLING
+==== Styling
 
 #def-arg("mark", `<dictionary> or <auto>`, default: auto, [The styling to apply to marks on the line, see `mark`])
 
@@ -273,7 +271,7 @@ arc((0,-0.5), start: 45deg, delta: 90deg, mode: "CLOSE")
 arc((0,-1), stop: 135deg, delta: 90deg, mode: "PIE")
 ```
 
-#STYLING
+==== Styling
 
 #def-arg("radius", `<number> or <array>`, default: 1, [The radius of the arc. This is also a global style shared with circle!])
 #def-arg("mode", `<string>`, default: `"OPEN"`, [The options are "OPEN" (the default, just the arc), "CLOSE" (a circular segment) and "PIE" (a circular sector).])
@@ -293,7 +291,7 @@ circle-through(a, b, c, name: "c")
 circle("c.center", radius: .05, fill: red)
 ```
 
-#STYLING
+==== Styling
 
 #def-arg("radius", `<number> or <length> or <array of <number> or <length>>`, default: "1", [The circle's radius. If an array is given an ellipse will be drawn where the first item is the `x` radius and the second item is the `y` radius. This is also a global style shared with arc!])
 
@@ -315,7 +313,7 @@ line(a, b, c, stroke: gray)
 bezier-through(a, b, c, name: "b")
 
 // Show calculated control points
-line(a, "b.ctrl-1", "b.ctrl-2", c, stroke: gray)
+line(a, "b.ctrl-0", "b.ctrl-1", c, stroke: gray)
 ```
 
 #show-module-fn(draw-module, "content")
@@ -335,7 +333,7 @@ content((0,0), (2,1), par(justify: false)[This is a long text.], frame: "rect",
   fill: gray, stroke: none)
 ```
 
-#STYLING
+==== Styling
 This draw element is not affected by fill or stroke styling.
 
 #def-arg("padding", `<length>`, default: 0em, "")
@@ -366,7 +364,7 @@ line((0, 1), (1, 1), mark: (end: "<"))
 line((0, 0), (1, 0), mark: (end: ">"))
 ```
 
-#STYLING
+==== Styling
 
 #def-arg("symbol", `<string>`, default: ">", [The type of mark to draw when using the `mark` function.])
 #def-arg("start", `<string>`, [The type of mark to draw at the start of a path.])
@@ -436,7 +434,7 @@ place-marks(bezier-through((0,0), (1,1), (2,0)),
 
 #show-module-fn(draw-module, "intersections")
 ```example
-intersections(name: "demo", {
+intersections("demo", {
   circle((0, 0))
   bezier((0,0), (3,0), (1,-1), (2,1))
   line((0,-1), (0,1))
@@ -861,7 +859,8 @@ The node itselfes can be of type `content` or `dictionary` with a key `content`.
 #let plot-module-sample = tidy.parse-module(read("src/lib/plot/sample.typ"),
   name: "Plot - Sample")
 
-The library `plot` of CeTZ allows plotting 2D data as linechart.
+The library `plot` of CeTZ allows plotting 2D data.
+
 
 #tidy.show-module(plot-module, show-module-name: false)
 #tidy.show-module(plot-module-line, show-module-name: false)
@@ -1105,7 +1104,7 @@ brace((-1.5, -2.5), (2, -2.5), pointiness: 1, outer-pointiness: 1, stroke: olive
 content((rel: (.3, .1), to: "hill.center"), text[*εїз*])
 ```
 
-#STYLING
+==== Styling
 
 #def-arg("amplitude", `<number>`, default: .7, [Determines how much the brace rises above the base line.])
 #def-arg("pointiness", `<number> or <angle>`, default: 15deg, [How pointy the spike should be. #0deg or `0` for maximum pointiness, #90deg or `1` for minimum.])
@@ -1144,7 +1143,7 @@ merge-path(close: true, fill: white, {
 content(("top.spike", .5, "bottom.spike"), [Hello, World!])
 ```
 
-#STYLING
+==== Styling
 
 #def-arg("amplitude", `<number>`, default: decorations.flat-brace-default-style.amplitude, [Determines how much the brace rises above the base line.])
 #def-arg("aspect", `<number>`, default: decorations.flat-brace-default-style.aspect, [Determines the fraction of the total length where the spike will be placed.])
@@ -1179,7 +1178,7 @@ content(("top.spike", .5, "bottom.spike"), [Hello, World!])
 line((0,0), (1,1), name: "l")
 get-ctx(ctx => {
   // Get the vector of coordinate "l.center"
-  content("l", [#cetz.coordinate.resolve(ctx, "l.center")], frame: "rect",
+  content("l", [#cetz.coordinate.resolve(ctx, "l.center").at(1)], frame: "rect",
           stroke: none, fill: white)
 })
 ```

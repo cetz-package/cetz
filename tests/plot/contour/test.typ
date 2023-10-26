@@ -73,3 +73,56 @@
     )
   })
 }))
+
+/* Complex contour #270 */
+#box(stroke: 2pt + red, canvas({
+  plot.plot(size: (8, 8), {
+    // x >= 0
+    plot.add-contour(
+      (x, y) => x,
+      z: 0,
+      y-samples: 2,
+      x-samples: 2,
+      x-domain: (0, 10),
+      y-domain: (-10, 10),
+      fill: true,
+    )
+
+    // y >= 0
+    plot.add-contour(
+      (x, y) => y,
+      z: 0,
+      y-samples: 2,
+      x-samples: 2,
+      x-domain: (-10, 10),
+      y-domain: (0, 10),
+      fill: true,
+    )
+
+    // hyperbola
+    plot.add-contour(
+      (x, y) => (x - 1) * (y - 1),
+      x-domain: (-10, 10),
+      y-domain: (-10, 10),
+      fill: true,
+      z: 1,
+    )
+
+    // circle
+    plot.add-contour(
+      (x, y) => (calc.pow((x - 1), 2) + calc.pow((y - 1), 2)),
+      x-domain: (-10, 10),
+      y-domain: (-10, 10),
+      z: 9,
+      op: "<=",
+      fill: true,
+    )
+
+    // line
+    plot.add-contour(
+      (x, y) => x + 1 - y,
+      x-domain: (-10, 10),
+      y-domain: (-10, 10),
+    )
+  })
+}))

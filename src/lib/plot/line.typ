@@ -1,6 +1,6 @@
 #import "util.typ"
 #import "sample.typ"
-#import "../../draw.typ"
+#import "/src/draw.typ"
 
 // Transform points
 //
@@ -131,6 +131,9 @@
 
 /// Add data to a plot environment.
 ///
+/// Note: You can use this for scatter plots by setting
+///       the stroke style to `none`: `add(..., style: (stroke: none))`.
+///
 /// Must be called from the body of a `plot(..)` command.
 ///
 /// - domain (array): Domain tuple of the plot. If `data` is a function,
@@ -157,7 +160,8 @@
 ///                              / `"hv"`: Move horizontal and then vertical
 ///                              / `"vhv"`: Add a vertical step in the middle
 ///                              / `"raw"`: Like linear, but without linearization.
-///                                `"linear"` _should_ never look different than `"raw"`.
+///
+///                              `"linear"` _should_ never look different than `"raw"`.
 ///
 ///                              If the value is a dictionary, the type must be
 ///                              supplied via the `type` key. The following extra
@@ -261,8 +265,10 @@
   assert(y.named().len() == 0)
 
   let prepare(self, ctx) = {
-    let (min, max) = (ctx.x.min, ctx.x.max)
-    self.lines = self.y.map(y => ((min, y), (max, y)))
+    let (x-min, x-max) = (ctx.x.min, ctx.x.max)
+    let (y-min, y-max) = (ctx.y.min, ctx.y.max)
+    self.lines = self.y.filter(y => y >= y-min and y <= y-max)
+      .map(y => ((x-min, y), (x-max, y)))
     return self
   }
 
@@ -275,6 +281,7 @@
   ((
     type: "hline",
     y: y.pos(),
+    y-domain: (calc.min(..y.pos()), calc.max(..y.pos())),
     axes: axes,
     style: style,
     plot-prepare: prepare,
@@ -297,8 +304,10 @@
   assert(x.named().len() == 0)
 
   let prepare(self, ctx) = {
-    let (min, max) = (ctx.y.min, ctx.y.max)
-    self.lines = self.x.map(x => ((x, min), (x, max)))
+    let (x-min, x-max) = (ctx.x.min, ctx.x.max)
+    let (y-min, y-max) = (ctx.y.min, ctx.y.max)
+    self.lines = self.x.filter(x => x >= x-min and x <= x-max)
+      .map(x => ((x, y-min), (x, y-max)))
     return self
   }
 
@@ -311,6 +320,7 @@
   ((
     type: "vline",
     x: x.pos(),
+    x-domain: (calc.min(..x.pos()), calc.max(..x.pos())),
     axes: axes,
     style: style,
     plot-prepare: prepare,

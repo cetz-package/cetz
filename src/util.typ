@@ -5,17 +5,43 @@
 /// Constant to be used as float rounding error
 #let float-epsilon = 0.000001
 
-/// Multiplies the vector by the transform matrix
+#let typst-measure = measure
+
+
+/// Multiplies vectors by the transform matrix
 ///
 /// - transform (matrix): Transformation matrix
-/// - vec (vector): Vector to get transformed
-/// -> vector
-#let apply-transform(transform, vec) = {
-  matrix.mul-vec(
-    transform, 
-    vector.as-vec(vec, init: (0, 0, 0, 1))
-  ).slice(0, 3)
+/// - ..vecs (vectors): Vectors to get transformed. Only the positional part of the sink is used. A dictionary of vectors can be passed and all will be transformed.
+/// -> vectors If multiple vectors are given they are returned as an array, if only one vector is given only one will be returned, if a dictionary is given they will be returned in the dictionary with the same keys.
+#let apply-transform(transform, ..vecs) = {
+  let t = vec => matrix.mul-vec(
+      transform, 
+      vector.as-vec(vec, init: (0, 0, 0, 1))
+    ).slice(0, 3)
+  if type(vecs.pos().first()) == dictionary {
+    vecs = vecs.pos().first()
+    for (k, vec) in vecs {
+      vecs.insert(k, t(vec))
+    }
+  } else {
+    vecs = vecs.pos().map(t)
+    if vecs.len() == 1 {
+      return vecs.first()
+    }
+  }
+  return vecs
 }
+
+// #let apply-transform-many(transform, vecs) = {
+//   if type(vecs) == array {
+//     vecs.map(apply-transform.with(transform))
+//   } else if type(vecs) == dictionary {
+//     for (k, vec) in vecs {
+//       vecs.insert(k, apply-transform(transform, vec))
+//     }
+//     vecs
+//   }
+// }
 
 /// Reverts the transform of the given vector
 ///
@@ -157,4 +183,13 @@
   } else {
     return if overwrite {b} else {a}
   }
+}
+
+// Measure content in canvas coordinates
+#let measure(ctx, cnt) = {
+  let size = typst-measure(cnt, ctx.typst-style)
+  return (
+    calc.abs(size.width / ctx.length),
+    calc.abs(size.height / ctx.length)
+  )
 }

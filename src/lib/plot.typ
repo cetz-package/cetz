@@ -2,12 +2,15 @@
 #import "axes.typ"
 #import "palette.typ"
 #import "../util.typ"
-#import "../draw.typ"
 
 #import "plot/sample.typ": sample-fn, sample-fn2
 #import "plot/line.typ": add, add-hline, add-vline
 #import "plot/contour.typ": add-contour
 #import "plot/boxwhisker.typ": add-boxwhisker
+
+#import "../draw.typ"
+#import "../vector.typ"
+#import "../bezier.typ"
 
 #let default-colors = (blue, red, green, yellow, black)
 
@@ -53,13 +56,13 @@
 ///
 /// The following options are supported per axis
 /// and must be prefixed by `<axis-name>-`, e.G.
-/// `x-min: 0`.
+/// `x-min: 0` or `y-label: [y]`.
 /// #box[
 ///   - label (content): Axis label
 ///   - min (int): Axis minimum value
 ///   - max (int): Axis maximum value
-///   - tick-step (float): Distance between major ticks
-///   - minor-tick-step (float): Distance between minor ticks
+///   - tick-step (none, float): Distance between major ticks (or no ticks if none)
+///   - minor-tick-step (none, float): Distance between minor ticks (or no ticks if none)
 ///   - ticks (array): List of ticks values or value/label
 ///                    tuples. Example `(1,2,3)` or `((1, [A]), (2, [B]),)`
 ///   - format (string): Tick label format, `"float"`, `"sci"` (scientific)
@@ -70,7 +73,7 @@
 ///                         - `"minor"`: Enable minor tick grid
 ///                         - `"both"`: Enable major & minor tick grid
 ///                         - `false`: Disable grid
-///   - unit (content): Tick label suffix
+///   - unit (none, content): Tick label suffix
 ///   - decimals (int): Number of decimals digits to display for tick labels
 /// ]
 ///
@@ -181,8 +184,11 @@
       axis.min -= 1
       axis.max += 1
     }
-    assert(axis.min <= axis.max,
-           message: "Axis min. must be <= max.")
+    assert(axis.min != auto and axis.min != none and
+           axis.max != auto and axis.max != none,
+      message: "Axis min and max must be set.")
+    assert(axis.min < axis.max,
+      message: "Axis min. must be < max.")
 
     axis-dict.at(name) = axis
   }
