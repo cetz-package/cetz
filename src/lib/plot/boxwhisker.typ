@@ -10,17 +10,19 @@
 ///                             - `x` (number) X-axis value
 ///                             - `min` (number) Minimum value
 ///                             - `max` (number) Maximum value
-///                             - `q1`, `q2`, `q3` (number) Quartiles from low to high
+///                             - `q1`, `q2`, `q3` (number) Quartiles from lower to
+///                                to upper
 ///                             - `outliers` (array of numbers) Optional outliers
 ///
 ///                             *Examples:*
-///                             - ```(x: 1 // Location on x-axis
-///                                   outliers: (7, 65, 69), // Optional
-///                                   min: 15, max: 60 // Minimum and maximum
-///                                   q1: 25, // Quartiles
-///                                   q2: 35,
-///                                   q3: 50
-///                                  )```
+///                             - ```typc
+///                               (x: 1                   // Location on x-axis
+///                                outliers: (7, 65, 69), // Optional outlier values
+///                                min: 15, max: 60       // Minimum and maximum
+///                                q1: 25,                // Quartiles: Lower
+///                                q2: 35,                //            Median
+///                                q3: 50)                //            Upper
+///                                ```
 /// - axes (array): Name of the axes to use ("x", "y"), note that not all
 ///                 plot styles are able to display a custom axis!
 /// - style (style): Style to use, can be used with a palette function

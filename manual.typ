@@ -856,6 +856,8 @@ The node itselfes can be of type `content` or `dictionary` with a key `content`.
   name: "Plot - Line")
 #let plot-module-contour = tidy.parse-module(read("src/lib/plot/contour.typ"),
   name: "Plot - Contour")
+#let plot-module-boxwhisker = tidy.parse-module(read("src/lib/plot/boxwhisker.typ"),
+  name: "Plot - Boxwhisker")
 #let plot-module-sample = tidy.parse-module(read("src/lib/plot/sample.typ"),
   name: "Plot - Sample")
 
@@ -865,6 +867,7 @@ The library `plot` of CeTZ allows plotting 2D data.
 #tidy.show-module(plot-module, show-module-name: false)
 #tidy.show-module(plot-module-line, show-module-name: false)
 #tidy.show-module(plot-module-contour, show-module-name: false)
+#tidy.show-module(plot-module-boxwhisker, show-module-name: false)
 #tidy.show-module(plot-module-sample, show-module-name: false)
 
 === Examples
@@ -945,15 +948,17 @@ Axis names to be used for styling:
 
 == Chart
 #let chart-module = tidy.parse-module(read("src/lib/chart.typ"), name: "Chart")
+#let chart-boxwhisker-module = tidy.parse-module(read("src/lib/chart/boxwhisker.typ"), name: "Chart - Boxwhisker")
 
 With the `chart` library it is easy to draw charts.
 
 Supported charts are:
-- `barchart(..)`: A chart with horizontal growing bars
+- `barchart(..)` and `columnchart(..)`: A chart with horizontal/vertical growing bars
   - `mode: "basic"`: (default): One bar per data row
   - `mode: "clustered"`: Multiple grouped bars per data row
   - `mode: "stacked"`: Multiple stacked bars per data row
   - `mode: "stacked100"`: Multiple stacked bars relative to the sum of a data row
+- `boxwhisker(..)`: A box-plot chart
 
 #tidy.show-module(chart-module, show-module-name: false)
 
@@ -1012,6 +1017,8 @@ group(name: "c", anchor: "bottom-left", {
     mode: "stacked", value-key: (1,2,3), data)
 })
 ```)
+
+#tidy.show-module(chart-boxwhisker-module, show-module-name: false)
 
 === Styling
 
