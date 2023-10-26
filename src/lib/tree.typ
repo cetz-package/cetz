@@ -5,6 +5,7 @@
 #import "../vector.typ"
 #import "../matrix.typ"
 #import "../process.typ"
+#import "../anchor.typ" as anchor_
 
 #let typst-content = content
 
@@ -18,7 +19,7 @@
 ///                         position `()`.
 /// - draw-edge (function): Callback for rendering edges between nodes
 ///                         Signature: `(source-name, target-name, target-node) => elements`
-/// - direction (string): Tree grow direction (top, bottom, left, right)
+/// - direction (string): Tree grow direction (up, down, left, right)
 /// - parent-position (string): Positioning of parent nodes (begin, center, end)
 /// - grow (float): Depth grow factor (default 1)
 /// - spread (float): Sibling spread factor (default 1)
@@ -37,14 +38,21 @@
   assert(grow > 0)
   assert(spread > 0)
 
-  if direction == "down" { direction = "bottom" }
-  if direction == "up" { direction = "top" }
+  // if direction == "down" { direction = "south" }
+  // if direction == "up" { direction = "north" }
+
+  direction = (
+    up: "north",
+    down: "south",
+    right: "east",
+    left: "west"
+  ).at(direction)
 
   let opposite-dir = (
-    left: "right", 
-    right: "left",
-    bottom: "top",
-    top: "bottom"
+    west: "east", 
+    east: "west",
+    south: "north",
+    north: "south"
   )
 
   if draw-edge == auto {
@@ -174,13 +182,13 @@
   }
 
   let node-position(node) = {
-    if direction == "bottom" {
+    if direction == "south" {
       return (node.x, -node.y)
-    } else if direction == "top" {
+    } else if direction == "north" {
       return (node.x, node.y)
-    } else if direction == "left" {
+    } else if direction == "west" {
       return (-node.y, node.x)
-    } else if direction == "right" {
+    } else if direction == "east" {
       return (node.y, node.x)
     } else {
       panic(message: "Invalid tree direction.")
@@ -229,10 +237,12 @@
     let tree-root = layout(root, ctx)
     let (ctx, drawables) = process.many(ctx, render(tree-root, none))
 
+    let anchors = anchors(tree-root, none)
+
     return (
       ctx: ctx,
       name: name,
-      anchors: util.apply-transform(ctx.transform, anchors(tree-root, none)),
+      anchors: anchor_.setup(anchor => anchors.at(anchor), anchors.keys(), name: name, transform: ctx.transform),
       drawables: drawables
     )
   },)

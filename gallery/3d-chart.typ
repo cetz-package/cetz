@@ -9,7 +9,7 @@
   stroke((paint: black, dash: "dashed", thickness: .5pt)) // not on release yet
   for i in range(0, 6) {
     line((0, i, 0), (0, i, 1), (7, i, 1))
-    content((-.1, i, 0), [$#{i*20}$], anchor: "right")
+    content((-.1, i, 0), [$#{i*20}$], anchor: "east")
   }
   stroke((paint: black, thickness: .5pt, dash: none, join: "round"))
   line((0, 0, 1), (0, 6, 1))
@@ -30,7 +30,7 @@
     fill(top)
     line((x - .5, y, 0), (x - .5, y, 1),
           (x + .5, y, 1), (x + .5, y, 0), close: true)
-    content((x, -.1), title+h(0.5em), anchor: "right", angle: -90deg)
+    content((x, -.1), title+h(0.5em), anchor: "east", angle: -90deg)
   }
 
   // Draw data

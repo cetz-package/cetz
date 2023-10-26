@@ -48,11 +48,11 @@
 
   // Draw annotations
   line("chart.red", ((), "-|", (2, 0)))
-  content((), [Red], anchor: "left")
+  content((), [Red], anchor: "west")
 
   line("chart.blue", (1, -1), ((), "-|", (2,0)))
-  content((), [Blue], anchor: "left")
+  content((), [Blue], anchor: "west")
 
   line("chart.green", ((), "-|", (2,0)))
-  content((), [Green], anchor: "left")
+  content((), [Green], anchor: "west")
 })

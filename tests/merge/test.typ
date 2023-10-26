@@ -28,6 +28,6 @@
     merge-path({
         line((0,0), (1,0), (2,-1))
         arc((), start: 0deg, stop: -130deg, name: "arc")
-        bezier("arc.end", (0,0), (0, -1), (2, -2))
+        bezier("arc.arc-end", (0,0), (0, -1), (2, -2))
     })
 }))

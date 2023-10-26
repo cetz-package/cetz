@@ -197,7 +197,9 @@
   return mul-mat(
     mat,
     transform-translate(
-      ..vec
-    )
+      vec.at(0),
+      -vec.at(1),
+      vec.at(2),
+    ),
   )
 }
