@@ -537,16 +537,21 @@
       } else {
         vector.add(a, (w, -h))
       }
+
+      let north = (calc.sin(angle)*h, calc.cos(angle)*h,0)
+      let east = (calc.cos(-angle)*w, calc.sin(-angle)*w,0)
+      let south = vector.scale(north, -1)
+      let west = vector.scale(east, -1)
       (
         center: center,
-        north: vector.add(center, (0, h)),
-        north-east: vector.add(center, (w, h)),
-        east: vector.add(center, (w, 0)),
-        south-east: vector.add(center, (w, -h)),
-        south: vector.add(center, (0, -h)),
-        south-west: vector.add(center, (-w, -h)),
-        west: vector.add(center, (-w, 0)),
-        north-west: vector.add(center, (-w, h)),
+        north: vector.add(center, north),
+        north-east: vector.add(center, vector.add(north, east)),
+        east: vector.add(center, east),
+        south-east: vector.add(center, vector.add(south, east)),
+        south: vector.add(center, south),
+        south-west: vector.add(center, vector.add(south, west)),
+        west: vector.add(center, west),
+        north-west: vector.add(center, vector.add(north, west)),
       )
     }
 
