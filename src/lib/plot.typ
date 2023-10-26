@@ -2,6 +2,7 @@
 #import "axes.typ"
 #import "palette.typ"
 #import "../util.typ"
+#import "../draw.typ"
 
 #import "plot/sample.typ": sample-fn, sample-fn2
 #import "plot/line.typ": add, add-hline, add-vline

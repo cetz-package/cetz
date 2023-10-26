@@ -15,12 +15,11 @@
   ),
 )
 
-#box( canvas({
+#box(canvas({
   chart.boxwhisker(
-    y-min:0,
-    y-max: 100,
     size: (10, 10),
+    y-min: 0,
+    y-max: 100,
     label-key: "label",
-    data0
-  )
+    data0)
 }))
