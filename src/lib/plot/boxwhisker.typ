@@ -1,6 +1,26 @@
 #import "../../draw.typ"
 #import "../../util.typ"
 
+/// Add one or more box or whisker plots
+///
+/// - data (array, dictionary): dictionary or array of dictionaries containing the
+///                             needed entries to plot box and whisker plot.
+///
+///                           *Examples:*
+///                           - ```( x: 1 // Location on x-axis
+///                                  outliers: (7, 65, 69), // Optional
+///                                  min: 15, max: 60 // Minimum and maximum
+///                                  q1: 25, // Quartiles
+///                                  q2: 35,
+///                                  q3: 50
+///                                 )```
+/// - axes (array): Name of the axes to use ("x", "y"), note that not all
+///                 plot styles are able to display a custom axis!
+/// - style (style): Style to use, can be used with a palette function
+/// - box-width (float): Width from edge-to-edge of the box of the box and whisker in plot units. Defaults to 0.75
+/// - whisker-width (float): Width from edge-to-edge of the whisker of the box and whisker in plot units. Defaults to 0.5
+/// - mark (string): Mark to use for plotting outliers. Set `none` to disable. Defaults to "x"
+/// - mark-size (float): Size of marks for plotting outliers. Defaults to 0.15
 #let add-boxwhisker(
     data,
     axes: ("x", "y"),
@@ -8,7 +28,7 @@
     box-width: 0.75,
     whisker-width: 0.5,
     mark: "*",
-    mark-size: 0.2
+    mark-size: 0.15
 ) = {
 
     if type(data) == array {
@@ -79,16 +99,17 @@
         type: "boxwhisker",
         axes: axes,
         bw-data: data,
-        data: (if "outliers" in data {data.outliers.map(it=>(data.x, it))} else {none}),
         style: style,
         plot-prepare: prepare,
         plot-stroke: stroke,
-        mark: (if "outliers" in data {mark}),
-        mark-size: mark-size,
-        mark-style: (:),
         x-domain: (
             data.x - calc.max(whisker-width, box-width), 
             data.x + calc.max(whisker-width, box-width)),
         y-domain: (min-value, max-value),
-    ),)
+    ) + (if "outliers" in data { (
+        data: data.outliers.map(it=>(data.x, it)),
+        mark: mark,
+        mark-size: mark-size,
+        mark-style: (:)
+    ) }),)
 }
