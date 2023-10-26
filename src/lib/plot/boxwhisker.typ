@@ -87,10 +87,9 @@
 
         // whiskers
         let whisker(x, start, end) = {
-            draw.line((x, start),(x, end))
-            draw.line((x - whisker-width / 2, end),(x + whisker-width / 2, end))
+            draw.line((x, start),(x, end),..self.style)
+            draw.line((x - whisker-width / 2, end),(x + whisker-width / 2, end), ..self.style)
         }
-
         whisker(data.x, data.q3, data.max)
         whisker(data.x, data.q1, data.min)
     }
