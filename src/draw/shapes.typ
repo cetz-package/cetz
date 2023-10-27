@@ -555,10 +555,7 @@
       )
     }
 
-    
-
     let drawables = ()
-
     if style.frame in ("rect", "circle") {
       drawables.push(
         if style.frame == "rect" {

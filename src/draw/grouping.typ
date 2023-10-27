@@ -66,24 +66,31 @@
       group-ctx.groups.push((anchors: (:)))
       (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, if type(body) == function {body(ctx)} else {body})
 
+      let add-bbox-anchors = bounds != none
       let (transform, anchors) = anchor_.setup(
         anchor => {
-          let mid = aabb.mid(bounds)
-          (group-ctx.groups.last().anchors + (
-            north: (mid.at(0), bounds.high.at(1)),
-            north-east: bounds.high,
-            east: (bounds.high.at(0), mid.at(1)),
-            south-east: (bounds.high.at(0), bounds.low.at(1)),
-            south: (mid.at(0), bounds.low.at(0)),
-            south-west: bounds.low,
-            west: (bounds.low.at(0), mid.at(1)),
-            north-west: (bounds.low.at(0), bounds.high.at(1)),
-            center: mid,
-          )).at(anchor)
+          let anchors = group-ctx.groups.last().anchors
+          if add-bbox-anchors {
+            let mid = aabb.mid(bounds)
+            anchors += (
+              north: (mid.at(0), bounds.high.at(1)),
+              north-east: bounds.high,
+              east: (bounds.high.at(0), mid.at(1)),
+              south-east: (bounds.high.at(0), bounds.low.at(1)),
+              south: (mid.at(0), bounds.low.at(0)),
+              south-west: bounds.low,
+              west: (bounds.low.at(0), mid.at(1)),
+              north-west: (bounds.low.at(0), bounds.high.at(1)),
+              center: mid,
+            )
+          }
+          return anchors.at(anchor)
         },
-        group-ctx.groups.last().anchors.keys() + ("north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west", "center"),
+        group-ctx.groups.last().anchors.keys() + if add-bbox-anchors {
+            ("north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west", "center")
+          } else { () },
         name: name,
-        default: "center",
+        default: if add-bbox-anchors { "center" } else { none },
         offset-anchor: anchor
       )
       
@@ -172,7 +179,6 @@
       out.insert(a.name, path-util.point-on-path(s, a.pos))
     }
 
-    
     return (
       ctx: ctx,
       name: name,
@@ -188,7 +194,6 @@
     )
   },)
 }
-
 
 #let set-ctx(callback) = {
   assert(type(callback) == function)
