@@ -99,8 +99,8 @@
       }
       if draw-node == "rect" {
         draw.rect(
-          (rel: (-.1, .1), to: "content.top-left"),
-          (rel: (.1, -.1), to: "content.bottom-right")
+          (rel: (-.1, .1), to: "content.north-west"),
+          (rel: (.1, -.1), to: "content.south-east")
         )
       }
     }
@@ -242,7 +242,7 @@
     return (
       ctx: ctx,
       name: name,
-      anchors: anchor_.setup(anchor => anchors.at(anchor), anchors.keys(), name: name, transform: ctx.transform),
+      anchors: anchor_.setup(anchor => anchors.at(anchor), anchors.keys(), name: name, transform: ctx.transform).last(),
       drawables: drawables
     )
   },)

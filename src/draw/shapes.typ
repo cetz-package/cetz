@@ -656,16 +656,17 @@
       let (transform, anchors) = anchor_.setup(
         (anchor) => {
           let (w, h, d) = vector.sub(b, a)
+          let center = vector.add(a, (w/2, h/2))
           (
-            south-west: a,
-            south: vector.add(a, (w / 2, 0, d / 2)),
-            south-east: vector.add(a, (w, 0, d)),
-            north-west: vector.sub(b, (w, 0, d)),
-            north: vector.sub(b, (w / 2, 0, d / 2)),
+            north: (center.at(0), b.at(1)),
             north-east: b,
-            east: vector.sub(b, (0, h / 2, d / 2)),
-            west: vector.add(a, (0, h / 2, d / 2)),
-            center: vector.add(a, (w / 2, h / 2, d / 2)),
+            east: (b.at(0), center.at(1)),
+            south-east: (b.at(0), a.at(1)),
+            south: (center.at(0), a.at(1)),
+            south-west: a,
+            west: (a.at(0), center.at(1)),
+            north-west: (a.at(0), b.at(1)),
+            center: center
           ).at(anchor)
         },
         ("north", "south-west", "south", "south-east", "north-west", "north-east", "east", "west", "center"),
@@ -867,7 +868,7 @@
             let start = path-util.segment-end(segments.last())
             let end = path-util.segment-start(r.drawables.first().segments.first())
             if vector.dist(start, end) > 0 {
-              segments.push(path-util.line-segment((end,)))
+              segments.push(path-util.line-segment((start, end,)))
             }
           }
           for drawable in r.drawables {

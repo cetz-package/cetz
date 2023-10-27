@@ -123,7 +123,7 @@
   let C = resolve-anchor(ctx, c.element)
   let (ctx, P) = resolve(ctx, c.point, update: false)
   // Radius
-  let r = vector.len(vector.sub(resolve-anchor(ctx, c.element + ".top"), C))
+  let r = vector.len(vector.sub(resolve-anchor(ctx, c.element + ".north"), C))
   // Vector between C and P
   let D = vector.sub(P, C) // C - P
   // Distance between C and P

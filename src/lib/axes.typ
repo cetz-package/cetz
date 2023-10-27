@@ -433,10 +433,9 @@
         // Use a group to get non-rotated anchors
         group(
           content(
-            position, 
-            axis.label, 
-            angle: angle, 
-            // anchor: anchor, 
+            position,
+            axis.label,
+            angle: angle,
             padding: style.label.offset
           ),
           anchor: anchor, 

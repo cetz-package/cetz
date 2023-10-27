@@ -18,7 +18,7 @@
       if bounds == none and i == 0 {
         bounds = (low: pt, high: pt)
       } else {
-        assert(pt.len() == 3, message: repr(init))
+        assert(type(pt) == array and pt.len() == 3, message: repr(init) + repr(pts))
         let (x, y, z) = pt
 
         let (lo-x, lo-y, lo-z) = bounds.low

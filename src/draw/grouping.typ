@@ -58,54 +58,49 @@
 
 #let group(name: none, anchor: none, body) = {
   assert(type(body) in (array, function), message: "Incorrect type for body")
-  (
-    ctx => {
-      let bounds = none
-      let drawables = ()
-      let group-ctx = ctx
-      group-ctx.groups.push((anchors: (:)))
-      (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, if type(body) == function {body(ctx)} else {body})
+  (ctx => {
+    let bounds = none
+    let drawables = ()
+    let group-ctx = ctx
+    group-ctx.groups.push((anchors: (:)))
+    (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, if type(body) == function {body(ctx)} else {body})
 
-      let add-bbox-anchors = bounds != none
-      let (transform, anchors) = anchor_.setup(
-        anchor => {
-          let anchors = group-ctx.groups.last().anchors
-          if add-bbox-anchors {
-            let (low-y, high-y) = (bounds.high.at(1), bounds.low.at(1))
-            let bounds = bounds
-            bounds.low.at(1) = low-y
-            bounds.high.at(1) = high-y
-            let mid = aabb.mid(bounds)
-            anchors += (
-              north: (mid.at(0), bounds.high.at(1)),
-              north-east: bounds.high,
-              east: (bounds.high.at(0), mid.at(1)),
-              south-east: (bounds.high.at(0), bounds.low.at(1)),
-              south: (mid.at(0), bounds.low.at(1)),
-              south-west: bounds.low,
-              west: (bounds.low.at(0), mid.at(1)),
-              north-west: (bounds.low.at(0), bounds.high.at(1)),
-              center: mid,
-            )
-          }
-          return anchors.at(anchor)
-        },
-        group-ctx.groups.last().anchors.keys() + if add-bbox-anchors {
-            ("north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west", "center")
-          } else { () },
-        name: name,
-        default: if add-bbox-anchors { "center" } else { none },
-        offset-anchor: anchor
-      )
-      
-      return (
-        ctx: ctx,
-        name: name,
-        anchors: anchors,
-        drawables: drawables,
-      )
-    },
-  )
+    let add-bbox-anchors = bounds != none
+    let (transform, anchors) = anchor_.setup(
+      anchor => {
+        let anchors = (:)
+        if add-bbox-anchors {
+          let bounds = bounds
+          (bounds.low.at(1), bounds.high.at(1)) = (bounds.high.at(1), bounds.low.at(1))
+          let mid = aabb.mid(bounds)
+          anchors += (
+            north: (mid.at(0), bounds.high.at(1)),
+            north-east: bounds.high,
+            east: (bounds.high.at(0), mid.at(1)),
+            south-east: (bounds.high.at(0), bounds.low.at(1)),
+            south: (mid.at(0), bounds.low.at(1)),
+            south-west: bounds.low,
+            west: (bounds.low.at(0), mid.at(1)),
+            north-west: (bounds.low.at(0), bounds.high.at(1)),
+            center: mid,
+          )
+        }
+        // Custom anchors need to be added last to override the cardinal anchors.
+        anchors += group-ctx.groups.last().anchors
+        return anchors.at(anchor)
+      },
+      group-ctx.groups.last().anchors.keys() + if add-bbox-anchors { ("north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west", "center") },
+      name: name,
+      default: if add-bbox-anchors { "center" } else { none },
+      offset-anchor: anchor
+    )
+    return (
+      ctx: ctx,
+      name: name,
+      anchors: anchors,
+      drawables: drawable.apply-transform(transform, drawables),
+    )
+  },)
 }
 
 #let anchor(name, position) = {
