@@ -6,6 +6,9 @@
   if type(drawables) == dictionary {
     drawables = (drawables,)
   }
+  if drawables.len() == 0 {
+    return ()
+  }
   for drawable in drawables {
     if drawable.type == "path" {
       drawable.segments = drawable.segments.map(s => {

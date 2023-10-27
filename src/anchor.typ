@@ -30,18 +30,36 @@
 //   }
 // }
 
+/// Setup an anchor calculation and handling function for an element. Unifies anchor error checking and calculation of the offset transform.
+///
+/// A tuple of a transformation matrix and function will be returned.
+/// The transform is calculated by translating the given transform by the distance between the position of `offset-anchor` and `default`. It can then be used to correctly transform an element's drawables. If both either are none the calculation won't happen but the transform will still be returned.
+/// The function can be used to get the transformed anchors of an element by passing it a string. An empty array can be passed to get the list of valid anchors.
+///
+/// - callback (function): The function to call to get an anchor's position. The anchor's name will be passed and it should return a vector (str => vector).
+/// - anchor-names (array<str>): A list of valid anchor names. This list will be used to validate an anchor exists before `callback` is used.
+/// - default (str): The name of the default anchor.
+/// - transform (matrix): The current transformation matrix to apply to an anchor's position before returning it. If `offset-anchor` and `default` is set, it will be first translated by the distance between them.
+/// - name (str): The name of the element, this is only used in the error message in the event an anchor is invalid.
+/// - offset-anchor: The name of an anchor to offset the transform by.
+/// -> (matrix, function)
 #let setup(callback, anchor-names, default: none, transform: none, name: none, offset-anchor: none) = {
-  if default != none and transform != none and offset-anchor != none {
+  if default != none and offset-anchor != none {
     assert(
       offset-anchor in anchor-names,
       message: strfmt("Anchor '{}' not in anchors {} for element '{}'", offset-anchor, repr(anchor-names), name)
     )
-    transform = matrix.mul-mat(
-      transform,
-      matrix.transform-translate(
-        ..vector.sub(callback(default), callback(offset-anchor))
-      )
+    let offset = matrix.transform-translate(
+      ..vector.sub(callback(default), callback(offset-anchor))
     )
+    transform = if transform != none {
+      matrix.mul-mat(
+        transform,
+        offset
+      )
+    } else {
+      offset
+    }
   }
 
   let calculate-anchor(anchor) = {
@@ -68,9 +86,20 @@
       out
     }
   }
-  return (transform, calculate-anchor)
+  return (if transform == none { matrix.ident() } else { transform }, calculate-anchor)
 }
 
+
+/// Calculates a border anchor at the given angle by testing for an intersection between a line and the given drawables.
+///
+/// This function is not ready to be used widely in its current state. It is only to be used to calculate the cardinal anchors of the arc element until properly updated. It will panic if no intersections have been found.
+///
+/// - center (vector): The position from which to start the test line.
+/// - x-dist (number): The furthest distance the test line should go in the x direction.
+/// - y-dist (number): The furthest distance the test line should go in the y direction.
+/// - drawables (drawables): Drawables to test for an intersection against. Ideally should be of type path but all others are ignored.
+/// - angle (angle): The angle to check for a border anchor at.
+/// -> vector
 #let border(center, x-dist, y-dist, drawables, angle) = {
   if type(drawables) == dictionary {
     drawables = (drawables,)

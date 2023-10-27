@@ -2,19 +2,22 @@
 #import "../../src/lib.typ": *
 
 #box(stroke: 2pt + red, canvas({
-    import draw: *
+  import draw: *
 
-    group(name: "g", {
-      translate((-.5, .5, 0))
-      rotate(65deg)
+  group(name: "g", {
+    translate((-.5, .5, 0))
+    rotate(65deg)
 
-      rect((0, 0), (1, 1), name: "r")
-      copy-anchors("r")
-    })
+    rect((0, 0), (1, 1), name: "r")
+    anchor("1", "r.north-west")
+    anchor("2", "r.north-east")
+    anchor("3", "r.south-west")
+    anchor("4", "r.south-east")
+  })
 
-    stroke(green)
-    circle("g.north-west", radius: .1)
-    circle("g.north-east", radius: .1)
-    circle("g.south-west", radius: .1)
-    circle("g.south-east", radius: .1)
+  stroke(green)
+  circle("g.1", radius: .1)
+  circle("g.2", radius: .1)
+  circle("g.3", radius: .1)
+  circle("g.4", radius: .1)
 }))

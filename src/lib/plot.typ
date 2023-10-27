@@ -235,7 +235,7 @@
       let (x, y) = d.axes.map(name => axis-dict.at(name))
       let plot-ctx = (x: x, y: y)
 
-      axes.axis-viewport(size, x, y, {
+      axes.axis-viewport(size, x, y, name: "fill", {
         draw.anchor("center", (0, 0))
         draw.set-style(..d.style)
 
@@ -270,7 +270,7 @@
   // Stroke + Mark data
   for d in data {
     let (x, y) = d.axes.map(name => axis-dict.at(name))
-    axes.axis-viewport(size, x, y, {
+    axes.axis-viewport(size, x, y, name: "stroke + mark", {
       draw.anchor("center", (0, 0))
       draw.set-style(..d.style)
 
