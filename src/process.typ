@@ -6,10 +6,8 @@
 
 #let element(ctx, element-func) = {
   let bounds = none
-  // let drawables = ()
   let element
   let anchors = (:)
-
 
   (ctx, ..element,) = element-func(ctx)
   if "drawables" in element {
