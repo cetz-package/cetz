@@ -87,27 +87,57 @@
   stack(dir: ltr, [/ #term: #t \ #description], align(right, if default != none {[(default: #default)]}))
 }
 
-#set page(
-  numbering: "1/1",
-  header: align(right)[The `CeTZ` package],
-)
+// Title Page
+#{
+  let left-fringe = 24%
+  let left-color = blue.darken(30%)
+  let right-color = white //color.mix(green, blue).lighten(30%)
 
-#set heading(numbering: (..num) => if num.pos().len() < 4 { numbering("1.1", ..num) })
+  let url = "https://github.com/johannes-wolf/cetz"
+  let authors = (
+    ([Johannes Wolf], "https://github.com/johannes-wolf"),
+    ([fenjalien],     "https://github.com/fenjalien"),
+  )
+
+  set page(numbering: none, background: {
+    place(top + left, rect(width: left-fringe, height: 100%, fill: left-color))
+    place(top + left, dx: left-fringe, rect(width: 100% - left-fringe, height: 100%, fill: right-color))
+  }, margin: (left: left-fringe * 22cm, top: 12% * 29cm), header: none, footer: none)
+
+  set text(weight: "bold", left-color)
+  show link: set text(left-color)
+
+  canvas({
+    import lib.draw: *
+    content((), text(left-color, 3cm)[The CeTZ\ Package],
+      name: "title")
+    content((rel: (0,-2), to: "title.south-west"),
+      text(20pt, authors.map(v => link(v.at(1), [#v.at(0)])).join("\n")),
+      anchor: "north-west", name: "subtitle")
+    content((rel: (0,-2), to: "subtitle.south-west"),
+      text(20pt, link(url, [Version ] + lib.version.map(v => [#v]).join("."))),
+      anchor: "north-west", name: "version")
+  })
+  pagebreak(weak: true)
+}
+
 #set terms(indent: 1em)
+#set par(justify: true)
+#set heading(numbering: (..num) => if num.pos().len() < 4 {
+    numbering("1.1", ..num)
+  })
 #show link: set text(blue)
 
-#align(center, text(16pt)[*The `CeTZ` package*])
 
-#align(center)[
-  #link("https://github.com/johannes-wolf")[Johannes Wolf] and #link("https://github.com/fenjalien")[fenjalien] \
-  https://github.com/johannes-wolf/cetz \
-  Version #lib.version.map(v => str(v)).join(".")
-]
+// Outline
+#{
+  show heading: none
+  columns(2, outline(indent: true, depth: 3))
+  pagebreak(weak: true)
+}
 
-#set par(justify: true)
-
-#outline(indent: true, depth: 3)
-#pagebreak(weak: true)
+#set page(numbering: "1/1",
+          header: align(right)[The CeTZ package])
 
 = Introduction
 
@@ -119,7 +149,7 @@ The name CeTZ is a recursive acronym for "CeTZ, ein Typst Zeichenpacket" (german
 
 This is the minimal starting point:
   ```typ
-  #import "@local/cetz:0.1.2"
+  #import "@local/cetz:0.2.0"
   #cetz.canvas({
     import cetz.draw: *
     ...
@@ -146,20 +176,30 @@ stroke(none)
 circle("circle.east", radius: 0.3)
 ```
 
-Group elements will have default anchors based on their bounding box, they are:
-- `center`
-- `east`
-- `west`
-- `north`
-- `south`
-- `north-east`
-- `north-west`
-- `south-east`
-- `south-west`
+Group elements will have default anchors based on their axis aligned bounding box, they are:
+#align(center, {
+  canvas({
+    import draw:*
+    group({
+      rect((-1, -1), (1, 1))
+    }, name: "group")
+    for-each-anchor("group", n => {
+      if n != "center" {
+        content(
+          (rel: ("group.center", .75, "group." + n),
+           to: "group." + n), n)
+      } else {
+        content((rel: (0, .5), to: "group.center"), n)
+      }
+      circle("group." + n, radius: .1, fill: black)
+    })
+  })
+})
 
 Other elements will have their own anchors.
 
-Elements can be placed relative to their own anchors.
+Elements can be placed relative to their own anchors if they have an
+argument called `anchor:`:
 ```example
 // An element does not have to be named 
 // in order to use its own anchors.
@@ -702,6 +742,7 @@ Can be used to find the intersection of a vertical line going through a point $p
 You can use the implicit syntax of `(horizontal, "-|", vertical)` or `(vertical, "|-", horizontal)`
 
 ```example
+set-style(content: (padding: .05))
 content((30deg, 1), $ p_1 $, name: "p1")
 content((75deg, 1), $ p_2 $, name: "p2")
 
@@ -710,10 +751,10 @@ content("xline.end", $ q_1 $, anchor: "west")
 line((2, -0.2), (2, 1.2), name: "yline")
 content("yline.end", $ q_2 $, anchor: "south")
 
-line("p1", (horizontal: (), vertical: "xline.end"))
-line("p2", (horizontal: (), vertical: "xline.end"))
-line("p1", (vertical: (), horizontal: "yline.end"))
-line("p2", (vertical: (), horizontal: "yline.end"))
+line("p1.south-east", (horizontal: (), vertical: "xline.end"))
+line("p2.south-east", ((), "|-", "xline.end")) // Short form
+line("p1.south-east", (vertical: (), horizontal: "yline.end"))
+line("p2.south-east", ((), "-|", "yline.end")) // Short form
 ```
 
 == Interpolation
@@ -813,11 +854,8 @@ circle((v => cetz.vector.add(v, (0, -1)), "c.west"), radius: 0.3)
 // Label nodes anchors
 rect((0, 0), (2,2), name: "my-rect")
 for-each-anchor("my-rect", (name) => {
-  if not name in ("above", "below", "default") {
-
   content((), box(inset: 1pt, fill: white, text(8pt, [#name])),
-          angle: -45deg)
-  }
+          angle: -30deg)
 })
 ```
 
@@ -1019,17 +1057,17 @@ group(name: "a", {
 })
 // Center
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-set-origin("a.south-west")
+set-origin("a.south-east")
 group(name: "b", anchor: "south-west", {
-  anchor("default", (0,0))
+  anchor("center", (0,0))
   chart.columnchart(size: (auto, 4),
     mode: "clustered", value-key: (1,2,3), data)
 })
 // Right
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-set-origin("b.south-west")
+set-origin("b.south-east")
 group(name: "c", anchor: "south-west", {
-  anchor("default", (0,0))
+  anchor("center", (0,0))
   chart.columnchart(size: (auto, 4),
     mode: "stacked", value-key: (1,2,3), data)
 })
@@ -1047,6 +1085,9 @@ styled the same way, see @plot.style.
 
 ==== Default `columnchart` Style
 #raw(repr(chart.columnchart-default-style))
+
+==== Default `boxwhisker` Style
+#raw(repr(chart.boxwhisker-default-style))
 
 == Palette <palette>
 #let palette-module = tidy.parse-module(read("src/lib/palette.typ"), name: "Palette")
