@@ -219,11 +219,21 @@
   }
 
   if type(number) == length {
-    number = util.resolve-number(ctx, number) / vector.len(vector.sub(b,a))
+    let dist = vector.dist(a, b)
+    number = if dist != 0 {
+      util.resolve-number(ctx, number) / dist
+    } else {
+      0
+    }
   }
 
   if abs {
-    number = number / vector.dist(a, b)
+    let dist = vector.dist(a, b)
+    number = if dist != 0 {
+      number / dist
+    } else {
+      0
+    }
   }
 
   return vector.add(
