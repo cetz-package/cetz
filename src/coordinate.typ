@@ -165,7 +165,8 @@
     }
   } else {
     (c.horizontal, c.vertical)
-  })
+  }, update: false)
+
   return (
     horizontal.at(0),
     vertical.at(1),
