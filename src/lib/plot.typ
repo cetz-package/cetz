@@ -29,7 +29,7 @@
 // Get the default axis orientation
 // depending on the axis name
 #let get-default-axis-horizontal(name) = {
-  return name.starts-with("x") or name.starts-with("X")
+  return lower(name).starts-with("x")
 }
 
 /// Add an anchor to a plot environment
@@ -210,35 +210,33 @@
   // Set axis options
   for (name, axis) in axis-dict {
     if not "ticks" in axis { axis.ticks = () }
-
     axis.label = get-axis-option(name, "label", $#name$)
 
     // Configure axis bounds
     axis.min = get-axis-option(name, "min", axis.min)
     axis.max = get-axis-option(name, "max", axis.max)
 
+    assert(axis.min not in (none, auto) and
+           axis.max not in (none, auto),
+      message: "Axis min and max must be set.")
+    if axis.min == axis.max {
+      axis.min -= 1; axis.max += 1
+    }
+
     // Configure axis orientation
     axis.horizontal = get-axis-option(name, "horizontal",
       get-default-axis-horizontal(name))
 
+    // Configure ticks
     axis.ticks.list = get-axis-option(name, "ticks", ())
     axis.ticks.step = get-axis-option(name, "tick-step", axis.ticks.step)
     axis.ticks.minor-step = get-axis-option(name, "minor-tick-step", axis.ticks.minor-step)
     axis.ticks.decimals = get-axis-option(name, "decimals", 2)
     axis.ticks.unit = get-axis-option(name, "unit", [])
     axis.ticks.format = get-axis-option(name, "format", axis.ticks.format)
-    axis.ticks.grid = get-axis-option(name, "grid", false)
 
-    // Sanity checks
-    if axis.min == axis.max {
-      axis.min -= 1
-      axis.max += 1
-    }
-    assert(axis.min != auto and axis.min != none and
-           axis.max != auto and axis.max != none,
-      message: "Axis min and max must be set.")
-    assert(axis.min < axis.max,
-      message: "Axis min. must be < max.")
+    // Configure grid
+    axis.ticks.grid = get-axis-option(name, "grid", false)
 
     axis-dict.at(name) = axis
   }

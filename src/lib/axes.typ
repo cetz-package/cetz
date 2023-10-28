@@ -55,6 +55,10 @@
 
 // Format a tick value
 #let format-tick-value(value, tic-options) = {
+  // Without it we get negative zero in conversion
+  // to content! Typst has negative zero floats.
+  if value == 0 { value = 0 }
+
   let round(value, digits) = {
     calc.round(value, digits: digits)
   }
@@ -130,7 +134,8 @@
     let major-tick-values = ()
     if "step" in ticks and ticks.step != none {
       assert(ticks.step >= 0,
-             message: "Axis tick step must be positive")
+             message: "Axis tick step must be positive and non 0.")
+      if axis.min > axis.max { ticks.step *= -1 }
 
       let s = 1 / ticks.step
       let n = range(int(min * s), int(max * s + 1.5))
