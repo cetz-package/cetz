@@ -176,3 +176,18 @@
 
   return inverted
 }
+
+/// Swap column a with column b
+///
+/// - mat (matrix): Matrix
+/// - a (int): Column a
+/// - b (int): Column b
+/// -> matrix New matrix
+#let swap-cols(mat, a, b) = {
+  let new = mat
+  for m in range(mat.len()) {
+    new.at(m).at(a) = mat.at(m).at(b)
+    new.at(m).at(b) = mat.at(m).at(a)
+  }
+  return new
+}

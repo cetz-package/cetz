@@ -243,8 +243,8 @@
 ///
 /// - size (vector): Axis canvas size (relative to origin)
 /// - origin (coordinates): Axis Canvas origin
-/// - x (axis): X Axis
-/// - y (axis): Y Axis
+/// - x (axis): Horizontal axis
+/// - y (axis): Vertical axis
 /// - name (string,none): Group name
 #let axis-viewport(size, x, y, origin: (0, 0), name: none, body) = {
   size = (rel: size, to: origin)

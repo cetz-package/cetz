@@ -11,6 +11,7 @@
 
 #import "../draw.typ"
 #import "../vector.typ"
+#import "../matrix.typ"
 #import "../bezier.typ"
 
 #let default-colors = (blue, red, green, yellow, black)
@@ -23,6 +24,12 @@
 
 #let default-mark-style(i) = {
   return default-plot-style(i)
+}
+
+// Get the default axis orientation
+// depending on the axis name
+#let get-default-axis-horizontal(name) = {
+  return name.starts-with("x") or name.starts-with("X")
 }
 
 /// Add an anchor to a plot environment
@@ -96,6 +103,12 @@
 ///                    `x-min: 0`.
 ///                    - min (int): Axis minimum
 ///                    - max (int): Axis maximum
+///                    - horizontal (bool): Axis orientation; note that each
+///                      plot must use one vertical and one horizontal axis!
+///                      The default value for this parameter is guessed: Axes
+///                      starting with "x" are considered horizontal by default.
+///                      This does not affect the side the ticks of the axis are
+///                      drawn, but only the drawing direction.
 ///                    - tick-step (float): Major tick step
 ///                    - minor-tick-step (float): Major tick step
 ///                    - ticks (array): List of ticks values or value/label
@@ -113,6 +126,36 @@
           ) = draw.group(name: name, ctx => {
   import "plot/mark.typ"
 
+  // Create plot context object
+  let make-ctx(x, y, size) = {
+    assert(x != none, message: "X axis does not exist")
+    assert(y != none, message: "Y axis does not exist")
+
+    return (x: x, y: y, size: size)
+  }
+
+  // Setup data viewport
+  let data-viewport(data, x, y, size, body, name: none) = {
+    if body == none or body == () { return }
+
+    assert.ne(x.horizontal, y.horizontal,
+      message: "Data must use one horizontal and one vertical axis!")
+
+    // If y is the horizontal axis, swap x and y
+    // coordinates by swapping the transformation
+    // matrix columns.
+    if y.horizontal {
+      (x, y) = (y, x)
+      body = draw.set-ctx(ctx => {
+        ctx.transform = matrix.swap-cols(ctx.transform, 0, 1)
+        return ctx
+      }) + body
+    }
+
+    // Setup the viewport
+    axes.axis-viewport(size, x, y, body, name: name)
+  }
+
   let data = ()
   let anchors = ()
   let body = if body != none { body } else { () }
@@ -124,7 +167,7 @@
   }
 
   assert(axis-style in ("scientific", "school-book", "left"),
-         message: "Invalid plot style")
+    message: "Invalid plot style")
 
   let axis-dict = (:)
 
@@ -169,8 +212,14 @@
     if not "ticks" in axis { axis.ticks = () }
 
     axis.label = get-axis-option(name, "label", $#name$)
+
+    // Configure axis bounds
     axis.min = get-axis-option(name, "min", axis.min)
     axis.max = get-axis-option(name, "max", axis.max)
+
+    // Configure axis orientation
+    axis.horizontal = get-axis-option(name, "horizontal",
+      get-default-axis-horizontal(name))
 
     axis.ticks.list = get-axis-option(name, "ticks", ())
     axis.ticks.step = get-axis-option(name, "tick-step", axis.ticks.step)
@@ -222,7 +271,7 @@
   // Prepare
   for i in range(data.len()) {
     let (x, y) = data.at(i).axes.map(name => axis-dict.at(name))
-    let plot-ctx = (x: x, y: y)
+    let plot-ctx = make-ctx(x, y, size)
 
     if "plot-prepare" in data.at(i) {
       data.at(i) = (data.at(i).plot-prepare)(data.at(i), plot-ctx)
@@ -233,14 +282,14 @@
   if fill-below {
     for d in data {
       let (x, y) = d.axes.map(name => axis-dict.at(name))
-      let plot-ctx = (x: x, y: y)
+      let plot-ctx = make-ctx(x, y, size)
 
-      axes.axis-viewport(size, x, y, {
+      data-viewport(d, x, y, size, {
         draw.anchor("center", (0, 0))
         draw.set-style(..d.style)
 
         if "plot-fill" in d {
-          (d.plot-fill)(d, (x: x, y: y))
+          (d.plot-fill)(d, plot-ctx)
         }
       })
     }
@@ -270,40 +319,37 @@
   // Stroke + Mark data
   for d in data {
     let (x, y) = d.axes.map(name => axis-dict.at(name))
-    axes.axis-viewport(size, x, y, {
+    let plot-ctx = make-ctx(x, y, size)
+
+    data-viewport(d, x, y, size, {
       draw.anchor("center", (0, 0))
       draw.set-style(..d.style)
 
       if not fill-below and "plot-fill" in d {
-        (d.plot-fill)(d, (x: x, y: y))
+        (d.plot-fill)(d, plot-ctx)
       }
       if "plot-stroke" in d {
-        (d.plot-stroke)(d, (x: x, y: y))
+        (d.plot-stroke)(d, plot-ctx)
       }
-    })
-    if "mark" in d and d.mark != none {
-      axes.axis-viewport(size, x, y, {
+      if "mark" in d and d.mark != none {
         draw.set-style(..d.style, ..d.mark-style)
         mark.draw-mark(d.data, x, y, d.mark, d.mark-size, size)
-      })
-    }
+      }
+    })
   }
 
   // Place anchors
   for a in anchors {
     let (x, y) = a.axes.map(name => axis-dict.at(name))
-    assert(x != none,
-      message: "Axis " + name + " does not exist")
-    assert(y != none,
-      message: "Axis " + name + " does not exist")
+    let plot-ctx = make-ctx(x, y, size)
 
-    axes.axis-viewport(name: "anchors", size, x, y, {
+    data-viewport(a, x, y, size, {
       let (ax, ay) = a.position
       if ax == "min" {ax = x.min} else if ax == "max" {ax = x.max}
       if ay == "min" {ay = y.min} else if ay == "max" {ay = y.max}
       draw.anchor("default", (0,0))
       draw.anchor(a.name, (ax, ay))
-    })
+    }, name: "anchors")
     draw.copy-anchors("anchors", filter: (a.name,))
   }
 })
