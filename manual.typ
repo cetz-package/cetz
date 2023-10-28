@@ -140,13 +140,24 @@ To use an anchor of an element, you must give the element a name using the `name
 // Name the circle
 circle((0,0), name: "circle")
 
-// Draw a smaller red circle at "circle"'s left anchor
+// Draw a smaller red circle at "circle"'s east anchor
 fill(red)
 stroke(none)
-circle("circle.left", radius: 0.3)
+circle("circle.east", radius: 0.3)
 ```
 
-All elements will have default anchors based on their bounding box, they are: `center`, `left`, `right`, `above`/`top` and `below`/`bottom`, `top-left`, `top-right`, `bottom-left`, `bottom-right`. Some elements will have their own anchors.
+Group elements will have default anchors based on their bounding box, they are:
+- `center`
+- `east`
+- `west`
+- `north`
+- `south`
+- `north-east`
+- `north-west`
+- `south-east`
+- `south-west`
+
+Other elements will have their own anchors.
 
 Elements can be placed relative to their own anchors.
 ```example
@@ -325,7 +336,7 @@ content((0,0), [Hello World!])
 let (a, b) = ((1,0), (3,1))
 
 line(a, b)
-content((a, .5, b), angle: b, [Text on a line], anchor: "bottom")
+content((a, .5, b), angle: b, [Text on a line], anchor: "south")
 ```
 
 ```example
@@ -410,7 +421,7 @@ group(name: "g", {
   rect((0,0), (1,1), name: "r")
   copy-anchors("r")
 })
-circle("g.top", radius: .1, fill: black)
+circle("g.north", radius: .1, fill: black)
 ```
 
 #show-module-fn(draw-module, "place-anchors")
@@ -456,9 +467,9 @@ with a higher or lower index. When rendering, all draw commands are sorted by th
 set-style(stroke: none)
 content((0, 0), [This is an example.], name: "text")
 on-layer(-1, {
-  circle("text.top-left", radius: .3, fill: red)
-  circle("text.bottom", radius: .4, fill: green)
-  circle("text.top-right", radius: .2, fill: blue)
+  circle("text.north-east", radius: .3, fill: red)
+  circle("text.south", radius: .4, fill: green)
+  circle("text.north-west", radius: .2, fill: blue)
 })
 ```
 
@@ -485,7 +496,7 @@ rect((0,0), (1,1))
 // Outer rect
 rect((0,0), (2,2), name: "r")
 // Move origin to top edge
-set-origin("r.above")
+set-origin("r.north")
 circle((0, 0), radius: .1)
 ```
 
@@ -620,9 +631,9 @@ circle((210deg, 3), radius: 0, name: "structure")
 circle((-30deg, 3), radius: 0, name: "form")
 
 for (c, a) in (
-  ("content", "bottom"), 
-  ("structure", "top-right"), 
-  ("form", "top-left")
+  ("content", "south"),
+  ("structure", "north-west"),
+  ("form", "north-east")
 ) {
   content(c, box(c + " oriented", inset: 5pt), anchor: a)
 }
@@ -657,7 +668,7 @@ You can also use implicit syntax of a dot separated string in the form `"name.an
 ```example
 line((0,0), (3,2), name: "line")
 circle("line.end", name: "circle")
-rect("line.start", "circle.left")
+rect("line.start", "circle.east")
 ```
 
 == Tangent
@@ -697,12 +708,12 @@ content((75deg, 1), $ p_2 $, name: "p2")
 line((-0.2, 0), (1.2, 0), name: "xline")
 content("xline.end", $ q_1 $, anchor: "west")
 line((2, -0.2), (2, 1.2), name: "yline")
-content("yline.end", $ q_2 $, anchor: "bottom")
+content("yline.end", $ q_2 $, anchor: "south")
 
-line("p1", (horizontal: (), vertical: "xline"))
-line("p2", (horizontal: (), vertical: "xline"))
-line("p1", (vertical: (), horizontal: "yline"))
-line("p2", (vertical: (), horizontal: "yline"))
+line("p1", (horizontal: (), vertical: "xline.end"))
+line("p2", (horizontal: (), vertical: "xline.end"))
+line("p1", (vertical: (), horizontal: "yline.end"))
+line("p2", (vertical: (), horizontal: "yline.end"))
 ```
 
 == Interpolation
@@ -792,7 +803,7 @@ The example below shows how to use this system to create an offset from an ancho
 ```example
 circle((0, 0), name: "c")
 fill(red)
-circle((v => cetz.vector.add(v, (0, -1)), "c.right"), radius: 0.3)
+circle((v => cetz.vector.add(v, (0, -1)), "c.west"), radius: 0.3)
 ```
 
 = Utility
@@ -997,7 +1008,7 @@ group(name: "a", {
 })
 // Center
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-set-origin("a.bottom-right")
+set-origin("a.south-west")
 group(name: "b", anchor: "south-west", {
   anchor("default", (0,0))
   chart.columnchart(size: (auto, 4),
@@ -1005,7 +1016,7 @@ group(name: "b", anchor: "south-west", {
 })
 // Right
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-set-origin("b.bottom-right")
+set-origin("b.south-west")
 group(name: "c", anchor: "south-west", {
   anchor("default", (0,0))
   chart.columnchart(size: (auto, 4),
@@ -1038,7 +1049,7 @@ The palette library provides some predefined palettes.
     for i in range(p("len")) {
       if calc.rem(i, 10) == 0 { move-to((rel: (0, -.5))) }
       rect((), (rel: (1,.5)), name: "r", ..p(i))
-      move-to("r.bottom-right")
+      move-to("r.south-west")
     }
   })
 } 
@@ -1177,8 +1188,8 @@ content(("top.spike", .5, "bottom.spike"), [Hello, World!])
 ```example
 line((0,0), (1,1), name: "l")
 get-ctx(ctx => {
-  // Get the vector of coordinate "l.center"
-  content("l", [#cetz.coordinate.resolve(ctx, "l.center").at(1)], frame: "rect",
+  // Get the vector of coordinate "l.start"
+  content("l.start", [#cetz.coordinate.resolve(ctx, "l.start").at(1)], frame: "rect",
           stroke: none, fill: white)
 })
 ```
