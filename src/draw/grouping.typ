@@ -113,7 +113,7 @@
     let (ctx, position) = coordinate.resolve(ctx, position)
     position = util.apply-transform(ctx.transform, position)
     ctx.groups.last().anchors.insert(name, position)
-    return (ctx: ctx, name: name, anchors: anchor_.setup(anchor => position, ("default",), default: "default", name: name, transform: ctx.transform).last())
+    return (ctx: ctx, name: name, anchors: anchor_.setup(anchor => position, ("default",), default: "default", name: name, transform: none).last())
   },)
 }
 
@@ -142,17 +142,6 @@
       d
     }
 
-    // ctx.groups.last().anchors = 
-    
-    // if filter == auto {
-    //   ctx.groups.last().anchors += ctx.nodes.at(element).anchors
-    // } else {
-    //   let d = (:)
-    //   for k in filter {
-    //     d.insert(k, ctx.nodes.at(element).anchors.at(k))
-    //   }
-    //   ctx.groups.last().anchors += d
-    // }
     return (ctx: ctx)
   },)
 }
