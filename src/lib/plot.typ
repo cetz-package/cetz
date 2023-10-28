@@ -5,7 +5,7 @@
 #import "../draw.typ"
 
 #import "plot/sample.typ": sample-fn, sample-fn2
-#import "plot/line.typ": add, add-hline, add-vline
+#import "plot/line.typ": add, add-hline, add-vline, add-fill-between
 #import "plot/contour.typ": add-contour
 #import "plot/boxwhisker.typ": add-boxwhisker
 
@@ -226,6 +226,8 @@
 
     if "plot-prepare" in data.at(i) {
       data.at(i) = (data.at(i).plot-prepare)(data.at(i), plot-ctx)
+      assert(data.at(i) != none,
+        message: "Plot prepare(self, cxt) returned none!")
     }
   }
 

@@ -252,8 +252,8 @@
 /// - z (float, array): Z values to plot. Contours containing values
 ///                     above z (z >= 0) or below z (z < 0) get plotted.
 ///                     If you specify multiple z values, they get plotted in order.
-/// - x-domain (array): X axis domain tuple (min, max)
-/// - y-domain (array): Y axis domain tuple (min, max)
+/// - x-domain (domain): X axis domain used if `data` is a function.
+/// - y-domain (domain): Y axis domain used if `data` is a function.
 /// - x-samples (int): X axis domain samples (2 < n)
 /// - y-samples (int): Y axis domain samples (2 < n)
 /// - interpolate (bool): Use linear interpolation between sample values
@@ -265,7 +265,7 @@
 ///                   is the z-value of the data getting plotted.
 /// - fill (bool): Fill each contour
 /// - style (style): Style to use, can be used with a palette function
-/// - axes (array): Name of the axes to use ("x", "y"), note that not all
+/// - axes (array): Name of the axes to use for plotting, note that not all
 ///                 plot styles are able to display a custom axis!
 /// - limit (int): Limit of contours to create per z value before the function panics
 #let add-contour(data,

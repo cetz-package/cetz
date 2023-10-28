@@ -1,9 +1,10 @@
-# 0.1.3
+# 0.2.0
 
 ## Libs
 ### Plot
 - Added `plot.add-contour(..)` for plotting contour plots
 - Added `plot.add-hline(..)` and `plot.add-vline(..)` for plotting h/v lines
+- Added `plot.add-between(..)` for filling the area between two line plots
 - Added `fill-type` option to `plot.add(..)` for specifying a fill type (axis or shape)
 - Changed default samples from 100 to 50!
 - Fixed plot filling in some cases
