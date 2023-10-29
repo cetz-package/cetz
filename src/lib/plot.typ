@@ -87,11 +87,12 @@
 ///
 /// - body (body): Calls of `plot.add` or `plot.add-*` commands
 /// - size (array): Plot canvas size tuple of width and height in canvas units
-/// - axis-style (string): Axis style "scientific", "left", "school-book"
-///                  - `"scientific"`: Frame plot area and draw axes y, x, y2, and x2 around it
-///                  - `"school-book"`: Draw axes x and y as arrows with both crossing at $(0, 0)$
-///                  - `"left"`: Draw axes x and y as arrows, the y axis stays on the left (at `x.min`)
-///                              and the x axis at the bottom (at `y.min`)
+/// - axis-style (none, string): Axis style "scientific", "left", "school-book"
+///     - `"scientific"`: Frame plot area and draw axes y, x, y2, and x2 around it
+///     - `"school-book"`: Draw axes x and y as arrows with both crossing at $(0, 0)$
+///     - `"left"`: Draw axes x and y as arrows, the y axis stays on the left (at `x.min`)
+///                 and the x axis at the bottom (at `y.min`)
+///     - `none`: Draw no axes (and no ticks).
 /// - plot-style (style,function): Style used for drawing plot graphs
 ///                                This style gets inherited by all plots.
 /// - mark-style (style,function): Style used for drawing plot marks.
@@ -166,7 +167,7 @@
     if cmd.type == "anchor" { anchors.push(cmd) } else { data.push(cmd) }
   }
 
-  assert(axis-style in ("scientific", "school-book", "left"),
+  assert(axis-style in (none, "scientific", "school-book", "left"),
     message: "Invalid plot style")
 
   let axis-dict = (:)
