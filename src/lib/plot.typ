@@ -242,6 +242,42 @@
     axis-dict.at(name) = axis
   }
 
+  // Set axis options round two, after setting
+  // axis bounds
+  for (name, axis) in axis-dict {
+    let changed = false
+
+    // Configure axis aspect ratio
+    let equal-to = get-axis-option(name, "equal", none)
+    if equal-to != none {
+      assert.eq(type(equal-to), str,
+        message: "Expected axis name.")
+      assert(equal-to != name,
+        message: "Axis can not be equal to itself.")
+
+      let other = axis-dict.at(equal-to, default: none)
+      assert(other != none,
+        message: "Other axis must exist.")
+      assert(other.horizontal != axis.horizontal,
+        message: "Equal axes must have opposing orientation.")
+
+      let (w, h) = size
+      let ratio = if other.horizontal {
+        h / w
+      } else {
+        w / h
+      }
+      axis.min = other.min * ratio
+      axis.max = other.max * ratio
+
+      changed = true
+    }
+
+    if changed {
+      axis-dict.at(name) = axis
+    }
+  }
+
   // Prepare styles
   for i in range(data.len()) {
     let style-base = plot-style
