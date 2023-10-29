@@ -8,6 +8,7 @@
 #import "plot/line.typ": add, add-hline, add-vline
 #import "plot/contour.typ": add-contour
 #import "plot/boxwhisker.typ": add-boxwhisker
+#import "plot/util.typ" as plot-util
 
 #import "../draw.typ"
 #import "../vector.typ"
@@ -24,12 +25,6 @@
 
 #let default-mark-style(i) = {
   return default-plot-style(i)
-}
-
-// Get the default axis orientation
-// depending on the axis name
-#let get-default-axis-horizontal(name) = {
-  return lower(name).starts-with("x")
 }
 
 /// Add an anchor to a plot environment
@@ -202,81 +197,8 @@
     }
   }
 
-  let options = options.named()
-  let get-axis-option(axis-name, name, default) = {
-    let v = options.at(axis-name + "-" + name, default: default)
-    if v == auto { default } else { v }
-  }
-
   // Set axis options
-  for (name, axis) in axis-dict {
-    if not "ticks" in axis { axis.ticks = () }
-    axis.label = get-axis-option(name, "label", $#name$)
-
-    // Configure axis bounds
-    axis.min = get-axis-option(name, "min", axis.min)
-    axis.max = get-axis-option(name, "max", axis.max)
-
-    assert(axis.min not in (none, auto) and
-           axis.max not in (none, auto),
-      message: "Axis min and max must be set.")
-    if axis.min == axis.max {
-      axis.min -= 1; axis.max += 1
-    }
-
-    // Configure axis orientation
-    axis.horizontal = get-axis-option(name, "horizontal",
-      get-default-axis-horizontal(name))
-
-    // Configure ticks
-    axis.ticks.list = get-axis-option(name, "ticks", ())
-    axis.ticks.step = get-axis-option(name, "tick-step", axis.ticks.step)
-    axis.ticks.minor-step = get-axis-option(name, "minor-tick-step", axis.ticks.minor-step)
-    axis.ticks.decimals = get-axis-option(name, "decimals", 2)
-    axis.ticks.unit = get-axis-option(name, "unit", [])
-    axis.ticks.format = get-axis-option(name, "format", axis.ticks.format)
-
-    // Configure grid
-    axis.ticks.grid = get-axis-option(name, "grid", false)
-
-    axis-dict.at(name) = axis
-  }
-
-  // Set axis options round two, after setting
-  // axis bounds
-  for (name, axis) in axis-dict {
-    let changed = false
-
-    // Configure axis aspect ratio
-    let equal-to = get-axis-option(name, "equal", none)
-    if equal-to != none {
-      assert.eq(type(equal-to), str,
-        message: "Expected axis name.")
-      assert(equal-to != name,
-        message: "Axis can not be equal to itself.")
-
-      let other = axis-dict.at(equal-to, default: none)
-      assert(other != none,
-        message: "Other axis must exist.")
-      assert(other.horizontal != axis.horizontal,
-        message: "Equal axes must have opposing orientation.")
-
-      let (w, h) = size
-      let ratio = if other.horizontal {
-        h / w
-      } else {
-        w / h
-      }
-      axis.min = other.min * ratio
-      axis.max = other.max * ratio
-
-      changed = true
-    }
-
-    if changed {
-      axis-dict.at(name) = axis
-    }
-  }
+  axis-dict = plot-util.setup-axes(axis-dict, options.named(), size)
 
   // Prepare styles
   for i in range(data.len()) {
