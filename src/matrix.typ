@@ -123,6 +123,23 @@
   )
 }
 
+// Multiply 4x4 matrix with vector of size 3 or 4.
+// The value of vec_4 defaults to w (1).
+//
+// The resulting vector is of dimension 3
+#let mul4x4-vec3(mat, vec, w: 1) = {
+  assert(vec.len() <= 4)
+  let out = (0, 0, 0)
+  for m in range(0, 3) {
+    let v = (mat.at(m).at(0) * vec.at(0, default: 0)
+           + mat.at(m).at(1) * vec.at(1, default: 0)
+           + mat.at(m).at(2) * vec.at(2, default: 0)
+           + mat.at(m).at(3) * vec.at(3, default: w))
+    out.at(m) = v
+  }
+  return out
+}
+
 // Multiply matrix with vector
 #let mul-vec(mat, vec) = {
   if mat.len() != vector.dim(vec) {
