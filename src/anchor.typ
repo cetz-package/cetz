@@ -7,28 +7,17 @@
 #import "matrix.typ"
 #import "vector.typ"
 
-// #let calculate(func, anchor-names, anchor, transform: none, name: none, default: none) = {
-//   if anchor == () {
-//     return anchor-names
-//   }
-//   if anchor == "default" {
-//     anchor = default
-//   }
-//   assert(
-//     anchor in anchor-names,
-//     message: strfmt("Anchor '{}' not in anchors {}", anchor, repr(anchor-names)) + if name != none { strfmt(" for element '{}'", name) }
-//   )
-
-//   let out = func(anchor)
-//   return if transform != none {
-//     util.apply-transform(
-//       transform,
-//       out
-//     )
-//   } else {
-//     out
-//   }
-// }
+// Compass direction to angle
+#let compass-angle = (
+  east: 0deg,
+  north-east: 45deg,
+  north: 90deg,
+  north-west: 135deg,
+  west: 180deg,
+  south-west: 225deg,
+  south: 270deg,
+  south-east: 315deg,
+)
 
 /// Setup an anchor calculation and handling function for an element. Unifies anchor error checking and calculation of the offset transform.
 ///

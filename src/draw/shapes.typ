@@ -810,7 +810,7 @@
         end: pts.last(),
       )
       for (i, pt) in pts.enumerate() {
-        a.insert("pt-" + str(i + 1), pt)
+        a.insert("pt-" + str(i), pt)
       }
       anchor_.setup(
         anchor => {
