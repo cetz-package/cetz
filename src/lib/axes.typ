@@ -55,6 +55,10 @@
 
 // Format a tick value
 #let format-tick-value(value, tic-options) = {
+  // Without it we get negative zero in conversion
+  // to content! Typst has negative zero floats.
+  if value == 0 { value = 0 }
+
   let round(value, digits) = {
     calc.round(value, digits: digits)
   }
@@ -130,7 +134,8 @@
     let major-tick-values = ()
     if "step" in ticks and ticks.step != none {
       assert(ticks.step >= 0,
-             message: "Axis tick step must be positive")
+             message: "Axis tick step must be positive and non 0.")
+      if axis.min > axis.max { ticks.step *= -1 }
 
       let s = 1 / ticks.step
       let n = range(int(min * s), int(max * s + 1.5))
@@ -243,8 +248,8 @@
 ///
 /// - size (vector): Axis canvas size (relative to origin)
 /// - origin (coordinates): Axis Canvas origin
-/// - x (axis): X Axis
-/// - y (axis): Y Axis
+/// - x (axis): Horizontal axis
+/// - y (axis): Vertical axis
 /// - name (string,none): Group name
 #let axis-viewport(size, x, y, origin: (0, 0), name: none, body) = {
   size = (rel: size, to: origin)
