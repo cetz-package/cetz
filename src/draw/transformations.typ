@@ -99,7 +99,7 @@
     } else {
       v / bounds.at(i)
     })
-    
+
     ctx.transform = matrix.mul-mat(ctx.transform, matrix.mul-mat(
       matrix.transform-translate(fx, fy, fz),
       matrix.transform-scale((x: sx, y: sy, z: sz)),

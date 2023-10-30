@@ -31,6 +31,7 @@
 /// - mark (string): Mark to use for plotting outliers. Set `none` to disable. Defaults to "x"
 /// - mark-size (float): Size of marks for plotting outliers. Defaults to 0.15
 #let add-boxwhisker(data,
+                    label: none,
                     axes: ("x", "y"),
                     style: (:),
                     box-width: 0.75,
@@ -96,6 +97,7 @@
 
   ((
     type: "boxwhisker",
+    label: label,
     axes: axes,
     bw-data: data,
     style: style,

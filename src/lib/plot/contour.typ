@@ -269,6 +269,7 @@
 ///                 plot styles are able to display a custom axis!
 /// - limit (int): Limit of contours to create per z value before the function panics
 #let add-contour(data,
+                 label: none,
                  z: (1,),
                  x-domain: (0, 1),
                  y-domain: (0, 1),
@@ -298,7 +299,7 @@
   let contours = ()
   let z = if type(z) == array { z } else { (z,) }
   for z in z {
-    for contour in find-contours(data, z, op: op, interpolate: interpolate) {
+    for contour in find-contours(data, z, op: op, interpolate: interpolate, contour-limit: limit) {
       let line-data = contour.map(pt => {
         (pt.at(0) * dx + x-min,
          pt.at(1) * dy + y-min)
@@ -313,6 +314,7 @@
 
   return ((
     type: "contour",
+    label: label,
     contours: contours,
     axes: axes,
     x-domain: x-domain,
@@ -324,5 +326,9 @@
     plot-prepare: _prepare,
     plot-stroke: _stroke,
     plot-fill: _fill,
+    plot-legend-preview: self => {
+      if not self.fill { self.style.fill = none }
+      draw.rect((0,0), (1,1), ..self.style)
+    }
   ),)
 }

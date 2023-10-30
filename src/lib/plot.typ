@@ -1,19 +1,19 @@
 // CeTZ Library for drawing plots
+#import "/src/util.typ"
+#import "/src/draw.typ"
+#import "/src/matrix.typ"
+#import "/src/vector.typ"
+#import "/src/bezier.typ"
 #import "axes.typ"
 #import "palette.typ"
-#import "../util.typ"
-#import "../draw.typ"
 
 #import "plot/sample.typ": sample-fn, sample-fn2
 #import "plot/line.typ": add, add-hline, add-vline, add-fill-between
 #import "plot/contour.typ": add-contour
 #import "plot/boxwhisker.typ": add-boxwhisker
 #import "plot/util.typ" as plot-util
-
-#import "../draw.typ"
-#import "../vector.typ"
-#import "../matrix.typ"
-#import "../bezier.typ"
+#import "plot/legend.typ": draw-legend
+#import "plot/mark.typ"
 
 #let default-colors = (blue, red, green, yellow, black)
 
@@ -94,6 +94,18 @@
 ///                                This style gets inherited by all plots.
 /// - fill-below (bool): Fill functions below the axes (draw axes above fills)
 /// - name (string): Element name
+/// - legend (none, auto, coordinate): Position to place the legend at.
+///                                    The following anchors are considered optimal
+///                                    for legend placement:
+///                                    - `legend.north`, `legend.south`, `legend.east`, `legend.west`
+///                                    - `legend.north-east`, `legend.north-west`, `legend.south-east`, `legend.south-west`
+///                                    - `legend.inner-north`, `legend.inner-south`, `legend.inner-east`, `legend.inner-west`
+///                                    - `legend.inner-north-east`, `legend.inner-north-west`, `legend.inner-south-east`, `legend.inner-south-west`
+///
+///                                    If set to `auto`, the placement is read from the legend style (root `legend`).
+/// - legend-anchor (auto, string): Anchor of the legend group to use as origin of the
+///                                 legend group.
+/// - legend-style (style): Legend style orverwrites.
 /// - ..options (any): The following options are supported per axis
 ///                    and must be prefixed by `<axis-name>-`, e.G.
 ///                    `x-min: 0`.
@@ -118,10 +130,11 @@
           plot-style: default-plot-style,
           mark-style: default-mark-style,
           fill-below: true,
+          legend: auto,
+          legend-anchor: auto,
+          legend-style: (:),
           ..options
           ) = draw.group(name: name, ctx => {
-  import "plot/mark.typ"
-
   // Create plot context object
   let make-ctx(x, y, size) = {
     assert(x != none, message: "X axis does not exist")
@@ -165,9 +178,9 @@
   assert(axis-style in (none, "scientific", "school-book", "left"),
     message: "Invalid plot style")
 
-  let axis-dict = (:)
 
   // Create axes for data
+  let axis-dict = (:)
   for d in data {
     for (i, name) in d.axes.enumerate() {
       if not name in axis-dict {
@@ -225,20 +238,60 @@
     }
   }
 
-  // Prepare
-  for i in range(data.len()) {
-    let (x, y) = data.at(i).axes.map(name => axis-dict.at(name))
-    let plot-ctx = make-ctx(x, y, size)
+  draw.group(name: "plot", {
+    draw.anchor("origin", (0, 0))
 
-    if "plot-prepare" in data.at(i) {
-      data.at(i) = (data.at(i).plot-prepare)(data.at(i), plot-ctx)
-      assert(data.at(i) != none,
-        message: "Plot prepare(self, cxt) returned none!")
+    // Prepare
+    for i in range(data.len()) {
+      let (x, y) = data.at(i).axes.map(name => axis-dict.at(name))
+      let plot-ctx = make-ctx(x, y, size)
+
+      if "plot-prepare" in data.at(i) {
+        data.at(i) = (data.at(i).plot-prepare)(data.at(i), plot-ctx)
+        assert(data.at(i) != none,
+          message: "Plot prepare(self, cxt) returned none!")
+      }
     }
-  }
 
-  // Fill
-  if fill-below {
+    // Fill
+    if fill-below {
+      for d in data {
+        let (x, y) = d.axes.map(name => axis-dict.at(name))
+        let plot-ctx = make-ctx(x, y, size)
+
+        data-viewport(d, x, y, size, {
+          draw.anchor("center", (0, 0))
+          draw.set-style(..d.style)
+
+          if "plot-fill" in d {
+            (d.plot-fill)(d, plot-ctx)
+          }
+        })
+      }
+    }
+
+    if axis-style == "scientific" {
+      axes.scientific(
+        size: size,
+        bottom: axis-dict.at("x", default: none),
+        top: axis-dict.at("x2", default: auto),
+        left: axis-dict.at("y", default: none),
+        right: axis-dict.at("y2", default: auto),)
+    } else if axis-style == "left" {
+      axes.school-book(
+        size: size,
+        axis-dict.x,
+        axis-dict.y,
+        x-position: axis-dict.y.min,
+        y-position: axis-dict.x.min)
+    } else if axis-style == "school-book" {
+      axes.school-book(
+        size: size,
+        axis-dict.x,
+        axis-dict.y,)
+    }
+
+    // Stroke + Mark data
     for d in data {
       let (x, y) = d.axes.map(name => axis-dict.at(name))
       let plot-ctx = make-ctx(x, y, size)
@@ -247,68 +300,43 @@
         draw.anchor("center", (0, 0))
         draw.set-style(..d.style)
 
-        if "plot-fill" in d {
+        if not fill-below and "plot-fill" in d {
           (d.plot-fill)(d, plot-ctx)
+        }
+        if "plot-stroke" in d {
+          (d.plot-stroke)(d, plot-ctx)
+        }
+        if "mark" in d and d.mark != none {
+          draw.set-style(..d.style, ..d.mark-style)
+          mark.draw-mark(d.data, x, y, d.mark, d.mark-size, size)
         }
       })
     }
+
+    // Place anchors
+    for a in anchors {
+      let (x, y) = a.axes.map(name => axis-dict.at(name))
+      let plot-ctx = make-ctx(x, y, size)
+
+      data-viewport(a, x, y, size, {
+        let (ax, ay) = a.position
+        if ax == "min" {ax = x.min} else if ax == "max" {ax = x.max}
+        if ay == "min" {ay = y.min} else if ay == "max" {ay = y.max}
+        draw.anchor("default", (0,0))
+        draw.anchor(a.name, (ax, ay))
+      }, name: "anchors")
+      draw.copy-anchors("anchors", filter: (a.name,))
+    }
+  })
+
+  // Draw the legend
+  if legend != none {
+    let items = data.filter(d => "label" in d and d.label != none)
+    if items.len() > 0 {
+      draw-legend(ctx, legend-style,
+        items, size, "plot", legend, legend-anchor)
+    }
   }
 
-  if axis-style == "scientific" {
-    axes.scientific(
-      size: size,
-      bottom: axis-dict.at("x", default: none),
-      top: axis-dict.at("x2", default: auto),
-      left: axis-dict.at("y", default: none),
-      right: axis-dict.at("y2", default: auto),)
-  } else if axis-style == "left" {
-    axes.school-book(
-      size: size,
-      axis-dict.x,
-      axis-dict.y,
-      x-position: axis-dict.y.min,
-      y-position: axis-dict.x.min)
-  } else if axis-style == "school-book" {
-    axes.school-book(
-      size: size,
-      axis-dict.x,
-      axis-dict.y,)
-  }
-
-  // Stroke + Mark data
-  for d in data {
-    let (x, y) = d.axes.map(name => axis-dict.at(name))
-    let plot-ctx = make-ctx(x, y, size)
-
-    data-viewport(d, x, y, size, {
-      draw.anchor("center", (0, 0))
-      draw.set-style(..d.style)
-
-      if not fill-below and "plot-fill" in d {
-        (d.plot-fill)(d, plot-ctx)
-      }
-      if "plot-stroke" in d {
-        (d.plot-stroke)(d, plot-ctx)
-      }
-      if "mark" in d and d.mark != none {
-        draw.set-style(..d.style, ..d.mark-style)
-        mark.draw-mark(d.data, x, y, d.mark, d.mark-size, size)
-      }
-    })
-  }
-
-  // Place anchors
-  for a in anchors {
-    let (x, y) = a.axes.map(name => axis-dict.at(name))
-    let plot-ctx = make-ctx(x, y, size)
-
-    data-viewport(a, x, y, size, {
-      let (ax, ay) = a.position
-      if ax == "min" {ax = x.min} else if ax == "max" {ax = x.max}
-      if ay == "min" {ay = y.min} else if ay == "max" {ay = y.max}
-      draw.anchor("default", (0,0))
-      draw.anchor(a.name, (ax, ay))
-    }, name: "anchors")
-    draw.copy-anchors("anchors", filter: (a.name,))
-  }
+  draw.copy-anchors("plot")
 })
