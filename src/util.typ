@@ -1,6 +1,9 @@
+#import "@preview/oxifmt:0.2.0": strfmt
+
 #import "matrix.typ"
 #import "vector.typ"
 #import "bezier.typ"
+
 
 /// Constant to be used as float rounding error
 #let float-epsilon = 0.000001
@@ -193,3 +196,4 @@
     calc.abs(size.height / ctx.length)
   )
 }
+

@@ -11,7 +11,7 @@
 #import "process.typ"
 
 #let canvas(length: 1cm, debug: false, background: none, body) = layout(ly => style(st => {
-  if type(body) == none {
+  if body == none {
     return []
   }
   assert(

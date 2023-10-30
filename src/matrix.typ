@@ -191,3 +191,15 @@
   }
   return new
 }
+
+// Translate the matrix by the vector
+#let translate(mat, vec) = {
+  return mul-mat(
+    mat,
+    transform-translate(
+      vec.at(0),
+      -vec.at(1),
+      vec.at(2),
+    ),
+  )
+}

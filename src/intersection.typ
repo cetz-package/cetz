@@ -42,7 +42,7 @@
 /// - b (path): Path b
 /// - samples (int): Number of samples to use for bezier curves
 /// -> array List of vectors
-#let path-path(a, b, samples: 25) = {
+#let path-path(a, b, samples: 6) = {
   import "bezier.typ"
 
   // Convert segment to vertices by sampling curves

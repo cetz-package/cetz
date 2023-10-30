@@ -24,10 +24,10 @@
   set-style(axes: (left: (tick: (stroke: green + 2pt))))
   set-style(axes: (bottom: (tick: (stroke: red, length: .5,
                                    label: (angle: -90deg,
-                                           anchor: "right")))))
+                                           anchor: "east")))))
   set-style(axes: (right: (tick: (label: (offset: .2,
                                           angle: 45deg,
-                                          anchor: "top-left"), length: -.1))))
+                                          anchor: "north-west"), length: -.1))))
   axes.scientific(size: (6, 6),
     frame: "set",
     top: none,

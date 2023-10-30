@@ -1,6 +1,6 @@
 #import "./vector.typ"
 #import "./util.typ"
-
+#import "@preview/oxifmt:0.2.0": strfmt
 
 #let resolve-xyz(c) = {
   // (x: <number> or <none>, y: <number> or <none>, z: <number> or <none>)
@@ -69,18 +69,14 @@
   }
 
   // Check if node is known
-  assert(name in ctx.nodes, message: "Unknown element '" + name + "' in elements " + repr(ctx.nodes.keys()))
-  let node = ctx.nodes.at(name)
-  // Check if anchor is known
-  assert(anchor in node.anchors, message: "Unknown anchor '" + anchor + "' in anchors " + repr(node.anchors.keys()) + " for node " + name)
+  assert(
+    name in ctx.nodes,
+    message: strfmt("Unknown element '{}' in elements {}", name, repr(ctx.nodes.keys()))
+  )
 
   return util.revert-transform(
     ctx.transform,
-    if anchor != none {
-      node.anchors.at(anchor)
-    } else {
-      node.anchors.default
-    }
+    (ctx.nodes.at(name).anchors)(anchor)
   )
 }
 
@@ -127,7 +123,7 @@
   let C = resolve-anchor(ctx, c.element)
   let (ctx, P) = resolve(ctx, c.point, update: false)
   // Radius
-  let r = vector.len(vector.sub(resolve-anchor(ctx, c.element + ".top"), C))
+  let r = vector.len(vector.sub(resolve-anchor(ctx, c.element + ".north"), C))
   // Vector between C and P
   let D = vector.sub(P, C) // C - P
   // Distance between C and P
@@ -246,6 +242,10 @@
   (ctx, ..c) = resolve(ctx, ..c)
   func(..c)
   // (c.first())()
+}
+
+#let resolve-pos(ctx, c) = {
+  // (name: str, pos: float, auto?: left|right, swap?: bool)
 }
 
 // Returns the given coordinate's system name

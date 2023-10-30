@@ -10,7 +10,7 @@
     bezier((0,0), (0, 10), (1,-10), (-5,20))
   })
   on-layer(-1, {
-    rect("g.bottom-left", "g.top-right", stroke: .5pt + green)
+    rect("g.south-west", "g.north-east", stroke: .5pt + green)
   })
 }))
 
@@ -21,7 +21,7 @@
     arc((0,0), start: 45deg, stop: 360deg - 45deg)
   })
   on-layer(-1, {
-    rect("g.bottom-left", "g.top-right", stroke: .5pt + green)
+    rect("g.south-west", "g.north-east", stroke: .5pt + green)
   })
 }))
 
@@ -37,6 +37,6 @@
   })
 
   on-layer(-1, {
-    rect("g.bottom-left", "g.top-right", stroke: .5pt + green)
+    rect("g.south-west", "g.north-east", stroke: .5pt + green)
   })
 }))
