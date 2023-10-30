@@ -206,6 +206,7 @@
          sample-at: (),
          line: "linear",
          axes: ("x", "y"),
+         label: none,
          data
          ) = {
   // If data is of type function, sample it
@@ -230,6 +231,7 @@
 
   ((
     type: "line",
+    label: label,
     data: data, /* Raw data */
     line-data: line-data, /* Transformed data */
     axes: axes,
@@ -246,6 +248,13 @@
     plot-prepare: _prepare,
     plot-stroke: _stroke,
     plot-fill: _fill,
+    plot-legend-preview: self => {
+      if self.fill or self.epigraph or self.hypograph {
+        draw.rect((0,0), (1,1), ..self.style)
+      } else {
+        draw.line((0,.5), (1,.5), ..self.style)
+      }
+    }
   ),)
 }
 
@@ -258,6 +267,7 @@
 #let add-hline(..y,
                axes: ("x", "y"),
                style: (:),
+               label: none,
                ) = {
   assert(y.pos().len() >= 1,
          message: "Specify at least one y value")
@@ -279,6 +289,7 @@
 
   ((
     type: "hline",
+    label: label,
     y: y.pos(),
     y-domain: (calc.min(..y.pos()), calc.max(..y.pos())),
     axes: axes,
@@ -297,6 +308,7 @@
 #let add-vline(..x,
                axes: ("x", "y"),
                style: (:),
+               label: none,
                ) = {
   assert(x.pos().len() >= 1,
          message: "Specify at least one x value")
@@ -318,6 +330,7 @@
 
   ((
     type: "vline",
+    label: label,
     x: x.pos(),
     x-domain: (calc.min(..x.pos()), calc.max(..x.pos())),
     axes: axes,
@@ -353,6 +366,7 @@
                       sample-at: (),
                       line: "linear",
                       axes: ("x", "y"),
+                      label: none,
                       style: (:)) = {
   // If data is of type function, sample it
   if type(data-a) == function {
@@ -415,6 +429,7 @@
 
   ((
     type: "fill-between",
+    label: label,
     axes: axes,
     line-data: (a: line-a-data, b: line-b-data),
     x-domain: x-domain,
@@ -423,5 +438,8 @@
     plot-prepare: prepare,
     plot-stroke: stroke,
     plot-fill: fill,
+    plot-legend-preview: self => {
+      draw.rect((0,0), (1,1), ..self.style)
+    }
   ),)
 }
