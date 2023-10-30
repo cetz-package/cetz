@@ -14,10 +14,8 @@
 /// - ..vecs (vectors): Vectors to get transformed. Only the positional part of the sink is used. A dictionary of vectors can be passed and all will be transformed.
 /// -> vectors If multiple vectors are given they are returned as an array, if only one vector is given only one will be returned, if a dictionary is given they will be returned in the dictionary with the same keys.
 #let apply-transform(transform, ..vecs) = {
-  let t = vec => matrix.mul-vec(
-      transform, 
-      vector.as-vec(vec, init: (0, 0, 0, 1))
-    ).slice(0, 3)
+  let t = vec => matrix.mul4x4-vec3(
+    transform, vec)
   if type(vecs.pos().first()) == dictionary {
     vecs = vecs.pos().first()
     for (k, vec) in vecs {
