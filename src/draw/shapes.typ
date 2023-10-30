@@ -234,7 +234,7 @@
       path + if style.mode == "OPEN" {
         (
           drawable.path((
-            path-util.line-segment((position, sector-center)),
+            path-util.line-segment((arc-start, sector-center)),
             path-util.line-segment((sector-center, arc-end))
           ))
         ,)
@@ -247,7 +247,7 @@
           return border(anchor_.compass-angle.at(anchor))
         }
         (
-          arc-start: position,
+          arc-start: arc-start,
           origin: sector-center,
           arc-end: arc-end,
           arc-center: arc-center,
