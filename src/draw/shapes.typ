@@ -711,15 +711,15 @@
     len in (1, 2),
     message: "Bezier curve expects 1 or 2 control points. Got " + str(len),
   )
-  let coordinates = (start, end, ..ctrl)
+  let coordinates = (start, ..ctrl, end)
   
   // Coordinates check
   let t = coordinates.map(coordinate.resolve-system)
   
   return (
     ctx => {
-      let (ctx, start, end, ..ctrl) = coordinate.resolve(ctx, ..coordinates)
-      
+      let (ctx, start, ..ctrl, end) = coordinate.resolve(ctx, ..coordinates)
+
       if ctrl.len() == 1 {
         (start, end, ..ctrl) = bezier_.quadratic-to-cubic(start, end, ..ctrl)
       }
