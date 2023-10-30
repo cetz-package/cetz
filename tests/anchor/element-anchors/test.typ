@@ -18,8 +18,8 @@
       let (_, nv) = coordinate.resolve(ctx, n)
       let (x, y, ..) = nv
       let anchor = (
-        (if y < 0 { "north" } else if y > 0 { "south" },) +
-        (if x < 0 { "east" } else if x > 0 { "west" },)).filter(p => p != none).join("-")
+        (if y < 0 { "north" } else if y > 0 { "south" },) + (if x < 0 { "east" } else if x > 0 { "west" },)
+        ).filter(p => p != none).join("-")
       if anchor == none {
         anchor = "south"
       }
@@ -47,6 +47,11 @@
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
   display(arc, (0,0), start: 225deg, stop: 135deg, radius: 5, mode: "PIE")
+}))
+
+#box(stroke: 2pt + red, canvas(length: 1cm, {
+  import draw: *
+  display(arc, (0,0), start: 225deg, stop: 135deg, radius: 5, mode: "CLOSE")
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {

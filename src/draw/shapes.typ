@@ -178,8 +178,8 @@
   return (ctx => {
     let style = styles.resolve(ctx.style, style, root: "arc")
     assert(style.mode in ("OPEN", "PIE", "CLOSE"))
-    let (ctx, position) = coordinate.resolve(ctx, position)
-    let (x, y, z) = position
+    let (ctx, arc-start) = coordinate.resolve(ctx, position)
+    let (x, y, z) = arc-start
     let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
 
     let path = (drawable.arc(
@@ -203,7 +203,7 @@
       sector-center.at(1) + ry * calc.sin(stop-angle),
       z
     )
-    let chord-center = vector.lerp(position, arc-end, 0.5)
+    let chord-center = vector.lerp(arc-start, arc-end, 0.5)
     let arc-center = (
       sector-center.first() + rx * calc.cos((stop-angle + start-angle)/2),
       sector-center.at(1) + ry * calc.sin((stop-angle + start-angle)/2),
@@ -211,14 +211,15 @@
     )
 
     // center is calculated based on observations of tikz's circular sector and semi circle shapes.
-    let center = if style.mode == "PIE" { 
-      // A circular sector's anchor is placed half way between the sector-center and arc-center when the angle is 180deg. At 60deg it is placed 1/3 of the way between, this is mirrored at 300deg.
+    let center = if style.mode != "CLOSE" {
+      // A circular sector's center anchor is placed half way between the sector-center and arc-center when the angle is 180deg. At 60deg it is placed 1/3 of the way between, this is mirrored at 300deg.
       vector.lerp(
         arc-center, 
         sector-center,
         if (stop-angle + start-angle) > 180deg { (stop-angle + start-angle) } else { (stop-angle + start-angle) + 180deg } / 720deg
       )
     } else {
+      // A semi circle's center anchor is placed half way between the sector-center and arc-center, so that is always `center` when the arc is closed. Otherwise the point at which compass anchors are calculated from will be outside the lines.
       vector.lerp(
         arc-center,
         chord-center,
@@ -227,12 +228,24 @@
     }
 
     // compass anchors are placed on the shapes border in tikz so prototype version is setup for use here
-    let border = anchor_.border.with(center, 2*rx, 2*ry, path + if style.mode == "OPEN" {
-      (drawable.path(path-util.line-segment((position, arc-end))),)
-    })
+    let border = anchor_.border.with(
+      center, 
+      2*rx, 2*ry, 
+      path + if style.mode == "OPEN" {
+        (
+          drawable.path((
+            path-util.line-segment((position, sector-center)),
+            path-util.line-segment((sector-center, arc-end))
+          ))
+        ,)
+      }
+    )
 
     let (transform, anchors) = anchor_.setup(
       anchor => {
+        if anchor in anchor_.compass-angle {
+          return border(anchor_.compass-angle.at(anchor))
+        }
         (
           arc-start: position,
           origin: sector-center,
@@ -240,14 +253,6 @@
           arc-center: arc-center,
           chord-center: chord-center,
           center: center,
-          north: border(90deg),
-          north-east: border(45deg),
-          east: border(0deg),
-          south-east: border(-45deg),
-          south: border(-90deg),
-          south-west: border(-135deg),
-          west: border(180deg),
-          north-west: border(135deg)
         ).at(anchor)
       },
       (
