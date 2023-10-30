@@ -134,13 +134,24 @@
       anchors = anchors.filter(a => a in filter)
     }
 
-    ctx.groups.last().anchors += {
+    let new = {
       let d = (:)
       for a in anchors {
         d.insert(a, calc-anchors(a))
       }
       d
     }
+
+    // Add each anchor as own element
+    for (k, v) in new {
+      ctx.nodes.insert(k, (anchors: (name => {
+        if name == () { return ("default",) }
+        else if name == "default" { v }
+      })))
+    }
+
+    // Add anchors to group
+    ctx.groups.last().anchors += new
 
     return (ctx: ctx)
   },)
