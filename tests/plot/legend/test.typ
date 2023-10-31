@@ -136,3 +136,41 @@
       plot.add(samples: 10, ..dom, fn.with(offset: .2), mark: "|", style: (stroke: none), label: $ f_3(x) $)
     })
 }))
+
+#block(stroke: 2pt + red, canvas({
+  import draw: *
+
+  set-style(legend: (item: (preview: (width: .4, height: 1), spacing: 1),
+    padding: .1,
+    stroke: black,
+    fill: white,
+    orientation: ltr, default-position: "legend.north"))
+
+  plot.plot(size: (4, 2),
+    x-tick-step: none,
+    y-tick-step: none,
+    {
+      plot.add(samples: 10, ..dom, fn, mark: "o", label: $ f(x) $)
+      plot.add(samples: 10, ..dom, fn.with(offset: .1), mark: "x", fill: true, label: $ f_2(x) $)
+      plot.add(samples: 10, ..dom, fn.with(offset: .2), mark: "|", style: (stroke: none), label: $ f_3(x) $)
+    })
+}))
+
+#block(stroke: 2pt + red, canvas({
+  import draw: *
+
+  plot.plot(size: (4, 2),
+    axis-style: "school-book",
+    legend-style: (offset: (-2.5, 1),
+      item: (preview: (margin: .5), spacing: .15),
+      fill: white,
+      stroke: (paint: black, dash: "dotted"),
+      padding: (.1, .5)),
+    x-tick-step: none,
+    y-tick-step: none,
+    {
+      plot.add(samples: 10, ..dom, fn, mark: "o", label: $ f(x) $)
+      plot.add(samples: 10, ..dom, fn.with(offset: .1), mark: "x", fill: true, label: $ f_2(x) $)
+      plot.add(samples: 10, ..dom, fn.with(offset: .2), mark: "|", style: (stroke: none), label: $ f_3(x) $)
+    })
+}))

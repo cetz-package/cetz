@@ -6,14 +6,18 @@
 #let default-style = (
   orientation: ttb,
   default-position: "legend.north-east",
-  offset: (0,0),   // Legend displacement
+  layer: 1,        // Legend layer
+  fill: rgb(255,255,255,200), // Legend background
+  stroke: black,   // Legend border
+  padding: .1,     // Legend border padding
+  offset: (0, 0),  // Legend displacement
   spacing: .1,     // Spacing between anchor and legend
   item: (
-    spacing: .35,  // Spacing between items
-    preview: (     // Style preview of an item
-      width: .75,
-      height: .2,
-      margin: .1
+    spacing: .05,  // Spacing between items
+    preview: (
+      width: .75,  // Preview width
+      height: .3,  // Preview height
+      margin: .1   // Distance between preview and label
     )
   ),
 )
@@ -108,56 +112,66 @@
     position = (rel: style.offset, to: position)
   }
 
-  draw.group(name: "legend", ctx => {
-    import draw: *
+  draw.on-layer(style.layer, {
+    draw.group(name: "legend", padding: style.padding, ctx => {
+      import draw: *
 
-    set-origin(position)
-    anchor("center", (0,0))
+      set-origin(position)
+      anchor("center", (0,0))
 
-    let pt = (0, 0)
-    for (i, item) in items.enumerate() {
-      if item.label == none { continue }
-      let label = if item.label == auto {
-        $ f_(#i) $
-      } else { item.label }
+      let pt = (0, 0)
+      for (i, item) in items.enumerate() {
+        if item.label == none { continue }
+        let label = if item.label == auto {
+          $ f_(#i) $
+        } else { item.label }
 
-      group({
-        anchor("center", (0,0))
-
-        // Draw item label
-        content((0, 0), label, name: "label", anchor: "north-west")
-
-        let (a, b) = ((rel: (-style.item.preview.width -
-                              style.item.preview.margin,
-                             -style.item.preview.height / 2), to: "label.west"),
-                      (rel: (-style.item.preview.margin,
-                             +style.item.preview.height / 2), to: "label.west"))
-
-        // Draw item preview
-        let draw-preview = item.at("plot-legend-preview",
-          default: draw-generic-preview)
         group({
-          set-viewport(a, b, bounds: (1, 1, 0))
-          (draw-preview)(item)
-        })
+          anchor("center", (0,0))
 
-        // Draw mark preview
-        let mark = item.at("mark", default: none)
-        if mark != none {
-          draw-mark-shape((a, .5, b),
-            calc.min(style.item.preview.width / 2, item.mark-size),
-            mark,
-            item.mark-style)
+          let row-height = style.item.preview.height
+          let preview-width = style.item.preview.width
+          let preview-a = (0, -row-height / 2)
+          let preview-b = (preview-width, +row-height / 2)
+          let label-west = (preview-width + style.item.preview.margin, 0)
+
+          // Draw item preview
+          let draw-preview = item.at("plot-legend-preview",
+            default: draw-generic-preview)
+          group({
+            set-viewport(preview-a, preview-b, bounds: (1, 1, 0))
+            (draw-preview)(item)
+          })
+
+          // Draw mark preview
+          let mark = item.at("mark", default: none)
+          if mark != none {
+            draw-mark-shape((preview-a, .5, preview-b),
+              calc.min(style.item.preview.width / 2, item.mark-size),
+              mark,
+              item.mark-style)
+          }
+
+          // Draw label
+          content(label-west,
+            align(left + horizon, label),
+            name: "label", anchor: "west")
+        }, name: "item", anchor: if style.orientation == ltr { "west" } else { "north-west" })
+
+        if style.orientation == ttb {
+          set-origin((rel: (0, -style.item.spacing),
+                      to: "item.south-west"))
+        } else if style.orientation == ltr {
+          set-origin((rel: (style.item.spacing, 0),
+                      to: "item.east"))
         }
-      }, name: "item", anchor: "west")
-
-      if style.orientation == ttb {
-        set-origin((rel: (0, -style.item.spacing),
-                    to: ((0, 0), "|-", "item.south")))
-      } else if style.orientation == ltr {
-        set-origin((rel: (style.item.spacing, 0),
-                    to: ((0, 0), "-|", "item.east")))
       }
-    }
-  }, anchor: anchor)
+    }, anchor: anchor)
+  })
+
+  // Fill legend background
+  draw.on-layer(style.layer - .5, {
+    draw.rect("legend.south-west",
+              "legend.north-east", fill: style.fill, stroke: style.stroke)
+  })
 }
