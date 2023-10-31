@@ -195,3 +195,39 @@
   )
 }
 
+/// Get a padding dictionary (top, left, bottom, right) from
+/// a padding value.
+///
+/// - padding (none, number, array, dictionary): Padding specification
+///   Type of `padding`:
+///   / `none`: All sides padded by 0
+///   / `number`: All sides are padded by the same value
+///   / `array`: CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, left, bottom, right)`
+///   / `dictionary`: Dictionary are passed through
+///
+/// -> dictionary
+#let as-padding-dict(padding) = {
+  if padding == none {
+    padding = 0
+  }
+
+  if type(padding) == array {
+    // Allow CSS like padding array
+    assert(padding.len() in (2, 3, 4),
+      message: "Padding array formats are: (y, x), (top, x, bottom), (top, right, bottom, left)")
+    if padding.len() == 2 {
+      let (y, x) = padding
+      return (top: y, right: x, bottom: y, left: x)
+    } else if padding.len() == 3 {
+      let (top, x, bottom) = padding
+      return (top: top, right: x, bottom: bottom, left: x)
+    } else if padding.len() == 4 {
+      let (top, right, bottom, left) = padding
+      return (top: top, right: right, bottom: bottom, left: left)
+    }
+  } else if type(padding) == dictionary {
+    return padding
+  } else {
+    return (top: padding, left: padding, bottom: padding, right: padding)
+  }
+}

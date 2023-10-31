@@ -56,7 +56,7 @@
 }
 
 
-#let group(name: none, anchor: none, body) = {
+#let group(name: none, anchor: none, padding: none, body) = {
   assert(type(body) in (array, function), message: "Incorrect type for body")
   (ctx => {
     let bounds = none
@@ -70,7 +70,8 @@
       anchor => {
         let anchors = (:)
         if add-bbox-anchors {
-          let bounds = bounds
+          let bounds = aabb.padded(bounds, util.as-padding-dict(padding))
+
           (bounds.low.at(1), bounds.high.at(1)) = (bounds.high.at(1), bounds.low.at(1))
           let mid = aabb.mid(bounds)
           anchors += (
