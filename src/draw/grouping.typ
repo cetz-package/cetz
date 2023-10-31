@@ -78,8 +78,12 @@
       anchor => {
         let anchors = (:)
         if add-bbox-anchors {
-          let bounds = aabb.padded(bounds, util.as-padding-dict(style.padding))
+          let padding = util.as-padding-dict(style.padding)
+          for (k, v) in padding {
+            padding.insert(k, util.resolve-number(ctx, v))
+          }
 
+          let bounds = aabb.padded(bounds, padding)
           (bounds.low.at(1), bounds.high.at(1)) = (bounds.high.at(1), bounds.low.at(1))
           let mid = aabb.mid(bounds)
           anchors += (
