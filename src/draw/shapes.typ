@@ -506,7 +506,10 @@
 
   return (ctx => {
     let style = styles.resolve(ctx.style, style, root: "content")
-    let padding = util.resolve-number(ctx, style.padding)
+    let padding = util.as-padding-dict(style.padding)
+    for (k, v) in padding {
+      padding.insert(k, util.resolve-number(ctx, v))
+    }
 
     let (ctx, a) = coordinate.resolve(ctx, a)
     let b = b
@@ -530,8 +533,12 @@
       vector.sub(b, a)
     }
 
-    width = calc.abs(width) + 2 * padding
-    height = calc.abs(height) + 2 * padding
+    width = (calc.abs(width)
+      + padding.at("left", default: 0)
+      + padding.at("right", default: 0))
+    height = (calc.abs(height)
+      + padding.at("top", default: 0)
+      + padding.at("bottom", default: 0))
 
     let anchors = {
       let w = width/2
@@ -598,7 +605,12 @@
           block(
             width: width * ctx.length,
             height: height * ctx.length,
-            inset: padding * ctx.length,
+            inset: (
+              top: padding.at("top", default: 0) * ctx.length,
+              left: padding.at("left", default: 0) * ctx.length,
+              bottom: padding.at("bottom", default: 0) * ctx.length,
+              right: padding.at("right", default: 0) * ctx.length,
+            ),
             body
           )
         )

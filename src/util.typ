@@ -202,7 +202,7 @@
 ///   Type of `padding`:
 ///   / `none`: All sides padded by 0
 ///   / `number`: All sides are padded by the same value
-///   / `array`: CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, left, bottom, right)`
+///   / `array`: CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`
 ///   / `dictionary`: Converts typst padding dictionary (top, left, bottom, right, x, y, rest)
 ///                   to a dictionary containing top, left, bottom and right.
 ///

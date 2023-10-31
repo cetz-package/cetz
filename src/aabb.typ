@@ -67,9 +67,9 @@
 #let padded(bounds, padding) = {
   if padding != none {
     bounds.low.at(0)  -= padding.at("left", default: 0)
-    bounds.low.at(1)  -= padding.at("bottom", default: 0)
+    bounds.low.at(1)  -= padding.at("top", default: 0)
     bounds.high.at(0) += padding.at("right", default: 0)
-    bounds.high.at(1) += padding.at("top", default: 0)
+    bounds.high.at(1) += padding.at("bottom", default: 0)
   }
   return bounds
 }
