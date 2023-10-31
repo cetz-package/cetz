@@ -94,16 +94,12 @@
     drawables = (drawables,)
   }
 
-  let test-path = drawable.path(
-    path-util.line-segment(
-      (
-        center,
-        (
-          center.at(0) + x-dist * calc.cos(angle),
-          center.at(1) + y-dist * calc.sin(angle),
-          center.at(2),
-        )
-      )
+  let test-line = (
+    center,
+    (
+      center.at(0) + x-dist * calc.cos(angle),
+      center.at(1) + y-dist * calc.sin(angle),
+      center.at(2),
     )
   )
 
@@ -112,8 +108,13 @@
     if drawable.type != "path" {
       continue
     }
-    pts += intersection.path-path(test-path, drawable)
+    pts += intersection.line-path(..test-line, drawable)
+
+    // We only want one point
+    if pts.len() > 0 {
+      break
+    }
   }
-  assert(pts.len() > 0, message: strfmt("{} {} {}", test-path, drawables, angle))
+  assert(pts.len() > 0, message: strfmt("{} {} {}", test-line, drawables, angle))
   return pts.first()
 }

@@ -234,8 +234,7 @@
       path + if style.mode == "OPEN" {
         (
           drawable.path((
-            path-util.line-segment((arc-start, sector-center)),
-            path-util.line-segment((sector-center, arc-end))
+            path-util.line-segment((arc-start, sector-center, arc-end)),
           ))
         ,)
       }
