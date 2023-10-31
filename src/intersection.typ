@@ -36,6 +36,49 @@
   }
 }
 
+// Check for line-cubic bezier intersection
+#let line-cubic(la, lb, s, e, c1, c2) = {
+  import "/src/bezier.typ"
+  return bezier.line-cubic-intersections(la, lb, s, e, c1, c2)
+}
+
+// Check for line-linestrip intersection
+#let line-linestrip(la, lb, v) = {
+  let pts = ()
+  for i in range(0, v.len() - 1) {
+    let pt = line-line(la, lb, v.at(i), v.at(i + 1))
+    if pt != none {
+      pts.push(pt)
+    }
+  }
+  return pts
+}
+
+/// Check for line-path intersection in 2D
+///
+/// - la (vector): Line start
+/// - lb (vector): Line end
+/// - path (path): Path
+/// - samples (int): Number of samples per curve
+#let line-path(la, lb, path) = {
+  let segment(s) = {
+    let (k, ..v) = s
+    if k == "line" {
+      return line-linestrip(la, lb, v)
+    } else if k == "cubic" {
+      return line-cubic(la, lb, ..v)
+    } else {
+      return ()
+    }
+  }
+
+  let pts = ()
+  for s in path.segments {
+    pts += segment(s)
+  }
+  return pts
+}
+
 /// Check for path-path intersection in 2D
 ///
 /// - a (path): Path a
