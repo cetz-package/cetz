@@ -38,10 +38,23 @@
     fill: none,
   ),
   arc: (
+    // Supported values:
+    //   - "OPEN"
+    //   - "CLOSE"
+    //   - "PIE"
     mode: "OPEN",
   ),
   content: (
-    padding: 0em,
+    // Allowed values:
+    //   - none
+    //   - Number
+    //   - Array: (y, x), (top, y, bottom), (top, right, bottom, left)
+    //   - Dictionary: (top:, right:, bottom:, left:)
+    padding: 0,
+    // Supported values
+    //   - none
+    //   - "rect"
+    //   - "circle"
     frame: none,
     fill: auto,
     stroke: auto,
