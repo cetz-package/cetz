@@ -372,12 +372,18 @@ line(a, "b.ctrl-0", "b.ctrl-1", c, stroke: gray)
 content((0,0), [Hello World!])
 ```
 
-```example
-let (a, b) = ((1,0), (3,1))
+To put text on a line you can let content calculate the angle between
+its position and a second coordinate by passing it to `angle`:
 
-line(a, b)
-content((a, .5, b), angle: b, [Text on a line], anchor: "south")
+```example
+line((0, 0), (3, 1), name: "line")
+content(("line.start", .5, "line.end"),
+  angle: "line.end", padding: .1,
+  [Text on a line], anchor: "south")
 ```
+
+This example uses linear interpolated coordinates `(a, t, b)` to place the
+content at the center of the line, see @coordinate-lerp.
 
 ```example
 content((0,0), (2,1), par(justify: false)[This is a long text.], frame: "rect",
@@ -757,7 +763,7 @@ line("p1.south-east", (vertical: (), horizontal: "yline.end"))
 line("p2.south-east", ((), "-|", "yline.end")) // Short form
 ```
 
-== Interpolation
+== Interpolation <coordinate-lerp>
 Use this to linearly interpolate between two coordinates `a` and `b` with a given factor `number`. If `number` is a `<length>` the position will be at the given distance away from `a` towards `b`. 
 An angle can also be given for the general meaning: "First consider the line from `a` to `b`. Then rotate this line by `angle` around point `a`. Then the two endpoints of this line will be `a` and some point `c`. Use this point `c` for the subsequent computation."
 
