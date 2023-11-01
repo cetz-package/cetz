@@ -438,10 +438,15 @@
 #let _cubic-roots(a, b, c, d) = {
   if calc.abs(a) < 1e-6 {
     if calc.abs(b) < 1e-6 {
+      // Constant
+      if c == 0 {
+        return ()
+      }
+
       // Linear
       let root = -1 * d / c
       if root < 0 and root > 1 {
-        return none
+        return ()
       }
       return (root,)
     }
@@ -460,27 +465,25 @@
   let Q = (3 * B - calc.pow(A, 2)) / 9
   let R = (9 * A * B - 27 * C - 2 * calc.pow(A, 3)) / 54
   let D = calc.pow(Q, 3) + calc.pow(R, 2)
+  let aa = -A / 3
 
   let sgn = x => { if x < 0 { -1 } else { 1 } }
-
-  let roots = ()
-
-  if D >= 0 {
+  let roots = if D >= 0 {
     let S = sgn(R + calc.sqrt(D)) * calc.pow(calc.abs(R + calc.sqrt(D)), 1/3)
     let T = sgn(R - calc.sqrt(D)) * calc.pow(calc.abs(R - calc.sqrt(D)), 1/3)
 
-    let aa = -A / 3
-    let roots = (aa + (S + T), aa - (S + T) / 2)
     if (S - T) != 0 {
       // Roots 2 and 3 are complex
-      roots = (roots.at(0),)
+      (aa + (S + T),)
+    } else {
+      (aa + (S + T), aa - (S + T) / 2)
     }
   } else {
     let th = calc.acos(R / calc.sqrt(-calc.pow(Q, 3))) / 1rad
     let qq = 2 * calc.sqrt(-Q)
-    roots = (qq * calc.cos(th / 3) - A / 3,
-             qq * calc.cos((th + 2 * calc.pi) / 3) - A / 3,
-             qq * calc.cos((th + 4 * calc.pi) / 3) - A / 3)
+    (qq * calc.cos(th / 3) + aa,
+     qq * calc.cos((th + 2 * calc.pi) / 3) + aa,
+     qq * calc.cos((th + 4 * calc.pi) / 3) + aa)
   }
 
   return roots.filter(t => t >= 0 and t <= 1)
