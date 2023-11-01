@@ -236,6 +236,25 @@
           (right.at(0), right.at(3), right.at(1), right.at(2)))
 }
 
+/// Approximate cubic curve length
+/// - s  (vector): Curve start
+/// - e  (vector): Curve end
+/// - c1 (vector): Control point 1
+/// - c2 (vector): Control point 2
+/// -> float Arc length
+#let cubic-arclen(s, e, c1, c2, samples: 10) = {
+  let d = 0
+  let last = none
+  for t in range(0, samples + 1) {
+    let pt = cubic-point(s, e, c1, c2, t / samples)
+    if last != none {
+      d += vector.dist(last, pt)
+    }
+    last = pt
+  }
+  return d
+}
+
 /// Shorten curve by length d. A negative length shortens from the end.
 ///
 /// - s  (vector): Curve start
@@ -243,48 +262,40 @@
 /// - c1 (vector): Control point 1
 /// - c2 (vector): Control point 2
 /// - d  (float): Distance to shorten by
+/// - samples (int): Maximum of samples/steps to use
+/// - reposition (bool): If true, correct the start or end
+///   point, depending on
 /// -> (s, e, c1, c2) Shortened curve
-#let shorten(s, e, c1, c2, d) = {
+#let cubic-shorten(s, e, c1, c2, d, samples: 15) = {
   if d == 0 {
     return (s, e, c1, c2)
   }
 
-  let num-samples = 6
   let split-t = 0
   if d > 0 {
-    let travel = 0
-    let last = cubic-point(s, e, c1, c2, 0)
+    let travel = 0 // Distance traveled along the curve
 
-    for t in range(0, num-samples + 1) {
-      let t = t / num-samples
+    let last = s
+    for t in range(1, samples + 1) {
+      let t = t / samples
       let curr = cubic-point(s, e, c1, c2, t)
-      let dist = calc.abs(vector.dist(last, curr))
+      let dist = vector.dist(last, curr)
       travel += dist
       if travel >= d {
-        split-t = t - (travel - d) / num-samples
+        split-t = t - 1/samples + d / (travel * samples)
         break
       }
       last = curr
     }
   } else {
-    let travel = 0
-    let last = cubic-point(s, e, c1, c2, 1)
-
-    for t in range(num-samples, -1, step: -1) {
-      let t = t / num-samples
-      let curr = cubic-point(s, e, c1, c2, t)
-      let dist = calc.abs(vector.dist(last, curr))
-      travel -= dist
-      if travel <= d {
-        split-t = t - (travel - d) / num-samples
-        break
-      }
-      last = curr
-    }
+    return cubic-shorten(e, s, c2, c1, -d, samples: samples)
   }
 
   let (left, right) = split(s, e, c1, c2, split-t)
-  return if d > 0 { right } else { left }
+
+  // The right curve is aways reversed
+  let (e, s, c2, c1) = right
+  return (s, e, c1, c2)
 }
 
 /// Align curve points pts to the line start-end
