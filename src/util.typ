@@ -195,7 +195,7 @@
   )
 }
 
-/// Get a padding dictionary (top, left, bottom, right) from
+/// Get a padding/margin dictionary (top, left, bottom, right) from
 /// a padding value.
 ///
 /// - padding (none, number, array, dictionary): Padding specification
@@ -203,9 +203,10 @@
 ///   / `none`: All sides padded by 0
 ///   / `number`: All sides are padded by the same value
 ///   / `array`: CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, left, bottom, right)`
-///   / `dictionary`: Dictionary are passed through
+///   / `dictionary`: Converts typst padding dictionary (top, left, bottom, right, x, y, rest)
+///                   to a dictionary containing top, left, bottom and right.
 ///
-/// -> dictionary
+/// -> dictionary Dictionary with the keys: top, left, bottom and right
 #let as-padding-dict(padding) = {
   if padding == none {
     padding = 0
@@ -226,6 +227,15 @@
       return (top: top, right: right, bottom: bottom, left: left)
     }
   } else if type(padding) == dictionary {
+    // Support typst padding dictionary
+    let rest = padding.at("rest", default: 0)
+    let x = padding.at("x", default: rest)
+    let y = padding.at("y", default: rest)
+    if not "left" in padding { padding.left = x }
+    if not "right" in padding { padding.right = x }
+    if not "top" in padding { padding.left = y }
+    if not "bottom" in padding { padding.right = y }
+
     return padding
   } else {
     return (top: padding, left: padding, bottom: padding, right: padding)
