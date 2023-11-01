@@ -1,17 +1,15 @@
 #set page(width: auto, height: auto)
-#import "../../src/lib.typ": *
+#import "/src/lib.typ": *
 
 #let test(body) = canvas(length: 1cm, {
   import draw: *
 
   group({
-    intersections("i", samples: 10, {
+    intersections("i", {
       body
     })
     for-each-anchor("i", (name) => {
-      if name.match(regex("\\d+")) != none {
-        circle("i."+name, radius: .1, fill: red)
-      }
+      circle("i."+name, radius: .1, fill: red)
     })
   })
 })

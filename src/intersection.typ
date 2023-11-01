@@ -38,8 +38,8 @@
 
 // Check for line-cubic bezier intersection
 #let line-cubic(la, lb, s, e, c1, c2) = {
-  import "/src/bezier.typ"
-  return bezier.line-cubic-intersections(la, lb, s, e, c1, c2)
+  import "/src/bezier.typ": line-cubic-intersections as line-cubic
+  return line-cubic(la, lb, s, e, c1, c2)
 }
 
 // Check for line-linestrip intersection
@@ -59,7 +59,6 @@
 /// - la (vector): Line start
 /// - lb (vector): Line end
 /// - path (path): Path
-/// - samples (int): Number of samples per curve
 #let line-path(la, lb, path) = {
   let segment(s) = {
     let (k, ..v) = s
@@ -85,8 +84,8 @@
 /// - b (path): Path b
 /// - samples (int): Number of samples to use for bezier curves
 /// -> array List of vectors
-#let path-path(a, b, samples: 6) = {
-  import "bezier.typ"
+#let path-path(a, b, samples: 8) = {
+  import "bezier.typ": cubic-point
 
   // Convert segment to vertices by sampling curves
   let linearize-segment(s) = {
@@ -95,36 +94,16 @@
       return s.slice(1)
     } else if t == "cubic" {
       return range(samples + 1).map(
-        t => bezier.cubic-point(..s.slice(1), t/samples)
+        t => cubic-point(..s.slice(1), t/samples)
       )
     }
   }
 
-  // Check for segment-segment intersection and return list of points
-  let segment-segment(a, b) = {
-    let pts = ()
-    let av = linearize-segment(a)
-    let bv = linearize-segment(b)
-    for ai in range(0, av.len() - 1) {
-      for bi in range(0, bv.len() - 1) {
-        let isect = line-line(
-          av.at(ai),
-          av.at(ai + 1),
-          bv.at(bi),
-          bv.at(bi + 1)
-        )
-        if isect != none {
-          pts.push(isect)
-        }
-      }
-    }
-    return pts
-  }
-
   let pts = ()
-  for sa in a.segments {
-    for sb in b.segments {
-      pts += segment-segment(sa, sb)
+  for s in a.segments {
+    let sv = linearize-segment(s)
+    for ai in range(0, sv.len() - 1) {
+      pts += line-path(sv.at(ai), sv.at(ai + 1), b)
     }
   }
   return pts
