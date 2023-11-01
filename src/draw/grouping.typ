@@ -73,17 +73,21 @@
     group-ctx.groups.push((anchors: (:)))
     (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, if type(body) == function {body(ctx)} else {body})
 
-    let add-bbox-anchors = bounds != none
+    // Apply bounds padding
+    let bounds = if bounds != none {
+      let padding = util.as-padding-dict(style.padding)
+      for (k, v) in padding {
+        padding.insert(k, util.resolve-number(ctx, v))
+      }
+
+      aabb.padded(bounds, padding)
+    }
+
     let (transform, anchors) = anchor_.setup(
       anchor => {
         let anchors = (:)
-        if add-bbox-anchors {
-          let padding = util.as-padding-dict(style.padding)
-          for (k, v) in padding {
-            padding.insert(k, util.resolve-number(ctx, v))
-          }
-
-          let bounds = aabb.padded(bounds, padding)
+        if bounds != none {
+          let bounds = bounds
           (bounds.low.at(1), bounds.high.at(1)) = (bounds.high.at(1), bounds.low.at(1))
           let mid = aabb.mid(bounds)
           anchors += (
@@ -102,9 +106,9 @@
         anchors += group-ctx.groups.last().anchors
         return anchors.at(anchor)
       },
-      group-ctx.groups.last().anchors.keys() + if add-bbox-anchors { ("north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west", "center") },
+      group-ctx.groups.last().anchors.keys() + if bounds != none { ("north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west", "center") },
       name: name,
-      default: if add-bbox-anchors { "center" } else { none },
+      default: if bounds != none { "center" } else { none },
       offset-anchor: anchor
     )
     return (
