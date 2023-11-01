@@ -6,6 +6,9 @@
     stroke: black + 1pt,
     radius: 1,
   ),
+  group: (
+    padding: none,
+  ),
   line: (
     mark: (
       size: .15,

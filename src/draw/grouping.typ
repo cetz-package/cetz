@@ -56,9 +56,17 @@
 }
 
 
-#let group(name: none, anchor: none, padding: none, body) = {
-  assert(type(body) in (array, function), message: "Incorrect type for body")
+#let group(name: none, anchor: none, ..body-style) = {
+  assert.eq(body-style.pos().len(), 1,
+    message: "Group expects exactly one positional argument.")
+
+  let body = body-style.pos().first()
+  assert(type(body) in (array, function),
+    message: "Incorrect type for body")
+
   (ctx => {
+    let style = styles.resolve(ctx, body-style.named(), root: "group")
+
     let bounds = none
     let drawables = ()
     let group-ctx = ctx
@@ -70,7 +78,7 @@
       anchor => {
         let anchors = (:)
         if add-bbox-anchors {
-          let bounds = aabb.padded(bounds, util.as-padding-dict(padding))
+          let bounds = aabb.padded(bounds, util.as-padding-dict(style.padding))
 
           (bounds.low.at(1), bounds.high.at(1)) = (bounds.high.at(1), bounds.low.at(1))
           let mid = aabb.mid(bounds)
