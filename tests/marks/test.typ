@@ -46,7 +46,7 @@
       fill: green,
       (mark: "<", pos: 0.05),
       (mark: ">", pos: 0.95),
-      (mark: "o", pos: .25),
+      //(mark: "o", pos: .25),
       (mark: "<>", pos:.75),
       (mark: "|", pos: .5))
 }))

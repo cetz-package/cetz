@@ -11,6 +11,7 @@
 #import "/src/process.typ"
 #import "/src/bezier.typ" as bezier_
 #import "/src/anchor.typ" as anchor_
+#import "/src/mark.typ" as mark_
 
 #import "transformations.typ": *
 #import "styling.typ": *
@@ -305,9 +306,7 @@
     return (ctx: ctx, drawables: drawable.mark(
       ..pts,
       style.symbol,
-      style.size,
-      fill: style.fill,
-      stroke: style.stroke,
+      style
     ))
   },)
 }
@@ -339,6 +338,22 @@
       name: name,
       transform: ctx.transform,
     )
+
+    // Inset start postition depending on the marks miter length
+    if style.mark.start != none {
+      let off = mark_.calc-mark-offset(ctx, style.mark.start, style.mark)
+      let dir = vector.norm(vector.sub(pts.at(1), pts.at(0)))
+
+      pts.at(0) = vector.sub(pts.at(0), vector.scale(dir, off))
+    }
+
+    // Inset end postition depending on the marks miter length
+    if style.mark.end != none {
+      let off = mark_.calc-mark-offset(ctx, style.mark.end, style.mark)
+      let dir = vector.norm(vector.sub(pts.at(-2), pts.at(-1)))
+
+      pts.at(-1) = vector.sub(pts.at(-1), vector.scale(dir, off))
+    }
     
     let drawables = (drawable.path(
       (path-util.line-segment(pts),),
@@ -352,9 +367,7 @@
         pts.at(1),
         pts.at(0),
         style.mark.start,
-        style.mark.size,
-        fill: style.mark.fill,
-        stroke: style.mark.stroke,
+        style.mark
       ))
     }
     if style.mark.end != none {
@@ -362,9 +375,7 @@
         pts.at(-2),
         pts.at(-1),
         style.mark.end,
-        style.mark.size,
-        fill: style.mark.fill,
-        stroke: style.mark.stroke,
+        style.mark,
       ))
     }
 
