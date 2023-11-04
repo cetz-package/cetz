@@ -144,31 +144,43 @@
   )
 }
 
-#let mark(from, to, symbol, size, fill: none, stroke: none) = {
-  assert(symbol in (">", "<", "|", "<>", "o"), message: "Unknown arrow head: " + symbol)
-  let n = vector.scale(vector.norm(vector.sub(to, from)), size)
-  let from = vector.sub(to, n)
-  let dir = vector.sub(to, from)
-  let odir = (-dir.at(1), dir.at(0), dir.at(2))
+#let mark(from, to, symbol, style) = {
+  let scaling  = style.at("scale", default: 1)
+  let width    = calc.abs(style.at("width", default: .1) * scaling)
+  let length   = calc.abs(style.at("length", default: .15) * scaling)
+  let inset    = calc.min(style.at("inset", default: 0) * scaling, length)
+  let stroke   = style.stroke
+  let fill     = style.fill
 
-  if symbol == "<" {
-    let tmp = to
-    to = from
-    from = tmp
-  }
+  let reverse  = symbol == "<"
+  let dir      = vector.norm(if reverse {
+    vector.sub(from, to)
+  } else {
+    vector.sub(to, from)
+  })
+  let norm-dir = (-dir.at(1), dir.at(0), dir.at(2))
 
-  let triangle(reverse: false) = {
-    let outset = if reverse { 1 } else { 0 }
-    let from = vector.add(from, vector.scale(dir, outset))
-    let to = vector.add(to, vector.scale(dir, outset))
-    let n = vector.scale(odir, .4)
+  // Generic positions
+  //
+  //    t      t - tip
+  //   /|\
+  //  / | \    base - root
+  // '--m--'   m - base + inset
+  //
+  // ^--|--^   w - half width
+  let t    = to
+  let base = vector.sub(t, vector.scale(dir, length))
+  let m    = vector.add(base, vector.scale(dir, inset))
+  let w    = vector.scale(norm-dir, width / 2)
+
+  let triangle() = {
+    let a = vector.sub(base, w)
+    let b = vector.add(base, w)
 
     if fill != none {
       // Draw a filled triangle
       path(
-        path-util.line-segment(
-          (from, vector.add(from, n), to, vector.add(from, vector.neg(n)))
-        ),
+        path-util.line-segment((a, t, b, m)),
         close: true,
         fill: fill,
         stroke: stroke
@@ -176,57 +188,60 @@
     } else {
       // Draw open arrow
       path(
-        path-util.line-segment(
-          (vector.add(from, n), to, vector.add(from, vector.neg(n)))
-        ),
+        path-util.line-segment((a, t, b)),
         fill: fill,
         stroke: stroke
       )
     }
   }
 
+  let harpoon(side: "left") = {
+    let s = if side == "left" {
+      vector.sub(base, w)
+    } else {
+      vector.add(base, w)
+    }
+
+    path(path-util.line-segment((t, s, m)),
+      fill: fill,
+      stroke: stroke,
+      close: true)
+  }
+
   let bar() = {
-      let n = vector.scale(odir, .5)
-      path(
-        path-util.line-segment((vector.add(to, n), vector.sub(to, n))),
-        stroke: stroke
-      )
+    let n = vector.scale(norm-dir, width / 2)
+    path(
+      path-util.line-segment((vector.add(t, n), vector.sub(t, n))),
+      stroke: stroke
+    )
   }
 
   let diamond() = {
-      let from = vector.add(from, vector.scale(dir, .5))
-      let to = vector.add(to, vector.scale(dir, .5))
-      let n = vector.add(vector.scale(dir, .5),
-                         vector.scale(odir, .5))
-      path(
-        path-util.line-segment(
-          (from, vector.add(from, n), to, vector.add(to, vector.neg(n)))
-        ),
-        close: true,
-        fill: fill,
-        stroke: stroke
-      )
-  }
+    let mid = vector.add(t, vector.scale(vector.sub(base, t), .5))
+    let a = vector.sub(mid, w)
+    let b = vector.add(mid, w)
 
-  let circle() = {
-    let from = vector.add(from, vector.scale(dir, .5))
-    let to = vector.add(to, vector.scale(dir, .5))
-    let c = vector.add(from, vector.scale(dir, .5))
-    let pts = ()
-    let r = vector.len(dir) / 2
-
-    ellipse(c.at(0), c.at(1), c.at(2), r, r, fill: fill, stroke: stroke)
+    path(
+      path-util.line-segment((base, a, t, b)),
+      close: true,
+      fill: fill,
+      stroke: stroke
+    )
   }
 
   if symbol == ">" {
     triangle()
   } else if symbol == "<" {
-    triangle(reverse: true)
+    triangle()
   } else if symbol == "|" {
     bar()
   } else if symbol == "<>" {
     diamond()
-  } else if symbol == "o" {
-    circle()
+  } else if symbol == "left-harpoon" {
+    harpoon(side: "left")
+  } else if symbol == "right-harpoon" {
+    harpoon(side: "right")
+  } else {
+    panic("Invalid arrow head: " + symbol)
   }
 }

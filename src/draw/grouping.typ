@@ -285,9 +285,7 @@
           vector.add(pos, dir),
           pos,
           mark.mark,
-          style.size,
-          fill: style.fill,
-          stroke: style.stroke
+          style,
         )
       )
       if "name" in mark {

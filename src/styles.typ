@@ -1,41 +1,31 @@
 #import "util.typ"
 
+#let _default-mark = (
+  scale: 1,
+  length: .35,
+  width: .3,
+  inset: .1,
+  stroke: auto,
+  fill: none,
+  start: none,
+  end: none,
+)
+
 #let default = (
   root: (
     fill: none,
     stroke: black + 1pt,
     radius: 1,
   ),
+  mark: _default-mark,
   group: (
     padding: none,
   ),
   line: (
-    mark: (
-      size: .15,
-      angle: 45deg,
-      start: none,
-      end: none,
-      stroke: auto,
-      fill: none,
-    ),
+    mark: _default-mark,
   ),
   bezier: (
-    mark: (
-      size: .15,
-      angle: 45deg,
-      start: none,
-      end: none,
-      stroke: auto,
-      fill: none,
-    ),
-  ),
-  mark: (
-    size: .15,
-    angle: 45deg,
-    start: none,
-    end: none,
-    stroke: auto,
-    fill: none,
+    mark: _default-mark,
   ),
   arc: (
     // Supported values:

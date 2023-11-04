@@ -1,4 +1,6 @@
 // This file contains utility functions for path calculation
+#let typst-length = length
+
 #import "util.typ"
 #import "vector.typ"
 #import "bezier.typ"
