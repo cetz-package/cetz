@@ -34,7 +34,7 @@
       flex: true,
       // Max. number of samples to use for calculating curve positions
       // a higher number gives better results but may slow down compilation.
-      position-samples: 20,
+      position-samples: 30,
     ),
     // Bezier shortening mode:
     //   - "LINEAR" Moving the affected point and it's next control point (like TikZ "quick" key)
@@ -43,7 +43,16 @@
   ),
   catmull: (
     tension: .5,
-    mark: _default-mark,
+    mark: (
+      .._default-mark,
+      // If true, the mark points in the direction of the secant from
+      // its base to its tip. If false, the tangent at the marks tip is used.
+      flex: true,
+      // Max. number of samples to use for calculating curve positions
+      // a higher number gives better results but may slow down compilation.
+      position-samples: 30,
+    ),
+    shorten: "LINEAR",
   ),
   arc: (
     // Supported values:
@@ -51,6 +60,7 @@
     //   - "CLOSE"
     //   - "PIE"
     mode: "OPEN",
+    mark: _default-mark,
   ),
   content: (
     // Allowed values:

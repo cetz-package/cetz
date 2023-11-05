@@ -88,19 +88,12 @@
             calc.sin(s + 90deg), 
             0
           ), 
-          style.mark.size
+          style.mark.length
         ),
         start
       )
       drawables.push(
-        drawable.mark(
-          f,
-          start,
-          style.mark.start,
-          style.mark.size,
-          fill: style.mark.fill,
-          stroke: style.mark.stroke
-        )
+        drawable.mark(f, start, style.mark.start, style.mark)
       )
     }
     if style.mark.end != none {
@@ -111,12 +104,12 @@
             calc.sin(e - 90deg), 
             0
           ), 
-          style.mark.size
+          style.mark.length
         ),
         end
       )
       drawables.push(
-        drawable.mark(f, end, style.mark.end, style.mark.size, fill: style.mark.fill, stroke: style.mark.stroke)
+        drawable.mark(f, end, style.mark.end, style.mark)
       )
     }
 

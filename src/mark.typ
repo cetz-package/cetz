@@ -1,5 +1,6 @@
 #let typst-length = length
 
+#import "bezier.typ"
 #import "drawable.typ"
 #import "vector.typ"
 #import "path-util.typ"
@@ -146,6 +147,18 @@
   return (drawables, pts)
 }
 
+// Shorten curve by distance
+#let _shorten-curve(curve, distance, style) = {
+  assert(style.shorten in ("LINEAR", "CURVED"),
+    message: "Invalid cubic shorten style")
+  let quick = style.shorten == "LINEAR"
+  if quick {
+    return bezier.cubic-shorten-linear(..curve, distance)
+  } else {
+    return bezier.cubic-shorten(..curve, distance)
+  }
+}
+
 /// Place marks along a cubic bezier curve
 ///
 /// - ctx (context): Context
@@ -154,21 +167,7 @@
 /// - marks (style): Mark style
 /// -> (drawables, curve) Tuple of drawables and adjusted curve points
 #let place-marks-along-bezier(ctx, curve, style, marks) = {
-  import "/src/bezier.typ"
-
-  let samples = calc.min(2, calc.max(marks.position-samples, 1000))
-
-  // Shorten curve by distance
-  let shorten-curve(curve, distance, style) = {
-    assert(style.shorten in ("LINEAR", "CURVED"),
-      message: "Invalid cubic shorten style")
-    let quick = style.shorten == "LINEAR"
-    if quick {
-      return bezier.cubic-shorten-linear(..curve, distance)
-    } else {
-      return bezier.cubic-shorten(..curve, distance)
-    }
-  }
+  let samples = calc.max(2, calc.min(marks.position-samples, 1000))
 
   let start = if type(marks.start) == str {
     (marks.start,)
@@ -179,7 +178,7 @@
   // Offset start
   if start != none and start.len() > 0 {
     let off = calc-mark-offset(ctx, start.at(0), marks)
-    curve = shorten-curve(curve, -off, style)
+    curve = _shorten-curve(curve, -off, style)
   }
 
   let end = if type(marks.end) == str {
@@ -191,7 +190,7 @@
   // Offset end
   if end != none and end.len() > 0 {
     let off = calc-mark-offset(ctx, end.at(0), marks)
-    curve = shorten-curve(curve, off, style)
+    curve = _shorten-curve(curve, off, style)
   }
 
   let drawables = ()
@@ -215,6 +214,8 @@
       } else {
         bezier.cubic-derivative(..curve, t)
       }
+      if vector.len(dir) == 0 {break} // TODO: Emit warning
+
       drawables.push(drawable.mark(
         vector.add(pt, dir), pt, m, marks))
 
@@ -240,6 +241,8 @@
       } else {
         bezier.cubic-derivative(..curve, t)
       }
+      if vector.len(dir) == 0 {break} // TODO: Emit warning
+
       drawables.push(drawable.mark(
         vector.sub(pt, dir), pt, m, marks))
 
@@ -257,6 +260,52 @@
 /// - style (style): Curve style
 /// - marks (style): Mark style
 /// -> (drawables, curve) Tuple of drawables and adjusted curve points
-#let place-marks-along-catmull(ctx, pts, style, marks) = {
-  return (none, pts)
+#let place-marks-along-catmull(ctx, pts, style, marks, close: false) = {
+  let curves = bezier.catmull-to-cubic(
+    pts,
+    style.tension,
+    close: close)
+  if curves.len() == 1 {
+    let (drawables, curve) = place-marks-along-bezier(
+      ctx, curves.at(0), style, marks)
+    return (drawables, (curve.at(0), curve.at(1)))
+  } else {
+    // TODO: This has the limitation that only the first curve of
+    //       the catmull-rom is used for placing marks.
+    let drawables = ()
+
+    let start-marks = marks
+    start-marks.end = none
+    if start-marks.start != none {
+      let (drawables-start, curve-start) = place-marks-along-bezier(
+        ctx, curves.at(0), style, start-marks)
+      pts.at(0) = curve-start.at(0)
+      drawables += drawables-start
+    }
+
+    let end-marks = marks
+    end-marks.start = none
+    if end-marks.end != none {
+      let (drawables-end, curve-end) = place-marks-along-bezier(
+        ctx, curves.at(-1), style, end-marks)
+      if not close {
+        pts.at(-1) = curve-end.at(1)
+      }
+      drawables += drawables-end
+    }
+
+    return (drawables, pts)
+  }
+}
+
+#let place-marks-along-arc(ctx, start, stop, style, marks) = {
+  let mode = style.mode
+  let adjust = style.mode == "OPEN"
+
+  // TODO: ...
+  if marks.start != none or marks.end != none {
+    panic("Arc marks are not implemented.")
+  }
+
+  return (none, start, stop)
 }

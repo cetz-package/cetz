@@ -175,10 +175,17 @@
   let stop-angle = if stop == auto { start + delta } else { stop }
   // Border angles can break if the angle is 0.
   assert.ne(start-angle, stop-angle, message: "Angle must be greater than 0deg")
-  
+
   return (ctx => {
     let style = styles.resolve(ctx.style, style, root: "arc")
     assert(style.mode in ("OPEN", "PIE", "CLOSE"))
+
+    let (marks, start-angle, stop-angle) = if style.mark != none {
+      mark_.place-marks-along-arc(ctx, start-angle, stop-angle, style, style.mark)
+    } else {
+      (none, start-angle, stop-angle)
+    }
+
     let (ctx, arc-start) = coordinate.resolve(ctx, position)
     let (x, y, z) = arc-start
     let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
@@ -827,7 +834,7 @@
     let style = styles.resolve(ctx.style, style, root: "catmull")
 
     let (marks, pts) = if style.mark != none {
-      mark_.place-marks-along-catmull(ctx, pts, style, style.mark)
+      mark_.place-marks-along-catmull(ctx, pts, style, style.mark, close: close)
     } else {
       (none, pts)
     }
