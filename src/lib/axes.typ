@@ -13,6 +13,7 @@
   stroke: black,
   label: (
     offset: .2,
+    anchor: auto,
   ),
   tick: (
     fill: none,
@@ -495,16 +496,24 @@
          ..util.merge-dictionary(style, style.at("x", default: (:))),
          name: "x-axis")
     if "label" in x-axis and x-axis.label != none {
-      content((rel: (0, -style.label.offset), to: "x-axis.end"),
-        anchor: "north-west", x-axis.label)
+      let anchor = style.label.anchor
+      if style.label.anchor == auto {
+        anchor = "north-west"
+      }
+      content((rel: (0, -style.tick.label.offset), to: "x-axis.end"),
+        anchor: anchor, x-axis.label)
     }
 
     line((y-x, -padding.bottom), (y-x, h + padding.top),
          ..util.merge-dictionary(style, style.at("y", default: (:))),
          name: "y-axis")
     if "label" in y-axis and y-axis.label != none {
-      content((rel: (-style.label.offset, 0), to: "y-axis.end"),
-        anchor: "south-east", y-axis.label)
+      let anchor = style.label.anchor
+      if style.label.anchor == auto {
+        anchor = "south-east"
+      }
+      content((rel: (-style.tick.label.offset, 0), to: "y-axis.end"),
+        anchor: anchor, y-axis.label)
     }
 
     // If both axes cross at the same value (mostly 0)
