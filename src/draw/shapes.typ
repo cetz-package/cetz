@@ -795,7 +795,7 @@
   },)
 }
 
-#let catmull(..pts-style, tension: .5, close: false, name: none) = {
+#let catmull(..pts-style, close: false, name: none) = {
   let (pts, style)  = (pts-style.pos(), pts-style.named())
 
   assert(pts.len() >= 2, message: "Catmull-rom curve requires at least two points. Got " + repr(pts.len()) + "instead.")
@@ -826,22 +826,34 @@
 
     let style = styles.resolve(ctx.style, style, root: "catmull")
 
+    let (marks, pts) = if style.mark != none {
+      mark_.place-marks-along-catmull(ctx, pts, style, style.mark)
+    } else {
+      (none, pts)
+    }
+
+    let drawables = (
+      drawable.path(
+        bezier_.catmull-to-cubic(
+          pts,
+          style.tension,
+          close: close
+        ).map(c => path-util.cubic-segment(..c)),
+        fill: style.fill,
+        stroke: style.stroke,
+        close: close),)
+
+    if marks != none {
+      drawables += marks
+    }
+
     return (
       ctx: ctx,
       name: name,
       anchors: anchors,
       drawables: drawable.apply-transform(
         transform,
-        drawable.path(
-          bezier_.catmull-to-cubic(
-            pts,
-            tension,
-            close: close
-          ).map(c => path-util.cubic-segment(..c)),
-          fill: style.fill,
-          stroke: style.stroke,
-          close: close
-        )
+        drawables
       )
     )
   },)

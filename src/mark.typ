@@ -249,3 +249,14 @@
 
   return (drawables, curve)
 }
+
+/// Place marks along a catmull-rom curve
+///
+/// - ctx (context): Context
+/// - pts (array): Array of curve points
+/// - style (style): Curve style
+/// - marks (style): Mark style
+/// -> (drawables, curve) Tuple of drawables and adjusted curve points
+#let place-marks-along-catmull(ctx, pts, style, marks) = {
+  return (none, pts)
+}
