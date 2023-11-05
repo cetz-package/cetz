@@ -255,6 +255,61 @@
   return d
 }
 
+/// Shorten curve by offsetting s and c1 or e and c2
+/// by distance d.
+///
+/// - s  (vector): Curve start
+/// - e  (vector): Curve end
+/// - c1 (vector): Control point 1
+/// - c2 (vector): Control point 2
+/// - d  (float): Distance to shorten by
+/// -> (s, e, c1, c2) Shortened curve
+#let cubic-shorten-linear(s, e, c1, c2, d) = {
+  if d == 0 { return (s, e, c1, c2) }
+
+  let t = if d < 0 { 1 } else { 0 }
+  let sign = if d < 0 { -1 } else { 1 }
+
+  let a = cubic-point(s, e, c1, c2, t)
+  let b = cubic-point(s, e, c1, c2, t + sign * 0.01)
+  let offset = vector.scale(vector.norm(vector.sub(b, a)),
+    calc.abs(d))
+  if d > 0 {
+    s = vector.add(s, offset)
+    c1 = vector.add(c1, offset)
+  } else {
+    e = vector.add(e, offset)
+    c2 = vector.add(c2, offset)
+  }
+  return (s, e, c1, c2)
+}
+
+/// Approximate t for a givend distance d.
+/// If d is negative start from the curves end.
+///
+#let cubic-t-for-distance(s, e, c1, c2, d, samples: 10) = {
+  if d == 0 {
+    return 0
+  }
+
+  if d > 0 {
+    let travel = 0 // Distance traveled along the curve
+    let last = s
+    for t in range(1, samples + 1) {
+      let t = t / samples
+      let curr = cubic-point(s, e, c1, c2, t)
+      let dist = vector.dist(last, curr)
+      travel += dist
+      if travel >= d {
+        return t - 1/samples + d / (travel * samples)
+      }
+      last = curr
+    }
+  } else {
+    return 1 - cubic-t-for-distance(e, s, c2, c1, -d, samples: samples)
+  }
+}
+
 /// Shorten curve by length d. A negative length shortens from the end.
 ///
 /// - s  (vector): Curve start
@@ -263,8 +318,6 @@
 /// - c2 (vector): Control point 2
 /// - d  (float): Distance to shorten by
 /// - samples (int): Maximum of samples/steps to use
-/// - reposition (bool): If true, correct the start or end
-///   point, depending on
 /// -> (s, e, c1, c2) Shortened curve
 #let cubic-shorten(s, e, c1, c2, d, samples: 15) = {
   if d == 0 {
@@ -288,14 +341,12 @@
       last = curr
     }
   } else {
-    return cubic-shorten(e, s, c2, c1, -d, samples: samples)
+    let (e, s, c2, c1) = cubic-shorten(e, s, c2, c1, -d, samples: samples)
+    return (s, e, c1, c2)
   }
 
-  let (left, right) = split(s, e, c1, c2, split-t)
-
-  // The right curve is aways reversed
-  let (e, s, c2, c1) = right
-  return (s, e, c1, c2)
+  let (_, right) = split(s, e, c1, c2, split-t)
+  return right
 }
 
 /// Align curve points pts to the line start-end

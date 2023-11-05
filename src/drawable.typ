@@ -229,6 +229,11 @@
     )
   }
 
+  let circle() = {
+    let (x, y, z) = vector.add(t, vector.scale(vector.sub(base, t), .5))
+    ellipse(x, y, z, length / 2, length / 2, fill: fill, stroke: stroke)
+  }
+
   if symbol == ">" {
     triangle()
   } else if symbol == "<" {
@@ -241,6 +246,8 @@
     harpoon(side: "left")
   } else if symbol == "right-harpoon" {
     harpoon(side: "right")
+  } else if symbol == "o" {
+    circle()
   } else {
     panic("Invalid arrow head: " + symbol)
   }

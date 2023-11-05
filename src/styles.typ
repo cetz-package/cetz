@@ -1,14 +1,15 @@
 #import "util.typ"
 
 #let _default-mark = (
-  scale: 1,
-  length: .35,
-  width: .3,
-  inset: .1,
+  scale: .1,    // Scaling factor
+  length: 2,    // Length
+  width: 1.5,   // Width
+  inset: .5,    // Arrow mark base inset
+  sep: .1,      // Extra distance between marks
+  start: none,  // Mark start symbol(s)
+  end: none,    // Mark end symbol(s)
   stroke: auto,
   fill: none,
-  start: none,
-  end: none,
 )
 
 #let default = (
@@ -25,7 +26,20 @@
     mark: _default-mark,
   ),
   bezier: (
-    mark: _default-mark,
+    mark: (
+      .._default-mark,
+
+      // If true, the mark points in the direction of the secant from
+      // its base to its tip. If false, the tangent at the marks tip is used.
+      flex: true,
+      // Max. number of samples to use for calculating curve positions
+      // a higher number gives better results but may slow down compilation.
+      position-samples: 20,
+    ),
+    // Bezier shortening mode:
+    //   - "LINEAR" Moving the affected point and it's next control point (like TikZ "quick" key)
+    //   - "CURVED" Preserving the bezier curve by calculating new control points
+    shorten: "LINEAR",
   ),
   arc: (
     // Supported values:

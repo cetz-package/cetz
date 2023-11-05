@@ -339,44 +339,22 @@
       transform: ctx.transform,
     )
 
-    // Inset start postition depending on the marks miter length
-    if style.mark.start != none {
-      let off = mark_.calc-mark-offset(ctx, style.mark.start, style.mark)
-      let dir = vector.norm(vector.sub(pts.at(1), pts.at(0)))
-
-      pts.at(0) = vector.sub(pts.at(0), vector.scale(dir, off))
+    // Place marks and adjust points
+    let (marks, pts) = if style.mark != none {
+      mark_.place-marks-along-line(ctx, pts, style.mark)
+    } else {
+      (none, pts)
     }
 
-    // Inset end postition depending on the marks miter length
-    if style.mark.end != none {
-      let off = mark_.calc-mark-offset(ctx, style.mark.end, style.mark)
-      let dir = vector.norm(vector.sub(pts.at(-2), pts.at(-1)))
-
-      pts.at(-1) = vector.sub(pts.at(-1), vector.scale(dir, off))
-    }
-    
     let drawables = (drawable.path(
       (path-util.line-segment(pts),),
       fill: style.fill,
       stroke: style.stroke,
       close: close,
     ),)
-    
-    if style.mark.start != none {
-      drawables.push(drawable.mark(
-        pts.at(1),
-        pts.at(0),
-        style.mark.start,
-        style.mark
-      ))
-    }
-    if style.mark.end != none {
-      drawables.push(drawable.mark(
-        pts.at(-2),
-        pts.at(-1),
-        style.mark.end,
-        style.mark,
-      ))
+
+    if marks != none {
+      drawables += marks
     }
 
     return (
@@ -737,6 +715,16 @@
   
   // Coordinates check
   let t = coordinates.map(coordinate.resolve-system)
+
+  // Shorten curve by distance
+  let shorten-curve(s, e, c1, c2, distance, style) = {
+    let quick = style.shorten == "QUICK"
+    if quick {
+      return bezier_.cubic-shorten-linear(s, e, c1, c2, distance)
+    } else {
+      return bezier_.cubic-shorten(s, e, c1, c2, distance)
+    }
+  }
   
   return (
     ctx => {
@@ -763,35 +751,21 @@
 
       let style = styles.resolve(ctx.style, style, root: "bezier")
 
+      let curve = (start, end, ..ctrl)
+      let (marks, curve) = if style.mark != none {
+        mark_.place-marks-along-bezier(ctx, curve, style, style.mark)
+      } else {
+        (none, curve)
+      }
+
       let drawables = (drawable.path(
-        path-util.cubic-segment(start, end, ctrl.at(0), ctrl.at(1)),
+        path-util.cubic-segment(..curve),
         fill: style.fill,
         stroke: style.stroke,
       ),)
 
-      if style.mark != none {
-        style = style.mark
-        let offset = 0.001
-        if style.start != none {
-          drawables.push(drawable.mark(
-            start,
-            bezier_.cubic-point(start, end, ..ctrl, offset),
-            style.start,
-            style.size,
-            fill: style.fill,
-            stroke: style.stroke
-          ))
-        }
-        if style.start != none {
-          drawables.push(drawable.mark(
-            bezier_.cubic-point(start, end, ..ctrl, 1 - offset),
-            end,
-            style.end,
-            style.size,
-            fill: style.fill,
-            stroke: style.stroke
-          ))
-        }
+      if marks != none {
+        drawables += marks
       }
 
       return (
