@@ -3,6 +3,7 @@
 #import "bezier.typ"
 #import "drawable.typ"
 #import "vector.typ"
+#import "util.typ"
 #import "path-util.typ"
 
 // Calculate offset for a triangular mark (triangle, harpoon, ..)
@@ -298,14 +299,89 @@
   }
 }
 
-#let place-marks-along-arc(ctx, start, stop, style, marks) = {
-  let mode = style.mode
-  let adjust = style.mode == "OPEN"
+#let place-marks-along-arc(ctx, start-angle, stop-angle, arc-start, rx, ry, style, marks) = {
+  let adjust = style.at("mode", default: "OPEN") == "OPEN"
 
-  // TODO: ...
-  if marks.start != none or marks.end != none {
-    panic("Arc marks are not implemented.")
+  let r-at(angle) = calc.sqrt(calc.pow(calc.cos(angle) * ry, 2) +
+                              calc.pow(calc.sin(angle) * rx, 2))
+
+  let start = if type(marks.start) == str {
+    (marks.start,)
+  } else {
+    marks.start
   }
 
-  return (none, start, stop)
+  // Offset start
+  if start != none and start.len() > 0 {
+    let off = calc-mark-offset(ctx, start.at(0), marks)
+
+    // Remember original start
+    let orig-start = start-angle
+
+    // Calc an optimized start angle
+    let r = r-at(start-angle)
+    start-angle -= (off * 360deg) / (2 * calc.pi * r)
+
+    // Reposition the arc
+    let diff = vector.sub((calc.cos(start-angle) * rx, calc.sin(start-angle) * ry),
+                          (calc.cos(orig-start) * rx, calc.sin(orig-start) * ry))
+    arc-start = vector.add(arc-start, diff)
+  }
+
+  let end = if type(marks.end) == str {
+    (marks.end,)
+  } else {
+    marks.end
+  }
+
+  // Offset end
+  if end != none and end.len() > 0 {
+    let off = calc-mark-offset(ctx, end.at(0), marks)
+
+    let r = r-at(stop-angle)
+    stop-angle += (off * 360deg) / (2 * calc.pi * r)
+  }
+
+  let arc-center = vector.sub(arc-start, (calc.cos(start-angle) * rx,
+                                          calc.sin(start-angle) * ry))
+  let pt-at(angle) = vector.add(arc-center,
+    (calc.cos(angle) * rx, calc.sin(angle) * ry, 0))
+
+  let drawables = ()
+
+  // Draw start marks
+  if start != none {
+    let angle = start-angle
+    for m in start {
+      let length = mark-mid-length(m, marks)
+      let r = r-at(angle)
+      let angle-offset = (length * 360deg) / (2 * calc.pi * r)
+
+      let pt = pt-at(angle)
+      drawables.push(drawable.mark(
+        pt-at(angle + angle-offset), pt, m, marks))
+
+      let angle-offset = ((length + marks.sep) * 360deg) / (2 * calc.pi * r)
+      angle += angle-offset
+    }
+  }
+
+  // Draw end marks
+  if end != none {
+    let angle = stop-angle
+    for m in end {
+      let length = mark-mid-length(m, marks)
+      let r = r-at(angle)
+      let angle-offset = (length * 360deg) / (2 * calc.pi * r)
+
+      let pt = pt-at(angle)
+      drawables.push(drawable.mark(
+        pt-at(angle - angle-offset), pt, m, marks))
+
+      let angle-offset = ((length + marks.sep) * 360deg) / (2 * calc.pi * r)
+      angle -= angle-offset
+    }
+  }
+
+  return (drawables, arc-start, start-angle, stop-angle)
 }
