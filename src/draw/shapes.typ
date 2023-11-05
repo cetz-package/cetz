@@ -180,26 +180,32 @@
     let style = styles.resolve(ctx.style, style, root: "arc")
     assert(style.mode in ("OPEN", "PIE", "CLOSE"))
 
-    let (marks, start-angle, stop-angle) = if style.mark != none {
-      mark_.place-marks-along-arc(ctx, start-angle, stop-angle, style, style.mark)
-    } else {
-      (none, start-angle, stop-angle)
-    }
-
     let (ctx, arc-start) = coordinate.resolve(ctx, position)
-    let (x, y, z) = arc-start
     let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
 
+    // Calculate marks and optimized angles
+    let (marks, draw-arc-start, draw-start-angle, draw-stop-angle) = if style.mark != none {
+      mark_.place-marks-along-arc(ctx, start-angle, stop-angle,
+        arc-start, rx, ry, style, style.mark)
+    } else {
+      (none, arc-start, start-angle, stop-angle)
+    }
+
+    let (x, y, z) = arc-start
     let path = (drawable.arc(
-      x, y, z,
-      start-angle,
-      stop-angle,
+      ..draw-arc-start,
+      draw-start-angle,
+      draw-stop-angle,
       rx,
       ry,
       stroke: style.stroke,
       fill: style.fill,
       mode: style.mode,
     ),)
+
+    if marks != none {
+      path += marks
+    }
 
     let sector-center = (
       x - rx * calc.cos(start-angle),

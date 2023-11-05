@@ -68,51 +68,27 @@
 
     let drawables = ()
 
-    let (x, y, z) = start
+    let (marks, draw-pt, draw-s, draw-e) = if style.mark != none {
+      import "/src/mark.typ" as mark_
+      mark_.place-marks-along-arc(ctx, s, e, start, r, r, style, style.mark)
+    } else {
+      (none, start, s, e)
+    }
     if style.fill != none {
       drawables.push(
-        drawable.arc(x, y, z, s, e, r, r, mode: "PIE", fill: style.fill, stroke: none)
+        drawable.arc(..draw-pt, draw-s, draw-e, r, r, mode: "PIE", fill: style.fill, stroke: none)
       )
     }
     if style.stroke != none {
       drawables.push(
-        drawable.arc(x, y, z, s, e, r, r, mode: "OPEN", fill: none, stroke: style.stroke)
+        drawable.arc(..draw-pt, draw-s, draw-e, r, r, mode: "OPEN", fill: none, stroke: style.stroke)
       )
+    }
+    if marks != none {
+      drawables += marks
     }
 
-    if style.mark.start != none {
-      let f = vector.add(
-        vector.scale(
-          (
-            calc.cos(s + 90deg), 
-            calc.sin(s + 90deg), 
-            0
-          ), 
-          style.mark.length
-        ),
-        start
-      )
-      drawables.push(
-        drawable.mark(f, start, style.mark.start, style.mark)
-      )
-    }
-    if style.mark.end != none {
-      let f = vector.add(
-        vector.scale(
-          (
-            calc.cos(e - 90deg), 
-            calc.sin(e - 90deg), 
-            0
-          ), 
-          style.mark.length
-        ),
-        end
-      )
-      drawables.push(
-        drawable.mark(f, end, style.mark.end, style.mark)
-      )
-    }
-
+    let (x, y, z) = start
     let label = if type(label) == function { label(e - s) } else { label }
     if label != none {
       let (lx, ly, ..) = pt-label
