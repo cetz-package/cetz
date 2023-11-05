@@ -1,21 +1,48 @@
+#import "@preview/oxifmt:0.2.0": strfmt
+
 #import "matrix.typ"
 #import "vector.typ"
 #import "bezier.typ"
 
+
 /// Constant to be used as float rounding error
 #let float-epsilon = 0.000001
 
-/// Multiplies the vector by the transform matrix
+#let typst-measure = measure
+
+
+/// Multiplies vectors by the transform matrix
 ///
 /// - transform (matrix): Transformation matrix
-/// - vec (vector): Vector to get transformed
-/// -> vector
-#let apply-transform(transform, vec) = {
-  matrix.mul-vec(
-    transform, 
-    vector.as-vec(vec, init: (0, 0, 0, 1))
-  ).slice(0, 3)
+/// - ..vecs (vectors): Vectors to get transformed. Only the positional part of the sink is used. A dictionary of vectors can be passed and all will be transformed.
+/// -> vectors If multiple vectors are given they are returned as an array, if only one vector is given only one will be returned, if a dictionary is given they will be returned in the dictionary with the same keys.
+#let apply-transform(transform, ..vecs) = {
+  let t = vec => matrix.mul4x4-vec3(
+    transform, vec)
+  if type(vecs.pos().first()) == dictionary {
+    vecs = vecs.pos().first()
+    for (k, vec) in vecs {
+      vecs.insert(k, t(vec))
+    }
+  } else {
+    vecs = vecs.pos().map(t)
+    if vecs.len() == 1 {
+      return vecs.first()
+    }
+  }
+  return vecs
 }
+
+// #let apply-transform-many(transform, vecs) = {
+//   if type(vecs) == array {
+//     vecs.map(apply-transform.with(transform))
+//   } else if type(vecs) == dictionary {
+//     for (k, vec) in vecs {
+//       vecs.insert(k, apply-transform(transform, vec))
+//     }
+//     vecs
+//   }
+// }
 
 /// Reverts the transform of the given vector
 ///
@@ -156,5 +183,61 @@
     return c
   } else {
     return if overwrite {b} else {a}
+  }
+}
+
+// Measure content in canvas coordinates
+#let measure(ctx, cnt) = {
+  let size = typst-measure(cnt, ctx.typst-style)
+  return (
+    calc.abs(size.width / ctx.length),
+    calc.abs(size.height / ctx.length)
+  )
+}
+
+/// Get a padding/margin dictionary (top, left, bottom, right) from
+/// a padding value.
+///
+/// - padding (none, number, array, dictionary): Padding specification
+///   Type of `padding`:
+///   / `none`: All sides padded by 0
+///   / `number`: All sides are padded by the same value
+///   / `array`: CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`
+///   / `dictionary`: Converts typst padding dictionary (top, left, bottom, right, x, y, rest)
+///                   to a dictionary containing top, left, bottom and right.
+///
+/// -> dictionary Dictionary with the keys: top, left, bottom and right
+#let as-padding-dict(padding) = {
+  if padding == none {
+    padding = 0
+  }
+
+  if type(padding) == array {
+    // Allow CSS like padding array
+    assert(padding.len() in (2, 3, 4),
+      message: "Padding array formats are: (y, x), (top, x, bottom), (top, right, bottom, left)")
+    if padding.len() == 2 {
+      let (y, x) = padding
+      return (top: y, right: x, bottom: y, left: x)
+    } else if padding.len() == 3 {
+      let (top, x, bottom) = padding
+      return (top: top, right: x, bottom: bottom, left: x)
+    } else if padding.len() == 4 {
+      let (top, right, bottom, left) = padding
+      return (top: top, right: right, bottom: bottom, left: left)
+    }
+  } else if type(padding) == dictionary {
+    // Support typst padding dictionary
+    let rest = padding.at("rest", default: 0)
+    let x = padding.at("x", default: rest)
+    let y = padding.at("y", default: rest)
+    if not "left" in padding { padding.left = x }
+    if not "right" in padding { padding.right = x }
+    if not "top" in padding { padding.left = y }
+    if not "bottom" in padding { padding.right = y }
+
+    return padding
+  } else {
+    return (top: padding, left: padding, bottom: padding, right: padding)
   }
 }

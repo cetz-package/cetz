@@ -10,7 +10,7 @@
 ///
 /// - s (segment): Path segment
 /// -> vector
-#let segment-begin(s) = {
+#let segment-start(s) = {
   return s.at(1)
 }
 
@@ -189,4 +189,19 @@
     point-on-path(segments, dir)
   )
   return (a, vector.scale(vector.norm(vector.sub(b, a)), scale))
+}
+
+#let line-segment(points) = {
+  ("line",)
+  points
+}
+
+#let cubic-segment(a, b, ctrl-a, ctrl-b) = {
+  (
+    "cubic",
+    a,
+    b,
+    ctrl-a,
+    ctrl-b
+  )
 }

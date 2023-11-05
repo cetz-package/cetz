@@ -10,11 +10,11 @@ package target:
 install:
   ./scripts/package "@local"
 
-test:
-  ./scripts/test test
+test *filter:
+  ./scripts/test test {{filter}}
 
-update-test:
-  ./scripts/test update
+update-test *filter:
+  ./scripts/test update {{filter}}
 
 manual:
   typst c manual.typ manual.pdf

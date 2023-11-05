@@ -19,10 +19,10 @@
 // String that gets prefixed to every example code
 // for compilation only!
 #let example-preamble = "import lib.draw: *;"
-#let example-scope = (cetz: lib, lib: lib, char: lib.chart)
+#let example-scope = (cetz: lib, lib: lib)
 
 #let example(source, ..args, vertical: false) = {
-  let picture = canvas(eval((example-preamble + source.text),
+  let picture = canvas(eval(example-preamble + source.text,
                             scope: example-scope), ..args)
   block(if vertical {
     align(
@@ -87,29 +87,57 @@
   stack(dir: ltr, [/ #term: #t \ #description], align(right, if default != none {[(default: #default)]}))
 }
 
-#set page(
-  numbering: "1/1",
-  header: align(right)[The `CeTZ` package],
-)
+// Title Page
+#{
+  let left-fringe = 39%
+  let left-color = blue.darken(30%)
+  let right-color = white
 
-#set heading(numbering: "1.")
+  let url = "https://github.com/johannes-wolf/cetz"
+  let authors = (
+    ([Johannes Wolf], "https://github.com/johannes-wolf"),
+    ([fenjalien],     "https://github.com/fenjalien"),
+  )
+
+  set page(numbering: none, background: {
+    place(top + left, rect(width: left-fringe, height: 100%, fill: left-color))
+  }, margin: (left: left-fringe * 22cm, top: 12% * 29cm), header: none, footer: none)
+
+  set text(weight: "bold", left-color)
+  show link: set text(left-color)
+
+  block(
+    place(top + left, dx: -left-fringe * 22cm + 5mm,
+          text(3cm, right-color)[CeTZ\ ]) +
+    text(29pt)[ein Typst Zeichenpacket])
+
+  block(
+    v(1cm) +
+    text(20pt, authors.map(v => link(v.at(1), [#v.at(0)])).join("\n")))
+  block(
+    v(2cm) +
+    text(20pt, link(url, [Version ] + lib.version.map(v => [#v]).join("."))))
+
+  pagebreak(weak: true)
+}
+
 #set terms(indent: 1em)
+#set par(justify: true)
+#set heading(numbering: (..num) => if num.pos().len() < 4 {
+    numbering("1.1", ..num)
+  })
 #show link: set text(blue)
 
-#let STYLING = heading(level: 4, numbering: none)[Styling]
 
-#align(center, text(16pt)[*The `CeTZ` package*])
+// Outline
+#{
+  show heading: none
+  columns(2, outline(indent: true, depth: 3))
+  pagebreak(weak: true)
+}
 
-#align(center)[
-  #link("https://github.com/johannes-wolf")[Johannes Wolf] and #link("https://github.com/fenjalien")[fenjalien] \
-  https://github.com/johannes-wolf/cetz \
-  Version #lib.version.map(v => str(v)).join(".")
-]
-
-#set par(justify: true)
-
-#outline(indent: true, depth: 3)
-#pagebreak(weak: true)
+#set page(numbering: "1/1",
+          header: align(right)[CeTZ])
 
 = Introduction
 
@@ -121,7 +149,7 @@ The name CeTZ is a recursive acronym for "CeTZ, ein Typst Zeichenpacket" (german
 
 This is the minimal starting point:
   ```typ
-  #import "@local/cetz:0.1.2"
+  #import "@preview/cetz:0.2.0"
   #cetz.canvas({
     import cetz.draw: *
     ...
@@ -142,19 +170,40 @@ To use an anchor of an element, you must give the element a name using the `name
 // Name the circle
 circle((0,0), name: "circle")
 
-// Draw a smaller red circle at "circle"'s left anchor
+// Draw a smaller red circle at "circle"'s east anchor
 fill(red)
 stroke(none)
-circle("circle.left", radius: 0.3)
+circle("circle.east", radius: 0.3)
 ```
 
-All elements will have default anchors based on their bounding box, they are: `center`, `left`, `right`, `above`/`top` and `below`/`bottom`, `top-left`, `top-right`, `bottom-left`, `bottom-right`. Some elements will have their own anchors.
+Group elements will have default anchors based on their axis aligned bounding box, they are:
+#align(center, {
+  canvas({
+    import draw:*
+    group({
+      rect((-1, -1), (1, 1))
+    }, name: "group")
+    for-each-anchor("group", n => {
+      if n != "center" {
+        content(
+          (rel: ("group.center", .75, "group." + n),
+           to: "group." + n), n)
+      } else {
+        content((rel: (0, .5), to: "group.center"), n)
+      }
+      circle("group." + n, radius: .1, fill: black)
+    })
+  })
+})
 
-Elements can be placed relative to their own anchors.
+Other elements will have their own anchors.
+
+Elements can be placed relative to their own anchors if they have an
+argument called `anchor`:
 ```example
 // An element does not have to be named 
 // in order to use its own anchors.
-circle((0,0), anchor: "left")
+circle((0,0), anchor: "west")
 
 // Draw a smaller red circle at the origin
 fill(red)
@@ -177,7 +226,7 @@ canvas(background: none, length: 1cm, debug: false, body)
 You can style draw elements by passing the relevant named arguments to their draw functions. All elements have stroke and fill styling unless said otherwise.
 
 #def-arg("fill", [`<color>` or `<none>`], default: "none", [How to fill the draw element.])
-#def-arg("stroke", [`<none>` or `<auto>` or `<length>` \ or `<color>` or `<dicitionary>` or `<stroke>`], default: "black + 1pt", [How to stroke the border or the path of the draw element. See Typst's line documentation for more details: https://typst.app/docs/reference/visualize/line/#parameters-stroke])
+#def-arg("stroke", [`<none>` or `<auto>` or `<length>` \ or `<color>` or `<dictionary>` or `<stroke>`], default: "black + 1pt", [How to stroke the border or the path of the draw element. See Typst's line documentation for more details: https://typst.app/docs/reference/visualize/line/#parameters-stroke])
 
 ```example
 // Draws a red circle with a blue border
@@ -256,7 +305,7 @@ line((-1.5, 0), (1.5, 0))
 line((0, -1.5), (0, 1.5))
 ```
 
-#STYLING
+==== Styling
 
 #def-arg("mark", `<dictionary> or <auto>`, default: auto, [The styling to apply to marks on the line, see `mark`])
 
@@ -273,7 +322,7 @@ arc((0,-0.5), start: 45deg, delta: 90deg, mode: "CLOSE")
 arc((0,-1), stop: 135deg, delta: 90deg, mode: "PIE")
 ```
 
-#STYLING
+==== Styling
 
 #def-arg("radius", `<number> or <array>`, default: 1, [The radius of the arc. This is also a global style shared with circle!])
 #def-arg("mode", `<string>`, default: `"OPEN"`, [The options are "OPEN" (the default, just the arc), "CLOSE" (a circular segment) and "PIE" (a circular sector).])
@@ -293,7 +342,7 @@ circle-through(a, b, c, name: "c")
 circle("c.center", radius: .05, fill: red)
 ```
 
-#STYLING
+==== Styling
 
 #def-arg("radius", `<number> or <length> or <array of <number> or <length>>`, default: "1", [The circle's radius. If an array is given an ellipse will be drawn where the first item is the `x` radius and the second item is the `y` radius. This is also a global style shared with arc!])
 
@@ -315,7 +364,7 @@ line(a, b, c, stroke: gray)
 bezier-through(a, b, c, name: "b")
 
 // Show calculated control points
-line(a, "b.ctrl-1", "b.ctrl-2", c, stroke: gray)
+line(a, "b.ctrl-0", "b.ctrl-1", c, stroke: gray)
 ```
 
 #show-module-fn(draw-module, "content")
@@ -323,19 +372,25 @@ line(a, "b.ctrl-1", "b.ctrl-2", c, stroke: gray)
 content((0,0), [Hello World!])
 ```
 
-```example
-let (a, b) = ((1,0), (3,1))
+To put text on a line you can let content calculate the angle between
+its position and a second coordinate by passing it to `angle`:
 
-line(a, b)
-content((a, .5, b), angle: b, [Text on a line], anchor: "bottom")
+```example
+line((0, 0), (3, 1), name: "line")
+content(("line.start", .5, "line.end"),
+  angle: "line.end", padding: .1,
+  [Text on a line], anchor: "south")
 ```
+
+This example uses linear interpolated coordinates `(a, t, b)` to place the
+content at the center of the line, see @coordinate-lerp.
 
 ```example
 content((0,0), (2,1), par(justify: false)[This is a long text.], frame: "rect",
   fill: gray, stroke: none)
 ```
 
-#STYLING
+==== Styling
 This draw element is not affected by fill or stroke styling.
 
 #def-arg("padding", `<length>`, default: 0em, "")
@@ -366,7 +421,7 @@ line((0, 1), (1, 1), mark: (end: "<"))
 line((0, 0), (1, 0), mark: (end: ">"))
 ```
 
-#STYLING
+==== Styling
 
 #def-arg("symbol", `<string>`, default: ">", [The type of mark to draw when using the `mark` function.])
 #def-arg("start", `<string>`, [The type of mark to draw at the start of a path.])
@@ -412,7 +467,7 @@ group(name: "g", {
   rect((0,0), (1,1), name: "r")
   copy-anchors("r")
 })
-circle("g.top", radius: .1, fill: black)
+circle("g.north", radius: .1, fill: black)
 ```
 
 #show-module-fn(draw-module, "place-anchors")
@@ -436,7 +491,7 @@ place-marks(bezier-through((0,0), (1,1), (2,0)),
 
 #show-module-fn(draw-module, "intersections")
 ```example
-intersections(name: "demo", {
+intersections("demo", {
   circle((0, 0))
   bezier((0,0), (3,0), (1,-1), (2,1))
   line((0,-1), (0,1))
@@ -458,9 +513,9 @@ with a higher or lower index. When rendering, all draw commands are sorted by th
 set-style(stroke: none)
 content((0, 0), [This is an example.], name: "text")
 on-layer(-1, {
-  circle("text.top-left", radius: .3, fill: red)
-  circle("text.bottom", radius: .4, fill: green)
-  circle("text.top-right", radius: .2, fill: blue)
+  circle("text.north-east", radius: .3, fill: red)
+  circle("text.south", radius: .4, fill: green)
+  circle("text.north-west", radius: .2, fill: blue)
 })
 ```
 
@@ -487,7 +542,7 @@ rect((0,0), (1,1))
 // Outer rect
 rect((0,0), (2,2), name: "r")
 // Move origin to top edge
-set-origin("r.above")
+set-origin("r.north")
 circle((0, 0), radius: .1)
 ```
 
@@ -622,9 +677,9 @@ circle((210deg, 3), radius: 0, name: "structure")
 circle((-30deg, 3), radius: 0, name: "form")
 
 for (c, a) in (
-  ("content", "bottom"), 
-  ("structure", "top-right"), 
-  ("form", "top-left")
+  ("content", "south"),
+  ("structure", "north-west"),
+  ("form", "north-east")
 ) {
   content(c, box(c + " oriented", inset: 5pt), anchor: a)
 }
@@ -659,7 +714,7 @@ You can also use implicit syntax of a dot separated string in the form `"name.an
 ```example
 line((0,0), (3,2), name: "line")
 circle("line.end", name: "circle")
-rect("line.start", "circle.left")
+rect("line.start", "circle.east")
 ```
 
 == Tangent
@@ -676,7 +731,7 @@ grid((0,0), (3,2), help-lines: true)
 
 circle((3,2), name: "a", radius: 2pt)
 circle((1,1), name: "c", radius: 0.75)
-content("c", $ c $, anchor: "top-right", padding: .1)
+content("c", $ c $, anchor: "north-east", padding: .1)
 
 stroke(red)
 line("a", (element: "c", point: "a", solution: 1),
@@ -693,21 +748,22 @@ Can be used to find the intersection of a vertical line going through a point $p
 You can use the implicit syntax of `(horizontal, "-|", vertical)` or `(vertical, "|-", horizontal)`
 
 ```example
+set-style(content: (padding: .05))
 content((30deg, 1), $ p_1 $, name: "p1")
 content((75deg, 1), $ p_2 $, name: "p2")
 
 line((-0.2, 0), (1.2, 0), name: "xline")
-content("xline.end", $ q_1 $, anchor: "left")
+content("xline.end", $ q_1 $, anchor: "west")
 line((2, -0.2), (2, 1.2), name: "yline")
-content("yline.end", $ q_2 $, anchor: "bottom")
+content("yline.end", $ q_2 $, anchor: "south")
 
-line("p1", (horizontal: (), vertical: "xline"))
-line("p2", (horizontal: (), vertical: "xline"))
-line("p1", (vertical: (), horizontal: "yline"))
-line("p2", (vertical: (), horizontal: "yline"))
+line("p1.south-east", (horizontal: (), vertical: "xline.end"))
+line("p2.south-east", ((), "|-", "xline.end")) // Short form
+line("p1.south-east", (vertical: (), horizontal: "yline.end"))
+line("p2.south-east", ((), "-|", "yline.end")) // Short form
 ```
 
-== Interpolation
+== Interpolation <coordinate-lerp>
 Use this to linearly interpolate between two coordinates `a` and `b` with a given factor `number`. If `number` is a `<length>` the position will be at the given distance away from `a` towards `b`. 
 An angle can also be given for the general meaning: "First consider the line from `a` to `b`. Then rotate this line by `angle` around point `a`. Then the two endpoints of this line will be `a` and some point `c`. Use this point `c` for the subsequent computation."
 
@@ -794,7 +850,7 @@ The example below shows how to use this system to create an offset from an ancho
 ```example
 circle((0, 0), name: "c")
 fill(red)
-circle((v => cetz.vector.add(v, (0, -1)), "c.right"), radius: 0.3)
+circle((v => cetz.vector.add(v, (0, -1)), "c.west"), radius: 0.3)
 ```
 
 = Utility
@@ -804,11 +860,8 @@ circle((v => cetz.vector.add(v, (0, -1)), "c.right"), radius: 0.3)
 // Label nodes anchors
 rect((0, 0), (2,2), name: "my-rect")
 for-each-anchor("my-rect", (name) => {
-  if not name in ("above", "below", "default") {
-
   content((), box(inset: 1pt, fill: white, text(8pt, [#name])),
-          angle: -45deg)
-  }
+          angle: -30deg)
 })
 ```
 
@@ -858,14 +911,24 @@ The node itselfes can be of type `content` or `dictionary` with a key `content`.
   name: "Plot - Line")
 #let plot-module-contour = tidy.parse-module(read("src/lib/plot/contour.typ"),
   name: "Plot - Contour")
+#let plot-module-boxwhisker = tidy.parse-module(read("src/lib/plot/boxwhisker.typ"),
+  name: "Plot - Boxwhisker")
 #let plot-module-sample = tidy.parse-module(read("src/lib/plot/sample.typ"),
   name: "Plot - Sample")
 
-The library `plot` of CeTZ allows plotting 2D data as linechart.
+The library `plot` of CeTZ allows plotting 2D data.
+
+=== Types
+
+Types commonly used by function of the `plot` library:
+/ `domain`: Tuple representing a functions domain as closed interval.
+            Example domains are: `(0, 1)` for $[0, 1]$ or
+            `(-calc.pi, calc.pi)` for $[-pi, pi]$.
 
 #tidy.show-module(plot-module, show-module-name: false)
 #tidy.show-module(plot-module-line, show-module-name: false)
 #tidy.show-module(plot-module-contour, show-module-name: false)
+#tidy.show-module(plot-module-boxwhisker, show-module-name: false)
 #tidy.show-module(plot-module-sample, show-module-name: false)
 
 === Examples
@@ -946,15 +1009,17 @@ Axis names to be used for styling:
 
 == Chart
 #let chart-module = tidy.parse-module(read("src/lib/chart.typ"), name: "Chart")
+#let chart-boxwhisker-module = tidy.parse-module(read("src/lib/chart/boxwhisker.typ"), name: "Chart - Boxwhisker")
 
 With the `chart` library it is easy to draw charts.
 
 Supported charts are:
-- `barchart(..)`: A chart with horizontal growing bars
+- `barchart(..)` and `columnchart(..)`: A chart with horizontal/vertical growing bars
   - `mode: "basic"`: (default): One bar per data row
   - `mode: "clustered"`: Multiple grouped bars per data row
   - `mode: "stacked"`: Multiple stacked bars per data row
   - `mode: "stacked100"`: Multiple stacked bars relative to the sum of a data row
+- `boxwhisker(..)`: A box-plot chart
 
 #tidy.show-module(chart-module, show-module-name: false)
 
@@ -998,21 +1063,23 @@ group(name: "a", {
 })
 // Center
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-set-origin("a.bottom-right")
-group(name: "b", anchor: "bottom-left", {
-  anchor("default", (0,0))
+set-origin("a.south-east")
+group(name: "b", anchor: "south-west", {
+  anchor("center", (0,0))
   chart.columnchart(size: (auto, 4),
     mode: "clustered", value-key: (1,2,3), data)
 })
 // Right
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-set-origin("b.bottom-right")
-group(name: "c", anchor: "bottom-left", {
-  anchor("default", (0,0))
+set-origin("b.south-east")
+group(name: "c", anchor: "south-west", {
+  anchor("center", (0,0))
   chart.columnchart(size: (auto, 4),
     mode: "stacked", value-key: (1,2,3), data)
 })
 ```)
+
+#tidy.show-module(chart-boxwhisker-module, show-module-name: false)
 
 === Styling
 
@@ -1024,6 +1091,9 @@ styled the same way, see @plot.style.
 
 ==== Default `columnchart` Style
 #raw(repr(chart.columnchart-default-style))
+
+==== Default `boxwhisker` Style
+#raw(repr(chart.boxwhisker-default-style))
 
 == Palette <palette>
 #let palette-module = tidy.parse-module(read("src/lib/palette.typ"), name: "Palette")
@@ -1039,7 +1109,7 @@ The palette library provides some predefined palettes.
     for i in range(p("len")) {
       if calc.rem(i, 10) == 0 { move-to((rel: (0, -.5))) }
       rect((), (rel: (1,.5)), name: "r", ..p(i))
-      move-to("r.bottom-right")
+      move-to("r.south-west")
     }
   })
 } 
@@ -1105,7 +1175,7 @@ brace((-1.5, -2.5), (2, -2.5), pointiness: 1, outer-pointiness: 1, stroke: olive
 content((rel: (.3, .1), to: "hill.center"), text[*εїз*])
 ```
 
-#STYLING
+==== Styling
 
 #def-arg("amplitude", `<number>`, default: .7, [Determines how much the brace rises above the base line.])
 #def-arg("pointiness", `<number> or <angle>`, default: 15deg, [How pointy the spike should be. #0deg or `0` for maximum pointiness, #90deg or `1` for minimum.])
@@ -1144,7 +1214,7 @@ merge-path(close: true, fill: white, {
 content(("top.spike", .5, "bottom.spike"), [Hello, World!])
 ```
 
-#STYLING
+==== Styling
 
 #def-arg("amplitude", `<number>`, default: decorations.flat-brace-default-style.amplitude, [Determines how much the brace rises above the base line.])
 #def-arg("aspect", `<number>`, default: decorations.flat-brace-default-style.aspect, [Determines the fraction of the total length where the spike will be placed.])
@@ -1178,8 +1248,8 @@ content(("top.spike", .5, "bottom.spike"), [Hello, World!])
 ```example
 line((0,0), (1,1), name: "l")
 get-ctx(ctx => {
-  // Get the vector of coordinate "l.center"
-  content("l", [#cetz.coordinate.resolve(ctx, "l.center")], frame: "rect",
+  // Get the vector of coordinate "l.start"
+  content("l.start", [#cetz.coordinate.resolve(ctx, "l.start").at(1)], frame: "rect",
           stroke: none, fill: white)
 })
 ```

@@ -11,7 +11,7 @@
       arc("outer.origin", start: end, delta: -(end - start), radius: radius - .2,
           anchor: "origin", name: "inner")
 
-      line("outer.end", "inner.start")
+      // line("outer.end", "inner.start")
     }, close: true)
 
     stroke(black)

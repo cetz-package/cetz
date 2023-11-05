@@ -123,6 +123,23 @@
   )
 }
 
+// Multiply 4x4 matrix with vector of size 3 or 4.
+// The value of vec_4 defaults to w (1).
+//
+// The resulting vector is of dimension 3
+#let mul4x4-vec3(mat, vec, w: 1) = {
+  assert(vec.len() <= 4)
+  let out = (0, 0, 0)
+  for m in range(0, 3) {
+    let v = (mat.at(m).at(0) * vec.at(0, default: 0)
+           + mat.at(m).at(1) * vec.at(1, default: 0)
+           + mat.at(m).at(2) * vec.at(2, default: 0)
+           + mat.at(m).at(3) * vec.at(3, default: w))
+    out.at(m) = v
+  }
+  return out
+}
+
 // Multiply matrix with vector
 #let mul-vec(mat, vec) = {
   if mat.len() != vector.dim(vec) {
@@ -175,4 +192,31 @@
   }
 
   return inverted
+}
+
+/// Swap column a with column b
+///
+/// - mat (matrix): Matrix
+/// - a (int): Column a
+/// - b (int): Column b
+/// -> matrix New matrix
+#let swap-cols(mat, a, b) = {
+  let new = mat
+  for m in range(mat.len()) {
+    new.at(m).at(a) = mat.at(m).at(b)
+    new.at(m).at(b) = mat.at(m).at(a)
+  }
+  return new
+}
+
+// Translate the matrix by the vector
+#let translate(mat, vec) = {
+  return mul-mat(
+    mat,
+    transform-translate(
+      vec.at(0),
+      -vec.at(1),
+      vec.at(2),
+    ),
+  )
 }

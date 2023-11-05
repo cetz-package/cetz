@@ -337,8 +337,12 @@
   let pts = ()
   let dims = calc.max(s.len(), e.len())
   for dim in range(dims) {
-    let ts = dim-extrema(s.at(dim, default: 0), e.at(dim, default: 0),
-                         c1.at(dim, default: 0), c2.at(dim, default: 0))
+    let ts = dim-extrema(
+      s.at(dim, default: 0),
+      e.at(dim, default: 0),
+      c1.at(dim, default: 0),
+      c2.at(dim, default: 0)
+    )
     for t in ts {
       // Discard any root outside the bezier range
       if t >= 0 and t <= 1 {
@@ -426,4 +430,112 @@
     return curves
   }
   return ()
+}
+
+/// Find roots of a cubic polynomial with the coefficients a, b, c and d
+///
+/// -> array Array of roots
+#let _cubic-roots(a, b, c, d) = {
+  if calc.abs(a) < 1e-6 {
+    if calc.abs(b) < 1e-6 {
+      // Constant
+      if c == 0 {
+        return ()
+      }
+
+      // Linear
+      let root = -1 * d / c
+      if root < 0 and root > 1 {
+        return ()
+      }
+      return (root,)
+    }
+
+    // Quadratic
+    let dq = calc.pow(c, 2) - 4 * b * d
+    if dq >= 0 {
+      dq = calc.sqrt(dq)
+      let roots = (-1 * (dq + c) / (2 * b),
+                        (dq - c) / (2 * b))
+      return roots.filter(t => t >= 0 and t <= 1)
+    }
+  }
+
+  let (A, B, C) = (b/a, c/a, d/a)
+  let Q = (3 * B - calc.pow(A, 2)) / 9
+  let R = (9 * A * B - 27 * C - 2 * calc.pow(A, 3)) / 54
+  let D = calc.pow(Q, 3) + calc.pow(R, 2)
+  let aa = -A / 3
+
+  let sgn = x => { if x < 0 { -1 } else { 1 } }
+  let roots = if D >= 0 {
+    let S = sgn(R + calc.sqrt(D)) * calc.pow(calc.abs(R + calc.sqrt(D)), 1/3)
+    let T = sgn(R - calc.sqrt(D)) * calc.pow(calc.abs(R - calc.sqrt(D)), 1/3)
+
+    if (S - T) != 0 {
+      // Roots 2 and 3 are complex
+      (aa + (S + T),)
+    } else {
+      (aa + (S + T), aa - (S + T) / 2)
+    }
+  } else {
+    let th = calc.acos(R / calc.sqrt(-calc.pow(Q, 3))) / 1rad
+    let qq = 2 * calc.sqrt(-Q)
+    (qq * calc.cos(th / 3) + aa,
+     qq * calc.cos((th + 2 * calc.pi) / 3) + aa,
+     qq * calc.cos((th + 4 * calc.pi) / 3) + aa)
+  }
+
+  return roots.filter(t => t >= 0 and t <= 1)
+}
+
+/// Calculate 2D cubic-bezier and line intersetction points
+///
+/// - s   (vector): Bezier start point
+/// - e   (vector): Bezier end point
+/// - c1  (vector): Bezier control point 1
+/// - c2  (vector): Bezier control point 2
+/// - la  (vector): Line start point
+/// - lb  (vector): Line end point
+/// - ray (bool): If set to true, ignore line length
+#let line-cubic-intersections(la, lb, s, e, c1, c2, ray: false) = {
+  // Based on:
+  //   http://www.particleincell.com/blog/2013/cubic-line-intersection/
+  // with some rounding improvements
+  let a = lb.at(1) - la.at(1)
+  let b = la.at(0) - lb.at(0)
+  let c = la.at(0) * (la.at(1) - lb.at(1)) + la.at(1) * (lb.at(0) - la.at(0))
+
+  /// Get cubic bezier function coefficients
+  let _cubic-coeff(a, b, c, d) = (
+    -a + 3*b - 3*c + d,
+    3*a - 6*b + 3*c,
+    -3*a +3*b,
+    a)
+
+  let x-coeff = _cubic-coeff(s.at(0), c1.at(0), c2.at(0), e.at(0))
+  let y-coeff = _cubic-coeff(s.at(1), c1.at(1), c2.at(1), e.at(1))
+
+  let roots = _cubic-roots(a * x-coeff.at(0) + b * y-coeff.at(0),
+                           a * x-coeff.at(1) + b * y-coeff.at(1),
+                           a * x-coeff.at(2) + b * y-coeff.at(2),
+                           a * x-coeff.at(3) + b * y-coeff.at(3) + c)
+
+  let pts = ()
+  for t in roots {
+    let pt = cubic-point(s, e, c1, c2, t)
+    if ray {
+      pts.push(pt)
+    } else {
+      let s = if calc.abs(lb.at(0) - la.at(0)) >= 1e-6 {
+        (pt.at(0) - la.at(0)) / (lb.at(0) - la.at(0))
+      } else {
+        (pt.at(1) - la.at(1)) / (lb.at(1) - la.at(1))
+      }
+      if s >= 0 and s <= 1 {
+        pts.push(pt)
+      }
+    }
+  }
+  return pts
 }

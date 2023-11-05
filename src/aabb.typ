@@ -18,6 +18,7 @@
       if bounds == none and i == 0 {
         bounds = (low: pt, high: pt)
       } else {
+        assert(type(pt) == array and pt.len() == 3, message: repr(init) + repr(pts))
         let (x, y, z) = pt
 
         let (lo-x, lo-y, lo-z) = bounds.low
@@ -54,4 +55,21 @@
 /// -> vector
 #let size(bounds) = {
   return vector.sub(bounds.high, bounds.low)
+}
+
+/// Pad AABB with padding from dictionary with
+/// keys top, left, right and bottom.
+///
+/// - bounds (AABB): AABB
+/// - padding (none, dictionary): Padding values
+///
+/// -> AABB
+#let padded(bounds, padding) = {
+  if padding != none {
+    bounds.low.at(0)  -= padding.at("left", default: 0)
+    bounds.low.at(1)  -= padding.at("top", default: 0)
+    bounds.high.at(0) += padding.at("right", default: 0)
+    bounds.high.at(1) += padding.at("bottom", default: 0)
+  }
+  return bounds
 }

@@ -55,6 +55,10 @@
 
 // Format a tick value
 #let format-tick-value(value, tic-options) = {
+  // Without it we get negative zero in conversion
+  // to content! Typst has negative zero floats.
+  if value == 0 { value = 0 }
+
   let round(value, digits) = {
     calc.round(value, digits: digits)
   }
@@ -130,7 +134,8 @@
     let major-tick-values = ()
     if "step" in ticks and ticks.step != none {
       assert(ticks.step >= 0,
-             message: "Axis tick step must be positive")
+             message: "Axis tick step must be positive and non 0.")
+      if axis.min > axis.max { ticks.step *= -1 }
 
       let s = 1 / ticks.step
       let n = range(int(min * s), int(max * s + 1.5))
@@ -243,8 +248,8 @@
 ///
 /// - size (vector): Axis canvas size (relative to origin)
 /// - origin (coordinates): Axis Canvas origin
-/// - x (axis): X Axis
-/// - y (axis): Y Axis
+/// - x (axis): Horizontal axis
+/// - y (axis): Vertical axis
 /// - name (string,none): Group name
 #let axis-viewport(size, x, y, origin: (0, 0), name: none, body) = {
   size = (rel: size, to: origin)
@@ -311,17 +316,17 @@
                            base: default-style)
 
     let padding = (
-      l: padding.at("left", default: 0),
-      r: padding.at("right", default: 0),
-      t: padding.at("top", default: 0),
-      b: padding.at("bottom", default: 0),
+      l: padding.at("west", default: 0),
+      r: padding.at("east", default: 0),
+      t: padding.at("north", default: 0),
+      b: padding.at("south", default: 0),
     )
 
     let axis-settings = (
-      (left,   "left",   "right",  (0, auto), ( 1, 0), "left"),
-      (right,  "right",  "left",   (w, auto), (-1, 0), "right"),
-      (bottom, "bottom", "top",    (auto, 0), (0,  1), "bottom"),
-      (top,    "top",    "bottom", (auto, h), (0, -1), "top"),
+      (left,   "west",   "east",  (0, auto), ( 1, 0), "west"),
+      (right,  "east",  "west",   (w, auto), (-1, 0), "east"),
+      (bottom, "south", "north",    (auto, 0), (0,  1), "south"),
+      (top,    "north",    "south", (auto, h), (0, -1), "north"),
     )
 
     group(name: "axes", {
@@ -371,7 +376,7 @@
               }
 
               if grid-mode.major and major or grid-mode.minor and not major {
-                let (grid-begin, grid-end) = if name in ("top", "bottom") {
+                let (grid-begin, grid-end) = if name in ("north", "south") {
                   ((x, 0), (x, h))
                 } else {
                   ((0, y), (w, y))
@@ -414,7 +419,7 @@
     for (axis, side, anchor, ..) in axis-settings {
       if axis == none or not "label" in axis or axis.label == none {continue}
       if not axis.at("is-mirror", default: false) {
-        let is-left-right = side in ("left", "right")
+        let is-left-right = side in ("west", "east")
         let angle = if is-left-right {
           -90deg
         } else {
@@ -425,11 +430,16 @@
         } else {
           ("axes." + side, "-|", "axes.center")
         }
-
         // Use a group to get non-rotated anchors
-        group(content(position, axis.label,
-                      angle: angle, padding: style.label.offset),
-                      anchor: anchor)
+        group(
+          content(
+            position,
+            axis.label,
+            angle: angle,
+            padding: style.label.offset
+          ),
+          anchor: anchor, 
+        )
       }
     }
   })
@@ -454,8 +464,12 @@
 
   group(name: name, ctx => {
     let style = style.named()
-    style = styles.resolve(ctx.style, style, root: "axes",
-                           base: default-style-schoolbook)
+    style = styles.resolve(
+      ctx.style,
+      style,
+      root: "axes",
+      base: default-style-schoolbook
+    )
 
     let x-position = calc.min(calc.max(y-axis.min, x-position), y-axis.max)
     let y-position = calc.min(calc.max(x-axis.min, y-position), x-axis.max)
@@ -473,8 +487,8 @@
     let y-x = value-on-axis(x-axis, y-position) * w
 
     let axis-settings = (
-      (x-axis, "top",   (auto, x-y), (0, 1), "x"),
-      (y-axis, "right", (y-x, auto), (1, 0), "y"),
+      (x-axis, "north",   (auto, x-y), (0, 1), "x"),
+      (y-axis, "east", (y-x, auto), (1, 0), "y"),
     )
 
     line((-padding.left, x-y), (w + padding.right, x-y),
@@ -482,7 +496,7 @@
          name: "x-axis")
     if "label" in x-axis and x-axis.label != none {
       content((rel: (0, -style.label.offset), to: "x-axis.end"),
-        anchor: "top-left", x-axis.label)
+        anchor: "north-west", x-axis.label)
     }
 
     line((y-x, -padding.bottom), (y-x, h + padding.top),
@@ -490,7 +504,7 @@
          name: "y-axis")
     if "label" in y-axis and y-axis.label != none {
       content((rel: (-style.label.offset, 0), to: "y-axis.end"),
-        anchor: "bottom-right", y-axis.label)
+        anchor: "south-east", y-axis.label)
     }
 
     // If both axes cross at the same value (mostly 0)
@@ -542,7 +556,7 @@
                 origin-drawn = true
                 content(vector.add((x, y),
                   vector.scale((1, 1), -style.tick.label.offset / 2)),
-                  [#label], anchor: "top-right")
+                  [#label], anchor: "north-east")
               }
             } else {
               content(vector.add(tick-begin,

@@ -61,5 +61,13 @@
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
   circle((0,0), name: "c")
-  content((0,0), angle: "c.top-right", [Text])
+  content((0,0), angle: "c.north-east", [Text])
+}))
+
+// Test the z coordinate is respected
+#box(stroke: 2pt + red, canvas(length: 1cm, {
+  import draw: *
+  content((0, 0,-1), [Z=-1])
+  content((0, 0, 0), [Z=0])
+  content((0, 0, 1), [Z=1])
 }))

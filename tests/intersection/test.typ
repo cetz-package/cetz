@@ -1,17 +1,15 @@
 #set page(width: auto, height: auto)
-#import "../../src/lib.typ": *
+#import "/src/lib.typ": *
 
 #let test(body) = canvas(length: 1cm, {
   import draw: *
 
   group({
-    intersections(name: "i", samples: 10, {
+    intersections("i", {
       body
     })
     for-each-anchor("i", (name) => {
-      if name.match(regex("\\d+")) != none {
-        circle("i."+name, radius: .1, fill: red)
-      }
+      circle("i."+name, radius: .1, fill: red)
     })
   })
 })
@@ -67,7 +65,7 @@
 #box(stroke: 2pt + red, canvas({
   import draw: *
 
-  intersections(name: "i", {
+  intersections("i", {
     content((0, 0), [Das ist\ ein Text!], frame: "circle", name: "a")
     content((2, 1), [Hallo!], frame: "circle", name: "b")
     // Invisible intersection line
