@@ -481,7 +481,7 @@
          ..util.merge-dictionary(style, style.at("x", default: (:))),
          name: "x-axis")
     if "label" in x-axis and x-axis.label != none {
-      content((rel: (0, -style.tick.label.offset), to: "x-axis.end"),
+      content((rel: (0, -style.label.offset), to: "x-axis.end"),
         anchor: "top-left", x-axis.label)
     }
 
@@ -489,7 +489,7 @@
          ..util.merge-dictionary(style, style.at("y", default: (:))),
          name: "y-axis")
     if "label" in y-axis and y-axis.label != none {
-      content((rel: (-style.tick.label.offset, 0), to: "y-axis.end"),
+      content((rel: (-style.label.offset, 0), to: "y-axis.end"),
         anchor: "bottom-right", y-axis.label)
     }
 
