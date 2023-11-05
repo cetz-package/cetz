@@ -256,7 +256,9 @@
 }
 
 /// Shorten curve by offsetting s and c1 or e and c2
-/// by distance d.
+/// by distance d. If d is positive the curve gets shortened
+/// from s on, if d is negative it gets shortened form its
+/// end e.
 ///
 /// - s  (vector): Curve start
 /// - e  (vector): Curve end
@@ -284,9 +286,11 @@
   return (s, e, c1, c2)
 }
 
-/// Approximate t for a givend distance d.
-/// If d is negative start from the curves end.
-///
+/// Approximate bezier interval t for a given distance d.
+/// If d is positive, the functions starts from the curves
+/// start s, if d is negative, it starts form the curves end
+/// e.
+/// -> float Bezier t value from [0,1]
 #let cubic-t-for-distance(s, e, c1, c2, d, samples: 10) = {
   if d == 0 {
     return 0
@@ -311,7 +315,10 @@
   }
 }
 
-/// Shorten curve by length d. A negative length shortens from the end.
+/// Shorten curve by distance d. This keeps the curvature of the
+/// curve by finding new values along the original curve.
+/// If d is positive the curve gets shortened from s on,
+/// if d is negative it gets shortened form its end e.
 ///
 /// - s  (vector): Curve start
 /// - e  (vector): Curve end
@@ -342,6 +349,7 @@
       last = curr
     }
   } else {
+    // Run the algorithm from end to start by swapping the curve.
     let (e, s, c2, c1) = cubic-shorten(e, s, c2, c1, -d, samples: samples)
     return (s, e, c1, c2)
   }

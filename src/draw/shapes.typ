@@ -729,16 +729,6 @@
   // Coordinates check
   let t = coordinates.map(coordinate.resolve-system)
 
-  // Shorten curve by distance
-  let shorten-curve(s, e, c1, c2, distance, style) = {
-    let quick = style.shorten == "QUICK"
-    if quick {
-      return bezier_.cubic-shorten-linear(s, e, c1, c2, distance)
-    } else {
-      return bezier_.cubic-shorten(s, e, c1, c2, distance)
-    }
-  }
-  
   return (
     ctx => {
       let (ctx, start, ..ctrl, end) = coordinate.resolve(ctx, ..coordinates)

@@ -1,5 +1,4 @@
 #let typst-length = length
-
 #import "bezier.typ"
 #import "drawable.typ"
 #import "vector.typ"
@@ -63,18 +62,19 @@
   } else if symbol == "<>" {
     return _triangular-mark-offset(ctx, style.width, style.length / 2, symbol, style)
   } else {
+    // Offset by half the strok width to have the stroke edge touch
+    // the target position.
     let width = line(stroke: style.stroke).stroke.thickness
     if width == auto { width = 1pt }
     if type(width) == length { width /= ctx.length }
 
     return -width / 2
   }
-
-  return 0
 }
 
 // Get mark symbol mid length, that is the length from the tip to the mid-point
-// of its base. For triangular shaped marks, that is the length minus the inset.
+// of its base. For triangular shaped marks, that is the distance between tip and
+// inset.
 #let mark-mid-length(symbol, style) = {
   let scale = style.scale
   let length = style.length * scale
@@ -90,32 +90,32 @@
 ///
 /// - ctx (context): Context
 /// - pts (array): Array of vectors
-/// - marks (style): Mark style dictionary
+/// - style (style): Mark style dictionary
 /// -> (drawables, pts) Tuple of drawables and adjusted line points
-#let place-marks-along-line(ctx, pts, marks) = {
-  let start = if type(marks.start) == str {
-    (marks.start,)
+#let place-marks-along-line(ctx, pts, style) = {
+  let start = if type(style.start) == str {
+    (style.start,)
   } else {
-    marks.start
+    style.start
   }
 
   // Offset start
   if start != none and start.len() > 0 {
-    let off = calc-mark-offset(ctx, start.at(0), marks)
+    let off = calc-mark-offset(ctx, start.at(0), style)
     let dir = vector.norm(vector.sub(pts.at(1), pts.at(0)))
 
     pts.at(0) = vector.sub(pts.at(0), vector.scale(dir, off))
   }
 
-  let end = if type(marks.end) == str {
-    (marks.end,)
+  let end = if type(style.end) == str {
+    (style.end,)
   } else {
-    marks.end
+    style.end
   }
 
   // Offset end
   if end != none and end.len() > 0 {
-    let off = calc-mark-offset(ctx, end.at(0), marks)
+    let off = calc-mark-offset(ctx, end.at(0), style)
     let dir = vector.norm(vector.sub(pts.at(-2), pts.at(-1)))
 
     pts.at(-1) = vector.sub(pts.at(-1), vector.scale(dir, off))
@@ -129,8 +129,8 @@
     let pt = pts.at(0)
     for m in start {
       drawables.push(drawable.mark(
-        vector.add(pt, dir), pt, m, marks))
-      pt = vector.add(pt, vector.scale(dir, mark-mid-length(m, marks) + marks.sep))
+        vector.add(pt, dir), pt, m, style))
+      pt = vector.add(pt, vector.scale(dir, mark-mid-length(m, style) + style.sep))
     }
   }
 
@@ -140,8 +140,8 @@
     let pt = pts.at(-1)
     for m in end {
       drawables.push(drawable.mark(
-        vector.sub(pt, dir), pt, m, marks))
-      pt = vector.sub(pt, vector.scale(dir, mark-mid-length(m, marks) + marks.sep))
+        vector.sub(pt, dir), pt, m, style))
+      pt = vector.sub(pt, vector.scale(dir, mark-mid-length(m, style) + style.sep))
     }
   }
 
@@ -165,39 +165,39 @@
 /// - ctx (context): Context
 /// - curve (array): Array of curve points (start, end, ctrl-1, ctrl-2)
 /// - style (style): Curve style
-/// - marks (style): Mark style
+/// - mark-style (style): Mark style
 /// -> (drawables, curve) Tuple of drawables and adjusted curve points
-#let place-marks-along-bezier(ctx, curve, style, marks) = {
-  let samples = calc.max(2, calc.min(marks.position-samples, 1000))
+#let place-marks-along-bezier(ctx, curve, style, mark-style) = {
+  let samples = calc.max(2, calc.min(mark-style.position-samples, 1000))
 
-  let start = if type(marks.start) == str {
-    (marks.start,)
+  let start = if type(mark-style.start) == str {
+    (mark-style.start,)
   } else {
-    marks.start
+    mark-style.start
   }
 
   // Offset start
   if start != none and start.len() > 0 {
-    let off = calc-mark-offset(ctx, start.at(0), marks)
+    let off = calc-mark-offset(ctx, start.at(0), mark-style)
     curve = _shorten-curve(curve, -off, style)
   }
 
-  let end = if type(marks.end) == str {
-    (marks.end,)
+  let end = if type(mark-style.end) == str {
+    (mark-style.end,)
   } else {
-    marks.end
+    mark-style.end
   }
 
   // Offset end
   if end != none and end.len() > 0 {
-    let off = calc-mark-offset(ctx, end.at(0), marks)
+    let off = calc-mark-offset(ctx, end.at(0), mark-style)
     curve = _shorten-curve(curve, off, style)
   }
 
   let drawables = ()
-  let flex = marks.flex
+  let flex = mark-style.flex
 
-  // Draw start marks
+  // Draw start mark-style
   if start != none {
     let dist = 0
     for m in start {
@@ -209,7 +209,7 @@
 
       let pt = bezier.cubic-point(..curve, t)
       let dir = if flex {
-        let t-base = bezier.cubic-t-for-distance(..curve, dist + mark-mid-length(m, marks),
+        let t-base = bezier.cubic-t-for-distance(..curve, dist + mark-mid-length(m, mark-style),
           samples: samples)
         vector.sub(bezier.cubic-point(..curve, t-base), pt)
       } else {
@@ -218,13 +218,13 @@
       if vector.len(dir) == 0 {break} // TODO: Emit warning
 
       drawables.push(drawable.mark(
-        vector.add(pt, dir), pt, m, marks))
+        vector.add(pt, dir), pt, m, mark-style))
 
-      dist += mark-mid-length(m, marks) + marks.sep
+      dist += mark-mid-length(m, mark-style) + mark-style.sep
     }
   }
 
-  // Draw end marks
+  // Draw end mark-style
   if end != none {
     let dist = 0
     for m in end {
@@ -236,7 +236,7 @@
 
       let pt = bezier.cubic-point(..curve, t)
       let dir = if flex {
-        let t-base = bezier.cubic-t-for-distance(..curve, -dist - mark-mid-length(m, marks),
+        let t-base = bezier.cubic-t-for-distance(..curve, -dist - mark-mid-length(m, mark-style),
           samples: samples)
         vector.sub(pt, bezier.cubic-point(..curve, t-base))
       } else {
@@ -245,9 +245,9 @@
       if vector.len(dir) == 0 {break} // TODO: Emit warning
 
       drawables.push(drawable.mark(
-        vector.sub(pt, dir), pt, m, marks))
+        vector.sub(pt, dir), pt, m, mark-style))
 
-      dist += mark-mid-length(m, marks) + marks.sep
+      dist += mark-mid-length(m, mark-style) + mark-style.sep
     }
   }
 
@@ -259,23 +259,23 @@
 /// - ctx (context): Context
 /// - pts (array): Array of curve points
 /// - style (style): Curve style
-/// - marks (style): Mark style
+/// - mark-style (style): Mark style
 /// -> (drawables, curve) Tuple of drawables and adjusted curve points
-#let place-marks-along-catmull(ctx, pts, style, marks, close: false) = {
+#let place-marks-along-catmull(ctx, pts, style, mark-style, close: false) = {
   let curves = bezier.catmull-to-cubic(
     pts,
     style.tension,
     close: close)
   if curves.len() == 1 {
     let (drawables, curve) = place-marks-along-bezier(
-      ctx, curves.at(0), style, marks)
+      ctx, curves.at(0), style, mark-style)
     return (drawables, (curve.at(0), curve.at(1)))
   } else {
     // TODO: This has the limitation that only the first curve of
     //       the catmull-rom is used for placing marks.
     let drawables = ()
 
-    let start-marks = marks
+    let start-marks = mark-style
     start-marks.end = none
     if start-marks.start != none {
       let (drawables-start, curve-start) = place-marks-along-bezier(
@@ -284,7 +284,7 @@
       drawables += drawables-start
     }
 
-    let end-marks = marks
+    let end-marks = mark-style
     end-marks.start = none
     if end-marks.end != none {
       let (drawables-end, curve-end) = place-marks-along-bezier(
@@ -299,21 +299,22 @@
   }
 }
 
-#let place-marks-along-arc(ctx, start-angle, stop-angle, arc-start, rx, ry, style, marks) = {
+#let place-marks-along-arc(ctx, start-angle, stop-angle, arc-start,
+                           rx, ry, style, mark-style) = {
   let adjust = style.at("mode", default: "OPEN") == "OPEN"
 
   let r-at(angle) = calc.sqrt(calc.pow(calc.cos(angle) * ry, 2) +
                               calc.pow(calc.sin(angle) * rx, 2))
 
-  let start = if type(marks.start) == str {
-    (marks.start,)
+  let start = if type(mark-style.start) == str {
+    (mark-style.start,)
   } else {
-    marks.start
+    mark-style.start
   }
 
   // Offset start
   if start != none and start.len() > 0 {
-    let off = calc-mark-offset(ctx, start.at(0), marks)
+    let off = calc-mark-offset(ctx, start.at(0), mark-style)
 
     // Remember original start
     let orig-start = start-angle
@@ -328,15 +329,15 @@
     arc-start = vector.add(arc-start, diff)
   }
 
-  let end = if type(marks.end) == str {
-    (marks.end,)
+  let end = if type(mark-style.end) == str {
+    (mark-style.end,)
   } else {
-    marks.end
+    mark-style.end
   }
 
   // Offset end
   if end != none and end.len() > 0 {
-    let off = calc-mark-offset(ctx, end.at(0), marks)
+    let off = calc-mark-offset(ctx, end.at(0), mark-style)
 
     let r = r-at(stop-angle)
     stop-angle += (off * 360deg) / (2 * calc.pi * r)
@@ -353,15 +354,15 @@
   if start != none {
     let angle = start-angle
     for m in start {
-      let length = mark-mid-length(m, marks)
+      let length = mark-mid-length(m, mark-style)
       let r = r-at(angle)
       let angle-offset = (length * 360deg) / (2 * calc.pi * r)
 
       let pt = pt-at(angle)
       drawables.push(drawable.mark(
-        pt-at(angle + angle-offset), pt, m, marks))
+        pt-at(angle + angle-offset), pt, m, mark-style))
 
-      let angle-offset = ((length + marks.sep) * 360deg) / (2 * calc.pi * r)
+      let angle-offset = ((length + mark-style.sep) * 360deg) / (2 * calc.pi * r)
       angle += angle-offset
     }
   }
@@ -370,15 +371,15 @@
   if end != none {
     let angle = stop-angle
     for m in end {
-      let length = mark-mid-length(m, marks)
+      let length = mark-mid-length(m, mark-style)
       let r = r-at(angle)
       let angle-offset = (length * 360deg) / (2 * calc.pi * r)
 
       let pt = pt-at(angle)
       drawables.push(drawable.mark(
-        pt-at(angle - angle-offset), pt, m, marks))
+        pt-at(angle - angle-offset), pt, m, mark-style))
 
-      let angle-offset = ((length + marks.sep) * 360deg) / (2 * calc.pi * r)
+      let angle-offset = ((length + mark-style.sep) * 360deg) / (2 * calc.pi * r)
       angle -= angle-offset
     }
   }
