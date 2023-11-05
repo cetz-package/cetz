@@ -1,5 +1,13 @@
 #import "util.typ"
 
+// Default mark style
+//
+// Asuming a mark ">" is pointing directly to the right:
+//   - length Sets the length of the mark along its direction (in this case, its horizontal size)
+//   - width  Sets the size of the mark along the normal of its direction
+//   - inset  Sets the inner length of triangular shaped marks
+//   - scale  A factor that is applied to all of the three attributes above
+//   - sep    Is the distance between multiple marks along their path
 #let _default-mark = (
   scale: .1,    // Scaling factor
   length: 2,    // Length
