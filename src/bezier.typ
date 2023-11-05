@@ -305,6 +305,7 @@
       }
       last = curr
     }
+    return 1
   } else {
     return 1 - cubic-t-for-distance(e, s, c2, c1, -d, samples: samples)
   }
