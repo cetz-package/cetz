@@ -41,6 +41,10 @@
     //   - "CURVED" Preserving the bezier curve by calculating new control points
     shorten: "LINEAR",
   ),
+  catmull: (
+    tension: .5,
+    mark: _default-mark,
+  ),
   arc: (
     // Supported values:
     //   - "OPEN"
