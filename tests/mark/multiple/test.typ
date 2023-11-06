@@ -41,6 +41,14 @@
 
 #box(stroke: 2pt + red, canvas({
   import draw: *
+  rect((1,-2), (2,2))
+  rect((-2,-2), (-1,2))
+  hobby((-1,-.5), (0,-.5), (0,1), (1,1),
+    mark: (start: l, end: l, fill: red, stroke: blue, flex: true))
+}))
+
+#box(stroke: 2pt + red, canvas({
+  import draw: *
   line((-.5,1), (2.5,1))
   arc((1,1), start: 0deg, stop: 180deg, anchor: "origin",
     mark: (start: l, end: l, fill: red, stroke: blue))

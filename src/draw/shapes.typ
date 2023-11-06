@@ -10,6 +10,7 @@
 #import "/src/matrix.typ"
 #import "/src/process.typ"
 #import "/src/bezier.typ" as bezier_
+#import "/src/hobby.typ" as hobby_
 #import "/src/anchor.typ" as anchor_
 #import "/src/mark.typ" as mark_
 
@@ -828,24 +829,90 @@
     }
 
     let style = styles.resolve(ctx.style, style, root: "catmull")
+    let curves = bezier_.catmull-to-cubic(
+      pts,
+      style.tension,
+      close: close)
 
-    let (marks, pts) = if style.mark != none {
-      mark_.place-marks-along-catmull(ctx, pts, style, style.mark, close: close)
+    let (marks, curves) = if style.mark != none {
+      mark_.place-marks-along-beziers(ctx, curves, style, style.mark)
     } else {
-      (none, pts)
+      (none, curves)
     }
 
     let drawables = (
       drawable.path(
-        bezier_.catmull-to-cubic(
-          pts,
-          style.tension,
-          close: close
-        ).map(c => path-util.cubic-segment(..c)),
+        curves.map(c => path-util.cubic-segment(..c)),
         fill: style.fill,
         stroke: style.stroke,
         close: close),)
+    if marks != none {
+      drawables += marks
+    }
 
+    return (
+      ctx: ctx,
+      name: name,
+      anchors: anchors,
+      drawables: drawable.apply-transform(
+        transform,
+        drawables
+      )
+    )
+  },)
+}
+
+
+#let hobby(..pts-style, ta: auto, tb: auto, close: false, name: none) = {
+  let (pts, style)  = (pts-style.pos(), pts-style.named())
+
+  assert(pts.len() >= 2, message: "Hobby curve requires at least two points. Got " + repr(pts.len()) + "instead.")
+
+  pts.map(coordinate.resolve-system)
+
+  return (ctx => {
+    let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
+
+    let (transform, anchors) = {
+      let a = (
+        start: pts.first(),
+        end: pts.last(),
+      )
+      for (i, pt) in pts.enumerate() {
+        a.insert("pt-" + str(i), pt)
+      }
+      anchor_.setup(
+        anchor => {
+          a.at(anchor)
+        },
+        a.keys(),
+        name: name,
+        default: "start",
+        transform: ctx.transform
+      )
+    }
+
+    let style = styles.resolve(ctx.style, style, root: "hobby")
+    let curves = hobby_.hobby-to-cubic(
+      pts,
+      ta: ta,
+      tb: tb,
+      omega: style.omega,
+      rho: style.rho,
+      close: close)
+
+    let (marks, curves) = if style.mark != none {
+      mark_.place-marks-along-beziers(ctx, curves, style, style.mark)
+    } else {
+      (none, curves)
+    }
+
+    let drawables = (
+      drawable.path(
+        curves.map(c => path-util.cubic-segment(..c)),
+        fill: style.fill,
+        stroke: style.stroke,
+        close: close),)
     if marks != none {
       drawables += marks
     }

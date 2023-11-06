@@ -401,6 +401,12 @@ catmull((0,0), (1,1), (2,-1), (3,0), tension: .4, stroke: blue)
 catmull((0,0), (1,1), (2,-1), (3,0), tension: .5, stroke: red)
 ```
 
+#show-module-fn(draw-module, "hobby")
+```example
+hobby((0,0), (1,1), (2,-1), (3,0), omega: 0, stroke: blue)
+hobby((0,0), (1,1), (2,-1), (3,0), omega: 1, stroke: red)
+```
+
 #show-module-fn(draw-module, "grid")
 ```example
 grid((0,0), (3,2), help-lines: true)

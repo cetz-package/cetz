@@ -54,3 +54,19 @@
   bezier((-1,-.5), (1,1), (0,-.5), (0,1),
     mark: (start: "|", end: "o", fill: red, stroke: blue))
 }))
+
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+  rect((1,-1), (2,2))
+  rect((-2,-1), (-1,2))
+  catmull((-1,-.5), (0,-.5), (0,1), (1,1),
+    mark: (start: ">", end: ">", fill: red, stroke: blue))
+}))
+
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+  rect((1,-1), (2,2))
+  rect((-2,-1), (-1,2))
+  hobby((-1,-.5), (0,-.5), (0,1), (1,1),
+    mark: (start: ">", end: ">", fill: red, stroke: blue))
+}))

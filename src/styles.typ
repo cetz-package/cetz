@@ -2,7 +2,7 @@
 
 // Default mark style
 //
-// Asuming a mark ">" is pointing directly to the right:
+// Assuming a mark ">" is pointing directly to the right:
 //   - length Sets the length of the mark along its direction (in this case, its horizontal size)
 //   - width  Sets the size of the mark along the normal of its direction
 //   - inset  Sets the inner length of triangular shaped marks
@@ -41,28 +41,43 @@
   bezier: (
     mark: (
       .._default-mark,
-
-      // If true, the mark points in the direction of the secant from
-      // its base to its tip. If false, the tangent at the marks tip is used.
+      /// If true, the mark points in the direction of the secant from
+      /// its base to its tip. If false, the tangent at the marks tip is used.
       flex: true,
-      // Max. number of samples to use for calculating curve positions
-      // a higher number gives better results but may slow down compilation.
+      /// Max. number of samples to use for calculating curve positions
+      /// a higher number gives better results but may slow down compilation.
       position-samples: 30,
     ),
-    // Bezier shortening mode:
-    //   - "LINEAR" Moving the affected point and it's next control point (like TikZ "quick" key)
-    //   - "CURVED" Preserving the bezier curve by calculating new control points
+    /// Bezier shortening mode:
+    ///   - "LINEAR" Moving the affected point and it's next control point (like TikZ "quick" key)
+    ///   - "CURVED" Preserving the bezier curve by calculating new control points
     shorten: "LINEAR",
   ),
   catmull: (
     tension: .5,
     mark: (
       .._default-mark,
-      // If true, the mark points in the direction of the secant from
-      // its base to its tip. If false, the tangent at the marks tip is used.
+      /// If true, the mark points in the direction of the secant from
+      /// its base to its tip. If false, the tangent at the marks tip is used.
       flex: true,
-      // Max. number of samples to use for calculating curve positions
-      // a higher number gives better results but may slow down compilation.
+      /// Max. number of samples to use for calculating curve positions
+      /// a higher number gives better results but may slow down compilation.
+      position-samples: 30,
+    ),
+    shorten: "LINEAR",
+  ),
+  hobby: (
+    /// Curve start and end omega (curlyness)
+    omega: (1,1),
+    /// Rho function, see /src/hobby.typ for details
+    rho: auto,
+    mark: (
+      .._default-mark,
+      /// If true, the mark points in the direction of the secant from
+      /// its base to its tip. If false, the tangent at the marks tip is used.
+      flex: true,
+      /// Max. number of samples to use for calculating curve positions
+      /// a higher number gives better results but may slow down compilation.
       position-samples: 30,
     ),
     shorten: "LINEAR",
