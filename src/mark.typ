@@ -252,48 +252,33 @@
   return (drawables, curve)
 }
 
-/// Place marks along a catmull-rom curve
+/// Place marks along a list of cubic bezier curves
 ///
 /// - ctx (context): Context
-/// - pts (array): Array of curve points
+/// - curves (array): Array of curves
 /// - style (style): Curve style
 /// - mark-style (style): Mark style
-/// -> (drawables, curve) Tuple of drawables and adjusted curve points
-#let place-marks-along-catmull(ctx, pts, style, mark-style, close: false) = {
-  let curves = bezier.catmull-to-cubic(
-    pts,
-    style.tension,
-    close: close)
+/// -> (drawables, curves) Tuple of drawables and adjusted curves
+#let place-marks-along-beziers(ctx, curves, style, mark-style) = {
   if curves.len() == 1 {
-    let (drawables, curve) = place-marks-along-bezier(
+    let (marks, curve) = place-marks-along-bezier(
       ctx, curves.at(0), style, mark-style)
-    return (drawables, (curve.at(0), curve.at(1)))
+    return (marks, (curve,))
   } else {
     // TODO: This has the limitation that only the first curve of
     //       the catmull-rom is used for placing marks.
-    let drawables = ()
+    let start-mark-style = mark-style
+    start-mark-style.end = none
+    let (start-marks, start-curve) = place-marks-along-bezier(
+      ctx, curves.at(0), style, start-mark-style)
 
-    let start-marks = mark-style
-    start-marks.end = none
-    if start-marks.start != none {
-      let (drawables-start, curve-start) = place-marks-along-bezier(
-        ctx, curves.at(0), style, start-marks)
-      pts.at(0) = curve-start.at(0)
-      drawables += drawables-start
-    }
-
-    let end-marks = mark-style
-    end-marks.start = none
-    if end-marks.end != none {
-      let (drawables-end, curve-end) = place-marks-along-bezier(
-        ctx, curves.at(-1), style, end-marks)
-      if not close {
-        pts.at(-1) = curve-end.at(1)
-      }
-      drawables += drawables-end
-    }
-
-    return (drawables, pts)
+    let end-mark-style = mark-style
+    end-mark-style.start = none
+    let (end-marks, end-curve) = place-marks-along-bezier(
+      ctx, curves.at(-1), style, end-mark-style)
+    curves.at(0) = start-curve
+    curves.at(-1) = end-curve
+    return (start-marks + end-marks, curves)
   }
 }
 
