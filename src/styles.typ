@@ -9,9 +9,9 @@
 //   - scale  A factor that is applied to all of the three attributes above
 //   - sep    Is the distance between multiple marks along their path
 #let _default-mark = (
-  scale: .1,    // Scaling factor
-  length: 2,    // Length
-  width: 1.5,   // Width
+  scale: 1,     // Scaling factor
+  length: .2,   // Length
+  width: 0.15,  // Width
   inset: .5,    // Arrow mark base inset
   sep: .1,      // Extra distance between marks
   start: none,  // Mark start symbol(s)
