@@ -3,18 +3,41 @@
 #import "@preview/tidy:0.1.0"
 #import lib: *
 
+// Returns a table of the elements anchors
+#let describe-anchors(default: true, ..anchors) = {
+  assert.eq(anchors.named(), (), message: "Pass anchors as positional arguments")
+  let rows = ()
+  if default {
+    rows += (
+      ([north],      [North border anchor]),
+      ([north-west], [North-West border anchor]),
+      ([north-east], [North-East border anchor]),
+      ([south],      [South border anchor]),
+      ([south-west], [South-West border anchor]),
+      ([south-east], [South-East border anchor]),
+    )
+  }
+
+  for (name, descr) in anchors.pos() {
+    rows.push(([#name], [#descr]))
+  }
+
+  table(columns: 2, ..rows)
+}
+
 // This is a wrapper around typs-doc show-module that
 // strips all but one function from the module first.
 // As soon as typst-doc supports examples, this is no longer
 // needed.
 #let show-module-fn(module, fn, ..args) = {
   module.functions = module.functions.filter(f => f.name == fn)
+  assert(module.functions.len() > 0,
+    message: "No function named " + fn + " in module " + repr(module))
+
   tidy.show-module(module, ..args.pos(), ..args.named(),
                    show-module-name: false,
-                   show-outline: false)
+                   show-outline: false,)
 }
-
-#let canvas-background = gray.lighten(75%)
 
 // String that gets prefixed to every example code
 // for compilation only!
@@ -22,31 +45,42 @@
 #let example-scope = (cetz: lib, lib: lib)
 
 #let example(source, ..args, vertical: false) = {
+  let radius = .25cm
+  let border = 1pt + gray
+  let canvas-background = yellow.lighten(95%)
+
   let picture = canvas(eval(example-preamble + source.text,
                             scope: example-scope), ..args)
+  let source = box(raw(source.text, lang: "typc"),
+                       width: 100%)
+
   block(if vertical {
     align(
       center, 
       stack(
         dir: ttb,
         spacing: 1em,
-        block(width: 100%,
-          picture,
-          fill: canvas-background,
-          inset: 1em
+        block(width: 100%, clip: true, radius: radius,
+              stroke: border,
+          table(columns: 1,
+                stroke: none,
+                fill: (c,r) => (canvas-background, white).at(r),
+            picture,
+            align(left, source))
         ),
-        align(left, source)
       )
     )
   } else {
-    table(
-      columns: (auto, auto),
-      stroke: none,
-      fill: (x,y) => (canvas-background, none).at(x),
-      align: (x,y) => (center, left).at(x),
-      picture,
-      source
-    )
+    block(table(columns: 2,
+                stroke: none,
+                fill: (canvas-background, white),
+                align: (center + horizon, left),
+                picture,
+                source),
+          width: 100%,
+          radius: radius,
+          clip: true,
+          stroke: border)
   }, breakable: false)
 }
 
@@ -297,9 +331,9 @@ circle((0.5, -2.5), radius: 0.5, fill: green)
 ```
 
 == Elements
-#let draw-module = tidy.parse-module(read("src/draw.typ"), name: "Draw")
+#let shapes-module = tidy.parse-module(read("src/draw/shapes.typ"), name: "Shapes")
 
-#show-module-fn(draw-module, "line")
+#show-module-fn(shapes-module, "line")
 ```example
 line((-1.5, 0), (1.5, 0))
 line((0, -1.5), (0, 1.5))
@@ -309,13 +343,13 @@ line((0, -1.5), (0, 1.5))
 
 #def-arg("mark", `<dictionary> or <auto>`, default: auto, [The styling to apply to marks on the line, see `mark`])
 
-#show-module-fn(draw-module, "rect")
+#show-module-fn(shapes-module, "rect")
 ```example
 rect((0,0), (1,1))
 rect((-1.5, 1.5), (1.5, -1.5))
 ```
 
-#show-module-fn(draw-module, "arc")
+#show-module-fn(shapes-module, "arc")
 ```example
 arc((0,0), start: 45deg, stop: 135deg)
 arc((0,-0.5), start: 45deg, delta: 90deg, mode: "CLOSE")
@@ -327,14 +361,14 @@ arc((0,-1), stop: 135deg, delta: 90deg, mode: "PIE")
 #def-arg("radius", `<number> or <array>`, default: 1, [The radius of the arc. This is also a global style shared with circle!])
 #def-arg("mode", `<string>`, default: `"OPEN"`, [The options are "OPEN" (the default, just the arc), "CLOSE" (a circular segment) and "PIE" (a circular sector).])
 
-#show-module-fn(draw-module, "circle")
+#show-module-fn(shapes-module, "circle")
 ```example
 circle((0,0))
 // Draws an ellipse
 circle((0,-2), radius: (0.75, 0.5))
 ```
 
-#show-module-fn(draw-module, "circle-through")
+#show-module-fn(shapes-module, "circle-through")
 ```example
 let (a, b, c) = ((0,0), (2,-.5), (1,1))
 line(a, b, c, close: true, stroke: gray)
@@ -346,7 +380,7 @@ circle("c.center", radius: .05, fill: red)
 
 #def-arg("radius", `<number> or <length> or <array of <number> or <length>>`, default: "1", [The circle's radius. If an array is given an ellipse will be drawn where the first item is the `x` radius and the second item is the `y` radius. This is also a global style shared with arc!])
 
-#show-module-fn(draw-module, "bezier")
+#show-module-fn(shapes-module, "bezier")
 ```example
 let (a, b, c) = ((0, 0), (2, 0), (1, 1))
 line(a, c,  b, stroke: gray)
@@ -357,7 +391,7 @@ line(a, c, d, b, stroke: gray)
 bezier(a, b, c, d)
 ```
 
-#show-module-fn(draw-module, "bezier-through")
+#show-module-fn(shapes-module, "bezier-through")
 ```example
 let (a, b, c) = ((0, 0), (1, 1), (2, -1))
 line(a, b, c, stroke: gray)
@@ -367,7 +401,7 @@ bezier-through(a, b, c, name: "b")
 line(a, "b.ctrl-0", "b.ctrl-1", c, stroke: gray)
 ```
 
-#show-module-fn(draw-module, "content")
+#show-module-fn(shapes-module, "content")
 ```example
 content((0,0), [Hello World!])
 ```
@@ -386,8 +420,9 @@ This example uses linear interpolated coordinates `(a, t, b)` to place the
 content at the center of the line, see @coordinate-lerp.
 
 ```example
-content((0,0), (2,1), par(justify: false)[This is a long text.], frame: "rect",
-  fill: gray, stroke: none)
+// Place content in a rect between two coordinates
+content((0,0), (2,2), box(par(justify: false)[This is a long text.],
+  stroke: 1pt, width: 100%, height: 100%, inset: 1em))
 ```
 
 ==== Styling
@@ -395,25 +430,29 @@ This draw element is not affected by fill or stroke styling.
 
 #def-arg("padding", `<length>`, default: 0em, "")
 
-#show-module-fn(draw-module, "catmull")
+#show-module-fn(shapes-module, "catmull")
 ```example
 catmull((0,0), (1,1), (2,-1), (3,0), tension: .4, stroke: blue)
 catmull((0,0), (1,1), (2,-1), (3,0), tension: .5, stroke: red)
 ```
 
-#show-module-fn(draw-module, "hobby")
+#show-module-fn(shapes-module, "hobby")
 ```example
 hobby((0,0), (1,1), (2,-1), (3,0), omega: 0, stroke: blue)
 hobby((0,0), (1,1), (2,-1), (3,0), omega: 1, stroke: red)
 ```
 
-#show-module-fn(draw-module, "grid")
+#show-module-fn(shapes-module, "grid")
 ```example
-grid((0,0), (3,2), help-lines: true)
+// Draw a grid
+grid((0,0), (2,2))
+
+// Draw a smaller blue grid
+grid((1,1), (2,2), stroke: blue, step: .25)
 ```
 
 
-#show-module-fn(draw-module, "mark")
+#show-module-fn(shapes-module, "mark")
 ```example
 line((1, 0), (1, 6), stroke: (paint: gray, dash: "dotted"))
 set-style(mark: (fill: none))
@@ -437,7 +476,7 @@ line((0, 0), (1, 0), mark: (end: ">"))
 
 == Path Transformations <path-transform>
 
-#show-module-fn(draw-module, "merge-path")
+#show-module-fn(shapes-module, "merge-path")
 ```example
 // Merge two different paths into one
 merge-path({
@@ -446,7 +485,9 @@ merge-path({
 }, fill: white)
 ```
 
-#show-module-fn(draw-module, "group")
+#let grouping-module = tidy.parse-module(read("src/draw/grouping.typ"), name: "Shapes")
+
+#show-module-fn(grouping-module, "group")
 ```example
 // Create group
 group({
@@ -457,7 +498,7 @@ group({
 rect((-1,-1),(1,1))
 ```
 
-#show-module-fn(draw-module, "anchor")
+#show-module-fn(grouping-module, "anchor")
 ```example
 group(name: "g", {
   circle((0,0))
@@ -466,7 +507,7 @@ group(name: "g", {
 circle("g.x", radius: .1)
 ```
 
-#show-module-fn(draw-module, "copy-anchors")
+#show-module-fn(grouping-module, "copy-anchors")
 ```example
 group(name: "g", {
   rotate(45deg)
@@ -476,7 +517,7 @@ group(name: "g", {
 circle("g.north", radius: .1, fill: black)
 ```
 
-#show-module-fn(draw-module, "place-anchors")
+#show-module-fn(grouping-module, "place-anchors")
 ```typc
 place-anchors(name: "demo",
               bezier((0,0), (3,0), (1,-1), (2,1)),
@@ -486,7 +527,7 @@ circle("demo.a", radius: .1, fill: black)
 circle("demo.mid", radius: .1, fill: black)
 ```
 
-#show-module-fn(draw-module, "place-marks")
+#show-module-fn(grouping-module, "place-marks")
 ```example
 place-marks(bezier-through((0,0), (1,1), (2,0)),
             (mark: "|", size: .1, pos: 0),
@@ -495,7 +536,7 @@ place-marks(bezier-through((0,0), (1,1), (2,0)),
             fill: black)
 ```
 
-#show-module-fn(draw-module, "intersections")
+#show-module-fn(grouping-module, "intersections")
 ```example
 intersections("demo", {
   circle((0, 0))
@@ -513,7 +554,7 @@ for-each-anchor("demo", (name) => {
 You can use layers to draw elements below or on top of other elements by using layers
 with a higher or lower index. When rendering, all draw commands are sorted by their layer (0 being the default).
 
-#show-module-fn(draw-module, "on-layer")
+#show-module-fn(grouping-module, "on-layer")
 ```example
 // Draw something behind text
 set-style(stroke: none)
@@ -527,6 +568,9 @@ on-layer(-1, {
 
 
 == Transformations
+
+#let transform-module = tidy.parse-module(read("src/draw/transformations.typ"), name: "Transformtations")
+
 All transformation functions push a transformation matrix onto the current transform stack.
 To apply transformations scoped use a `group(...)` object.
 
@@ -534,7 +578,7 @@ Transformation martices get multiplied in the following order:
 $ M_"world" = M_"world" dot M_"local" $
 
 
-#show-module-fn(draw-module, "translate")
+#show-module-fn(transform-module, "translate")
 ```example
 // Outer rect
 rect((0,0), (2,2))
@@ -543,7 +587,7 @@ translate((.5,.5,0))
 rect((0,0), (1,1))
 ```
 
-#show-module-fn(draw-module, "set-origin")
+#show-module-fn(transform-module, "set-origin")
 ```example
 // Outer rect
 rect((0,0), (2,2), name: "r")
@@ -552,14 +596,14 @@ set-origin("r.north")
 circle((0, 0), radius: .1)
 ```
 
-#show-module-fn(draw-module, "set-viewport")
+#show-module-fn(transform-module, "set-viewport")
 ```example
 rect((0,0), (2,2))
 set-viewport((0,0), (2,2), bounds: (10, 10))
 circle((5,5))
 ```
 
-#show-module-fn(draw-module, "rotate")
+#show-module-fn(transform-module, "rotate")
 ```example
 // Rotate on z-axis
 rotate(z: 45deg)
@@ -569,7 +613,7 @@ rotate(y: 80deg)
 circle((0,0))
 ```
 
-#show-module-fn(draw-module, "scale")
+#show-module-fn(transform-module, "scale")
 ```example
 // Scale x-axis
 scale((x: 1.8))
@@ -583,7 +627,7 @@ Note that the fields of the context of a canvas are considered private and there
 unstable. You can add custom values to the context, but in order to prevent naming
 conflicts with future CeTZ versions, try to assign unique names.
 
-#show-module-fn(draw-module, "set-ctx")
+#show-module-fn(grouping-module, "set-ctx")
 ```example
 // Setting a custom transformation matrix
 set-ctx(ctx => {
@@ -599,7 +643,7 @@ circle((z: 1), fill: blue)
 circle((z: 2), fill: green)
 ```
 
-#show-module-fn(draw-module, "get-ctx")
+#show-module-fn(grouping-module, "get-ctx")
 ```example
 // Print the transformation matrix
 get-ctx(ctx => {
@@ -861,7 +905,7 @@ circle((v => cetz.vector.add(v, (0, -1)), "c.west"), radius: 0.3)
 
 = Utility
 
-#show-module-fn(draw-module, "for-each-anchor")
+#show-module-fn(grouping-module, "for-each-anchor")
 ```example
 // Label nodes anchors
 rect((0, 0), (2,2), name: "my-rect")
