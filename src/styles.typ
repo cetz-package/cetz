@@ -12,7 +12,7 @@
   scale: 1,     // Scaling factor
   length: .2,   // Length
   width: 0.15,  // Width
-  inset: .5,    // Arrow mark base inset
+  inset: .05,   // Arrow mark base inset
   sep: .1,      // Extra distance between marks
   start: none,  // Mark start symbol(s)
   end: none,    // Mark end symbol(s)
