@@ -3,7 +3,7 @@
 ## Libs
 ### Draw
 - **BREAKING** Default anchors are now using TikZ like compass names: north, south, east, west, north-west, north-east, south-west and south-east
-- **BREAKING** Element anchors have changed! See the documenation for details.
+- **BREAKING** Element anchors have changed! See the documentation for details.
 - Content padding has been improved to be configurable per side
 - Groups support same padding options as content
 - Mark offsetting has been fixed and improved

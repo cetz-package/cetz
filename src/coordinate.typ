@@ -307,8 +307,13 @@
   return t
 }
 
-
-
+/// Resolve a list of coordinates to a absolute vectors
+///
+/// - ctx (context): Canvas context object
+/// - ..coordinates (coordinate): List of coordinates
+/// - update (bool): Update the context's last position
+/// -> (ctx, vector..) Returns a list of the new context object plus the
+///    resolved coordinate vectors
 #let resolve(ctx, ..coordinates, update: true) = {
   let result = ()
   for c in coordinates.pos() {

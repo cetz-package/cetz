@@ -105,11 +105,6 @@
     fill: auto,
     stroke: auto,
   ),
-  shadow: (
-    color: gray,
-    offset-x: .1,
-    offset-y: -.1,
-  ),
 )
 
 /// Resolve the current style root

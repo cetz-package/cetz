@@ -330,6 +330,8 @@ line((0, -1.5), (0.5, -0.5), (1, -1.5), close: true)
 circle((0.5, -2.5), radius: 0.5, fill: green)
 ```
 
+For the default styles of all elements see @default-style
+
 == Elements
 #let shapes-module = tidy.parse-module(read("src/draw/shapes.typ"), name: "Shapes")
 
@@ -451,20 +453,32 @@ grid((0,0), (2,2))
 grid((1,1), (2,2), stroke: blue, step: .25)
 ```
 
-
 #show-module-fn(shapes-module, "mark")
+
 ```example
-line((1, 0), (1, 6), stroke: (paint: gray, dash: "dotted"))
-set-style(mark: (fill: none))
-line((0, 6), (1, 6), mark: (end: "<"))
-line((0, 5), (1, 5), mark: (end: ">"))
-set-style(mark: (fill: black))
-line((0, 4), (1, 4), mark: (end: "<>"))
-line((0, 3), (1, 3), mark: (end: "o"))
-line((0, 2), (1, 2), mark: (end: "|"))
-line((0, 1), (1, 1), mark: (end: "<"))
-line((0, 0), (1, 0), mark: (end: ">"))
+mark((0,0), (1,0), symbol: ">", fill: black)
+mark((0,0), (1,1), symbol: ">", scale: 3, fill: black)
 ```
+
+Or as part of a line, using lines `mark` style key:
+
+#example(vertical: true,
+```typc
+rotate(-90deg)
+set-style(mark: (fill: black))
+line((1, -1), (1, 9), stroke: (paint: gray, dash: "dotted"))
+line((0, 8), (rel: (1, 0)), mark: (end: "left-harpoon"))
+line((0, 7), (rel: (1, 0)), mark: (end: "right-harpoon"))
+line((0, 6), (rel: (1, 0)), mark: (end: "<>"))
+line((0, 5), (rel: (1, 0)), mark: (end: "o"))
+line((0, 4), (rel: (1, 0)), mark: (end: "|"))
+line((0, 3), (rel: (1, 0)), mark: (end: "<"))
+line((0, 2), (rel: (1, 0)), mark: (end: ">"))
+
+set-style(mark: (fill: none))
+line((0, 1), (rel: (1, 0)), mark: (end: "<"))
+line((0, 0), (rel: (1, 0)), mark: (end: ">"))
+```)
 
 ==== Styling
 
@@ -1312,9 +1326,16 @@ get-ctx(ctx => {
 ```example
 get-ctx(ctx => {
   // Get the current line style
-  content((0,0), [#cetz.styles.resolve(ctx.style, (:), root: "line")],
-          frame: "rect",
-          stroke: none, fill: white)
+  content((0,0), [#cetz.styles.resolve(ctx.style, (:), root: "line")])
 })
 ```
 
+=== Default Style <default-style>
+
+This is a dump of the style dictionary every canvas gets initialized with.
+It contains all supported keys for all elements.
+
+#[
+  #set text(size: 8pt)
+  #columns(raw(repr(lib.styles.default), lang: "typc"))
+]

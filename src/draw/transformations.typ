@@ -26,6 +26,12 @@
   },)
 }
 
+/// Rotate on z-axis (default) or specified axes if `angle` is of type
+/// dictionary.
+///
+/// - angle (typst-angle,dictionary): Angle (z-axis) or dictionary of the
+///   form `(x: <typst-angle>, y: <angle>, z: <angle>)`
+///   specifying per axis rotation typst-angle.
 #let rotate(..angles) = {
   assert(angles.pos().len() == 1 or angles.named().len() > 0,
     message: "Rotate takes a single z-angle or angles " +
@@ -56,6 +62,12 @@
   },)
 }
 
+/// Push translation matrix
+///
+/// - vec (vector,dictionary): Translation vector
+/// - pre (bool): Specify matrix multiplication order
+///               - false: `World = World * Translate`
+///               - true:  `World = Translate * World`
 #let translate(vec, pre: true) = {
   (ctx => {
     let (x, y, z) = if type(vec) == "dictionary" {
@@ -84,6 +96,10 @@
   },)
 }
 
+/// Push scale matrix
+///
+/// - factor (float,dictionary): Scaling factor for all axes or
+///   per axis scaling factor dictionary.
 #let scale(factor) = {
   (
     ctx => {
@@ -93,6 +109,9 @@
   )
 }
 
+/// Sets the given position as the origin
+///
+/// - origin (coordinate): Coordinate to set as new origin `(0,0,0)`
 #let set-origin(origin) = {
   (
     ctx => {
@@ -107,6 +126,13 @@
   )
 }
 
+/// Set current coordinate
+///
+/// The current coordinate can be used via `()` (empty coordinate).
+/// It is also used as base for relative coordinates if not specified
+/// otherwise.
+///
+/// - pt (coordinate): Coordinate to move to
 #let move-to(pt) = {
   let t = coordinate.resolve-system(pt)
   
@@ -116,6 +142,12 @@
   },)
 }
 
+/// Span viewport between two coordinates and set-up scaling and translation
+///
+/// - from (coordinate): Bottom-Left corner coordinate
+/// - to (coordinate): Top right corner coordinate
+/// - bounds (vector): Viewport bounds vector that describes the inner width,
+///   height and depth of the viewport
 #let set-viewport(from, to, bounds: (1, 1, 1)) = {
   (from, to).map(coordinate.resolve-system)
 

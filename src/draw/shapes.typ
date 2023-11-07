@@ -19,6 +19,21 @@
 #import "styling.typ": *
 #import "grouping.typ": *
 
+/// Draw an ellipse
+///
+/// The radii of the ellipse can be set via the style key `radius`, which
+/// takes a `number` or a tuple of `number`s for the x- an y-radius.
+///
+/// *Style Root* `circle`
+///
+/// *Anchors*
+///   / `"center"`: The center of the ellipse
+///
+/// - position (coordinate): Anchor position, by default this is the
+///   ellipses center
+/// - name (none,string): Element name
+/// - anchor (none,string): Anchor to position the element relative to
+/// - ..style (style): Style key-values
 #let circle(position, name: none, anchor: none, ..style) = {  
   // No extra positional arguments from the style sink
   assert.eq(
@@ -82,6 +97,19 @@
   },)
 }
 
+/// Draw a circle through three coordinates
+///
+/// *Style Root* `circle`
+///
+/// *Anchors*
+///   / `"center"`: The center of the ellipse
+///
+/// - a (coordinate): Coordinate a
+/// - b (coordinate): Coordinate b
+/// - c (coordinate): Coordinate c
+/// - name (none,string): Element name
+/// - anchor (none,string): Anchor to position the element relative to
+/// - ..style (style): Style key-values
 #let circle-through(a, b, c, name: none, anchor: none, ..style) = {
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
   style = style.named()
@@ -147,6 +175,26 @@
   },)
 }
 
+/// Draw a circular segment
+///
+/// *Style Root* `arc`
+///
+/// *Anchors*
+///   / `"center"`: The center of the arc
+///   / `"arc-center"`: Mid-point on the arc border
+///   / `"chord-center"`: Center of the chord
+///   / `"origin"`: Arc origin
+///   / `"arc-start"`: Arc start coordinate
+///   / `"arc-end"`: Arc end coordinate
+///
+/// - position (coordinate): Position to place the arc at. If `anchor` is unset, this
+///   is the arcs start position.
+/// - start (none,angle): Start angle
+/// - stop (none,angle): Stop angle
+/// - delta (auto,angle): Angle delta from either start or stop. Exactly two of the three
+///   angle arguments must be set.
+/// - name (none,string): Element name
+/// - ..style (style): Style key-values
 #let arc(
   position,
   start: auto,
@@ -304,6 +352,17 @@
   },)
 }
 
+/// Draw a single mark pointing at a target coordinate
+///
+/// *Style Root* `mark`
+///
+/// *Note*: The size of the mark depends on its style values, not
+/// the distance between `from` and `to`, which only determine its
+/// orientation.
+///
+/// - from (coordinate): Starting position used for orientation calculation
+/// - to (coordinate): The marks target position at which it points
+/// - ..style (style): Style key-value pairs
 #let mark(from, to, ..style) = {
   assert.eq(
     style.pos(),
@@ -326,6 +385,20 @@
   },)
 }
 
+/// Draw a line or a line-strip
+///
+/// *Style Root* `line`
+///
+/// *Anchors*
+///   / `"start"`: The lines start position
+///   / `"end"`: The linees start position
+///
+/// *Style Root* `line`
+///
+/// - ..pts-style (coordinate,style): Positional two or more coordinates to draw lines between.
+///   Accepts style key-value pairs.
+/// - close (bool): If true, the line-strip gets closed to form a polygon
+/// - name (none,string): Element name
 #let line(..pts-style, close: false, name: none) = {
   // Extra positional arguments from the pts-style sink are interpreted as coordinates.
   let pts = pts-style.pos()
@@ -381,6 +454,15 @@
   },)
 }
 
+/// Draw a grid between two coordinates
+///
+/// *Style Root* `grid`
+///
+/// - from (coordinate): Start coordinate
+/// - to (coordinate): End coordinate
+/// - step (number): Grid spacing in canvas units
+/// - name (none,string): Element name
+/// - ..style (style): Style key-value pairs
 #let grid(from, to, step: 1, name: none, help-lines: false, ..style) = {
   (from, to).map(coordinate.resolve-system)
 
@@ -480,6 +562,22 @@
   },)
 }
 
+/// Position typst content in the canvas
+///
+/// You can call the function with one or two coordinates:
+///   - One coordinate `content((..), [..])`: The content gets
+///     placed at the coordinate
+///   - Two coordinates `content((..), (..), [..])`: The content
+///     gets placed insides the rect between the two coordinates
+///
+/// *Style Root* `content`
+///
+/// - ..args-style (coordinate,content):
+/// - angle (angle,coordinate): Rotation of the content. If a coordinate instead of an angle is used
+///   the angle between it and the contents first coordinate is used for rotation
+/// - clip (bool): If true, the content is placed inside a box that gets clipped
+/// - anchor (none,string): Anchor to position the content relative to. Defaults to the contents center.
+/// - name (none,string): Element name
 #let content(
     ..args-style,
     angle: 0deg,
@@ -654,6 +752,17 @@
   },)
 }
 
+/// Draw a rect between two coordinates
+///
+/// *Style Root* `rect`
+///
+/// *Tip:* To draw a rect with a specified size instead of two coordinates, use
+/// relative coordinates for the second: `(rel: (<width>, <height>))`.
+///
+/// - a (coordinate): First coordinate
+/// - b (coordinate): Second coordinate
+/// - name (none,string): Element name
+/// - ..style (style): Style key-value pairs
 #let rect(a, b, name: none, anchor: none, ..style) = {
   // Coordinate check
   let t = (a, b).map(coordinate.resolve-system)
@@ -726,6 +835,18 @@
   )
 }
 
+/// Draw a quadratic or cubic bezier curve
+///
+/// *Anchors*
+/// / `ctrl-<n>`: Nth control point (n is an integer starting at 0)
+///
+/// *Style Root* `bezier`
+///
+/// - start (coordinate): Start position
+/// - end (coordinate): End position (last coordinate)
+/// - ..ctrl-style (coordinate,style): One or two control point coordinates.
+///   Accepts style key-value pairs.
+/// - name (none,string): Element name
 #let bezier(start, end, ..ctrl-style, name: none) = {
   // Extra positional arguments are treated like control points.
   let (ctrl, style) = (ctrl-style.pos(), ctrl-style.named())
@@ -796,7 +917,15 @@
   )
 }
 
-
+/// Draw a cubic bezier curve through a set of three points
+///
+/// See `bezier` for style and anchor details.
+///
+/// - start (coordinate): Start position
+/// - pass-through (coordinate): Curve mid-point
+/// - end (coordinate): End coordinate
+/// - name (none,string): Element name
+/// - ..style (style): Style key-value pairs
 #let bezier-through(start, pass-through, end, name: none, ..style) = {
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
   style = style.named()
@@ -810,6 +939,19 @@
   },)
 }
 
+/// Draw a Catmull-Rom curve through a set of points
+///
+/// The curves tension can be adjusted using the style key `tension`.
+///
+/// *Anchors*
+///   / `"pt-<n>"`: Nth point (n is an integer starting at 0)
+///
+/// *Style Root* `catmull`
+///
+/// - ..pts-style (coordinate,style): List of points to run the curve through.
+///   Accepts style key-value pairs.
+/// - close (bool): Auto-close the curve
+/// - name (none,string): Element name
 #let catmull(..pts-style, close: false, name: none) = {
   let (pts, style)  = (pts-style.pos(), pts-style.named())
 
@@ -940,6 +1082,15 @@
   },)
 }
 
+/// Merge two or more paths by concattenating their elements
+///
+/// Note that the draw direction of the joined elements is important
+/// to be continuous, as jumps get connected by straight lines!
+///
+/// - body (drawables): Drawables to be merged into one
+/// - close (bool): Auto-close the path (by a straight line)
+/// - name (none,string): Element name
+/// - ..style (style): Style key-value pairs
 #let merge-path(body, close: false, name: none, ..style) = {
   // No extra positional arguments from the style sink
   assert(type(body) in (array, function),
@@ -1000,28 +1151,4 @@
       )
     },
   )
-}
-
-#let shadow(body, ..style) = {
-  assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
-  style = style.named()
-  return (ctx => {
-    let style = styles.resolve(ctx.style, style, root: "shadow")
-
-    let body = {
-      group({
-        set-style(fill: style.color, stroke: style.color)
-        translate((style.offset-x, style.offset-y, 0))
-        body
-      })
-      body
-    }
-
-    let (ctx, drawables, ..) = process.many(ctx, body)
-
-    return (
-      ctx: ctx,
-      drawables: drawables
-    )
-  },)
 }
