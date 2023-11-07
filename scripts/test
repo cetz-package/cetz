@@ -5,11 +5,14 @@ set -o pipefail
 DIR="$(dirname "${BASH_SOURCE[0]}")"
 
 MODE="${1:-test}";
-if (( $# > 1)); then shift; fi
+if (( $# > 0)); then shift; fi
 
 # Test filter strings
 FILTER="${*}"
 FILTER="${FILTER// /|}"
+if [[ -n "$FILTER" ]]; then
+  echo "Filter: $FILTER"
+fi
 export FILTER
 
 TYPST_ROOT="$(realpath "$DIR/..")"
@@ -127,8 +130,12 @@ fi
 # Collects all test directories. A directory is a test dir. if it
 # contains a file called test.typ.
 function tests() {
-  find "$TEST_ROOT" -type f -name "test.typ" -exec dirname {} \; \
-    | grep -E "${FILTER}"
+  if [[ -z "$FILTER" ]]; then
+    find "$TEST_ROOT" -type f -name "test.typ" -exec dirname {} \;
+  else
+    find "$TEST_ROOT" -type f -name "test.typ" -exec dirname {} \; \
+      | grep -E "${FILTER:-*}"
+  fi
 }
 
 if [[ "$MODE" == "test" ]]; then
