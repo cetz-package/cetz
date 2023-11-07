@@ -33,8 +33,6 @@
     debug: debug,
     // Previous element position & bbox
     prev: (pt: (0, 0, 0)),
-    // Current content padding size (added around content boxes)
-    content-padding: 0em,
     em-size: measure(box(width: 1em, height: 1em), st),
     style: (:),
     // Current transform
