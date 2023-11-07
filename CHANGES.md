@@ -9,6 +9,9 @@
 - Mark offsetting has been fixed and improved
 - Added Hobby curves (`hobby`) in addition to catmull
 - Catmull-Rom curves, Hobby curves and arcs now can have marks
+- Fixed and improved intersection calculation
+- **BREAKING** Removed the `shadow` function
+- **BREAKING** Changed the API of `mark`
 
 ### Plot
 - Added `plot.add-contour(..)` for plotting contour plots
