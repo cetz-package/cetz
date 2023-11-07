@@ -1,16 +1,31 @@
 # 0.2.0
 
 ## Libs
+### Draw
+- **BREAKING** Default anchors are now using TikZ like compass names: north, south, east, west, north-west, north-east, south-west and south-east
+- **BREAKING** Element anchors have changed! See the documenation for details.
+- Content padding has been improved to be configurable per side
+- Groups support same padding options as content
+- Mark offsetting has been fixed and improved
+- Added Hobby curves (`hobby`) in addition to catmull
+- Catmull-Rom curves, Hobby curves and arcs now can have marks
+
 ### Plot
 - Added `plot.add-contour(..)` for plotting contour plots
 - Added `plot.add-hline(..)` and `plot.add-vline(..)` for plotting h/v lines
 - Added `plot.add-between(..)` for filling the area between two line plots
+- Added `plot.add-boxwhisker(..)` for displaying boxwhisker plots
 - Added `fill-type` option to `plot.add(..)` for specifying a fill type (axis or shape)
 - Changed default samples from 100 to 50!
 - Fixed plot filling in some cases
+- Axes can now be locked (equal) to keep aspect ratio
+- Axes can be reversed by setting min > max
+- Axis orientation can be changed, enabling rotation of plots
+- Plots now support automatic legends!
 
 # 0.1.2
 CeTZ requires Typst 0.8.0.
+
 ## Draw
 - New `on-layer(layer, body)` function for drawing with a given layer/z-index
 - New `catmull(..)` function for drawing catmull-rom curves
