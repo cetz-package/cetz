@@ -1,29 +1,10 @@
+#import "doc/util.typ": *
+#import "doc/example.typ": example
+
 #import "src/lib.typ"
 #import "src/styles.typ"
 #import "@preview/tidy:0.1.0"
 #import lib: *
-
-// Returns a table of the elements anchors
-#let describe-anchors(default: true, ..anchors) = {
-  assert.eq(anchors.named(), (), message: "Pass anchors as positional arguments")
-  let rows = ()
-  if default {
-    rows += (
-      ([north],      [North border anchor]),
-      ([north-west], [North-West border anchor]),
-      ([north-east], [North-East border anchor]),
-      ([south],      [South border anchor]),
-      ([south-west], [South-West border anchor]),
-      ([south-east], [South-East border anchor]),
-    )
-  }
-
-  for (name, descr) in anchors.pos() {
-    rows.push(([#name], [#descr]))
-  }
-
-  table(columns: 2, ..rows)
-}
 
 // This is a wrapper around typs-doc show-module that
 // strips all but one function from the module first.
@@ -37,51 +18,6 @@
   tidy.show-module(module, ..args.pos(), ..args.named(),
                    show-module-name: false,
                    show-outline: false,)
-}
-
-// String that gets prefixed to every example code
-// for compilation only!
-#let example-preamble = "import lib.draw: *;"
-#let example-scope = (cetz: lib, lib: lib)
-
-#let example(source, ..args, vertical: false) = {
-  let radius = .25cm
-  let border = 1pt + gray
-  let canvas-background = yellow.lighten(95%)
-
-  let picture = canvas(eval(example-preamble + source.text,
-                            scope: example-scope), ..args)
-  let source = box(raw(source.text, lang: "typc"),
-                       width: 100%)
-
-  block(if vertical {
-    align(
-      center, 
-      stack(
-        dir: ttb,
-        spacing: 1em,
-        block(width: 100%, clip: true, radius: radius,
-              stroke: border,
-          table(columns: 1,
-                stroke: none,
-                fill: (c,r) => (canvas-background, white).at(r),
-            picture,
-            align(left, source))
-        ),
-      )
-    )
-  } else {
-    block(table(columns: 2,
-                stroke: none,
-                fill: (canvas-background, white),
-                align: (center + horizon, left),
-                picture,
-                source),
-          width: 100%,
-          radius: radius,
-          clip: true,
-          stroke: border)
-  }, breakable: false)
 }
 
 // Usage:
@@ -121,39 +57,7 @@
   stack(dir: ltr, [/ #term: #t \ #description], align(right, if default != none {[(default: #default)]}))
 }
 
-// Title Page
-#{
-  let left-fringe = 39%
-  let left-color = blue.darken(30%)
-  let right-color = white
-
-  let url = "https://github.com/johannes-wolf/cetz"
-  let authors = (
-    ([Johannes Wolf], "https://github.com/johannes-wolf"),
-    ([fenjalien],     "https://github.com/fenjalien"),
-  )
-
-  set page(numbering: none, background: {
-    place(top + left, rect(width: left-fringe, height: 100%, fill: left-color))
-  }, margin: (left: left-fringe * 22cm, top: 12% * 29cm), header: none, footer: none)
-
-  set text(weight: "bold", left-color)
-  show link: set text(left-color)
-
-  block(
-    place(top + left, dx: -left-fringe * 22cm + 5mm,
-          text(3cm, right-color)[CeTZ\ ]) +
-    text(29pt)[ein Typst Zeichenpacket])
-
-  block(
-    v(1cm) +
-    text(20pt, authors.map(v => link(v.at(1), [#v.at(0)])).join("\n")))
-  block(
-    v(2cm) +
-    text(20pt, link(url, [Version ] + lib.version.map(v => [#v]).join("."))))
-
-  pagebreak(weak: true)
-}
+#make-title()
 
 #set terms(indent: 1em)
 #set par(justify: true)
@@ -195,6 +99,7 @@ Note that draw functions are imported inside the scope of the `canvas` block. Th
 Argument types in this document are formatted in `monospace` and encased in angle brackets `<>`. Types such as `<integer>` and `<content>` are the same as Typst but additional are required:
   / `<coordinate>`: Any coordinate system. See @coordinate-systems.
   / `<number>`: `<integer> or <float>`
+  / `<style>`: Named arguments (or a dictionary if used for a single argument) of style key-values
 
 == Anchors <anchors>
 Anchors are named positions relative to named elements. 
