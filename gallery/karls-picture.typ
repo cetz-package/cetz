@@ -30,7 +30,7 @@
 
   for (x, ct) in ((-1, $ -1 $), (-0.5, $ -1/2 $), (1, $ 1 $)) {
     line((x, 3pt), (x, -3pt))
-    content((), anchor: "above", ct)
+    content((), anchor: "north", ct)
   }
 
   for (y, ct) in ((-1, $ -1 $), (-0.5, $ -1/2 $), (0.5, $ 1/2 $), (1, $ 1 $)) {
@@ -47,9 +47,9 @@
   set-style(stroke: (thickness: 1.2pt))
 
   line((30deg, 1), ((), "|-", (0,0)), stroke: (paint: red), name: "sin")
-  content("sin", text(red)[$ sin alpha $], anchor: "east")
+  content(("sin.start", .5, "sin.end"), text(red)[$ sin alpha $])
   line("sin.end", (0,0), stroke: (paint: blue), name: "cos")
-  content("cos", text(blue)[$ cos alpha $], anchor: "north")
+  content(("cos.start", .5, "cos.end"), text(blue)[$ cos alpha $], anchor: "north")
   line((1, 0), (1, calc.tan(30deg)), name: "tan", stroke: (paint: orange))
-  content("tan", $ text(#orange, tan alpha) = text(#red, sin alpha) / text(#blue, cos alpha) $, anchor: "west")
+  content("tan.end", $ text(#orange, tan alpha) = text(#red, sin alpha) / text(#blue, cos alpha) $, anchor: "west")
 })
