@@ -7,8 +7,8 @@ test_dir := "./tests"
 package target:
   ./scripts/package "{{target}}"
 
-install:
-  ./scripts/package "@local"
+install target="@local":
+  ./scripts/package "{{target}}"
 
 test *filter:
   ./scripts/test test {{filter}}
