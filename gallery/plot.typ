@@ -2,6 +2,8 @@
 
 #set page(width: auto, height: auto, margin: .5cm)
 
+#let style = (stroke: black, fill: rgb(0, 0, 200, 75))
+
 #canvas(length: 1cm, {
   plot.plot(size: (8, 6),
     x-tick-step: none,
@@ -9,15 +11,15 @@
     y-tick-step: 1,
     {
       plot.add(
-        style: plot.palette.blue,
-        domain: (-calc.pi, calc.pi), x => calc.sin(x * 1rad))
+        style: style,
+        domain: (-calc.pi, calc.pi), calc.sin)
       plot.add(
         hypograph: true,
-        style: plot.palette.blue,
-        domain: (-calc.pi, calc.pi), x => calc.cos(x * 1rad))
+        style: style,
+        domain: (-calc.pi, calc.pi), calc.cos)
       plot.add(
         hypograph: true,
-        style: plot.palette.blue,
-        domain: (-calc.pi, calc.pi), x => calc.cos((x + calc.pi) * 1rad))
+        style: style,
+        domain: (-calc.pi, calc.pi), x => calc.cos(x + calc.pi))
     })
 })
