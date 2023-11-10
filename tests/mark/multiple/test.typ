@@ -18,7 +18,7 @@
   bezier((-1,-.5), (1,1), (0,-.5), (0,1),
     mark: (start: l, end: l, fill: red, stroke: blue, flex: false))
   bezier((-1,-1.5), (1,0), (0,-1.5), (0,0),
-    mark: (start: l, end: l, fill: red, stroke: blue, flex: false, scale: .05))
+    mark: (start: l, end: l, fill: red, stroke: blue, flex: false, scale: .5))
 }))
 
 #box(stroke: 2pt + red, canvas({
@@ -28,7 +28,7 @@
   bezier((-1,-.5), (1,1), (0,-.5), (0,1),
     mark: (start: l, end: l, fill: red, stroke: blue, flex: true))
   bezier((-1,-1.5), (1,0), (0,-1.5), (0,0),
-    mark: (start: l, end: l, fill: red, stroke: blue, flex: true, scale: .05))
+    mark: (start: l, end: l, fill: red, stroke: blue, flex: true, scale: .5))
 }))
 
 #box(stroke: 2pt + red, canvas({

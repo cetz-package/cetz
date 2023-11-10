@@ -74,7 +74,6 @@
 
 // Return 4x4 rotate z matrix
 #let transform-rotate-z(angle) = {
-  // let (cos, sin) = (calc.cos, calc.sin)
   ((cos(angle), -sin(angle), 0, 0),
    (sin(angle), cos(angle), 0, 0),
    (0, 0, 1, 0),
@@ -83,26 +82,27 @@
 
 // Return 4x4 rotate xz matrix
 #let transform-rotate-xz(x, z) = {
-  // let (pi, cos, sin) = (calc.pi, calc.cos, calc.sin)
   ((cos(z), sin(z), 0, 0),
    (-cos(x)*sin(z), cos(x)*cos(z), -sin(x), 0),
    (sin(x)*sin(z), -sin(x)*cos(z), cos(x), 1),
    (0, 0, 0, 1))
 }
 
-// Return 4x4 rotate xyz matrix
+
+/// Return 4x4 rotation matrix
+///
+/// Calculates the product of the three rotation matrices
+/// R = Rz(z) Ry(y) Rx(x)
+///
+/// - x (angle): Rotation about x
+/// - y (angle): Rotation about y
+/// - z (angle): Rotation about z
+/// -> matrix
 #let transform-rotate-xyz(x, y, z) = {
-  // let (pi, cos, sin) = (calc.pi, calc.cos, calc.sin)
-  ((cos(x)*cos(y)*cos(z)-sin(x)*sin(z),
-    -cos(x)*cos(y)*sin(z)-sin(x)*cos(z),
-    cos(x)*sin(y), 0),
-   (sin(x)*cos(y)*cos(z)+cos(x)*sin(z),
-    -sin(x)*cos(y)*sin(z)+cos(x)*cos(z),
-    sin(x)*sin(y), 0),
-   (-sin(y)*cos(z),
-    sin(y)*sin(z),
-    cos(y), 0),
-    (0, 0, 0, 1))
+  ((cos(y)*cos(z), sin(x)*sin(y)*cos(z) - cos(x)*sin(z), cos(x)*sin(y)*cos(z) + sin(x)*sin(z), 0),
+   (cos(y)*sin(z), sin(x)*sin(y)*sin(z) + cos(x)*cos(z), cos(x)*sin(y)*sin(z) - sin(x)*cos(z), 0),
+   (-sin(y), sin(x)*cos(y), cos(x)*cos(y), 0),
+   (0,0,0,1))
 }
 
 // Multiply matrix with matrix
