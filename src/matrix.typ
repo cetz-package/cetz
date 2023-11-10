@@ -88,8 +88,23 @@
    (0, 0, 0, 1))
 }
 
+/// Return 4x4 rotation matrix - yaw-pith-roll
+///
+/// Calculates the product of the three rotation matrices
+/// R = Rz(a) Ry(b) Rx(c)
+///
+/// - a (angle): Yaw
+/// - b (angle): Pitch
+/// - c (angle): Roll
+/// -> matrix
+#let transform-rotate-ypr(a, b, c) = {
+  ((cos(a)*cos(b), cos(a)*sin(b)*sin(c) - sin(a)*cos(c), cos(a)*sin(b)*cos(c) + sin(a)*sin(c), 0),
+   (sin(a)*cos(b), sin(a)*sin(b)*sin(c) + cos(a)*cos(c), sin(a)*sin(b)*cos(c) - cos(a)*sin(c), 0),
+   (-sin(b), cos(b)*sin(c), cos(b)*cos(c), 1),
+   (0,0,0,1))
+}
 
-/// Return 4x4 rotation matrix
+/// Return 4x4 rotation matrix - euler angles
 ///
 /// Calculates the product of the three rotation matrices
 /// R = Rz(z) Ry(y) Rx(x)

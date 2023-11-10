@@ -3,24 +3,57 @@
 #import "/src/vector.typ"
 #import "/src/util.typ"
 
-#let rotate(angle) = {
-  (
-    ctx => {
-      ctx.transform = matrix.mul-mat(ctx.transform, if type(angle) == "angle" {
-        matrix.transform-rotate-z(-angle)
-      } else if type(angle) == "dictionary" {
-        matrix.transform-rotate-xyz(
-          -angle.at("x", default: 0deg),
-          -angle.at("y", default: 0deg),
-          -angle.at("z", default: 0deg),
-        )
-      } else {
-        panic("Invalid angle format '" + repr(angle) + "'")
-      })
-      
-      return (ctx: ctx)
-    },
-  )
+/// Sets the transformation matrix
+///
+/// - mat (none,matrix): The 4x4 transformation matrix to set. If `none` is
+///   passed, the transformation matrix is set to the identity matrix (
+///   `matrix.ident()`).
+#let transform(mat) = {
+  (ctx => {
+    assert(mat == none or type(mat) == array,
+      message: "Transformtion matrix must be none (ident) or of type array")
+    ctx.transform = if mat != none {
+      assert.eq(mat.len(), 4,
+        message: "Transformation matrix must be of size 4x4")
+      mat
+    } else {
+      matrix.ident()
+    }
+    return (ctx: ctx)
+  },)
+}
+
+#let rotate(..angles) = {
+  assert(angles.pos().len() == 1 or angles.named().len() > 0,
+    message: "Rotate takes a single z-angle or angles (x, y, z or yaw, pitch, roll) as named arguments")
+
+  let named = angles.named()
+  let names = named.keys()
+
+  let mat = if angles.pos().len() == 1 {
+    matrix.transform-rotate-z(angles.pos().at(0))
+  } else if names.any(n => n in ("x", "y", "z")) {
+    assert(names.all(n => n in ("x", "y", "z")),
+      message: "All rotate arguments must be axis names: x, y or z")
+
+    matrix.transform-rotate-xyz(named.at("x", default: 0deg),
+                                named.at("y", default: 0deg),
+                                named.at("z", default: 0deg))
+  } else if names.any(n => n in ("yaw", "pitch", "roll")) {
+    assert(names.all(n => n in ("yaw", "pitch", "roll")),
+      message: "All rotate arguments must be: yaw, pitch or roll")
+
+    matrix.transform-rotate-ypr(named.at("yaw", default: 0deg),
+                                named.at("pitch", default: 0deg),
+                                named.at("roll", default: 0deg))
+  } else {
+    panic("Invalid rotate arguments")
+  }
+
+  (ctx => {
+    ctx.transform = matrix.mul-mat(ctx.transform, mat)
+    return (ctx: ctx)
+  },)
 }
 
 #let translate(vec, pre: true) = {
