@@ -4,27 +4,29 @@
 ### Draw
 - **BREAKING** Default anchors are now using TikZ like compass names: north, south, east, west, north-west, north-east, south-west and south-east
 - **BREAKING** Element anchors have changed! See the documentation for details.
+- **BREAKING** Rotation direction changed to CCW
+- **BREAKING** Removed the `shadow` function
+- **BREAKING** Changed the behaviour of `mark`
 - Content padding has been improved to be configurable per side
 - Groups support same padding options as content
 - Mark offsetting has been fixed and improved
-- Added Hobby curves (`hobby`) in addition to catmull
+- Added Hobby curves (`hobby`) in addition to catmull (thanks to @Enivex)
 - Catmull-Rom curves, Hobby curves and arcs now can have marks
 - Fixed and improved intersection calculation
-- **BREAKING** Removed the `shadow` function
-- **BREAKING** Changed the API of `mark`
+- Fixed marks pointing to +/- z
 
 ### Plot
 - Added `plot.add-contour(..)` for plotting contour plots
 - Added `plot.add-hline(..)` and `plot.add-vline(..)` for plotting h/v lines
 - Added `plot.add-between(..)` for filling the area between two line plots
-- Added `plot.add-boxwhisker(..)` for displaying boxwhisker plots
+- Added `plot.add-boxwhisker(..)` for displaying boxwhisker plots (thanks to @JamesxX)
 - Added `fill-type` option to `plot.add(..)` for specifying a fill type (axis or shape)
 - Changed default samples from 100 to 50!
 - Fixed plot filling in some cases
 - Axes can now be locked (equal) to keep aspect ratio
 - Axes can be reversed by setting min > max
 - Axis orientation can be changed, enabling rotation of plots
-- Plots now support automatic legends!
+- Plots now support legends!
 
 # 0.1.2
 CeTZ requires Typst 0.8.0.
