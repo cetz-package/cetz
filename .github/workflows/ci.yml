@@ -23,8 +23,10 @@ jobs:
       - uses: yusancky/setup-typst@v2
         id: setup-typst
         with:
-          version: 'v0.8.0'
+          version: 'v0.9.0'
       - run: |
-          just install
+          just install @local
+          just install @preview
           just test
           just manual
+          just gallery
