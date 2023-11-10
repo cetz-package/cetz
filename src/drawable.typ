@@ -160,6 +160,11 @@
   })
   let norm-dir = (-dir.at(1), dir.at(0), dir.at(2))
 
+  // Marks in 3D are rotated on the z axis depending on the style
+  if dir.at(2) != 0 {
+    norm-dir = vector.cross(dir, style.z-up)
+  }
+
   // Generic positions
   //
   //    t      t - tip

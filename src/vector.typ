@@ -81,9 +81,9 @@
 /// Calculate cross product of two vectors of dim 3
 #let cross(v1, v2) = {
   assert(dim(v1) == 3 and dim(v2) == 3)
-  let x = v1.at(1) * v2.at(2) - v1.at(2) * v1.at(1)
-  let y = v1.at(2) * v2.at(0) - v1.at(0) * v1.at(2)
-  let z = v1.at(0) * v2.at(1) - v1.at(1) * v1.at(0)
+  let x = v1.at(1) * v2.at(2) - v1.at(2) * v2.at(1)
+  let y = v1.at(2) * v2.at(0) - v1.at(0) * v2.at(2)
+  let z = v1.at(0) * v2.at(1) - v1.at(1) * v2.at(0)
   return (x, y, z)
 }
 
