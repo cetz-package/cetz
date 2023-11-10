@@ -255,10 +255,10 @@
   return d
 }
 
-/// Shorten curve by offsetting s and c1 or e and c2
+/// Shorten the curve by offsetting s and c1 or e and c2
 /// by distance d. If d is positive the curve gets shortened
-/// from s on, if d is negative it gets shortened form its
-/// end e.
+/// by moving s and c1 closer to e, if d is negative, e and c2
+/// get moved closer to s.
 ///
 /// - s  (vector): Curve start
 /// - e  (vector): Curve end
@@ -317,8 +317,10 @@
 
 /// Shorten curve by distance d. This keeps the curvature of the
 /// curve by finding new values along the original curve.
-/// If d is positive the curve gets shortened from s on,
-/// if d is negative it gets shortened form its end e.
+/// If d is positive the curve gets shortened by moving s
+/// closer to e, if d is negative, e is moved closer to s.
+/// The points s and e are moved along the curve, keeping the
+/// kurves curvature the same (the control points get recalculated).
 ///
 /// - s  (vector): Curve start
 /// - e  (vector): Curve end
