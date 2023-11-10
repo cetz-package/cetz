@@ -27,6 +27,5 @@ jobs:
       - run: |
           just install @local
           just install @preview
-          just test
           just manual
-          just gallery
+          just test
