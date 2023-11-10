@@ -944,6 +944,8 @@
 /// The curves tension can be adjusted using the style key `tension`.
 ///
 /// *Anchors*
+///   / `"start"`: First point
+///   / `"end"`: Last point
 ///   / `"pt-<n>"`: Nth point (n is an integer starting at 0)
 ///
 /// *Style Root* `catmull`
@@ -1015,7 +1017,24 @@
   },)
 }
 
-
+/// Draw a Hobby curve through a set of points
+///
+/// The curves curlyness can be adjusted using the style key `omega`.
+/// The rho function can be set using the style key `rho`.
+///
+/// *Anchors*
+///   / `"start"`: First point
+///   / `"end"`: Last point
+///   / `"pt-<n>"`: Nth point (n is an integer starting at 0)
+///
+/// *Style Root* `hobby`
+///
+/// - ..pts-style (coordinate,style): List of points to run the curve through.
+///   Accepts style key-value pairs.
+/// - ta (auto,array): Outgoing tension at point.at(n) from point.at(n) to point.at(n+1). Length must be the length of points minus one
+/// - tb (auto,array): Incoming tension at point.at(n+1) from point.at(n) to point.at(n+1). Length must be the length of points minus one:
+/// - close (bool): Auto-close the curve
+/// - name (none,string): Element name
 #let hobby(..pts-style, ta: auto, tb: auto, close: false, name: none) = {
   let (pts, style)  = (pts-style.pos(), pts-style.named())
 

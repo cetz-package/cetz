@@ -1244,3 +1244,127 @@ It contains all supported keys for all elements.
   #set text(size: 8pt)
   #columns(raw(repr(lib.styles.default), lang: "typc"))
 ]
+
+= Creating Custom Elements <custom-elements>
+
+The simplest way to create custom, reusable elements is to return them
+as a group. In this example we will implement a function `my-star(center)`
+that draws a star with `n` corners and a style specified inner and outer
+radius.
+
+```example
+let my-star(center, name: none, ..style) = {
+  group(name: name, ctx => {
+    // Define a default style
+    let def-style = (n: 5, inner-radius: .5, radius: 1)
+
+    // Resolve the current style ("star")
+    let style = cetz.styles.resolve(ctx.style, style.named(),
+      base: def-style, root: "star")
+
+    // Compute the corner coordinates
+    let corners = range(0, style.n * 2).map(i => {
+      let a = 90deg + i * 360deg / (style.n * 2)
+      let r = if calc.rem(i, 2) == 0 { style.radius } else { style.inner-radius }
+
+      // Output a center relative coordinate
+      (rel: (calc.cos(a) * r, calc.sin(a) * r, 0), to: center)
+    })
+
+    line(..corners, ..style, close: true)
+  })
+}
+
+// Call the element
+my-star((0,0))
+my-star((0,3), n: 10)
+
+set-style(star: (fill: yellow)) // set-style works, too!
+my-star((0,6), inner-radius: .3)
+```
+
+= Internals
+== Context
+
+The state of the canvas is encoded in its context object. Elements or other
+draw calls may return a modified context element to the canvas to change its
+state, e.g. modifying the transformating matrix, adding a group or setting a style.
+
+```example
+// Show the current context
+get-ctx(ctx => {
+  content((), raw(repr(ctx), lang: "typc"))
+})
+```
+
+== Elements
+
+Each CeTZ element (`line`, `bezier`, `circle`, ...) returns an array of
+functions for drawing to the canvas. Such function takes the canvas'
+context object and must return an dictionary of the following keys:
+- `ctx` (required): The (modified) canvas context object
+- `drawables`: List of drawables to render to the canvas
+- `anchors`: A function of the form `(<anchor-identifier>) => <vector>`
+- `name`: The elements name
+
+An element that does only modify the context could be implemented like the
+following:
+```example
+let my-element() = {
+  (ctx => {
+    // Do something with ctx ...
+    (ctx: ctx)
+  },)
+}
+
+// Call the element
+my-element()
+```
+
+For drawing, elements must not use Typst native drawing functions, but
+output CeTZ paths. The `drawable` module provides functions for path
+creation (`path(..)`), the `path-util` module provides utilities for path
+segment creation. For demonstration, we will recreate the custmom element
+`my-star` from @custom-elements:
+```example
+import cetz.drawable: path
+import cetz.vector
+
+let my-star(center, ..style) = {
+  (ctx => {
+    // Define a default style
+    let def-style = (n: 5, inner-radius: .5, radius: 1)
+
+    // Resolve center to a vector
+    let (ctx, center) = cetz.coordinate.resolve(ctx, center)
+
+    // Resolve the current style ("star")
+    let style = cetz.styles.resolve(ctx.style, style.named(),
+      base: def-style, root: "star")
+
+    // Compute the corner coordinates
+    let corners = range(0, style.n * 2).map(i => {
+      let a = 90deg + i * 360deg / (style.n * 2)
+      let r = if calc.rem(i, 2) == 0 { style.radius } else { style.inner-radius }
+      vector.add(center, (calc.cos(a) * r, calc.sin(a) * r, 0))
+    })
+
+    // Build a path through all three coordinates
+    let path = cetz.drawable.path((cetz.path-util.line-segment(corners),),
+      stroke: style.stroke, fill: style.fill, close: true)
+
+    (ctx: ctx,
+     drawables: cetz.drawable.apply-transform(ctx.transform, path),
+    )
+  },)
+}
+
+// Call the element
+my-star((0,0))
+my-star((0,3), n: 10)
+my-star((0,6), inner-radius: .3, fill: yellow)
+```
+
+Using custom elements instead of groups (as in @custom-elements) makes sense
+when doing advanced computations or even applying modifications to passed in
+elements.
