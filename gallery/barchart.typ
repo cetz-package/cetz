@@ -1,4 +1,4 @@
-#import "@preview/cetz:0.1.2": canvas, chart
+#import "@preview/cetz:0.2.0": canvas, chart
 
 #set page(width: auto, height: auto, margin: .5cm)
 
