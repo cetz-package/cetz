@@ -8,7 +8,7 @@
 // Calculate offset for a triangular mark (triangle, harpoon, ..)
 #let _triangular-mark-offset(ctx, mark-width, mark-length, symbol, style) = {
   let revert = symbol == "<"
-  let sign = if revert { 0 } else { -1 }
+  let sign = if revert { 1 } else { -1 }
 
   let stroke = line(stroke: style.stroke).stroke
   let (width, limit, join) = (
@@ -46,8 +46,6 @@
   } else {
     return width / 2 * sign
   }
-
-  return 0
 }
 
 // Calculate the offset of a mark symbol.
@@ -179,7 +177,7 @@
   // Offset start
   if start != none and start.len() > 0 {
     let off = calc-mark-offset(ctx, start.at(0), mark-style)
-    curve = _shorten-curve(curve, -off, style)
+    curve = _shorten-curve(curve, calc.max(0, -off), style)
   }
 
   let end = if type(mark-style.end) == str {
@@ -191,7 +189,7 @@
   // Offset end
   if end != none and end.len() > 0 {
     let off = calc-mark-offset(ctx, end.at(0), mark-style)
-    curve = _shorten-curve(curve, off, style)
+    curve = _shorten-curve(curve, calc.min(0, off), style)
   }
 
   let drawables = ()
