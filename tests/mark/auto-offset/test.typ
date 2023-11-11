@@ -21,7 +21,7 @@
       let width = (x + 1) * 1pt
       let x = x * 2 + 2 * 8
 
-      set-style(stroke: width, mark: (width: w, length: 1, scale: .4, stroke: width))
+      set-style(stroke: width, mark: (width: w, length: 1, scale: .4, stroke: width + red))
       line((x,0), (x,3), mark: (end: "<", start: "<"))
 
       line((x - .5,3), (x + .5,3), stroke: .5pt + green)

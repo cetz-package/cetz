@@ -1,5 +1,5 @@
 #set page(width: auto, height: auto)
-#import "../../src/lib.typ": *
+#import "/src/lib.typ": *
 
 #box(stroke: 2pt + red, canvas({
     import draw: *
@@ -46,7 +46,7 @@
 
   for x in range(0, 18) {
     line((x * .5, -1), (x * .5, 0), mark: (start: ">", end: ">",
-      angle: (x + 1) * 10deg))
+      width: (x / 50 + .05)))
   }
 }))
 
@@ -63,7 +63,7 @@
 
   for x in range(0, 18) {
     line((x * .5, -1), (x * .5, 0), mark: (start: "<", end: "<",
-      angle: (x + 1) * 10deg))
+      width: (x / 50 + .05)))
   }
 }))
 
@@ -80,7 +80,7 @@
 
   for x in range(0, 18) {
     line((x * .5, -1), (x * .5, 0), mark: (start: "<", end: ">",
-      angle: (x + 1) * 10deg))
+      width: (x / 50 + .05)))
   }
 }))
 
@@ -97,6 +97,6 @@
 
   for x in range(0, 18) {
     line((x * .5, -1), (x * .5, 0), mark: (start: "<", end: ">",
-      angle: (x + 1) * 10deg))
+      width: (x / 50 + .05)))
   }
 }))
