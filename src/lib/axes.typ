@@ -324,10 +324,10 @@
     )
 
     let axis-settings = (
-      (left,   "west",   "east",  (0, auto), ( 1, 0), "west"),
-      (right,  "east",  "west",   (w, auto), (-1, 0), "east"),
-      (bottom, "south", "north",    (auto, 0), (0,  1), "south"),
-      (top,    "north",    "south", (auto, h), (0, -1), "north"),
+      (left,   "west",  "east",  (0, auto), ( 1, 0), "left"),
+      (right,  "east",  "west",  (w, auto), (-1, 0), "right"),
+      (bottom, "south", "north", (auto, 0), (0,  1), "bottom"),
+      (top,    "north", "south", (auto, h), (0, -1), "top"),
     )
 
     group(name: "axes", {
