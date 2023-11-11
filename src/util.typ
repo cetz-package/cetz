@@ -233,8 +233,8 @@
     let y = padding.at("y", default: rest)
     if not "left" in padding { padding.left = x }
     if not "right" in padding { padding.right = x }
-    if not "top" in padding { padding.left = y }
-    if not "bottom" in padding { padding.right = y }
+    if not "top" in padding { padding.top = y }
+    if not "bottom" in padding { padding.bottom = y }
 
     return padding
   } else {
