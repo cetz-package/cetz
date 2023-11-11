@@ -34,21 +34,21 @@
 #box(stroke: 2pt + red, canvas({
   import draw: *
 
-  transform(none)
+  set-transform(none)
   rotate(z: 45deg)
   draw-xyz()
 }))
 #box(stroke: 2pt + red, canvas({
   import draw: *
 
-  transform(none)
+  set-transform(none)
   rotate(x: 45deg)
   draw-xyz()
 }))
 #box(stroke: 2pt + red, canvas({
   import draw: *
 
-  transform(none)
+  set-transform(none)
   rotate(y: 45deg)
   draw-xyz()
 }))
@@ -56,21 +56,21 @@
 #box(stroke: 2pt + red, canvas({
   import draw: *
 
-  transform(none)
+  set-transform(none)
   rotate(yaw: 45deg)
   draw-xyz()
 }))
 #box(stroke: 2pt + red, canvas({
   import draw: *
 
-  transform(none)
+  set-transform(none)
   rotate(pitch: 45deg)
   draw-xyz()
 }))
 #box(stroke: 2pt + red, canvas({
   import draw: *
 
-  transform(none)
+  set-transform(none)
   rotate(roll: 45deg)
   draw-xyz()
 }))
