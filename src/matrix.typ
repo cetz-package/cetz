@@ -88,7 +88,7 @@
    (0, 0, 0, 1))
 }
 
-/// Return 4x4 rotation matrix - yaw-pith-roll
+/// Return 4x4 rotation matrix - yaw-pitch-roll
 ///
 /// Calculates the product of the three rotation matrices
 /// R = Rz(a) Ry(b) Rx(c)

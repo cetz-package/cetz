@@ -8,17 +8,20 @@
 /// - mat (none,matrix): The 4x4 transformation matrix to set. If `none` is
 ///   passed, the transformation matrix is set to the identity matrix (
 ///   `matrix.ident()`).
-#let transform(mat) = {
+#let set-transform(mat) = {
+  let mat = if mat == none {
+    matrix.ident()
+  } else {
+    mat
+  }
+
+  assert(type(mat) == array,
+    message: "Transformtion matrix must be of type array. Got " + repr(mat))
+  assert.eq(mat.len(), 4,
+    message: "Transformation matrix must be of size 4x4")
+
   (ctx => {
-    assert(mat == none or type(mat) == array,
-      message: "Transformtion matrix must be none (ident) or of type array")
-    ctx.transform = if mat != none {
-      assert.eq(mat.len(), 4,
-        message: "Transformation matrix must be of size 4x4")
-      mat
-    } else {
-      matrix.ident()
-    }
+    ctx.transform = mat
     return (ctx: ctx)
   },)
 }
@@ -32,22 +35,18 @@
 
   let mat = if angles.pos().len() == 1 {
     matrix.transform-rotate-z(angles.pos().at(0))
-  } else if names.any(n => n in ("x", "y", "z")) {
-    assert(names.all(n => n in ("x", "y", "z")),
-      message: "All rotate arguments must be axis names: x, y or z")
-
+  } else if names.all(n => n in ("x", "y", "z")) {
     matrix.transform-rotate-xyz(named.at("x", default: 0deg),
                                 named.at("y", default: 0deg),
                                 named.at("z", default: 0deg))
-  } else if names.any(n => n in ("yaw", "pitch", "roll")) {
-    assert(names.all(n => n in ("yaw", "pitch", "roll")),
-      message: "All rotate arguments must be: yaw, pitch or roll")
-
+  } else if names.all(n => n in ("yaw", "pitch", "roll")) {
     matrix.transform-rotate-ypr(named.at("yaw", default: 0deg),
                                 named.at("pitch", default: 0deg),
                                 named.at("roll", default: 0deg))
   } else {
-    panic("Invalid rotate arguments")
+    panic("Invalid rotate arguments." +
+          "Rotate expects: A single (z-axis) angle or any combination of x, y,z or any combination of yaw, pitch, roll. " +
+          "Got: " + repr(named))
   }
 
   (ctx => {
