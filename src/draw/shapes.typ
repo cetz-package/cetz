@@ -551,6 +551,11 @@
         vector.add(a, (w, -h))
       }
 
+      // Only the center anchor gets transformed. All other anchors
+      // must be calculated relative to the transformed center!
+      center = matrix.mul-vec(ctx.transform,
+        vector.as-vec(center, init: (0,0,0,1)))
+
       let north = (calc.sin(angle)*h, calc.cos(angle)*h,0)
       let east = (calc.cos(-angle)*w, calc.sin(-angle)*w,0)
       let south = vector.scale(north, -1)
@@ -596,8 +601,6 @@
       )
     }
 
-    
-
     drawables.push(
       drawable.content(
         anchors.center,
@@ -626,7 +629,8 @@
       anchors.keys(),
       default: if auto-size { "center" } else { "north-west" },
       offset-anchor: anchor,
-      transform: ctx.transform,
+      transform: none, // Content does not get transformed, see the calculation
+                       // of anchors.
       name: name,
     )
 
