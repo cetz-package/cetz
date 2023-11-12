@@ -6,23 +6,26 @@
 /// index (int) and returns a canvas style dictionary. If passed the
 /// string `"len"` it must return the length of its styles.
 ///
+/// The functions returned by this function have the following named arguments:
+///   - fill (bool): Use color array for fill
+///   - stroke (bool): Use color array for stroke paint
+///
+/// You can use a pallette for stroking via: `red.with(stroke: true)`
+///
 /// - base (style): Style dictionary to use as base style
 /// - colors (none, array): List of colors to use as stroke and fill color or none
 /// - patterns (none, array): List of stroke patterns to use or none
-/// - stroke (bool): Use color array for stroke paint
 /// - stroke-lighten (ratio): Lighten to apply to the stroke color
-/// - fill (bool): Use color array for fill paint
 /// - fill-lighten (ratio): Lighten to apply to the fill color
 /// -> function Palette function that returns a style for an index
 #let new(base: base-style, colors: (), patterns: (),
-         fill: true, fill-lighten: 0%,
-         stroke: false, stroke-lighten: 0%) = {
+         fill-lighten: 0%, stroke-lighten: 0%) = {
   if not "stroke" in base { base.stroke = (paint: black, thickness: 1pt, dash: "solid") }
   if not "fill" in base { base.fill = none }
 
   let color-n = colors.len()
   let pattern-n = patterns.len()
-  (index) => {
+  (index, fill: true, stroke: false) => {
     if index == "len" { return calc.max(color-n, pattern-n, 1) }
 
     let style = base

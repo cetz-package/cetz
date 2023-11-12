@@ -729,18 +729,20 @@ The palette library provides some predefined palettes.
 
 #tidy.show-module(palette-module, show-module-name: false)
 
-#let show-palette(p) = {
-  canvas({
+#let show-palette(p) = box({
+  let p = p.with(stroke: true)
+  canvas(length: 1em, {
     import lib.draw: *
     for i in range(0, p("len")) {
       if calc.rem(i, 10) == 0 { move-to((rel: (0, -.5))) }
       rect((), (rel: (1,.5)), name: "r", ..p(i))
-      move-to("r.south-west")
+      move-to("r.south-east")
     }
   })
-} 
+})
 
 === List of predefined palettes
+#columns(2, [
 - `gray` #show-palette(palette.gray)
 - `red` #show-palette(palette.red)
 - `orange` #show-palette(palette.orange)
@@ -757,6 +759,7 @@ The palette library provides some predefined palettes.
 - `tango-light` #show-palette(palette.tango-light)
 - `tango` #show-palette(palette.tango)
 - `tango-dark` #show-palette(palette.tango-dark)
+])
 
 == Angle <angle>
 
