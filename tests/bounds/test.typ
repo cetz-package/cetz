@@ -6,7 +6,7 @@
 
   group(name: "g", {
     scale(.25)
-    rotate(37deg)
+    rotate(-37deg)
     bezier((0,0), (0, 10), (1,-10), (-5,20))
   })
   on-layer(-1, {
