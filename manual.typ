@@ -562,10 +562,10 @@ circle((5,5))
 #show-module-fn(draw-module, "rotate")
 ```example
 // Rotate on z-axis
-rotate((z: 45deg))
+rotate(z: 45deg)
 rect((-1,-1), (1,1))
 // Rotate on y-axis
-rotate((y: 80deg))
+rotate(y: 80deg)
 circle((0,0))
 ```
 
