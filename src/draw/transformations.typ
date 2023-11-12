@@ -16,9 +16,9 @@
   }
 
   assert(type(mat) == array,
-    message: "Transformtion matrix must be of type array. Got " + repr(mat))
+    message: "Transformtion matrix must be of type array, got: " + repr(mat))
   assert.eq(mat.len(), 4,
-    message: "Transformation matrix must be of size 4x4")
+    message: "Transformation matrix must be of size 4x4, got: " + repr(mat))
 
   (ctx => {
     ctx.transform = mat
@@ -28,7 +28,8 @@
 
 #let rotate(..angles) = {
   assert(angles.pos().len() == 1 or angles.named().len() > 0,
-    message: "Rotate takes a single z-angle or angles (x, y, z or yaw, pitch, roll) as named arguments")
+    message: "Rotate takes a single z-angle or angles " +
+             "(x, y, z or yaw, pitch, roll) as named arguments, got: " + repr(angles))
 
   let named = angles.named()
   let names = named.keys()
