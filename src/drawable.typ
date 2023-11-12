@@ -200,6 +200,21 @@
     }
   }
 
+  // TikZ style barbed arrow tip
+  let barbed() = {
+    let a = vector.sub(base, w)
+    let b = vector.add(base, w)
+    let ct = vector.add(t, vector.scale(dir, -length))
+
+    path(
+      (path-util.cubic-segment(a, t, a, ct),
+       path-util.cubic-segment(t, b, ct, b)),
+      close: false,
+      fill: none,
+      stroke: stroke
+    )
+  }
+
   let harpoon(side: "left") = {
     let s = if side == "left" {
       vector.add(base, w)
@@ -243,6 +258,8 @@
     triangle()
   } else if symbol == "<" {
     triangle()
+  } else if symbol == "barbed" {
+    barbed()
   } else if symbol == "|" {
     bar()
   } else if symbol == "<>" {

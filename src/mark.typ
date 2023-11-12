@@ -55,6 +55,8 @@
 #let calc-mark-offset(ctx, symbol, style) = {
   if symbol in ("<", ">") {
     return _triangular-mark-offset(ctx, style.width, style.length, symbol, style)
+  } else if symbol == "barbed" {
+    return _triangular-mark-offset(ctx, 0 /* The tip has angle 0 */, style.length, symbol, style)
   } else if symbol in ("left-harpoon", "right-harpoon") {
     return _triangular-mark-offset(ctx, style.width / 2, style.length, symbol, style)
   } else if symbol == "<>" {
