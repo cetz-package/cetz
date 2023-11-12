@@ -864,6 +864,8 @@
 
 #let merge-path(body, close: false, name: none, ..style) = {
   // No extra positional arguments from the style sink
+  assert(type(body) in (array, function),
+    message: "Incorrect type for body: " + type(body))
   assert.eq(
     style.pos(),
     (),
@@ -875,6 +877,7 @@
     ctx => {
       let ctx = ctx
       let segments = ()
+      let body = if type(body) == function { body(ctx) } else { body }
       for element in body {
         let r = process.element(ctx, element)
         if r != none {
