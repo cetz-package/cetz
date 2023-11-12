@@ -57,7 +57,7 @@
   })
   test({
     rect((0,0), (2,2))
-    rotate(-45deg)
+    rotate(45deg)
     line((0,0), (calc.sqrt(2*calc.pow(2,2)),0))
   })
 })

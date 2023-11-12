@@ -10,7 +10,7 @@
     }
 
     set-style(fill: blue, mark: (fill: auto))
-    rotate(-90deg)
+    rotate(90deg)
 
     let marks = (">", "<", "|", "<>", "o")
     for m in marks {
