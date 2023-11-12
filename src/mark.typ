@@ -7,7 +7,7 @@
 
 // Calculate offset for a triangular mark (triangle, harpoon, ..)
 #let _triangular-mark-offset(ctx, mark-width, mark-length, symbol, style) = {
-  let revert = symbol == "<"
+  let revert = symbol == "<" or style.reverse
   let sign = if revert { 1 } else { -1 }
 
   let stroke = line(stroke: style.stroke).stroke

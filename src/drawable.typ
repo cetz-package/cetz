@@ -152,7 +152,7 @@
   let stroke   = style.stroke
   let fill     = style.fill
 
-  let reverse  = symbol == "<"
+  let reverse  = symbol == "<" or style.reverse
   let dir      = vector.norm(if reverse {
     vector.sub(from, to)
   } else {
