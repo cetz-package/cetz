@@ -202,9 +202,9 @@
 
   let harpoon(side: "left") = {
     let s = if side == "left" {
-      vector.sub(base, w)
-    } else {
       vector.add(base, w)
+    } else {
+      vector.sub(base, w)
     }
 
     path(path-util.line-segment((t, s, m)),
