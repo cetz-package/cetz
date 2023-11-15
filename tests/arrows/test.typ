@@ -12,23 +12,21 @@
     set-style(fill: blue, mark: (fill: auto))
     rotate(90deg)
 
-    let marks = (">", "<", "|", "<>", "o", "barbed")
-    for m in marks {
+    for m in mark-symbols {
         next((end: m))
     }
 
-    for m in marks {
+    for m in mark-symbols {
         next((start: m))
     }
 
     fill(none)
 
-    let marks = (">", "<")
-    for m in marks {
+    for m in mark-symbols {
         next((end: m))
     }
 
-    for m in marks {
+    for m in mark-symbols {
         next((start: m))
     }
 }))

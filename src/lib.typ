@@ -2,6 +2,7 @@
 
 #import "canvas.typ": canvas
 #import "draw.typ"
+#import "mark.typ": mark-symbols
 
 // Expose utilities
 #import "vector.typ"

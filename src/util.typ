@@ -237,3 +237,23 @@
     return (top: padding, left: padding, bottom: padding, right: padding)
   }
 }
+
+/// Get stroke as dictionary with all fields set to non-auto
+#let get-stroke(s) = {
+  if s == none {
+    return (paint: none, thickness: 0pt, join: none, cap: none, miter-limit: 4)
+  }
+
+  let s = line(stroke: s).stroke
+  let thickness = s.thickness
+  if thickness == auto { thickness = 1pt }
+  let paint = s.paint
+  if paint == auto { paint = black }
+  let join = s.join
+  if join == auto { join = "miter" }
+  let cap = s.cap
+  if cap == auto { cap = "butt" }
+  let miter-limit = s.miter-limit
+  if miter-limit == auto { miter-limit = 4 }
+  return (paint: paint, thickness: thickness, join: join, cap: cap, miter-limit: miter-limit)
+}

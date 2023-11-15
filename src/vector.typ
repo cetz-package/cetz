@@ -135,6 +135,19 @@
   }
 }
 
+/// Rotate vector of dimension 2 or 3 around the z-axis by angle
+/// - v (vector): Vector to rotate
+/// - angle (angle): Angle
+/// -> vector
+#let rotate-z(v, angle) = {
+  assert(v.len() >= 2,
+    message: "Vector size must be >= 2")
+  let (x, y, ..) = v
+  v.at(0) = x * calc.cos(angle) - y * calc.sin(angle)
+  v.at(1) = x * calc.sin(angle) + y * calc.cos(angle)
+  return v
+}
+
 /// Linear interpolation
 #let lerp(v1, v2, t) = {
   return add(

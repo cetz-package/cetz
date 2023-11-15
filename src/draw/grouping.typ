@@ -10,6 +10,7 @@
 #import "/src/coordinate.typ"
 #import "/src/aabb.typ"
 #import "/src/anchor.typ" as anchor_
+#import "/src/mark.typ" as mark_
 
 #import "transformations.typ": move-to
 
@@ -451,14 +452,26 @@
 
     for mark in marks {
       let (pos, dir) = path-util.direction(path.segments, mark.pos)
-      drawables.push(
-        drawable.mark(
-          vector.add(pos, dir),
-          pos,
-          mark.mark,
-          style,
-        )
-      )
+
+      let style = style
+      if not "mark" in style { style.mark = (:) }
+      style.start = none
+      style.end = mark.mark
+
+      let reverse = mark.at("reverse", default: auto)
+      if reverse == auto {
+        reverse = mark.pos < .5
+      }
+
+      let line = if reverse {
+        (vector.sub(pos, dir), pos)
+      } else {
+        (vector.add(pos, dir), pos)
+      }
+
+      let (marks, _) = mark_.place-marks-along-line(ctx, line, style)
+      drawables += marks
+
       if "name" in mark {
         anchors.insert(m.name, path-util.point-on-path(path, mark.pos))
       }

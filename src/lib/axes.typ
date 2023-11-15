@@ -46,7 +46,7 @@
 
 #let default-style-schoolbook = util.merge-dictionary(default-style, (
   tick: (label: (offset: .1)),
-  mark: (end: ">"),
+  mark: (end: "->", length: .1),
   padding: .4))
 
 // Construct Axis Object

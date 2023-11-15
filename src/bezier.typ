@@ -209,6 +209,11 @@
 /// -> ((s, e, c1, c2), (s, e, c1, c2))
 #let split(s, e, c1, c2, t) = {
   t = calc.max(0, calc.min(t, 1))
+  if t == 0 {
+    return ((s, s, s, s), (s, e, c1, c2))
+  } else if t == 1 {
+    return ((s, e, c1, c2), (e, e, e, e))
+  }
 
   let split-rec(pts, t, left, right) = {
     if pts.len() == 1 {
@@ -332,16 +337,33 @@
 /// - c2 (vector): Control point 2
 /// - d  (float): Distance to shorten by
 /// - samples (int): Maximum of samples/steps to use
+/// - snap-to (vector): Point to "snap" the shortened end to (linearly)
 /// -> (s, e, c1, c2) Shortened curve
 #let cubic-shorten(s, e, c1, c2, d, samples: 15) = {
-  if d == 0 { return (s, e, c1, c2) }
-
   let (left, right) = split(s, e, c1, c2, cubic-t-for-distance(s, e, c1, c2, d, samples: samples))
-  return if d > 0 {
+  let curve = if d > 0 {
     right
-  } else {
+  } else if d < 0 {
     left
+  } else {
+    (s, e, c1, c2)
   }
+
+  // Fix the curve by moving the modified point at a target
+  // point, fixing up imprecisions.
+  if snap-to != none {
+     if d > 0 {
+       let diff = vector.sub(snap-to, curve.at(0))
+       curve.at(2) = vector.add(curve.at(2), diff)
+       curve.at(0) = snap-to
+     } else if d < 0 {
+       let diff = vector.sub(snap-to, curve.at(1))
+       curve.at(3) = vector.add(curve.at(3), diff)
+       curve.at(1) = snap-to
+    }
+  }
+
+  return curve
 }
 
 /// Align curve points pts to the line start-end
