@@ -491,7 +491,7 @@
 /// - top-left: Top left
 /// - top-right: Top right
 /// - bottom-left: Bottom left
-/// - bottom-left: Bottom right
+/// - bottom-right: Bottom right
 /// - top: Mid between top-left and top-right
 /// - left: Mid between top-left and bottom-left
 /// - right: Mid between top-right and bottom-right
