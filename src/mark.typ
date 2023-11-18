@@ -127,9 +127,20 @@
   let b = vector.sub(tip, vector.scale(dir, style.length))
 
   (drawable.path(path-util.line-segment((
-      vector.add(b, w), vector.add(tip, w),
-      vector.sub(tip, w), vector.sub(b, w))),
-      stroke: style.stroke, fill: style.fill, close: true),)
+    vector.add(b, w), vector.add(tip, w),
+    vector.sub(tip, w), vector.sub(b, w))),
+    stroke: style.stroke, fill: style.fill, close: true),)
+}
+
+/// Draw a round hook
+#let draw-hook(dir, norm, tip, style, right: false) = {
+  let f = if right { -1 } else { 1 }
+  let w = vector.scale(norm, style.width / 2 * f)
+  let b = vector.sub(tip, vector.scale(dir, style.width / 2))
+
+  (drawable.path(path-util.cubic-segment(
+    b, vector.add(b, w), tip, vector.add(tip, w)),
+    stroke: style.stroke, fill: none, close: false),)
 }
 
 // Calculate offset for a triangular mark (triangle, harpoon, ..)
@@ -174,7 +185,7 @@
 
 /// Public list of all predefined mark symbols
 #let mark-symbols = (
-  ">", "<", "->", "<-", "~>", "<~", "|", "[", "]", "o", "<>", "[]", "*", "+", "x",
+  ">", "<", "->", "<-", "~>", "<~", "|", "[", "]", "o", "<>", "[]", "*", "+", "x", "hook", "hook-right",
 )
 
 /// Returns a tuple of a draw-function and a mark offset
@@ -227,6 +238,10 @@
   )} else if symbol == "x" {(
     draw: draw-star.with(n: 4, angle-offset: 45deg),
     gap: style.length
+  )} else if symbol in ("hook", "hook-right") {(
+    draw: draw-hook.with(right: symbol == "hook-right"),
+    offset: thickness,
+    length: style.width / 2
   )} else if type(symbol) == dictionary {
     assert("draw" in symbol and type(symbol.draw) == function,
       message: "Mark dictionary must contain 'draw' function: " + repr(symbol))
