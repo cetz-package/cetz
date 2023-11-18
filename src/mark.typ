@@ -28,11 +28,15 @@
   if type(inset) == ratio { inset = thickness * inset / 100% }
   inset *= scale
 
+  let sep = style.sep
+  if type(sep) == ratio { sep = thickness * sep / 100% }
+
   // Reset the scale to 1 because we pre-scaled all values
   style.scale = 1
   style.width = width
   style.length = length
   style.inset = inset
+  style.sep = sep
   return style
 }
 
