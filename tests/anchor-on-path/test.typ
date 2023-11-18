@@ -6,7 +6,7 @@
 
     let place-along = (path) => {
       let name = "obj"
-      place-anchors(path, name: name,
+      place-anchors(path, name,
         ..range(0, 11).map(x => (name: str(x), pos: x / 10)))
 
       for x in range(0, 11) {
