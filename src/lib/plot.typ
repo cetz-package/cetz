@@ -13,6 +13,7 @@
 #import "plot/boxwhisker.typ": add-boxwhisker
 #import "plot/util.typ" as plot-util
 #import "plot/legend.typ" as plot-legend
+#import "plot/annotation.typ": annotate, calc-annotation-domain
 #import "plot/mark.typ"
 
 #let default-colors = (blue, red, green, yellow, black)
@@ -230,12 +231,17 @@
 
   let data = ()
   let anchors = ()
+  let annotations = ()
   let body = if body != none { body } else { () }
 
   for cmd in body {
     assert(type(cmd) == dictionary and "type" in cmd,
            message: "Expected plot sub-command in plot body")
-    if cmd.type == "anchor" { anchors.push(cmd) } else { data.push(cmd) }
+    if cmd.type == "anchor" {
+      anchors.push(cmd)
+    } else if cmd.type == "annotation" {
+      annotations.push(cmd)
+    } else { data.push(cmd) }
   }
 
   assert(axis-style in (none, "scientific", "school-book", "left"),
@@ -271,6 +277,14 @@
         axis-dict.insert(name, axes.axis(min: none, max: none))
       }
     }
+  }
+
+  // Adjust axis bounds for annotations
+  for a in annotations {
+    let (x, y) = a.axes.map(name => axis-dict.at(name))
+    (x, y) = calc-annotation-domain(ctx, x, y, a)
+    axis-dict.at(a.axes.at(0)) = x
+    axis-dict.at(a.axes.at(1)) = y
   }
 
   // Set axis options
@@ -314,6 +328,17 @@
         assert(data.at(i) != none,
           message: "Plot prepare(self, cxt) returned none!")
       }
+    }
+
+    // Background Annotations
+    for a in annotations.filter(a => a.background) {
+      let (x, y) = a.axes.map(name => axis-dict.at(name))
+      let plot-ctx = make-ctx(x, y, size)
+
+      data-viewport(a, x, y, size, {
+        draw.anchor("center", (0, 0))
+        a.body
+      })
     }
 
     // Fill
@@ -373,6 +398,17 @@
           draw.set-style(..d.style, ..d.mark-style)
           mark.draw-mark(d.data, x, y, d.mark, d.mark-size, size)
         }
+      })
+    }
+
+    // Foreground Annotations
+    for a in annotations.filter(a => not a.background) {
+      let (x, y) = a.axes.map(name => axis-dict.at(name))
+      let plot-ctx = make-ctx(x, y, size)
+
+      data-viewport(a, x, y, size, {
+        draw.anchor("center", (0, 0))
+        a.body
       })
     }
 
