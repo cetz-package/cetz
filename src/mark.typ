@@ -90,13 +90,9 @@
 }
 
 /// Draw a bracket with
-#let draw-bracket(dir, norm, tip, style, open: false) = {
+#let draw-bracket(dir, norm, tip, style) = {
   let w = vector.scale(norm, style.width / 2)
-  let b = if open {
-    vector.add(tip, vector.scale(dir, style.length))
-  } else {
-    vector.sub(tip, vector.scale(dir, style.length))
-  }
+  let b = vector.sub(tip, vector.scale(dir, style.length))
 
   (drawable.path(
      path-util.line-segment((vector.add(b, w),
@@ -178,38 +174,38 @@
 
 /// Public list of all predefined mark symbols
 #let mark-symbols = (
-  ">", "->", "~>", "|", "[", "]", "o", "<>", "[]", "*", "+", "x",
+  ">", "<", "->", "<-", "~>", "<~", "|", "[", "]", "o", "<>", "[]", "*", "+", "x",
 )
 
 /// Returns a tuple of a draw-function and a mark offset
-#let get-mark(ctx, symbol, style) = {
+#let get-mark(ctx, symbol, index, style) = {
   let thickness = util.get-stroke(style.stroke).thickness / 2
   if type(thickness) == length { thickness /= ctx.length }
 
   assert(type(symbol) in (str, dictionary),
     message: "Invalid mark symbol type: " + type(symbol))
-  if symbol == ">" or symbol == "<" {(
+  let mark = if symbol in (">", "<") {(
     draw: draw-triangle,
     offset: _triangular-mark-offset(ctx, style.width, style.length, symbol, style),
-    length: style.length - style.inset
-  )} else if symbol == "->" {(
+    length: style.length - style.inset,
+    reverse: symbol == "<"
+  )} else if symbol in ("->", "<-") {(
     draw: draw-triangle.with(open: true),
     offset: _triangular-mark-offset(ctx, style.width, style.length, symbol, style),
     gap: style.length,
-  )} else if symbol == "~>" {(
+    reverse: symbol == "<-"
+  )} else if symbol in ("~>", "<~") {(
     draw: draw-barbed,
     offset: _triangular-mark-offset(ctx, 0, style.length, symbol, style),
     gap: style.length,
+    reverse: symbol == "<~"
   )} else if symbol == "|" {(
     draw: draw-bar,
-  )} else if symbol == "]" {(
-    draw: draw-bracket.with(open: false),
+  )} else if symbol in ("]", "[") {(
+    draw: draw-bracket,
     gap: style.length,
     offset: -thickness,
-  )} else if symbol == "[" {(
-    draw: draw-bracket.with(open: true),
-    gap: style.length,
-    offset: thickness,
+    reverse: symbol == "["
   )} else if symbol == "[]" {(
     draw: draw-rect,
     length: style.length,
@@ -238,6 +234,21 @@
   } else {
     panic("Invalid mark symbol: " + symbol)
   }
+
+  mark.reverse = mark.at("reverse", default: false)
+  mark.reverse = mark.reverse != style.reverse
+  mark.reverse-factor = if mark.reverse { -1 } else { 1 }
+  mark.offset = mark.reverse-factor * mark.at("offset", default: 0)
+
+  if mark.reverse {
+    mark.draw = (dir, norm, tip, style) => {
+      let dir = vector.scale(dir, -1)
+      let norm = vector.scale(norm, -1)
+      (mark.draw)(dir, norm, tip, style)
+    }
+  }
+
+  return mark
 }
 
 #let prepare-start-end(ctx, style) = {
@@ -247,7 +258,7 @@
     ()
   } else {
     style.start
-  }.map(sym => get-mark(ctx, sym, style))
+  }.enumerate().map(((i, sym)) => get-mark(ctx, sym, i, style))
 
   let end = if type(style.end) == str {
     (style.end,)
@@ -255,9 +266,21 @@
     ()
   } else {
     style.end
-  }.map(sym => get-mark(ctx, sym, style))
+  }.enumerate().map(((i, sym)) => get-mark(ctx, sym, i, style))
 
   return (start, end)
+}
+
+// Calculate norm mark direction between two points
+#let calc-dir(from, to, style) = {
+  let dir = vector.sub(to, from)
+  if dir == (0,0,0) {
+    dir = (1,0,0)
+  } else {
+    dir = vector.norm(dir)
+  }
+
+  return dir
 }
 
 #let calc-normal(dir, style) = {
@@ -316,20 +339,19 @@
 
   // Draw start marks
   if start != none {
-    let dir = vector.sub(pts.at(0), pts.at(1))
-    if vector.len(dir) == 0 { dir = (1,0,0) }
-    dir = vector.norm(dir)
+    let dir = calc-dir(pts.at(1), pts.at(0), style)
     let norm = calc-normal(dir, style)
 
     let pt = start-pt
     for (i, m) in start.enumerate() {
-      drawables += (m.draw)(dir, norm, pt, style)
+      let tip = pt
+      drawables += (m.draw)(dir, norm, tip, style)
 
       let off = vector.scale(dir, m.at("length", default: 0))
       pt = vector.sub(pt, off)
 
       if style.shorten-to == auto or style.shorten-to == i {
-         pts.at(0) = pt
+         pts.at(0) = if m.reverse { tip } else { pt }
       }
 
       let gap = vector.scale(dir, m.at("gap", default: 0) + style.sep)
@@ -339,20 +361,19 @@
 
   // Draw end marks
   if end != none {
-    let dir = vector.sub(pts.at(-1), pts.at(-2))
-    if vector.len(dir) == 0 { dir = (1,0,0) }
-    dir = vector.norm(dir)
+    let dir = calc-dir(pts.at(-2), pts.at(-1), style)
     let norm = calc-normal(dir, style)
 
     let pt = end-pt
     for (i, m) in end.enumerate() {
-      drawables += (m.draw)(dir, norm, pt, style)
+      let tip = pt
+      drawables += (m.draw)(dir, norm, tip, style)
 
       let off = vector.scale(dir, m.at("length", default: 0))
       pt = vector.sub(pt, off)
 
       if style.shorten-to == auto or style.shorten-to == i {
-         pts.at(-1) = pt
+        pts.at(-1) = if m.reverse { tip } else { pt }
       }
 
       let gap = vector.scale(dir, m.at("gap", default: 0) + style.sep)
@@ -364,7 +385,7 @@
 }
 
 // Shorten curve by distance
-#let _shorten-curve(curve, distance, target-pt, style) = {
+#let _shorten-curve(curve, distance, target-pt, style, start: true) = {
   assert(style.shorten in ("LINEAR", "CURVED"),
     message: "Invalid cubic shorten style")
   let quick = style.shorten == "LINEAR"
@@ -372,19 +393,19 @@
     if target-pt == none {
       bezier.cubic-shorten-linear(..curve, distance)
     } else {
-      if distance > 0 {
-        let diff = vector.sub(target-pt, curve.at(0))
-        curve.at(2) = vector.add(curve.at(2), diff)
-        curve.at(0) = target-pt
-      } else {
-        let diff = vector.sub(target-pt, curve.at(1))
-        curve.at(3) = vector.add(curve.at(3), diff)
-        curve.at(1) = target-pt
-      }
       curve
     }
   } else {
-    bezier.cubic-shorten(..curve, distance, snap-to: target-pt)
+    bezier.cubic-shorten(..curve, distance)
+  }
+
+  // Snap curve to point
+  if target-pt != none {
+    if start {
+      curve.at(0) = target-pt
+    } else {
+      curve.at(1) = target-pt
+    }
   }
 
   return curve
@@ -406,14 +427,18 @@
   if start.len() > 0 {
     let mark = start.at(0)
     let offset = mark.at("offset", default: 0)
-    curve = _shorten-curve(curve, calc.max(0, -offset), none, style)
+    let opt = vector.sub(curve.at(0),
+      vector.scale(vector.norm(bezier.cubic-derivative(..curve, 0)), offset))
+    curve = _shorten-curve(curve, calc.max(0, -offset), opt, style, start: true)
   }
 
   // Offset end
   if end.len() > 0 {
     let mark = end.at(0)
     let offset = mark.at("offset", default: 0)
-    curve = _shorten-curve(curve, calc.min(0, offset), none, style)
+    let opt = vector.add(curve.at(1),
+      vector.scale(vector.norm(bezier.cubic-derivative(..curve, 1)), offset))
+    curve = _shorten-curve(curve, calc.min(0, offset), opt, style, start: false)
   }
 
   let drawables = ()
@@ -446,12 +471,22 @@
       dir = vector.norm(dir)
       let norm = calc-normal(dir, mark-style)
 
-      drawables += (m.draw)(dir, norm, pt, mark-style)
-
+      let tip = pt
+      let old-dist = dist
+      drawables += (m.draw)(dir, norm, tip, mark-style)
       dist += m.at("length", default: 0)
+
       if mark-style.shorten-to == auto or mark-style.shorten-to == i {
-         shorten-start = dist
-         pt-start = vector.sub(pt, vector.scale(dir, m.at("length", default: 0)))
+        shorten-start = if m.reverse {
+          old-dist
+        } else {
+          dist
+        }
+        pt-start = if m.reverse {
+          tip
+        } else {
+          vector.sub(pt, vector.scale(dir, m.at("length", default: 0)))
+        }
       }
 
       dist += m.at("gap", default: 0) + mark-style.sep
@@ -481,20 +516,34 @@
       dir = vector.norm(dir)
       let norm = calc-normal(dir, mark-style)
 
-      drawables += (m.draw)(dir, norm, pt, mark-style)
-
+      let tip = pt
+      let old-dist = dist
+      drawables += (m.draw)(dir, norm, tip, mark-style)
       dist += m.at("length", default: 0)
+
       if mark-style.shorten-to == auto or mark-style.shorten-to == i {
-         shorten-end = dist
-         pt-end = vector.sub(pt, vector.scale(dir, m.at("length", default: 0)))
+        shorten-end = if m.reverse {
+          old-dist
+        } else {
+          dist
+        }
+        pt-end = if m.reverse {
+          tip
+        } else {
+          vector.sub(pt, vector.scale(dir, m.at("length", default: 0)))
+        }
+      }
+
+      if m.reverse {
+        dist += m.at("length", default: 0)
       }
 
       dist += m.at("gap", default: 0) + mark-style.sep
     }
   }
 
-  curve = _shorten-curve(curve, calc.max(0, shorten-start), pt-start, style)
-  curve = _shorten-curve(curve, calc.min(0, -shorten-end), pt-end, style)
+  curve = _shorten-curve(curve, calc.max(0, shorten-start), pt-start, style, start: true)
+  curve = _shorten-curve(curve, calc.min(0, -shorten-end), pt-end, style, start: false)
 
   return (drawables, curve)
 }
@@ -584,10 +633,16 @@
 
     let dir = vector.norm(vector.sub(pt, pt-at(angle + angle-offset)))
     let norm = calc-normal(dir, mark-style)
+
+    let old-angle = angle
     drawables += (m.draw)(dir, norm, pt, mark-style)
 
     if mark-style.shorten-to == auto or mark-style.shorten-to == i {
-      start-angle = angle + angle-offset
+      start-angle = if m.reverse {
+        old-angle
+      } else {
+        angle + angle-offset
+      }
     }
 
     let angle-offset = ((length + m.at("gap", default: 0) + mark-style.sep) * 360deg) / (2 * calc.pi * r)
@@ -606,16 +661,23 @@
   for (i, m) in end.enumerate() {
     let length = calc.max(m.at("length", default: 0), 0.0001)
     let r = r-at(angle)
+
     let angle-offset = (length * 360deg) / (2 * calc.pi * r)
 
     let pt = pt-at(angle)
 
     let dir = vector.norm(vector.sub(pt, pt-at(angle - angle-offset)))
     let norm = calc-normal(dir, mark-style)
+
+    let old-angle = angle
     drawables += (m.draw)(dir, norm, pt, mark-style)
 
     if mark-style.shorten-to == auto or mark-style.shorten-to == i {
-      stop-angle = angle - angle-offset
+      stop-angle = if m.reverse {
+        old-angle
+      } else {
+        angle - angle-offset
+      }
     }
 
     let angle-offset = ((length + m.at("gap", default: 0) + mark-style.sep) * 360deg) / (2 * calc.pi * r)
