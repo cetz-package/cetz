@@ -9,6 +9,8 @@
   rect((-2,-2), (-1,2))
   line((-1,-.5), (1,1),
     mark: (start: l, end: l, fill: red, stroke: blue))
+  line((-1,-1.5), (1,0),
+    mark: (start: l, end: l, fill: red, stroke: blue, reverse: true))
 }))
 
 #box(stroke: 2pt + red, canvas({

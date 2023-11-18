@@ -339,10 +339,10 @@
 /// - samples (int): Maximum of samples/steps to use
 /// - snap-to (vector): Point to "snap" the shortened end to (linearly)
 /// -> (s, e, c1, c2) Shortened curve
-#let cubic-shorten(s, e, c1, c2, d, samples: 15) = {
+#let cubic-shorten(s, e, c1, c2, d, snap-to: none, samples: 15) = {
   let (left, right) = split(s, e, c1, c2, cubic-t-for-distance(s, e, c1, c2, d, samples: samples))
   let curve = if d > 0 {
-    right
+    (right.at(1), right.at(0), right.at(3), right.at(2))
   } else if d < 0 {
     left
   } else {
@@ -354,27 +354,14 @@
   if snap-to != none {
      if d > 0 {
        let diff = vector.sub(snap-to, curve.at(0))
-       curve.at(2) = vector.add(curve.at(2), diff)
        curve.at(0) = snap-to
      } else if d < 0 {
        let diff = vector.sub(snap-to, curve.at(1))
-       curve.at(3) = vector.add(curve.at(3), diff)
        curve.at(1) = snap-to
     }
   }
 
   return curve
-}
-
-/// Align curve points pts to the line start-end
-#let align(pts, start, end) = {
-  let (x, y, _) = start
-  let a = -calc.atan2(end.at(1) - y, end.at(0) - x)
-  return pts.map(p => {
-    ((p.at(0) - x) * calc.cos(-a) - (pt.at(1) - y) * calc.sin(-a),
-     (p.at(0) - x) * calc.sin(-a) - (pt.at(1) - y) * calc.cos(-a),
-     p.at(2))
-  })
 }
 
 /// Find cubic curve extrema by calculating

@@ -133,9 +133,8 @@
 }
 
 /// Draw a round hook
-#let draw-hook(dir, norm, tip, style, right: false) = {
-  let f = if right { -1 } else { 1 }
-  let w = vector.scale(norm, style.width / 2 * f)
+#let draw-hook(dir, norm, tip, style) = {
+  let w = vector.scale(norm, style.width / 2)
   let b = vector.sub(tip, vector.scale(dir, style.width / 2))
 
   (drawable.path(path-util.cubic-segment(
@@ -239,9 +238,10 @@
     draw: draw-star.with(n: 4, angle-offset: 45deg),
     gap: style.length
   )} else if symbol in ("hook", "hook-right") {(
-    draw: draw-hook.with(right: symbol == "hook-right"),
+    draw: draw-hook,
     offset: thickness,
-    length: style.width / 2
+    length: style.width / 2,
+    flip: symbol == "hook-right"
   )} else if type(symbol) == dictionary {
     assert("draw" in symbol and type(symbol.draw) == function,
       message: "Mark dictionary must contain 'draw' function: " + repr(symbol))
@@ -252,13 +252,16 @@
 
   mark.reverse = mark.at("reverse", default: false)
   mark.reverse = mark.reverse != style.reverse
-  mark.reverse-factor = if mark.reverse { -1 } else { 1 }
-  mark.offset = mark.reverse-factor * mark.at("offset", default: 0)
+  let dir-factor = if mark.reverse { -1 } else { 1 }
+  mark.offset = dir-factor * mark.at("offset", default: 0)
+  mark.flip = mark.at("flip", default: false)
+  mark.flip = mark.flip != style.flip
+  let norm-factor = if mark.flip { -1 } else { 1 }
 
-  if mark.reverse {
+  if dir-factor != 1 or norm-factor != 1 {
     mark.draw = (dir, norm, tip, style) => {
-      let dir = vector.scale(dir, -1)
-      let norm = vector.scale(norm, -1)
+      let dir = vector.scale(dir, dir-factor)
+      let norm = vector.scale(norm, dir-factor * norm-factor)
       (mark.draw)(dir, norm, tip, style)
     }
   }
@@ -442,8 +445,10 @@
   if start.len() > 0 {
     let mark = start.at(0)
     let offset = mark.at("offset", default: 0)
-    let opt = vector.sub(curve.at(0),
-      vector.scale(vector.norm(bezier.cubic-derivative(..curve, 0)), offset))
+    let dir = bezier.cubic-derivative(..curve, 0)
+    let opt = if vector.len(dir) != 0 {
+      vector.sub(curve.at(0), vector.scale(vector.norm(dir), offset))
+    }
     curve = _shorten-curve(curve, calc.max(0, -offset), opt, style, start: true)
   }
 
@@ -451,8 +456,10 @@
   if end.len() > 0 {
     let mark = end.at(0)
     let offset = mark.at("offset", default: 0)
-    let opt = vector.add(curve.at(1),
-      vector.scale(vector.norm(bezier.cubic-derivative(..curve, 1)), offset))
+    let dir = bezier.cubic-derivative(..curve, 1)
+    let opt = if vector.len(dir) != 0 {
+      vector.add(curve.at(1), vector.scale(vector.norm(dir), offset))
+    }
     curve = _shorten-curve(curve, calc.min(0, offset), opt, style, start: false)
   }
 
