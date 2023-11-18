@@ -12,25 +12,52 @@
     ([fenjalien],     "https://github.com/fenjalien"),
   )
 
-  set page(numbering: none, background: {
-    place(top + left, rect(width: left-fringe, height: 100%, fill: left-color))
-  }, margin: (left: left-fringe * 22cm, top: 12% * 29cm), header: none, footer: none)
+  set page(
+    numbering: none,
+    background: place(
+      top + left,
+      rect(
+        width: left-fringe,
+        height: 100%,
+        fill: left-color
+      )
+    ),
+    margin: (
+      left: left-fringe * 22cm,
+      top: 12% * 29cm
+    ), 
+    header: none,
+    footer: none
+  )
 
   set text(weight: "bold", left-color)
   show link: set text(left-color)
 
   block(
-    place(top + left, dx: -left-fringe * 22cm + 5mm,
-          text(3cm, right-color)[CeTZ\ ]) +
-    text(29pt)[ein Typst Zeichenpacket])
-
+    place(
+      top + left,
+      dx: -left-fringe * 22cm + 5mm,
+      text(3cm, right-color)[CeTZ]
+    ) +
+    text(29pt)[ein Typst Zeichenpacket]
+  )
   block(
     v(1cm) +
-    text(20pt, authors.map(v => link(v.at(1), [#v.at(0)])).join("\n")))
+    text(
+      20pt,
+      authors.map(v => link(v.at(1), [#v.at(0)])).join("\n")
+    )
+  )
   block(
     v(2cm) +
-    text(20pt, link(url, [Version ] + cetz.version.map(v => [#v]).join("."))))
-
+    text(
+      20pt, 
+      link(
+        url,
+        [Version ] + [#cetz.version]
+      )
+    )
+  )
   pagebreak(weak: true)
 }
 
@@ -57,4 +84,34 @@
     text(20pt, if sub-title != none { sub-title } else { [] }))
 
   pagebreak(weak: true)
+}
+
+
+#let def-arg(term, t, default: none, description) = {
+  if type(t) == str {
+    t = t.replace("?", "|none")
+    t = `<` + t.split("|").map(s => {
+      if s == "b" {
+        `boolean`
+      } else if s == "s" {
+        `string`
+      } else if s == "i" {
+        `integer`
+      } else if s == "f" {
+        `float`
+      } else if s == "c" {
+        `coordinate`
+      } else if s == "d" {
+        `dictionary`
+      } else if s == "a" {
+        `array`
+      } else if s == "n" {
+        `number`
+      } else {
+        raw(s)
+      }
+    }).join(`|`) + `>`
+  }
+
+  stack(dir: ltr, [/ #term: #t \ #description], align(right, if default != none {[(default: #default)]}))
 }

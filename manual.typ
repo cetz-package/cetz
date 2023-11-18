@@ -1,10 +1,10 @@
 #import "doc/util.typ": *
 #import "doc/example.typ": example
+#import "doc/style.typ" as doc-style
 
-#import "src/lib.typ"
+#import "src/lib.typ": *
 #import "src/styles.typ"
 #import "@preview/tidy:0.1.0"
-#import lib: *
 
 // This is a wrapper around typs-doc show-module that
 // strips all but one function from the module first.
@@ -12,12 +12,16 @@
 // needed.
 #let show-module-fn(module, fn, ..args) = {
   module.functions = module.functions.filter(f => f.name == fn)
-  assert(module.functions.len() > 0,
-    message: "No function named " + fn + " in module " + repr(module))
+  assert(
+    module.functions.len() > 0,
+    message: "No function named " + fn + " in module " + repr(module)
+  )
 
-  tidy.show-module(module, ..args.pos(), ..args.named(),
-                   show-module-name: false,
-                   show-outline: false,)
+  tidy.show-module(
+    module, ..args.pos(), ..args.named(),
+    show-module-name: false,
+    show-outline: false,
+  )
 }
 
 // Usage:
@@ -25,37 +29,13 @@
 //   /* canvas drawing code */
 //   ```
 #show raw.where(lang: "example"): text => {
-  example(raw(text.text, lang: "typc"))
+  example(text.text)
+}
+#show raw.where(lang: "example-vertical"): text => {
+  example(text.text, vertical: true)
 }
 
-#let def-arg(term, t, default: none, description) = {
-  if type(t) == str {
-    t = t.replace("?", "|none")
-    t = `<` + t.split("|").map(s => {
-      if s == "b" {
-        `boolean`
-      } else if s == "s" {
-        `string`
-      } else if s == "i" {
-        `integer`
-      } else if s == "f" {
-        `float`
-      } else if s == "c" {
-        `coordinate`
-      } else if s == "d" {
-        `dictionary`
-      } else if s == "a" {
-        `array`
-      } else if s == "n" {
-        `number`
-      } else {
-        raw(s)
-      }
-    }).join(`|`) + `>`
-  }
 
-  stack(dir: ltr, [/ #term: #t \ #description], align(right, if default != none {[(default: #default)]}))
-}
 
 #make-title()
 
@@ -74,8 +54,7 @@
   pagebreak(weak: true)
 }
 
-#set page(numbering: "1/1",
-          header: align(right)[CeTZ])
+#set page(numbering: "1/1", header: align(right)[CeTZ])
 
 = Introduction
 
@@ -86,25 +65,30 @@ The name CeTZ is a recursive acronym for "CeTZ, ein Typst Zeichenpacket" (german
 = Usage
 
 This is the minimal starting point:
-  ```typ
-  #import "@preview/cetz:0.2.0"
-  #cetz.canvas({
-    import cetz.draw: *
-    ...
-  })
-  ```
+#pad(left: 1em)[```typ
+#import "@preview/cetz:0.2.0"
+#cetz.canvas({
+  import cetz.draw: *
+  ...
+})
+```]
 Note that draw functions are imported inside the scope of the `canvas` block. This is recommended as draw functions override Typst's functions such as `line`.
 
-== Argument Types
-Argument types in this document are formatted in `monospace` and encased in angle brackets `<>`. Types such as `<integer>` and `<content>` are the same as Typst but additional are required:
-  / `<coordinate>`: Any coordinate system. See @coordinate-systems.
-  / `<number>`: `<integer> or <float>`
+#show raw.where(block: false): it => if it.text.starts-with("<") and it.text.ends-with(">") {
+    set text(1.2em)
+    doc-style.show-type(it.text.slice(1, -1))
+  } else { 
+    it 
+  }
+
+== CeTZ Unique Argument Types
+Many CeTZ functions expect data in certain formats which we will call types. Note that these are actually made up of Typst primitives.
+  / `<coordinate>`: Any coordinate system. See coordinate-systems.
+  / `<number>`: Any of `<float>`, `<integer>` or `<length>`
   / `<style>`: Named arguments (or a dictionary if used for a single argument) of style key-values
 
 == Anchors <anchors>
-Anchors are named positions relative to named elements. 
-
-To use an anchor of an element, you must give the element a name using the `name` argument.
+Anchors are named positions relative to named elements. To use an anchor of an element, you must give the element a name using the `name` argument. All elements with the `name` argument allow anchors.
 ```example
 // Name the circle
 circle((0,0), name: "circle")
@@ -115,7 +99,21 @@ stroke(none)
 circle("circle.east", radius: 0.3)
 ```
 
-Group elements will have default anchors based on their axis aligned bounding box, they are:
+Elements can be placed relative to their own anchors if they have an
+argument called `anchor`:
+```example
+// An element does not have to be named 
+// in order to use its own anchors.
+circle((0,0), anchor: "west")
+
+// Draw a smaller red circle at the origin
+fill(red)
+stroke(none)
+circle((0,0), radius: 0.3)
+```
+
+=== Compass Anchors
+Some elements support compass anchors. TODO
 #align(center, {
   canvas({
     import draw:*
@@ -135,21 +133,6 @@ Group elements will have default anchors based on their axis aligned bounding bo
   })
 })
 
-Other elements will have their own anchors.
-
-Elements can be placed relative to their own anchors if they have an
-argument called `anchor`:
-```example
-// An element does not have to be named 
-// in order to use its own anchors.
-circle((0,0), anchor: "west")
-
-// Draw a smaller red circle at the origin
-fill(red)
-stroke(none)
-circle((0,0), radius: 0.3)
-```
-
 = Draw Function Reference
 
 == Canvas
@@ -162,10 +145,10 @@ canvas(background: none, length: 1cm, debug: false, body)
 #def-arg("body", none, [A code block in which functions from `draw.typ` have been called.])
 
 == Styling <styling>
-You can style draw elements by passing the relevant named arguments to their draw functions. All elements have stroke and fill styling unless said otherwise.
+You can style draw elements by passing the relevant named arguments to their draw functions. All elements that draw something have stroke and fill styling unless said otherwise.
 
-#def-arg("fill", [`<color>` or `<none>`], default: "none", [How to fill the draw element.])
-#def-arg("stroke", [`<none>` or `<auto>` or `<length>` \ or `<color>` or `<dictionary>` or `<stroke>`], default: "black + 1pt", [How to stroke the border or the path of the draw element. See Typst's line documentation for more details: https://typst.app/docs/reference/visualize/line/#parameters-stroke])
+#doc-style.show-parameter-block("fill", ("color", "none"), default: none, [How to fill the drawn element.])
+#doc-style.show-parameter-block("stroke", ("none", "auto", "length", "color", "dictionary", "stroke"), default: black + 1pt, [How to stroke the border or the path of the draw element. See Typst's line documentation for more details: https://typst.app/docs/reference/visualize/line/#parameters-stroke])
 
 ```example
 // Draws a red circle with a blue border
@@ -235,11 +218,26 @@ line((0, -1.5), (0.5, -0.5), (1, -1.5), close: true)
 circle((0.5, -2.5), radius: 0.5, fill: green)
 ```
 
-For the default styles of all elements see @default-style
+#pagebreak()
 
-== Elements
-#let shapes-module = tidy.parse-module(read("src/draw/shapes.typ"), name: "Shapes")
+#let shapes-module = tidy.parse-module(
+  read("src/draw/shapes.typ"),
+  name: "Elements",
+  scope: (
+    example: example,
+    def-arg: def-arg,
+    show-parameter-block: doc-style.show-parameter-block
+  )
+)
 
+#tidy.show-module(
+  shapes-module,
+  show-outline: false,
+  sort-functions: none,
+  style: doc-style
+)
+
+/*
 #show-module-fn(shapes-module, "line")
 ```example
 line((-1.5, 0), (1.5, 0))
@@ -367,8 +365,7 @@ mark((0,0), (1,1), symbol: ">", scale: 3, fill: black)
 
 Or as part of a line, using lines `mark` style key:
 
-#example(vertical: true,
-```typc
+```example-vertical
 rotate(-90deg)
 set-style(mark: (fill: black))
 line((1, -1), (1, 9), stroke: (paint: gray, dash: "dotted"))
@@ -383,7 +380,7 @@ line((0, 2), (rel: (1, 0)), mark: (end: ">"))
 set-style(mark: (fill: none))
 line((0, 1), (rel: (1, 0)), mark: (end: "<"))
 line((0, 0), (rel: (1, 0)), mark: (end: ">"))
-```)
+```
 
 ==== Styling
 
@@ -467,7 +464,10 @@ for-each-anchor("demo", (name) => {
   circle("demo." + name, radius: .1, fill: black)
 })
 ```
-
+= hi <default-style>
+= hi <coordinate-lerp>
+= hi <coordinate-systems>
+/*
 == Layers
 
 You can use layers to draw elements below or on top of other elements by using layers
@@ -994,35 +994,31 @@ Supported charts are:
 
 === Examples -- Bar Chart <barchart-examples>
 ==== Basic
-#example(vertical: true,
-```typc
+```example-vertical
 import cetz.chart
 let data = (("A", 10), ("B", 20), ("C", 13))
 chart.barchart(size: (10, auto), x-tick-step: 10, data)
-```)
+```
 
 ==== Clustered
-#example(vertical: true,
-```typc
+```example-vertical
 import cetz.chart
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
 chart.barchart(size: (10, auto), mode: "clustered",
                x-tick-step: 10, value-key: (..range(1, 4)), data)
-```)
+```
 
 ==== Stacked
-#example(vertical: true,
-```typc
+```example-vertical
 import cetz.chart
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
 chart.barchart(size: (10, auto), mode: "stacked",
                x-tick-step: 10, value-key: (..range(1, 4)), data)
-```)
+```
 
 === Examples -- Column Chart <columnchart-examples>
 ==== Basic, Clustered and Stacked
-#example(vertical: true,
-```typc
+```example-vertical
 import cetz.chart
 // Left
 let data = (("A", 10), ("B", 20), ("C", 13))
@@ -1046,7 +1042,7 @@ group(name: "c", anchor: "south-west", {
   chart.columnchart(size: (auto, 4),
     mode: "stacked", value-key: (1,2,3), data)
 })
-```)
+```
 
 #tidy.show-module(chart-boxwhisker-module, show-module-name: false)
 
@@ -1074,7 +1070,7 @@ The palette library provides some predefined palettes.
 
 #let show-palette(p) = {
   canvas({
-    import lib.draw: *
+    import draw: *
     for i in range(p("len")) {
       if calc.rem(i, 10) == 0 { move-to((rel: (0, -.5))) }
       rect((), (rel: (1,.5)), name: "r", ..p(i))
@@ -1242,7 +1238,7 @@ It contains all supported keys for all elements.
 
 #[
   #set text(size: 8pt)
-  #columns(raw(repr(lib.styles.default), lang: "typc"))
+  #columns(raw(repr(styles.default), lang: "typc"))
 ]
 
 = Creating Custom Elements <custom-elements>
