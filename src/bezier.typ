@@ -291,27 +291,31 @@
 /// start s, if d is negative, it starts form the curves end
 /// e.
 /// -> float Bezier t value from [0,1]
-#let cubic-t-for-distance(s, e, c1, c2, d, samples: 10) = {
+#let cubic-t-for-distance(s, e, c1, c2, d, samples: 20) = {
+  let travel-forwards(s, e, c1, c2, d) = {
+    let sum = 0
+    for n in range(1, samples + 1) {
+      let t0 = (n - 1) / samples
+      let t1 = n / samples
+
+      let segment-dist = vector.dist(cubic-point(s, e, c1, c2, t0),
+                                     cubic-point(s, e, c1, c2, t1))
+      if sum <= d and d <= sum + segment-dist {
+        return t0 + (d - sum) / segment-dist / samples
+      }
+      sum += segment-dist
+    }
+    return 1
+  }
+
   if d == 0 {
     return 0
   }
 
   if d > 0 {
-    let travel = 0 // Distance traveled along the curve
-    let last = s
-    for t in range(1, samples + 1) {
-      let t = t / samples
-      let curr = cubic-point(s, e, c1, c2, t)
-      let dist = vector.dist(last, curr)
-      travel += dist
-      if travel >= d {
-        return t - 1/samples + d / (travel * samples)
-      }
-      last = curr
-    }
-    return 1
+    return travel-forwards(s, e, c1, c2, d)
   } else {
-    return 1 - cubic-t-for-distance(e, s, c2, c1, -d, samples: samples)
+    return 1 - travel-forwards(e, s, c2, c1, -d)
   }
 }
 
@@ -330,34 +334,14 @@
 /// - samples (int): Maximum of samples/steps to use
 /// -> (s, e, c1, c2) Shortened curve
 #let cubic-shorten(s, e, c1, c2, d, samples: 15) = {
-  if d == 0 {
-    return (s, e, c1, c2)
-  }
+  if d == 0 { return (s, e, c1, c2) }
 
-  let split-t = 0
-  if d > 0 {
-    let travel = 0 // Distance traveled along the curve
-
-    let last = s
-    for t in range(1, samples + 1) {
-      let t = t / samples
-      let curr = cubic-point(s, e, c1, c2, t)
-      let dist = vector.dist(last, curr)
-      travel += dist
-      if travel >= d {
-        split-t = t - 1/samples + d / (travel * samples)
-        break
-      }
-      last = curr
-    }
+  let (left, right) = split(s, e, c1, c2, cubic-t-for-distance(s, e, c1, c2, d, samples: samples))
+  return if d > 0 {
+    right
   } else {
-    // Run the algorithm from end to start by swapping the curve.
-    let (e, s, c2, c1) = cubic-shorten(e, s, c2, c1, -d, samples: samples)
-    return (s, e, c1, c2)
+    left
   }
-
-  let (_, right) = split(s, e, c1, c2, split-t)
-  return right
 }
 
 /// Align curve points pts to the line start-end

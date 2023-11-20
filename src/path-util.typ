@@ -54,29 +54,18 @@
 /// -> float: Length of the segment in canvas units
 #let segment-length(s) = {
   let samples = default-samples
-  let type = s.at(0)
-  let pts = ()
+  let (type, ..pts) = s
   if type == "line" {
-    pts = s.slice(1)
+    let len = 0
+    for i in range(1, pts.len()) {
+      len += vector.len(vector.sub(pts.at(i - 1), pts.at(i)))
+    }
+    return len
   } else if type == "cubic" {
-    let (a, b, c, d) = s.slice(1)
-    pts.push(a)
-    pts = range(1, samples).map(t =>
-      bezier.cubic-point(a, b, c, d, t / samples))
-    pts.push(b)
+    return bezier.cubic-arclen(..pts, samples: samples)
   } else {
-    panic("Not implemented")
+    panic("Invalid segment: " + type)
   }
-
-  let l = 0
-
-  let pt = pts.at(0)
-  for i in range(1, pts.len()) {
-    l += vector.len(vector.sub(pts.at(i), pt))
-    pt = pts.at(i)
-  }
-
-  return l
 }
 
 /// Find point at position on polyline segment
@@ -96,13 +85,9 @@
     return s.at(1)
   }
 
-  let dist = (a, b) => {
-    vector.len(vector.sub(b, a))
-  }
-
   let traveled-length = 0
   for i in range(2, s.len()) {
-    let part-length = dist(s.at(i - 1), s.at(i))
+    let part-length = vector.dist(s.at(i - 1), s.at(i))
 
     if traveled-length / l <= t and (traveled-length + part-length) / l >= t {
       let f = (t - traveled-length / l) / (part-length / l)
@@ -124,12 +109,12 @@
 /// - t (float): Position (from 0 to 1)
 /// -> vector: Position on segment
 #let point-on-segment(s, t) = {
-  let type = s.at(0)
+  let (type, ..pts) = s
   if type == "line" {
     return point-on-polyline(s, t)
   } else if type == "cubic" {
-    let (a, b, c, d) = s.slice(1)
-    return bezier.cubic-point(a, b, c, d, t)
+    let len = bezier.cubic-arclen(..pts) * calc.min(calc.max(0, t), 1)
+    return bezier.cubic-point(..pts, bezier.cubic-t-for-distance(..pts, len))
   }
 }
 
