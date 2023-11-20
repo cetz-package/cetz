@@ -288,7 +288,7 @@
 // - padding (array): Padding (left, right, top, bottom)
 // - frame (string): Frame mode:
 //                   - true: Draw frame around all axes
-//                   - "set": Draw line for set (!= none) axes
+//                   - auto: Draw line for set (!= none) axes
 //                   - false: Draw no frame
 // - ..style (any): Style
 #let scientific(size: (1, 1),
@@ -410,11 +410,11 @@
         }
       }
 
-      assert(frame in (true, false, "set"),
-             message: "Invalid frame mode")
+      assert(frame in (true, false, auto),
+        message: "Invalid frame mode")
       if frame == true {
         rect((0, 0), size, ..style, radius: 0)
-      } else if frame == "set" { 
+      } else if frame == auto {
         let segments = ((),)
 
         if left != none {segments.last() += ((0,h), (0,0))}
