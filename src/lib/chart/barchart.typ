@@ -77,7 +77,7 @@
   }
 
   let y-tic-list = data.enumerate().map(((i, t)) => {
-    (i, t.at(label-key))
+    (data.len() - i - 1, t.at(label-key))
   })
 
   let x-unit = x-unit
@@ -86,7 +86,7 @@
   }
 
   data = data.enumerate().map(((i, d)) => {
-    (i, ..value-key.map(k => d.at(k)))
+    (data.len() - i - 1, ..value-key.map(k => d.at(k)))
   })
 
   draw.group(ctx => {

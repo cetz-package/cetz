@@ -126,18 +126,27 @@
   // Transform data from (x, ..y) to (x, n, len, y-min, y-max) per y
   let stacked = mode in ("stacked", "stacked100")
   let clustered = mode == "clustered"
-  let bar-data = range(0, n).map(_ => ())
+  let bar-data = if mode == "basic" {
+    range(0, data.len()).map(_ => ())
+  } else {
+    range(0, n).map(_ => ())
+  }
+
+  let j = 0
   for (x, ..y) in data {
     let len = if clustered { n } else { y.len() }
     let sum = 0
     for (i, y) in y.enumerate() {
       if stacked {
         bar-data.at(i).push((x, i, len, sum, sum + y))
-      } else {
+      } else if clustered {
         bar-data.at(i).push((x, i, len, 0, y))
+      } else {
+        bar-data.at(j).push((x, i, len, 0, y))
       }
       sum += y
     }
+    j += 1
   }
 
   let labels = if type(labels) == array { labels } else { (labels,) }
