@@ -14,6 +14,7 @@
 #import "plot/util.typ" as plot-util
 #import "plot/legend.typ" as plot-legend
 #import "plot/annotation.typ": annotate, calc-annotation-domain
+#import "plot/bar.typ": add-bar
 #import "plot/mark.typ"
 
 #let default-colors = (blue, red, green, yellow, black)
