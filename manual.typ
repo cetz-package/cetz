@@ -582,6 +582,7 @@ plot.plot(
 #doc-style.parse-show-module("/src/lib/plot/line.typ")
 #doc-style.parse-show-module("/src/lib/plot/contour.typ")
 #doc-style.parse-show-module("/src/lib/plot/boxwhisker.typ")
+#doc-style.parse-show-module("/src/lib/plot/bar.typ")
 #doc-style.parse-show-module("/src/lib/plot/annotation.typ")
 #doc-style.parse-show-module("/src/lib/plot/sample.typ")
 

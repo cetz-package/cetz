@@ -84,8 +84,17 @@
 /// - data (array): Array of data items. An item is an array containing a x an one or more y values.
 ///                 For example `(0, 1)` or `(0, 10, 5, 30)`. Depending on the `mode`, the data items
 ///                 get drawn as either clustered or stacked rects.
-/// - mode (string):
-/// - labels (none,array):
+/// - mode (string): The mode on how to group data items into bars:
+///   / basic: Add one bar per data value. If the data contains multiple values,
+///     group those bars next to each other.
+///   / clustered: Like "basic", but take into account the maximum number of values of all items
+///     and group each cluster of bars together having the width of the widest cluster.
+///   / stacked: Stack bars of subsequent item values onto the previous bar, generating bars
+///     with the height of the sume of all an items values.
+///   / stacked100: Like "stacked", but scale each bar to height $100$, making the different
+///     bars percentages of the sum of an items values.
+/// - labels (none,content,array): A single legend label for "basic" bar-charts, or a
+///   a list of legend labels per bar category, if the mode is one of "clustered", "stacked" or "stacked100".
 /// - bar-width (float): Width of one data item on the y axis
 /// - bar-position (string): Positioning of data items relative to their x value.
 ///   - "start": The lower edge of the data item is on the x value (left aligned)
@@ -104,8 +113,8 @@
     message: "Mode must be basic, clustered, stacked or stacked100, but is " + mode)
   assert(bar-position in ("start", "center", "end"),
     message: "Invalid bar-position '" + bar-position + "'. Allowed values are: start, center, end")
-  assert(bar-width > 0,
-    message: "Option bar-width must be > 0, but is " + str(bar-width))
+  assert(bar-width != 0,
+    message: "Option bar-width must be != 0, but is " + str(bar-width))
 
   let n = util.max(..data.map(d => d.len() - 1))
   let x-offset = _get-x-offset(bar-position, bar-width)

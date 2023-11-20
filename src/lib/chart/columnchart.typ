@@ -34,19 +34,19 @@
 ///                           These keys are used as argument to the
 ///                           rows `.at(..)` function.
 /// - mode (string): Chart mode:
-///                  - `"basic"` -- Single bar per data row
-///                  - `"clustered"` -- Group of bars per data row
-///                  - `"stacked"` -- Stacked bars per data row
-///                  - `"stacked100"` -- Stacked bars per data row relative
-///                                      to the sum of the row
+///   / basic: Single bar per data row
+///   / clustered: Group of bars per data row
+///   / stacked: Stacked bars per data row
+///   / stacked100: Stacked bars per data row relative
+///     to the sum of the row
 /// - size (array): Chart size as width and height tuple in canvas unist;
 ///                 width can be set to `auto`.
-/// - bar-width (float): Size of a bar in relation to the charts height.
 /// - bar-style (style,function): Style or function (idx => style) to use for
-///                               each bar, accepts a palette function.
+///   each bar, accepts a palette function.
 /// - y-unit (content,auto): Tick suffix added to each tick label
 /// - y-label (content,none): Y axis label
 /// - x-label (content,none): x axis label
+/// - labels (none,content): Legend labels per y value group
 /// - ..plot-args (any): Arguments to pass to `plot.plot`
 #let columnchart(data,
                  label-key: 0,
@@ -57,6 +57,7 @@
                  x-label: none,
                  y-unit: auto,
                  y-label: none,
+                 labels: none,
                  ..plot-args
                  ) = {
   assert(type(label-key) in (int, str))
@@ -110,6 +111,7 @@
     {
       plot.add-bar(data,
         mode: mode,
+        labels: labels,
         bar-width: style.bar-width,
         axes: ("x", "y"))
     })
