@@ -13,18 +13,28 @@
 
 #import "transformations.typ": move-to
 
-/// Calculate intersection between multiple paths and create
-/// one anchor per intersection point.
+/// Calculates the intersections between multiple paths and create one anchor per intersection point.
 ///
-/// All resulting anchors will be named numerically, starting by 0.
-/// I.e., a call `intersections("a", ...)` will generate the anchors
+/// All resulting anchors will be named numerically, starting at 0.
+/// i.e., a call `intersections("a", ...)` will generate the anchors
 /// `"a.0"`, `"a.1"`, `"a.2"` to `"a.n"`, depending of the number of
 /// intersections.
 ///
-/// - name (string): Name of the node containing the anchors
-/// - body (drawables): Drawables to calculate intersections for
-/// - samples (int): Number of samples to use for non-linear path segments.
-///   A higher sample count can give more precise results but worse performance.
+/// #example(```
+/// intersections("demo", {
+///   circle((0, 0))
+///   bezier((0,0), (3,0), (1,-1), (2,1))
+///   line((0,-1), (0,1))
+///   rect((1.5,-1),(2.5,1))
+/// })
+/// for-each-anchor("demo", (name) => {
+///   circle("demo." + name, radius: .1, fill: black)
+/// })
+/// ```)
+///
+/// - name (string): Name to prepend to the generated anchors.
+/// - body (elements): Elements to calculate intersections with.
+/// - samples (int): Number of samples to use for non-linear path segments. A higher sample count can give more precise results but worse performance.
 #let intersections(name, body, samples: 10) = {
   samples = calc.clamp(samples, 2, 2500)
 
@@ -67,35 +77,46 @@
   },)
 }
 
-/// Group one or more elements.
+/// Groups one or more elements together. This element acts as a scope, all state changes such as transformations and styling only affect the elements in the group. Elements after the group are not affected by the changes inside the group.
 ///
-/// All state changes but anchors remain group local. That means, that changes
-/// to the transformation matrix (i.e. `rotate(...)`) are applied to the groups
-/// child elements only.
+/// #example(```
+/// // Create group
+/// group({
+///   stroke(5pt)
+///   scale(.5); rotate(45deg)
+///   rect((-1,-1),(1,1))
+/// })
+/// rect((-1,-1),(1,1))
+/// ```)
 ///
-/// A group creates compass anchors of its axis aligned bounding box, that are accessible
-/// using the following names: `north`, `north-east`, `east`, `south-east`, `south`, `south-west`, `west` and `north-west`.
-/// All anchors created using `anchor(<name>, <position>)` are also accessible, both in
-/// the group (by name `"anchor"`) and outsides the group (by the groups name + the anchor name, i.e. `"group.anchor"`)
+/// = parameters
 ///
-/// - name (none,string): Group element name
-/// - anchor (none,string): Anchor of the group to position itself relative to.
-///   This is done by calculating the distance to the groups `"default"` anchor
-///   and translating all grouped elements by that distance. The groups `"default"`
-///   anchor gets set to the groups `"center"` anchor, but the user can supply it's
-///   own by calling `anchor("default", ...)`.
-/// - ..body-style (drawables,style): Requires one positional parameter, the list of
-///   the groups child elements. Accepts style key-value pairs.
-#let group(name: none, anchor: none, ..body-style) = {
-  assert.eq(body-style.pos().len(), 1,
-    message: "Group expects exactly one positional argument.")
-
-  let body = body-style.pos().first()
-  assert(type(body) in (array, function),
-    message: "Incorrect type for body")
-
+/// *Style Root* `group`
+///
+/// *Style Keys*
+///   #show-parameter-block("padding", ("none", "number", "array", "dictionary"), default: none, [How much padding to add around the group's bounding box. `none` applies no padding. A number applies padding to all sides equally. A dictionary applies padding following Typst's `pad` function: https://typst.app/docs/reference/layout/pad/. An array follows CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`.])
+///
+/// *Anchors*
+///   Supports compass anchors. These are created based on the axis aligned bounding box of all the child elements of the group.
+///
+/// You can add custom anchors to the group by using the `anchor` element while in the scope of said group, see `anchor` for more details. You can also copy over anchors from named child element by using the `copy-anchors` element as they are not accessible from outside the group.
+///
+/// The default anchor is "center" but this can be overidden by using `anchor` to place a new anchor called "default".
+///
+/// - body (elements, function): Elements to group together. A least one is required. A function that accepts `ctx` and returns elements is also accepted.
+/// - name (none, string):
+/// - anchor (none, string):
+/// - ..style (style):
+#let group(body, name: none, anchor: none, ..style) = {
+  assert(type(body) in (array, function), message: "Incorrect type for body, expected an array or function. Instead got: " + repr(body))
+  // No extra positional arguments from the style sink
+  assert.eq(
+    style.pos(),
+    (),
+    message: "Unexpected positional arguments: " + repr(style.pos()),
+  )
   (ctx => {
-    let style = styles.resolve(ctx, body-style.named(), root: "group")
+    let style = styles.resolve(ctx, style.named(), root: "group")
 
     let bounds = none
     let drawables = ()
@@ -132,7 +153,7 @@
             center: mid,
           )
         }
-        // Custom anchors need to be added last to override the cardinal anchors.
+        // Custom anchors need to be added last to override the compass anchors.
         anchors += group-ctx.groups.last().anchors
         return anchors.at(anchor)
       },
@@ -150,17 +171,20 @@
   },)
 }
 
-/// Create a new named anchor.
+/// Creates a new anchor for the current group. This element can only be used inside a group otherwise it will panic. The new anchor will be accessible from inside the group by using just the anchor's name as a coordinate.
 ///
-/// An anchor is a named position insides a group, that can be referred to
-/// by other positions. Anchors can not be defined outsides groups, trying so
-/// will emit an error.
+/// #example(```
+/// // Create group
+/// group(name: "g", {
+///   circle((0,0))
+///   anchor("x", (.4, .1))
+///   circle("x", radius: .2)
+/// })
+/// circle("g.x", radius: .1)
+/// ```)
 ///
-/// Setting an anchor which name already exists overwrites the previously defined
-/// one.
-///
-/// - name (string): Anchor name
-/// - position (position): The anchors position
+/// - name (string): The name of the anchor
+/// - position (coordinate): The position of the anchor
 #let anchor(name, position) = {
   coordinate.resolve-system(position)
   return (ctx => {
@@ -175,11 +199,10 @@
   },)
 }
 
-/// Copy multiple anchors from one element into the current group.
+/// Copies multiple anchors from one element into the current group. Panics when used outside of a group. Copied anchors will be accessible in the same way anchors created by the `anchor` element are.
 ///
-/// - element (string): Element name
-/// - filter (auto,array): If set to an array, the function copies only
-///   anchors that are both in the source element and the filter list
+/// - element (string): The name of the element to copy anchors from.
+/// - filter (auto,array): When set to `auto` all anchors will be copied to the group. An array of anchor names can instead be given so only the anchors that are in the element and the list will be copied over.
 #let copy-anchors(element, filter: auto) = {
   (ctx => {
     assert(
@@ -220,6 +243,7 @@
   },)
 }
 
+/// TODO: Not writing the docs for this as it should be removed in place of better anchors before 0.2
 /// Place multiple anchors along a path
 ///
 /// - path (drawable): Single drawable
@@ -263,7 +287,7 @@
   },)
 }
 
-/// Modify the current canvas context
+/// An advanced element that allows you to modify the current canvas context. 
 ///
 /// A context object holds the canvas' state, such as the element dictionary,
 /// the current transformation matrix, group and canvas unit length. The following
@@ -272,18 +296,37 @@
 /// - `transform` (cetz.matrix): Current 4x4 transformation matrix
 /// - `debug` (bool): True if the canvas' debug flag is set
 ///
-/// - callback (function): Function accepting a context object and returning the new one: `(ctx) => <ctx>`
+/// #example(```
+/// // Setting a custom transformation matrix
+/// set-ctx(ctx => {
+///   let mat = ((1, 0, .5, 0),
+///              (0, 1,  0, 0),
+///              (0, 0,  1, 0),
+///              (0, 0,  0, 1))
+///   ctx.transform = mat
+///   return ctx
+/// })
+/// circle((z: 0), fill: red)
+/// circle((z: 1), fill: blue)
+/// circle((z: 2), fill: green)
+/// ```)
+///
+/// - callback (function): A function that accepts the context dictionary and only returns a new one.
 #let set-ctx(callback) = {
   assert(type(callback) == function)
   return (ctx => (ctx: callback(ctx)),)
 }
 
-/// Get the current context
+/// An advanced element that allows you to read the current canvas context through a callback and return elements based on it.
 ///
-/// Some functions such as `coordinate.resolve(...)` or `styles.resolve(...)` require a context object
-/// as argument. See `set-ctx` for a description of the context object.
+/// #example(```
+/// // Print the transformation matrix
+/// get-ctx(ctx => {
+///   content((), [#repr(ctx.transform)])
+/// })
+/// ```)
 ///
-/// - callback (function): Function accepting the current context object and returning drawables or `none`
+/// - callback (function): A function that accepts the context dictionary and can return elements.
 #let get-ctx(callback) = {
   assert(type(callback) == function)
   (ctx => {
@@ -296,11 +339,18 @@
   },)
 }
 
-/// Iterates through all anchors of an element, calling a callback per anchor
+/// Iterates through all anchors of an element and calls a callback for each one.
 ///
-/// - name (string): The target elements name to iterate over
-/// - callback (function): Callback function accepting an anchor name string: `(name) => {}` that
-///   must return drawables or `none`.
+/// #example(```
+/// // Label nodes anchors
+/// rect((0, 0), (2,2), name: "my-rect")
+/// for-each-anchor("my-rect", (name) => {
+///    content((), box(inset: 1pt, fill: white, text(8pt, [#name])), angle: -30deg)
+/// })
+/// ```)
+///
+/// - name (string): The name of the element with the anchors to loop through.
+/// - callback (function): A function that takes the anchor name and can return elements.
 #let for-each-anchor(name, callback) = {
   get-ctx(ctx => {
     assert(
@@ -314,20 +364,31 @@
   })
 }
 
-/// Place elements on a specific layer
+/// Places elements on a specific layer.
 ///
 /// A layer determines the position of an element in the draw queue. A lower
 /// layer is drawn before a higher layer.
 ///
 /// Layers can be used to draw behind or in front of other elements, even if
-/// the other elements got created before/later. An example would be drawing
-/// a background behind a text, but using the texts calculated bounding box for
+/// the other elements were created before or after. An example would be drawing
+/// a background behind a text, but using the text's calculated bounding box for
 /// positioning the background.
 ///
-/// - layer (number): Layer number. The default layer of elements is layer 0.
-/// - body (drawables): Elements to draw on the layer specified.
+/// #example(```
+/// // Draw something behind text
+/// set-style(stroke: none)
+/// content((0, 0), [This is an example.], name: "text")
+/// on-layer(-1, {
+///   circle("text.north-east", radius: .3, fill: red)
+///   circle("text.south", radius: .4, fill: green)
+///   circle("text.north-west", radius: .2, fill: blue)
+/// })
+/// ```)
+///
+/// - layer (float, integer): The layer to place the elements on. Elements placed without `on-layer` are always placed on layer 0.
+/// - body (elements): Elements to draw on the layer specified.
 #let on-layer(layer, body) = {
-  assert(type(layer) in (int, float), message: "Layer must be numeric, 0 being the default layer. Got: " + repr(layer))
+  assert(type(layer) in (int, float), message: "Layer must be a float or integer, 0 being the default layer. Got: " + repr(layer))
   assert(type(body) in (function, array))
   return (ctx => {
     let (ctx, drawables, ..) = process.many(ctx, if type(body) == function { body(ctx) } else { body })
@@ -346,6 +407,7 @@
   },)
 }
 
+/// TODO: Not writing the docs for this as it should be removed in place of better anchors before 0.2
 /// Place one or more marks along a path
 ///
 /// Mark items must get passed as positional arguments. A `mark-item` is an dictionary

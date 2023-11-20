@@ -6,23 +6,6 @@
 #import "src/styles.typ"
 #import "@preview/tidy:0.1.0"
 
-// This is a wrapper around typs-doc show-module that
-// strips all but one function from the module first.
-// As soon as typst-doc supports examples, this is no longer
-// needed.
-#let show-module-fn(module, fn, ..args) = {
-  module.functions = module.functions.filter(f => f.name == fn)
-  assert(
-    module.functions.len() > 0,
-    message: "No function named " + fn + " in module " + repr(module)
-  )
-
-  tidy.show-module(
-    module, ..args.pos(), ..args.named(),
-    show-module-name: false,
-    show-outline: false,
-  )
-}
 
 // Usage:
 //   ```example
@@ -84,7 +67,7 @@ Note that draw functions are imported inside the scope of the `canvas` block. Th
 == CeTZ Unique Argument Types
 Many CeTZ functions expect data in certain formats which we will call types. Note that these are actually made up of Typst primitives.
   / `<coordinate>`: Any coordinate system. See coordinate-systems.
-  / `<number>`: Any of `<float>`, `<integer>` or `<length>`
+  / `<number>`: Any of `<float>`, `<integer>` or `<length>`. 
   / `<style>`: Named arguments (or a dictionary if used for a single argument) of style key-values
 
 == Anchors <anchors>
@@ -219,188 +202,15 @@ circle((0.5, -2.5), radius: 0.5, fill: green)
 ```
 
 #pagebreak()
+== Shapes
+#doc-style.parse-show-module("/src/draw/shapes.typ")
 
-#let shapes-module = tidy.parse-module(
-  read("src/draw/shapes.typ"),
-  name: "Elements",
-  scope: (
-    example: example,
-    def-arg: def-arg,
-    show-parameter-block: doc-style.show-parameter-block
-  )
-)
+#pagebreak()
+== Grouping
+#doc-style.parse-show-module("/src/draw/grouping.typ")
 
-#tidy.show-module(
-  shapes-module,
-  show-outline: false,
-  sort-functions: none,
-  style: doc-style
-)
 
 /*
-#show-module-fn(shapes-module, "line")
-```example
-line((-1.5, 0), (1.5, 0))
-line((0, -1.5), (0, 1.5))
-```
-
-==== Styling
-
-#def-arg("mark", `<dictionary> or <auto>`, default: auto, [The styling to apply to marks on the line, see `mark`])
-
-#show-module-fn(shapes-module, "rect")
-```example
-rect((0,0), (1,1))
-rect((-1.5, 1.5), (1.5, -1.5))
-```
-
-#show-module-fn(shapes-module, "arc")
-```example
-arc((0,0), start: 45deg, stop: 135deg)
-arc((0,-0.5), start: 45deg, delta: 90deg, mode: "CLOSE")
-arc((0,-1), stop: 135deg, delta: 90deg, mode: "PIE")
-```
-
-==== Styling
-
-#def-arg("radius", `<number> or <array>`, default: 1, [The radius of the arc. This is also a global style shared with circle!])
-#def-arg("mode", `<string>`, default: `"OPEN"`, [The options are "OPEN" (the default, just the arc), "CLOSE" (a circular segment) and "PIE" (a circular sector).])
-
-#show-module-fn(shapes-module, "circle")
-```example
-circle((0,0))
-// Draws an ellipse
-circle((0,-2), radius: (0.75, 0.5))
-```
-
-#show-module-fn(shapes-module, "circle-through")
-```example
-let (a, b, c) = ((0,0), (2,-.5), (1,1))
-line(a, b, c, close: true, stroke: gray)
-circle-through(a, b, c, name: "c")
-circle("c.center", radius: .05, fill: red)
-```
-
-==== Styling
-
-#def-arg("radius", `<number> or <length> or <array of <number> or <length>>`, default: "1", [The circle's radius. If an array is given an ellipse will be drawn where the first item is the `x` radius and the second item is the `y` radius. This is also a global style shared with arc!])
-
-#show-module-fn(shapes-module, "bezier")
-```example
-let (a, b, c) = ((0, 0), (2, 0), (1, 1))
-line(a, c,  b, stroke: gray)
-bezier(a, b, c)
-
-let (a, b, c, d) = ((0, -1), (2, -1), (.5, -2), (1.5, 0))
-line(a, c, d, b, stroke: gray)
-bezier(a, b, c, d)
-```
-
-#show-module-fn(shapes-module, "bezier-through")
-```example
-let (a, b, c) = ((0, 0), (1, 1), (2, -1))
-line(a, b, c, stroke: gray)
-bezier-through(a, b, c, name: "b")
-
-// Show calculated control points
-line(a, "b.ctrl-0", "b.ctrl-1", c, stroke: gray)
-```
-
-#show-module-fn(shapes-module, "content")
-```example
-content((0,0), [Hello World!])
-```
-
-To put text on a line you can let content calculate the angle between
-its position and a second coordinate by passing it to `angle`:
-
-```example
-line((0, 0), (3, 1), name: "line")
-content(("line.start", .5, "line.end"),
-  angle: "line.end", padding: .1,
-  [Text on a line], anchor: "south")
-```
-
-This example uses linear interpolated coordinates `(a, t, b)` to place the
-content at the center of the line, see @coordinate-lerp.
-
-```example
-// Place content in a rect between two coordinates
-content((0,0), (2,2), box(par(justify: false)[This is a long text.],
-  stroke: 1pt, width: 100%, height: 100%, inset: 1em))
-```
-
-==== Styling
-This draw element is not affected by fill or stroke styling.
-
-#def-arg("padding", `<length>`, default: 0em, "")
-
-#show-module-fn(shapes-module, "catmull")
-```example
-catmull((0,0), (1,1), (2,-1), (3,0), tension: .4, stroke: blue)
-catmull((0,0), (1,1), (2,-1), (3,0), tension: .5, stroke: red)
-```
-
-#show-module-fn(shapes-module, "hobby")
-```example
-hobby((0,0), (1,1), (2,-1), (3,0), omega: 0, stroke: blue)
-hobby((0,0), (1,1), (2,-1), (3,0), omega: 1, stroke: red)
-```
-
-#show-module-fn(shapes-module, "grid")
-```example
-// Draw a grid
-grid((0,0), (2,2))
-
-// Draw a smaller blue grid
-grid((1,1), (2,2), stroke: blue, step: .25)
-```
-
-#show-module-fn(shapes-module, "mark")
-
-```example
-mark((0,0), (1,0), symbol: ">", fill: black)
-mark((0,0), (1,1), symbol: ">", scale: 3, fill: black)
-```
-
-Or as part of a line, using lines `mark` style key:
-
-```example-vertical
-rotate(-90deg)
-set-style(mark: (fill: black))
-line((1, -1), (1, 9), stroke: (paint: gray, dash: "dotted"))
-line((0, 8), (rel: (1, 0)), mark: (end: "left-harpoon"))
-line((0, 7), (rel: (1, 0)), mark: (end: "right-harpoon"))
-line((0, 6), (rel: (1, 0)), mark: (end: "<>"))
-line((0, 5), (rel: (1, 0)), mark: (end: "o"))
-line((0, 4), (rel: (1, 0)), mark: (end: "|"))
-line((0, 3), (rel: (1, 0)), mark: (end: "<"))
-line((0, 2), (rel: (1, 0)), mark: (end: ">"))
-
-set-style(mark: (fill: none))
-line((0, 1), (rel: (1, 0)), mark: (end: "<"))
-line((0, 0), (rel: (1, 0)), mark: (end: ">"))
-```
-
-==== Styling
-
-#def-arg("symbol", `<string>`, default: ">", [The type of mark to draw when using the `mark` function.])
-#def-arg("start", `<string>`, [The type of mark to draw at the start of a path.])
-#def-arg("end", `<string>`, [The type of mark to draw at the end of a path.])
-#def-arg("size", `<number>`, default: "0.15", [The size of the marks.])
-#def-arg("angle", `<angle>`, default: 45deg, [Angle for triangle style marks ("<" and ">")])
-
-== Path Transformations <path-transform>
-
-#show-module-fn(shapes-module, "merge-path")
-```example
-// Merge two different paths into one
-merge-path({
-  line((0, 0), (1, 0))
-  bezier((), (0, 0), (1,1), (0,1))
-}, fill: white)
-```
-
 #let grouping-module = tidy.parse-module(read("src/draw/grouping.typ"), name: "Shapes")
 
 #show-module-fn(grouping-module, "group")

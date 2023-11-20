@@ -654,6 +654,7 @@
 /// content((0,0), [Hello World!])
 /// ```)
 /// To put text on a line you can let the function calculate the angle between its position and a second coordinate by passing it to `angle`: 
+///
 /// #example(```
 /// line((0, 0), (3, 1), name: "line")
 /// content(
@@ -664,6 +665,13 @@
 ///   [Text on a line]
 /// )
 /// ```)
+///
+/// #example(```
+/// // Place content in a rect between two coordinates
+/// content((0, 0), (2, 2), box(par(justify: false)[This is a long text.], stroke: 1pt, width: 100%, height: 100%, inset: 1em))
+/// ```)
+///
+///
 /// = parameters
 /// *Style Root* `content`\
 /// *Style Keys*
