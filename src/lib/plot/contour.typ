@@ -200,7 +200,44 @@
                 "think this is not an error")
   }
 
-  return contours
+  // Find contour holes
+  let bbox(c) = {
+    let min-x = calc.min(..c.map(s => s.at(0)))
+    let max-x = calc.max(..c.map(s => s.at(0)))
+    let min-y = calc.min(..c.map(s => s.at(1)))
+    let max-y = calc.max(..c.map(s => s.at(1)))
+    return (min-x, max-x, min-y, max-y)
+  }
+
+  let pairs = ()
+
+  let i = 0
+  while i < contours.len() {
+    let pair = (outer: contours.at(i), inner: ())
+    let a = bbox(contours.at(i))
+
+    let j = i + 1
+    while j < contours.len() {
+      let b = bbox(contours.at(j))
+
+      if (b.at(0) >= a.at(0) and
+          b.at(1) <= a.at(1) and
+          b.at(2) >= a.at(2) and
+          b.at(3) <= a.at(3)) {
+        // Match: j is a hole of i
+        pair.inner.push(contours.at(j))
+
+        contours.remove(j)
+        j -= 1
+      }
+      j += 1
+    }
+
+    pairs.push(pair)
+    i += 1
+  }
+
+  return pairs
 }
 
 // Prepare line data
@@ -208,12 +245,21 @@
   let (x, y) = (ctx.x, ctx.y)
 
   self.contours = self.contours.map(c => {
-    c.stroke-paths = util.compute-stroke-paths(c.line-data,
+    let outer = c.outer
+    let inner = c.inner
+    c.stroke-paths = util.compute-stroke-paths(c.outer,
       (x.min, y.min), (x.max, y.max))
+    for i in inner {
+      if i.len() > 0 {
+        c.stroke-paths += util.compute-stroke-paths(i,
+          (x.min, y.min), (x.max, y.max))
+      }
+    }
 
     if self.fill {
-      c.fill-paths = util.compute-fill-paths(c.line-data,
+      c.fill-paths = util.compute-fill-paths(c.outer,
         (x.min, y.min), (x.max, y.max))
+      // TODO: Cut out the inner from the outer path!
     }
     return c
   })
@@ -300,14 +346,19 @@
   let z = if type(z) == array { z } else { (z,) }
   for z in z {
     for contour in find-contours(data, z, op: op, interpolate: interpolate, contour-limit: limit) {
-      let line-data = contour.map(pt => {
+      let outer = contour.outer.map(pt => {
         (pt.at(0) * dx + x-min,
          pt.at(1) * dy + y-min)
       })
+      let inner = contour.inner.map(i => i.map(pt => {
+        (pt.at(0) * dx + x-min,
+         pt.at(1) * dy + y-min)
+      }))
 
       contours.push((
         z: z,
-        line-data: line-data,
+        outer: outer,
+        inner: inner,
       ))
     }
   }

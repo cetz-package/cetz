@@ -7,6 +7,7 @@
   calc.exp(-(x * x) - (y * y)) - 1/3 * calc.exp(-calc.pow(x + 1, 2) - (y * y))
 )
 
+/*
 /* Simple contour */
 #box(stroke: 2pt + red, canvas({
   import draw: *
@@ -121,6 +122,26 @@
     // line
     plot.add-contour(
       (x, y) => x + 1 - y,
+      x-domain: (-10, 10),
+      y-domain: (-10, 10),
+    )
+  })
+}))
+*/
+
+/* Fill outsides */
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  plot.plot(size: (8, 8),
+    x-tick-step: 5,
+    y-tick-step: 5,
+  {
+    plot.add-contour(
+      (x, y) => 30 - (calc.pow(1 - x, 2) + calc.pow(1 - y, 2)),
+      fill: true,
+      style: (fill: rgb(255,0,0,100)),
+      op: "<=",
       x-domain: (-10, 10),
       y-domain: (-10, 10),
     )
