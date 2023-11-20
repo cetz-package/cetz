@@ -209,176 +209,14 @@ circle((0.5, -2.5), radius: 0.5, fill: green)
 == Grouping
 #doc-style.parse-show-module("/src/draw/grouping.typ")
 
-
-/*
-#let grouping-module = tidy.parse-module(read("src/draw/grouping.typ"), name: "Shapes")
-
-#show-module-fn(grouping-module, "group")
-```example
-// Create group
-group({
-  stroke(5pt)
-  scale(.5); rotate(45deg)
-  rect((-1,-1),(1,1))
-})
-rect((-1,-1),(1,1))
-```
-
-#show-module-fn(grouping-module, "anchor")
-```example
-group(name: "g", {
-  circle((0,0))
-  anchor("x", (.4,.1))
-})
-circle("g.x", radius: .1)
-```
-
-#show-module-fn(grouping-module, "copy-anchors")
-```example
-group(name: "g", {
-  rotate(45deg)
-  rect((0,0), (1,1), name: "r")
-  copy-anchors("r")
-})
-circle("g.north", radius: .1, fill: black)
-```
-
-#show-module-fn(grouping-module, "place-anchors")
-```typc
-place-anchors(name: "demo",
-              bezier((0,0), (3,0), (1,-1), (2,1)),
-              (name: "a", pos: .15),
-              (name: "mid", pos: .5))
-circle("demo.a", radius: .1, fill: black)
-circle("demo.mid", radius: .1, fill: black)
-```
-
-#show-module-fn(grouping-module, "place-marks")
-```example
-place-marks(bezier-through((0,0), (1,1), (2,0)),
-            (mark: "|", size: .1, pos: 0),
-            (mark: "o", size: .2, pos: .5),
-            (mark: ">", size: .3, pos: 1),
-            fill: black)
-```
-
-#show-module-fn(grouping-module, "intersections")
-```example
-intersections("demo", {
-  circle((0, 0))
-  bezier((0,0), (3,0), (1,-1), (2,1))
-  line((0,-1), (0,1))
-  rect((1.5,-1),(2.5,1))
-})
-for-each-anchor("demo", (name) => {
-  circle("demo." + name, radius: .1, fill: black)
-})
-```
-= hi <default-style>
-= hi <coordinate-lerp>
-= hi <coordinate-systems>
-/*
-== Layers
-
-You can use layers to draw elements below or on top of other elements by using layers
-with a higher or lower index. When rendering, all draw commands are sorted by their layer (0 being the default).
-
-#show-module-fn(grouping-module, "on-layer")
-```example
-// Draw something behind text
-set-style(stroke: none)
-content((0, 0), [This is an example.], name: "text")
-on-layer(-1, {
-  circle("text.north-east", radius: .3, fill: red)
-  circle("text.south", radius: .4, fill: green)
-  circle("text.north-west", radius: .2, fill: blue)
-})
-```
-
-
+#pagebreak()
 == Transformations
+All transformation functions push a transformation matrix onto the current transform stack. To apply transformations scoped use a `group(...)` object.
 
-#let transform-module = tidy.parse-module(read("src/draw/transformations.typ"), name: "Transformtations")
-
-All transformation functions push a transformation matrix onto the current transform stack.
-To apply transformations scoped use a `group(...)` object.
-
-Transformation martices get multiplied in the following order:
+Transformation matrices get multiplied in the following order:
 $ M_"world" = M_"world" dot M_"local" $
 
-
-#show-module-fn(transform-module, "translate")
-```example
-// Outer rect
-rect((0,0), (2,2))
-// Inner rect
-translate((.5,.5,0))
-rect((0,0), (1,1))
-```
-
-#show-module-fn(transform-module, "set-origin")
-```example
-// Outer rect
-rect((0,0), (2,2), name: "r")
-// Move origin to top edge
-set-origin("r.north")
-circle((0, 0), radius: .1)
-```
-
-#show-module-fn(transform-module, "set-viewport")
-```example
-rect((0,0), (2,2))
-set-viewport((0,0), (2,2), bounds: (10, 10))
-circle((5,5))
-```
-
-#show-module-fn(transform-module, "rotate")
-```example
-// Rotate on z-axis
-rotate(z: 45deg)
-rect((-1,-1), (1,1))
-// Rotate on y-axis
-rotate(y: 80deg)
-circle((0,0))
-```
-
-#show-module-fn(transform-module, "scale")
-```example
-// Scale x-axis
-scale((x: 1.8))
-circle((0,0))
-```
-
-== Context Modification
-
-The context of a canvas holds the canvas' internal state like style and transformation.
-Note that the fields of the context of a canvas are considered private and therefore
-unstable. You can add custom values to the context, but in order to prevent naming
-conflicts with future CeTZ versions, try to assign unique names.
-
-#show-module-fn(grouping-module, "set-ctx")
-```example
-// Setting a custom transformation matrix
-set-ctx(ctx => {
-  let mat = ((1, 0, .5, 0),
-             (0, 1, 0, 0),
-             (0, 0, 1, 0),
-             (0, 0, 0, 1))
-  ctx.transform = mat
-  return ctx
-})
-circle((z: 0), fill: red)
-circle((z: 1), fill: blue)
-circle((z: 2), fill: green)
-```
-
-#show-module-fn(grouping-module, "get-ctx")
-```example
-// Print the transformation matrix
-get-ctx(ctx => {
-  content((), [#repr(ctx.transform)])
-})
-```
+#doc-style.parse-show-module("/src/draw/transformations.typ")
 
 = Coordinate Systems <coordinate-systems>
 A _coordinate_ is a position on the canvas on which the picture is drawn. They take the form of dictionaries and the following sub-sections define the key value pairs for each system. Some systems have a more implicit form as an array of values and `CeTZ` attempts to infer the system based on the element types.
@@ -630,18 +468,6 @@ The example below shows how to use this system to create an offset from an ancho
 circle((0, 0), name: "c")
 fill(red)
 circle((v => cetz.vector.add(v, (0, -1)), "c.west"), radius: 0.3)
-```
-
-= Utility
-
-#show-module-fn(grouping-module, "for-each-anchor")
-```example
-// Label nodes anchors
-rect((0, 0), (2,2), name: "my-rect")
-for-each-anchor("my-rect", (name) => {
-  content((), box(inset: 1pt, fill: white, text(8pt, [#name])),
-          angle: -30deg)
-})
 ```
 
 = Libraries

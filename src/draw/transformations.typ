@@ -3,11 +3,9 @@
 #import "/src/vector.typ"
 #import "/src/util.typ"
 
-/// Sets the transformation matrix
+/// Sets the transformation matrix.
 ///
-/// - mat (none,matrix): The 4x4 transformation matrix to set. If `none` is
-///   passed, the transformation matrix is set to the identity matrix (
-///   `matrix.ident()`).
+/// - mat (none, matrix): The 4x4 transformation matrix to set. If `none` is passed, the transformation matrix is set to the identity matrix (`matrix.ident()`).
 #let set-transform(mat) = {
   let mat = if mat == none {
     matrix.ident()
@@ -15,10 +13,15 @@
     mat
   }
 
-  assert(type(mat) == array,
-    message: "Transformtion matrix must be of type array, got: " + repr(mat))
-  assert.eq(mat.len(), 4,
-    message: "Transformation matrix must be of size 4x4, got: " + repr(mat))
+  assert(
+    type(mat) == array,
+    message: "Transformtion matrix must be of type array, got: " + repr(mat)
+  )
+  assert.eq(
+    mat.len(), 
+    4,
+    message: "Transformation matrix must be of size 4x4, got: " + repr(mat)
+  )
 
   (ctx => {
     ctx.transform = mat
@@ -26,12 +29,18 @@
   },)
 }
 
-/// Rotate on z-axis (default) or specified axes if `angle` is of type
-/// dictionary.
+/// Rotates the transformation matrix on the z-axis by a given angle or other axes when specified.
 ///
-/// - angle (typst-angle,dictionary): Angle (z-axis) or dictionary of the
-///   form `(x: <typst-angle>, y: <angle>, z: <angle>)`
-///   specifying per axis rotation typst-angle.
+/// #example(```
+/// // Rotate on z-axis
+/// rotate(z: 45deg)
+/// rect((-1,-1), (1,1))
+/// // Rotate on y-axis
+/// rotate(y: 80deg)
+/// circle((0,0))
+/// ```)
+///
+/// - ..angles (angle): A single angle as a positional argument to rotate on the z-axis by. Named arguments of `x`, `y` or `z` can be given to rotate on their respective axis. You can give named arguments of `yaw`, `pitch` or `roll` to TODO
 #let rotate(..angles) = {
   assert(angles.pos().len() == 1 or angles.named().len() > 0,
     message: "Rotate takes a single z-angle or angles " +
@@ -62,12 +71,20 @@
   },)
 }
 
-/// Push translation matrix
+/// Translates the transformation matrix by the given vector or dictionary.
 ///
-/// - vec (vector,dictionary): Translation vector
-/// - pre (bool): Specify matrix multiplication order
-///               - false: `World = World * Translate`
-///               - true:  `World = Translate * World`
+/// #example(```
+/// // Outer rect
+/// rect((0,0), (2,2))
+/// // Inner rect
+/// translate((.5,.5,0))
+/// rect((0,0), (1,1))
+/// ```)
+///
+/// - vec (vector, dictionary): The vector to translate by. A dictionary can be given instead with optional keys `x`, `y` and `z` to translate in the relevant axis.
+/// - pre (bool): #box[Specify matrix multiplication order
+///                   - false: `World = World * Translate`
+///                   - true:  `World = Translate * World`]
 #let translate(vec, pre: true) = {
   (ctx => {
     let (x, y, z) = if type(vec) == "dictionary" {
@@ -82,7 +99,7 @@
         (0,)
       }
     } else {
-      panic("Invalid angle format '" + repr(vec) + "'")
+      panic("Invalid format '" + repr(vec) + "'")
     }
     
     
@@ -96,10 +113,15 @@
   },)
 }
 
-/// Push scale matrix
+/// Scales the transformation matrix by the given factor(s).
 ///
-/// - factor (float,dictionary): Scaling factor for all axes or
-///   per axis scaling factor dictionary.
+/// #example(```
+/// // Scale x-axis
+/// scale((x: 1.8))
+/// circle((0,0))
+/// ```)
+///
+/// - factor (float,dictionary): A float to scale the transformation matrix by. A dictionary with optional keys `x`, `y` and `z` can also be given to scale in the respective directions.
 #let scale(factor) = {
   (
     ctx => {
@@ -110,6 +132,13 @@
 }
 
 /// Sets the given position as the origin
+/// #example(```
+/// // Outer rect
+/// rect((0,0), (2,2), name: "r")
+/// // Move origin to top edge
+/// set-origin("r.north")
+/// circle((0, 0), radius: .1)
+/// ```)
 ///
 /// - origin (coordinate): Coordinate to set as new origin `(0,0,0)`
 #let set-origin(origin) = {
@@ -126,13 +155,13 @@
   )
 }
 
-/// Set current coordinate
+/// Sets the previous coordinate. 
 ///
-/// The current coordinate can be used via `()` (empty coordinate).
+/// The previous coordinate can be used via `()` (empty coordinate).
 /// It is also used as base for relative coordinates if not specified
 /// otherwise.
 ///
-/// - pt (coordinate): Coordinate to move to
+/// - pt (coordinate): The coordinate to move to.
 #let move-to(pt) = {
   let t = coordinate.resolve-system(pt)
   
