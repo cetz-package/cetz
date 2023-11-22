@@ -12,6 +12,7 @@
 #import "/src/bezier.typ" as bezier_
 #import "/src/anchor.typ" as anchor_
 #import "/src/mark.typ" as mark_
+#import "/src/aabb.typ"
 
 #import "transformations.typ": *
 #import "styling.typ": *
@@ -601,12 +602,16 @@
       )
     }
 
+    let (aabb-width, aabb-height, ..) = aabb.size(aabb.aabb(
+      (anchors.north-west, anchors.north-east,
+       anchors.south-west, anchors.south-east)))
+
     drawables.push(
       drawable.content(
         anchors.center,
-        calc.abs(calc.sin(angle) * height + calc.cos(angle) * width),
-        calc.abs(calc.cos(angle) * height + calc.sin(angle) * width),
-        typst-rotate(angle, 
+        aabb-width,
+        aabb-height,
+        typst-rotate(angle,
           block(
             width: width * ctx.length,
             height: height * ctx.length,
