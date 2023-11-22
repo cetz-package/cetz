@@ -486,15 +486,6 @@ current node, all following items are direct children of that node.
 The node itselfes can be of type `content` or `dictionary` with a key `content`.
 
 == Plot
-#let plot-module = tidy.parse-module(read("src/lib/plot.typ"), name: "Plot")
-#let plot-module-line = tidy.parse-module(read("src/lib/plot/line.typ"),
-  name: "Plot - Line")
-#let plot-module-contour = tidy.parse-module(read("src/lib/plot/contour.typ"),
-  name: "Plot - Contour")
-#let plot-module-boxwhisker = tidy.parse-module(read("src/lib/plot/boxwhisker.typ"),
-  name: "Plot - Boxwhisker")
-#let plot-module-sample = tidy.parse-module(read("src/lib/plot/sample.typ"),
-  name: "Plot - Sample")
 
 The library `plot` of CeTZ allows plotting 2D data.
 
@@ -504,12 +495,15 @@ Types commonly used by function of the `plot` library:
 / `domain`: Tuple representing a functions domain as closed interval.
             Example domains are: `(0, 1)` for $[0, 1]$ or
             `(-calc.pi, calc.pi)` for $[-pi, pi]$.
+/ `axes`: Tuple of axis names. Plotting functions taking an `axes` tuple
+  will use those axes as their `x` and `y` axis for plotting.
+  To rotate a plot, you can simply swap its axes, for example `("y", "x")`.
 
-#tidy.show-module(plot-module, show-module-name: false)
-#tidy.show-module(plot-module-line, show-module-name: false)
-#tidy.show-module(plot-module-contour, show-module-name: false)
-#tidy.show-module(plot-module-boxwhisker, show-module-name: false)
-#tidy.show-module(plot-module-sample, show-module-name: false)
+#doc-style.parse-show-module("/src/lib/plot.typ")
+#doc-style.parse-show-module("/src/lib/plot/line.typ")
+#doc-style.parse-show-module("/src/lib/plot/contour.typ")
+#doc-style.parse-show-module("/src/lib/plot/boxwhisker.typ")
+#doc-style.parse-show-module("/src/lib/plot/sample.typ")
 
 === Examples
 

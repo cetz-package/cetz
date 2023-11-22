@@ -1,11 +1,12 @@
-/// Sample the given one parameter function with `samples` values
+/// Sample the given single parameter function `samples` times, with values
 /// evenly spaced within the range given by `domain` and return each
 /// sampled `y` value in an array as `(x, y)` tuple.
 ///
 /// If the functions first return value is a tuple `(x, y)`, then all return values
 /// must be a tuple.
 ///
-/// - fn (function): Function to sample of the form `(x) => y` or `(x) => (x, y)`.
+/// - fn (function): Function to sample of the form `(x) => y` or `(t) => (x, y)`, where
+///   `x` or `t` are `float` values within the domain specified by `domain`.
 /// - domain (domain): Domain of `fn` used as bounding interval for the sampling points.
 /// - samples (int): Number of samples in domain.
 /// - sample-at (array): List of x values the function gets sampled at in addition
