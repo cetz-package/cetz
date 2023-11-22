@@ -50,7 +50,17 @@
   next({
     // Blue arrow
     set-style(stroke: red)
-    line((0,0), (1,0), mark: (end: ">"), stroke: blue)
+    line((0,0), (1,0), mark: (end: ">", stroke: auto), stroke: blue)
   })
 }))
 
+// Test merging strokes
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  set-style(stroke: 5pt)
+  set-style(mark: (stroke: (cap: "round")))
+  line((0,0), (1,0))
+  line((0,1), (1,1), stroke: blue)
+  line((0,2), (1,2), stroke: green + 1pt, mark: (end: ">"))
+}))

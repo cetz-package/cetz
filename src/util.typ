@@ -165,13 +165,43 @@
   return calc.max(..a)
 }
 
+/// Return value s as dictionary if s is a stroke compatible type
+#let _stroke-as-dict(s) = {
+  if type(s) == color {
+    return (paint: s)
+  } else if type(s) == length {
+    return (thickness: s)
+  } else if type(s) == dictionary {
+    return s
+  }
+
+  (if s.paint != auto {(paint: s.paint)} else {(paint: black)} +
+   if s.thickness != auto {(thickness: s.thickness)} +
+   if s.cap != auto {(cap: s.cap)} +
+   if s.join != auto {(join: s.join)} +
+   if s.miter-limit != auto {(miter-limit: s.miter-limit)} +
+   if s.dash != auto {(dash: s.dash)})
+}
+
+/// Types that can get merged together to form a stroke
+#let _stroke-compat-types = (
+  stroke, color, length, dictionary
+)
+
 /// Merge dictionary a and b and return the result
-/// Prefers values of b.
+/// Prefers values of b. This function can merge Typst stroke types
+/// as if they were dictionaries.
 ///
 /// - a (dictionary): Dictionary a
 /// - b (dictionary): Dictionary b
 /// -> dictionary
 #let merge-dictionary(a, b, overwrite: true) = {
+  // Hack Alert! There is currently no better way I know of...
+  if type(a) in _stroke-compat-types and type(b) in _stroke-compat-types and type(a) != type(b) or (type(a) == stroke and type(b) == stroke) {
+    a = _stroke-as-dict(a)
+    b = _stroke-as-dict(b)
+  }
+
   if type(a) == dictionary and type(b) == dictionary {
     let c = a
     for (k, v) in b {

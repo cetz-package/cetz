@@ -138,15 +138,19 @@
   let resolve-auto(hier, dict) = {
     if type(dict) != dictionary { return dict }
     for (k, v) in dict {
-      if v == auto {
-        for i in range(0, hier.len()) {
-          let parent = hier.at(i)
-          if k in parent {
-            v = parent.at(k)
-            if v != auto {
+      let is-auto = v == auto
+      for i in range(0, hier.len()) {
+        let parent = hier.at(i)
+        if k in parent {
+          v = parent.at(k)
+          if v != auto {
+            if is-auto {
               dict.insert(k, v)
-              break
+            } else {
+              dict.insert(k, util.merge-dictionary(v, dict.at(k)))
+              v = dict.at(k)
             }
+            break
           }
         }
       }
