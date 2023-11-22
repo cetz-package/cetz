@@ -13,6 +13,7 @@
 #import "/src/hobby.typ" as hobby_
 #import "/src/anchor.typ" as anchor_
 #import "/src/mark.typ" as mark_
+#import "/src/aabb.typ"
 
 #import "transformations.typ": *
 #import "styling.typ": *
@@ -552,8 +553,13 @@
         vector.add(a, (w, -h))
       }
 
-      let north = (calc.sin(angle)*h, calc.cos(angle)*h,0)
-      let east = (calc.cos(-angle)*w, calc.sin(-angle)*w,0)
+      // Only the center anchor gets transformed. All other anchors
+      // must be calculated relative to the transformed center!
+      center = matrix.mul-vec(ctx.transform,
+        vector.as-vec(center, init: (0,0,0,1)))
+
+      let north = (calc.sin(angle)*h, -calc.cos(angle)*h,0)
+      let east = (calc.cos(-angle)*w, -calc.sin(-angle)*w,0)
       let south = vector.scale(north, -1)
       let west = vector.scale(east, -1)
       (
@@ -597,14 +603,16 @@
       )
     }
 
-    
+    let (aabb-width, aabb-height, ..) = aabb.size(aabb.aabb(
+      (anchors.north-west, anchors.north-east,
+       anchors.south-west, anchors.south-east)))
 
     drawables.push(
       drawable.content(
         anchors.center,
-        calc.abs(calc.sin(angle) * height + calc.cos(angle) * width),
-        calc.abs(calc.cos(angle) * height + calc.sin(angle) * width),
-        typst-rotate(angle, 
+        aabb-width,
+        aabb-height,
+        typst-rotate(angle,
           block(
             width: width * ctx.length,
             height: height * ctx.length,
@@ -627,7 +635,8 @@
       anchors.keys(),
       default: if auto-size { "center" } else { "north-west" },
       offset-anchor: anchor,
-      transform: ctx.transform,
+      transform: none, // Content does not get transformed, see the calculation
+                       // of anchors.
       name: name,
     )
 

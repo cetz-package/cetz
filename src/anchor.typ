@@ -39,7 +39,7 @@
       message: strfmt("Anchor '{}' not in anchors {} for element '{}'", offset-anchor, repr(anchor-names), name)
     )
     let offset = matrix.transform-translate(
-      ..vector.sub(callback(default), callback(offset-anchor))
+      ..vector.sub(callback(default), callback(offset-anchor)).slice(0, 3)
     )
     transform = if transform != none {
       matrix.mul-mat(
