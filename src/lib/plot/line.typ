@@ -144,46 +144,45 @@
 ///                    drawing
 /// - fill (bool): Fill to y zero
 /// - fill-type (string): Fill type:
-///                       / `"axis"`: Fill to y = 0
-///                       / `"shape"`: Fill the functions shape
+///   / `"axis"`: Fill to y = 0
+///   / `"shape"`: Fill the functions shape
 /// - samples (int): Number of times the `data` function gets called for
-///                  sampling y-values. Only used if `data` is of
-///                  type function.
+///   sampling y-values. Only used if `data` is of
+///   type function.
 /// - sample-at (array): Array of x-values the function gets sampled at in addition
-///                      to the default sampling.
+///   to the default sampling.
 /// - line (string, dictionary): Line type to use. The following types are
-///                              supported:
-///                              / `"linear"`: Linear line segments
-///                              / `"spline"`: A smoothed line
-///                              / `"vh"`: Move vertical and then horizontal
-///                              / `"hv"`: Move horizontal and then vertical
-///                              / `"vhv"`: Add a vertical step in the middle
-///                              / `"raw"`: Like linear, but without linearization.
+///   supported:
+///   / `"linear"`: Linear line segments
+///   / `"spline"`: A smoothed line
+///   / `"vh"`: Move vertical and then horizontal
+///   / `"hv"`: Move horizontal and then vertical
+///   / `"vhv"`: Add a vertical step in the middle
+///   / `"raw"`: Like linear, but without linearization.
 ///
-///                              `"linear"` _should_ never look different than `"raw"`.
+///   `"linear"` _should_ never look different than `"raw"`.
 ///
-///                              If the value is a dictionary, the type must be
-///                              supplied via the `type` key. The following extra
-///                              attributes are supported:
-///                              / `"samples" <int>`: Samples of splines
-///                              / `"tension" <float>`: Tension of splines
-///                              / `"mid" <float>`: Mid-Point of vhv lines (0 to 1)
-///                              / `"epsilon" <float>`: Linearization slope epsilon for
-///                                use with `"linear"`, defaults to 0.
-/// - style (style): Style to use, can be used with a palette function
-/// - axes (array): Name of the axes to use for plotting, note that not all
-///                 plot styles are able to display a custom axis!
+///   If the value is a dictionary, the type must be
+///   supplied via the `type` key. The following extra
+///   attributes are supported:
+///   / `"samples" <int>`: Samples of splines
+///   / `"tension" <float>`: Tension of splines
+///   / `"mid" <float>`: Mid-Point of vhv lines (0 to 1)
+///   / `"epsilon" <float>`: Linearization slope epsilon for
+///     use with `"linear"`, defaults to 0.
+/// - style (style): Style to use, can be used with a `palette` function
+/// - axes (axes): Name of the axes to use for plotting.
 /// - mark (string): Mark symbol to place at each distinct value of the
-///                  graph. Uses the `mark` style key of `style` for drawing.
+///   graph. Uses the `mark` style key of `style` for drawing.
 ///
-///                  The following marks are supported:
-///                  - `"*"` or `"x"` -- X
-///                  - `"+"` -- Cross
-///                  - `"|"` -- Bar
-///                  - `"-"` -- Dash
-///                  - `"o"` -- Circle
-///                  - `"triangle"` -- Triangle
-///                  - `"square"` -- Square
+///   The following marks are supported:
+///   - `"*"` or `"x"` -- X
+///   - `"+"` -- Cross
+///   - `"|"` -- Bar
+///   - `"-"` -- Dash
+///   - `"o"` -- Circle
+///   - `"triangle"` -- Triangle
+///   - `"square"` -- Square
 /// - mark-size (float): Mark size in cavas units
 /// - data (array,function): Array of 2D data points (numeric) or a function
 ///                          of the form `x => y`, where `x` is a value

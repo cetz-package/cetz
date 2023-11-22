@@ -492,12 +492,26 @@ The library `plot` of CeTZ allows plotting 2D data.
 === Types
 
 Types commonly used by function of the `plot` library:
-/ `domain`: Tuple representing a functions domain as closed interval.
-            Example domains are: `(0, 1)` for $[0, 1]$ or
-            `(-calc.pi, calc.pi)` for $[-pi, pi]$.
-/ `axes`: Tuple of axis names. Plotting functions taking an `axes` tuple
+- #doc-style.show-type("domain"): Tuple representing a functions domain as closed interval.
+  Example domains are: `(0, 1)` for $[0, 1]$ or
+  `(-calc.pi, calc.pi)` for $[-pi, pi]$.
+- #doc-style.show-type("axes"): Tuple of axis names. Plotting functions taking an `axes` tuple
   will use those axes as their `x` and `y` axis for plotting.
   To rotate a plot, you can simply swap its axes, for example `("y", "x")`.
+- #doc-style.show-type("mark"): Plots feature their own set of marks. The following mark symbols are
+  available:
+  ```example-vertical
+  let marks = ("+", "x", "-", "|", "o", "square", "triangle")
+  cetz.plot.plot(size: (14, 1), x-min: 0, x-max: marks.len() + 1,
+    x-ticks: marks.enumerate().map(((i, s)) => (i+1, raw(s))),
+    x-tick-step: none, y-tick-step: none,
+    x-label: none, y-label: none,
+    {
+    for (i, s) in marks.enumerate() {
+      cetz.plot.add(((i + 1, 0),), mark: s, mark-style: (stroke: blue, fill: white), mark-size: .5)
+    }
+  })
+  ```
 
 #doc-style.parse-show-module("/src/lib/plot.typ")
 #doc-style.parse-show-module("/src/lib/plot/line.typ")
@@ -582,8 +596,6 @@ Axis names to be used for styling:
 #raw(repr(axes.default-style-schoolbook))
 
 == Chart
-#let chart-module = tidy.parse-module(read("src/lib/chart.typ"), name: "Chart")
-#let chart-boxwhisker-module = tidy.parse-module(read("src/lib/chart/boxwhisker.typ"), name: "Chart - Boxwhisker")
 
 With the `chart` library it is easy to draw charts.
 
@@ -595,7 +607,8 @@ Supported charts are:
   - `mode: "stacked100"`: Multiple stacked bars relative to the sum of a data row
 - `boxwhisker(..)`: A box-plot chart
 
-#tidy.show-module(chart-module, show-module-name: false)
+#doc-style.parse-show-module("/src/lib/chart/barchart.typ")
+#doc-style.parse-show-module("/src/lib/chart/columnchart.typ")
 
 === Examples -- Bar Chart <barchart-examples>
 
@@ -648,7 +661,7 @@ group(name: "c", anchor: "south-west", {
 })
 ```
 
-#tidy.show-module(chart-boxwhisker-module, show-module-name: false)
+#doc-style.parse-show-module("/src/lib/chart/boxwhisker.typ")
 
 === Styling
 
