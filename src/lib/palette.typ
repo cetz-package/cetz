@@ -2,30 +2,40 @@
 
 /// Create a new palette based on a base style
 ///
-/// A palette is a function in the form `index -> style` that takes an
-/// index (int) and returns a canvas style dictionary. If passed the
-/// string `"len"` it must return the length of its styles.
+/// #example(```
+/// let p = cetz.palette.new(colors: (red, blue, green))
+/// for i in range(0, 6) {
+///   set-style(..p(i))
+///   rect((rel: (-1, 0)), (rel: (1, .4)))
+///   move-to((rel: (0, -.8)))
+/// }
+/// ```)
 ///
 /// The functions returned by this function have the following named arguments:
-///   - fill (bool): Use color array for fill
-///   - stroke (bool): Use color array for stroke paint
+/// #show-parameter-block("fill", ("bool"), default: true, [
+///   If true, the returned fill color is one of the colors
+///   from the `colors` list, otherwise the base styles fill is used.
+/// ])
+/// #show-parameter-block("stroke", ("bool"), default: false, [
+///   If true, the returned stroke color is one of the colors
+///   from the `colors` list, otherwise the base styles stroke color is used.
+/// ])
 ///
-/// You can use a pallette for stroking via: `red.with(stroke: true)`
+/// You can use a pallette for stroking via: `red.with(stroke: true)`.
 ///
-/// - base (style): Style dictionary to use as base style
-/// - colors (none, array): List of colors to use as stroke and fill color or none
-/// - patterns (none, array): List of stroke patterns to use or none
-/// - stroke-lighten (ratio): Lighten to apply to the stroke color
-/// - fill-lighten (ratio): Lighten to apply to the fill color
-/// -> function Palette function that returns a style for an index
-#let new(base: base-style, colors: (), patterns: (),
-         fill-lighten: 0%, stroke-lighten: 0%) = {
+/// - base (style): Style dictionary to use as base style for the styles generated
+///   per color
+/// - colors (none, array): List of colors the returned palette should return styles with
+/// - patterns (none, array): List of stroke patterns the returned palette should return styles with
+///
+/// -> function Palette function of the form `index => style` that returns a style for an integer index
+#let new(base: base-style, colors: (), patterns: ()) = {
   if not "stroke" in base { base.stroke = (paint: black, thickness: 1pt, dash: "solid") }
   if not "fill" in base { base.fill = none }
 
   let color-n = colors.len()
   let pattern-n = patterns.len()
-  (index, fill: true, stroke: false) => {
+  return (index, fill: true, stroke: false) => {
     if index == "len" { return calc.max(color-n, pattern-n, 1) }
 
     let style = base
@@ -34,10 +44,10 @@
     }
     if color-n > 0 {
       if stroke {
-        style.stroke.paint = colors.at(calc.rem(index, color-n)).lighten(stroke-lighten)
+        style.stroke.paint = colors.at(calc.rem(index, color-n))
       }
       if fill {
-        style.fill = colors.at(calc.rem(index, color-n)).lighten(fill-lighten)
+        style.fill = colors.at(calc.rem(index, color-n))
       }
     }
     return style

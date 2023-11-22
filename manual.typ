@@ -722,17 +722,21 @@ styled the same way, see @plot.style.
 #raw(repr(chart.boxwhisker-default-style))
 
 == Palette <palette>
-#let palette-module = tidy.parse-module(read("src/lib/palette.typ"), name: "Palette")
 
-A palette is a function that returns a style for an index.
+A palette is a function of the form `index => style` that takes an
+index, that can be any integer and returns a canvas style dictionary.
+If passed the string `"len"` it must return the length of its unique
+styles. An example use for palette functions is the `plot` library, which
+can use palettes to apply different styles per plot.
+
 The palette library provides some predefined palettes.
 
-#tidy.show-module(palette-module, show-module-name: false)
+#doc-style.parse-show-module("/src/lib/palette.typ")
 
 #let show-palette(p) = box({
   let p = p.with(stroke: true)
   canvas(length: 1em, {
-    import lib.draw: *
+    import cetz.draw: *
     for i in range(0, p("len")) {
       if calc.rem(i, 10) == 0 { move-to((rel: (0, -.5))) }
       rect((), (rel: (1,.5)), name: "r", ..p(i))
