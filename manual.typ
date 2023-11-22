@@ -629,54 +629,53 @@ Supported charts are:
 #tidy.show-module(chart-module, show-module-name: false)
 
 === Examples -- Bar Chart <barchart-examples>
-==== Basic
-```example-vertical
-import cetz.chart
-let data = (("A", 10), ("B", 20), ("C", 13))
-chart.barchart(size: (10, auto), x-tick-step: 10, data)
-```
 
-==== Clustered
 ```example-vertical
 import cetz.chart
-let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-chart.barchart(size: (10, auto), mode: "clustered",
-               x-tick-step: 10, value-key: (..range(1, 4)), data)
-```
-
-==== Stacked
-```example-vertical
-import cetz.chart
-let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-chart.barchart(size: (10, auto), mode: "stacked",
-               x-tick-step: 10, value-key: (..range(1, 4)), data)
-```
-
-=== Examples -- Column Chart <columnchart-examples>
-==== Basic, Clustered and Stacked
-```example-vertical
-import cetz.chart
-// Left
+// Left - Basic
 let data = (("A", 10), ("B", 20), ("C", 13))
 group(name: "a", {
-  anchor("default", (0,0))
-  chart.columnchart(size: (auto, 4), data)
+  chart.barchart(size: (4, 3), data)
 })
-// Center
+// Center - Clustered
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
 set-origin("a.south-east")
 group(name: "b", anchor: "south-west", {
   anchor("center", (0,0))
-  chart.columnchart(size: (auto, 4),
-    mode: "clustered", value-key: (1,2,3), data)
+  chart.barchart(size: (4, 3), mode: "clustered", value-key: (1,2,3), data)
 })
-// Right
+// Right - Stacked
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
 set-origin("b.south-east")
 group(name: "c", anchor: "south-west", {
   anchor("center", (0,0))
-  chart.columnchart(size: (auto, 4),
-    mode: "stacked", value-key: (1,2,3), data)
+  chart.barchart(size: (4, 3), mode: "stacked", value-key: (1,2,3), data)
+})
+```
+
+=== Examples -- Column Chart <columnchart-examples>
+
+==== Basic, Clustered and Stacked
+```example-vertical
+import cetz.chart
+// Left - Basic
+let data = (("A", 10), ("B", 20), ("C", 13))
+group(name: "a", {
+  chart.columnchart(size: (4, 3), data)
+})
+// Center - Clustered
+let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
+set-origin("a.south-east")
+group(name: "b", anchor: "south-west", {
+  anchor("center", (0,0))
+  chart.columnchart(size: (4, 3), mode: "clustered", value-key: (1,2,3), data)
+})
+// Right - Stacked
+let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
+set-origin("b.south-east")
+group(name: "c", anchor: "south-west", {
+  anchor("center", (0,0))
+  chart.columnchart(size: (4, 3), mode: "stacked", value-key: (1,2,3), data)
 })
 ```
 
