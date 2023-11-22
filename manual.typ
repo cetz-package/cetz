@@ -476,33 +476,8 @@ circle((v => cetz.vector.add(v, (0, -1)), "c.west"), radius: 0.3)
 
 == Tree
 The tree library allows the drawing diagrams with simple tree layout algorithms
+
 #doc-style.parse-show-module("/src/lib/tree.typ")
-
-```example
-import cetz.tree
-
-let data = ([Root], ([A], [A-A], [A-B]), ([B], [B-A]))
-tree.tree(data, content: (padding: .1), line: (stroke: blue))
-```
-
-```example
-import cetz.tree
-
-let data = ([Root], ([\*], [A-A], [A-B]), ([B], [B-A]))
-tree.tree(data, content: (padding: .1), direction: "right",
-          mark: (end: ">", fill: none),
-          draw-node: (node, ..) => {
-            circle((), radius: .35, fill: blue, stroke: none)
-            content((), text(white, [#node.content]))
-          },
-          draw-edge: (from, to, ..) => {
-            let (a, b) = (from + ".center",
-                          to + ".center")
-
-             line((a: a, b: b, abs: true, number: .35),
-                  (a: b, b: a, abs: true, number: .35))
-          })
-```
 
 === Node <tree-node>
 

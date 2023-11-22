@@ -13,28 +13,25 @@
 ///
 /// #example(```
 /// import cetz.tree
-/// let data = ([Root], ([A], [A-A], [A-B]), ([B], [B-A]))
-/// tree.tree(data, content: (padding: .1), line: (stroke: blue))
+/// set-style(content: (padding: .1))
+/// tree.tree(([Root], ([A], [A.A], [A.B]), ([B], [B.A])))
 /// ```)
 ///
 /// #example(```
 /// import cetz.tree
-/// let data = ([Root], ([\*], [A-A], [A-B]), ([B], [B-A]))
+/// set-style(content: (padding: .1))
+/// let data = ([\*], ([A], [A.A], [A.B]), ([B], [B.A]))
 /// tree.tree(
 ///   data,
-///   content: (padding: .1),
 ///   direction: "right",
-///   mark: (end: ">", fill: none),
 ///   draw-node: (node, ..) => {
 ///     circle((), radius: .35, fill: blue, stroke: none)
 ///     content((), text(white, [#node.content]))
 ///   },
 ///   draw-edge: (from, to, ..) => {
 ///     let (a, b) = (from + ".center", to + ".center")
-///     line(
-///       (a: a, b: b, abs: true, number: .35),
-///       (a: b, b: a, abs: true, number: .35)
-///     )
+///     line((a: a, b: b, abs: true, number: .40),
+///          (a: b, b: a, abs: true, number: .40))
 ///   }
 /// )
 /// ```)
