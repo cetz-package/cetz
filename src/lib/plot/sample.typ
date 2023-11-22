@@ -28,7 +28,7 @@
     y0 = (y0, )
   }
 
-  let pts = sample-at + range(0, samples + 1).map(t => lo + t / samples * (hi - lo))
+  let pts = sample-at + range(0, samples).map(t => lo + t / (samples - 1) * (hi - lo))
   pts = pts.sorted()
 
   return pts.map(x => {
@@ -65,13 +65,13 @@
 
   let (x-min, x-max) = x-domain
   let (y-min, y-max) = y-domain
-  let y-pts = range(0, y-samples + 1)
-  let x-pts = range(0, x-samples + 1)
+  let y-pts = range(0, y-samples)
+  let x-pts = range(0, x-samples)
 
   return y-pts.map(y => {
-    let y = y / y-samples * (y-max - y-min) + y-min
+    let y = y / (y-samples - 1) * (y-max - y-min) + y-min
     return x-pts.map(x => {
-      let x = x / x-samples * (x-max - x-min) + x-min
+      let x = x / (x-samples - 1) * (x-max - x-min) + x-min
       return float((fn)(x, y))
     })
   })
