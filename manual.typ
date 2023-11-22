@@ -470,14 +470,14 @@ fill(red)
 circle((v => cetz.vector.add(v, (0, -1)), "c.west"), radius: 0.3)
 ```
 
+#pagebreak()
+
 = Libraries
 
 == Tree
-#let tree-module = tidy.parse-module(read("src/lib/tree.typ"), name: "Tree")
+The tree library allows the drawing diagrams with simple tree layout algorithms
+#doc-style.parse-show-module("/src/lib/tree.typ")
 
-With the tree library, CeTZ provides a simple tree layout algorithm.
-
-#tidy.show-module(tree-module, show-module-name: false)
 ```example
 import cetz.tree
 
@@ -745,13 +745,13 @@ angle(a, b, c, label: n => $#{n/1deg} degree$,
 
 ==== Default `angle` Style
 #raw(repr(angle.default-style))
-
+/*
 == Decorations <decorations>
-#let decorations-module = tidy.parse-module(read("src/lib/decorations.typ"), name: "Decorations")
+// #let decorations-module = tidy.parse-module(read("src/lib/decorations.typ"), name: "Decorations")
 
 Various pre-made shapes and lines.
 
-#show-module-fn(decorations-module, "brace")
+// #show-module-fn(decorations-module, "brace")
 ```example
 import cetz.decorations: brace
 let text = text.with(size: 12pt, font: "Linux Libertine")

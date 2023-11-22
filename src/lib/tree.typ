@@ -9,17 +9,40 @@
 
 #let typst-content = content
 
-/// Layout and render tree nodes
+/// Lays out and renders tree nodes.
 ///
-/// - root (array): Tree structure represented by nested lists
-///                 Example: `([root], [child 1], ([child 2], [grandchild 1]))`
-/// - draw-node (function): Callback for rendering a node.
-///                         Signature: `(node) => elements`. The nodes position
-///                         is accessible through the anchor `"center"` or the last
-///                         position `()`.
-/// - draw-edge (function): Callback for rendering edges between nodes
-///                         Signature: `(source-name, target-name, target-node) => elements`
-/// - direction (string): Tree grow direction (up, down, left, right)
+/// #example(```
+/// import cetz.tree
+/// let data = ([Root], ([A], [A-A], [A-B]), ([B], [B-A]))
+/// tree.tree(data, content: (padding: .1), line: (stroke: blue))
+/// ```)
+///
+/// #example(```
+/// import cetz.tree
+/// let data = ([Root], ([\*], [A-A], [A-B]), ([B], [B-A]))
+/// tree.tree(
+///   data,
+///   content: (padding: .1),
+///   direction: "right",
+///   mark: (end: ">", fill: none),
+///   draw-node: (node, ..) => {
+///     circle((), radius: .35, fill: blue, stroke: none)
+///     content((), text(white, [#node.content]))
+///   },
+///   draw-edge: (from, to, ..) => {
+///     let (a, b) = (from + ".center", to + ".center")
+///     line(
+///       (a: a, b: b, abs: true, number: .35),
+///       (a: b, b: a, abs: true, number: .35)
+///     )
+///   }
+/// )
+/// ```)
+///
+/// - root (array): A nested array of content that describes the structure the tree should take. Example: `([root], [child 1], ([child 2], [grandchild 1]))`
+/// - draw-node (auto, function): The function to call to draw a node. The function will be passed two positional arguments, the node to draw and the node's parent, and is expected to return elements (`(node, parent-node) => elements`). The node's position is accessible through the "center" anchor or by using the previous position coordinate `()`. If `auto` is given, just the node's contents will be drawn.
+/// - draw-edge (auto, function): The function to call draw an edge between two nodes. The function will be passed the name of the starting node, the name of the ending node, and the end node and is expected to return elements (`(source-name, target-name, target-node) => elements`). If `auto` is given, a straight line will be drawn between nodes.
+/// - direction (string): A string describing the direction the tree should grow in ("up", "down", "left", "right")
 /// - parent-position (string): Positioning of parent nodes (begin, center, end)
 /// - grow (float): Depth grow factor (default 1)
 /// - spread (float): Sibling spread factor (default 1)
