@@ -495,7 +495,7 @@
   } else if args.len() == 3 {
     args
   } else {
-    panic("Expected 2 or 3 positional arguments, got " + str(args.len))
+    panic("Expected 2 or 3 positional arguments, got " + str(args.len()))
   }
 
   coordinate.resolve-system(a)
@@ -530,6 +530,8 @@
       angle
     }
 
+    // Typst's `rotate` function is clockwise relative to x-axis, which is backwards from us
+    angle = angle * -1
 
     let (width, height, ..) = if auto-size {
       util.measure(ctx, body)

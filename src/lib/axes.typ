@@ -422,7 +422,7 @@
       if not axis.at("is-mirror", default: false) {
         let is-left-right = side in ("west", "east")
         let angle = if is-left-right {
-          -90deg
+          90deg
         } else {
           0deg
         }

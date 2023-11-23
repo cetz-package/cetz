@@ -89,7 +89,8 @@
 
 /// Calculate angle between two points and the x-axis in 2d space
 #let angle2(a, b) = {
-  return calc.atan2(a.at(1) - b.at(1), a.at(0) - b.at(0)) + 90deg
+  // Typst's atan2 is (x, y) order, not (y, x)
+  return calc.atan2(b.at(0) - a.at(0), b.at(1) - a.at(1))
 }
 
 /// Calculate angle between three points 

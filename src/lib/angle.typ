@@ -54,9 +54,9 @@
     message: "Angle z coordinates of all three points must be equal")
 
   let (s, e, ss) = {
-    let s = vector.angle2(origin, a) * -1
+    let s = vector.angle2(origin, a)
     if s < 0deg { s += 360deg }
-    let e = vector.angle2(origin, b) * -1
+    let e = vector.angle2(origin, b)
     if e < 0deg { e += 360deg }
 
     if s > e {
