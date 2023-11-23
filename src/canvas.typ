@@ -23,9 +23,10 @@
   let length = if type(length) == ratio {
     length * ly.width
   } else {
-    measure(line(length: length), st).width
+    measure(box(width: length, height: length), st).width
   }
-
+  assert(length / 1cm != 0,
+    message: "Canvas length must be != 0!")
 
   let ctx = (
     typst-style: st,
