@@ -46,6 +46,9 @@
 /// any axis name and as many axes as you want for plotting data, but only
 /// the predefined axes (`x`, `y`, `x2`, `y2`) are displayd with ticks.
 ///
+/// To draw elements insides a plot, using the plots coordinate system, use
+/// the `plot.add-annotation(..)` function.
+///
 /// *Options* <plot-axis-options>
 ///
 /// The following options are supported per axis and must be prefixed
@@ -56,6 +59,15 @@
 ///   Axis lower domain value. If this is set > than `max`, the axis' direction is swapped])
 /// #show-parameter-block("max", ("auto", "float"), default: "auto", [
 ///   Axis upper domain value. If this is set < than `min`, the axis' direction is swapped])
+/// #show-parameter-block("equal", ("string"), default: "none", [
+///   Set the axis aspect ratio to be fixed to the aspect ratio of the given axis.
+///   This can be useful to force one axis to grow or shrink with another one.
+///   You can only "lock" two axes of different orientation (`horizontal`).
+/// ])
+/// #show-parameter-block("horizontal", ("bool"), default: "auto", [
+///   If true, values on this axis are drawn horizontally, otherwise values
+///   get drawn vertically.
+/// ])
 /// #show-parameter-block("tick-step", ("none", "auto", "float"), default: "auto", [
 ///   Increment between tick marks on the axis, starting at $0$. If set to `auto`,
 ///   a matching increment is calculated. When set to `none`, tick marks are disabled.])
@@ -86,18 +98,10 @@
 ///   to `"minor"`, show grid lines for minor ticks only.
 ///   The value `"both"` enables grid lines for both, major- and minor ticks.
 /// ])
-/// #show-parameter-block("equal", ("string"), default: "none", [
-///   Set the axis aspect ratio to be fixed to the aspect ratio of the given axis.
-///   This can be useful to force one axis to grow or shrink with another one.
-///   You can only "lock" two axes of different orientation (`horizontal`).
-/// ])
-/// #show-parameter-block("horizontal", ("bool"), default: "auto", [
-///   If true, values on this axis are drawn horizontally, otherwise values
-///   get drawn vertically.
-/// ])
 ///
 /// - body (body): Calls of `plot.add` or `plot.add-*` commands. Note that normal drawing
-///   commands like `line` or `rect` are not allowed insides the plots body!
+///   commands like `line` or `rect` are not allowed insides the plots body, instead wrap
+///   them in `plot.add-annotation`, which lets you select the axes used for drawing.
 /// - size (array): Plot size tuple of `(<width>, <height>)` in canvas units.
 ///   This is the plots inner plotting size without axes and labels.
 /// - axis-style (none, string): Axis style "scientific", "left", "school-book"
@@ -109,6 +113,19 @@
 ///     / `"left"`: Draw axes `x` and `y` as arrows, while the y axis stays on the left (at `x.min`)
 ///                 and the x axis at the bottom (at `y.min`)
 ///     / `none`: Draw no axes (and no ticks).
+///
+///     #example(```
+///     let opts = (x-tick-step: none, y-tick-step: none, size: (2,1))
+///     let data = cetz.plot.add(((-1,-1), (1,1),), mark: "o")
+///
+///     cetz.plot.plot(axis-style: none, ..opts, data)
+///     set-origin((3,0))
+///     cetz.plot.plot(axis-style: "scientific", ..opts, data)
+///     set-origin((3,0))
+///     cetz.plot.plot(axis-style: "school-book", ..opts, data)
+///     set-origin((3,0))
+///     cetz.plot.plot(axis-style: "left", ..opts, data)
+///     ```, vertical: true)
 /// - plot-style (style,function): Style used for drawing plot graphs
 ///   This style gets inherited by all plots and supports `palette` functions.
 /// - mark-style (style,function): Style used for drawing plot marks.
@@ -134,6 +151,13 @@
 ///     - `legend.inner-north-west`
 ///     - `legend.inner-south-east`
 ///     - `legend.inner-south-west`
+///
+///     #example(```
+///     cetz.plot.plot(size: (2,1), x-tick-step: none, y-tick-step: none,
+///                    legend: "legend.north", {
+///       cetz.plot.add(((-1,-1),(1,1),), mark: "o", label: $f(x)$)
+///     })
+///     ```)
 ///
 ///   If set to `auto`, the placement of the legend style (*Style Root* `legend`) gets used.
 ///   If set to a coordinate, that coordinate, relative to the plots origin is used for

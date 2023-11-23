@@ -158,9 +158,8 @@
 ///   / `"vh"`: Move vertical and then horizontal
 ///   / `"hv"`: Move horizontal and then vertical
 ///   / `"vhv"`: Add a vertical step in the middle
-///   / `"raw"`: Like linear, but without linearization.
-///
-///   `"linear"` _should_ never look different than `"raw"`.
+///   / `"raw"`: Like linear, but without linearization taking place. This is
+///     meant as a "fallback" for either bad performance or bugs.
 ///
 ///   If the value is a dictionary, the type must be
 ///   supplied via the `type` key. The following extra
@@ -169,20 +168,26 @@
 ///   / `"tension" <float>`: Tension of splines
 ///   / `"mid" <float>`: Mid-Point of vhv lines (0 to 1)
 ///   / `"epsilon" <float>`: Linearization slope epsilon for
-///     use with `"linear"`, defaults to 0.
+///      use with `"linear"`, defaults to 0.
+///
+///   #example(```
+///   let points(offset: 0) = ((0,0), (1,1), (2,0), (3,1), (4,0)).map(((x,y)) => {
+///     (x,y + offset * 1.5)
+///   })
+///   cetz.plot.plot(size: (12, 3), axis-style: none, {
+///     cetz.plot.add(points(offset: 5), line: (type: "vhv", mid: .1))
+///     cetz.plot.add(points(offset: 4), line: "vhv")
+///     cetz.plot.add(points(offset: 3), line: "hv")
+///     cetz.plot.add(points(offset: 2), line: "vh")
+///     cetz.plot.add(points(offset: 1), line: "spline")
+///     cetz.plot.add(points(offset: 0), line: "linear")
+///   })
+///   ```, vertical: true)
+///
 /// - style (style): Style to use, can be used with a `palette` function
 /// - axes (axes): Name of the axes to use for plotting.
 /// - mark (string): Mark symbol to place at each distinct value of the
 ///   graph. Uses the `mark` style key of `style` for drawing.
-///
-///   The following marks are supported:
-///   - `"*"` or `"x"` -- X
-///   - `"+"` -- Cross
-///   - `"|"` -- Bar
-///   - `"-"` -- Dash
-///   - `"o"` -- Circle
-///   - `"triangle"` -- Triangle
-///   - `"square"` -- Square
 /// - mark-size (float): Mark size in cavas units
 /// - data (array,function): Array of 2D data points (numeric) or a function
 ///                          of the form `x => y`, where `x` is a value

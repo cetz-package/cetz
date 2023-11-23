@@ -487,7 +487,7 @@ The node itselfes can be of type `content` or `dictionary` with a key `content`.
 
 == Plot
 
-The library `plot` of CeTZ allows plotting 2D data.
+The library `plot` of CeTZ allows plotting data.
 
 === Types
 
@@ -520,14 +520,6 @@ Types commonly used by function of the `plot` library:
 #doc-style.parse-show-module("/src/lib/plot/sample.typ")
 
 === Examples
-
-```example
-import cetz.plot
-plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
-          x-unit: $degree$, {
-  plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
-})
-```
 
 ```example
 import cetz.plot
