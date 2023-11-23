@@ -123,7 +123,7 @@ echo "Typst: $(typst --version)"
 # we fake it by forwarding it's call to xargs
 if ! hash parallel 2>/dev/null; then
   function parallel() {
-    xargs -n 1 -I {} bash -c "$1"
+    xargs -I {} bash -c "$1"
   }
 fi
 
