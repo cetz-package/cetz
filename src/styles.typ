@@ -75,6 +75,22 @@
     stroke: auto,
     fill: auto
   ),
+  rect: (
+    /// Rect corner radius that supports the following types:
+    /// - <radius>: Same x and y radius for all corners
+    /// - (west: <radius>, east: <radius>, north: <radius>, south: <radius>,
+    ///    north-west: <radius>, north-east: <radius>, south-west: <radius>, south-east: <radius>,
+    ///    rest: <radius: 0>)
+    ///
+    /// A radius can be either a number, a ratio or a tuple of numbers or ratios.
+    /// Ratios represent a value relative to the rects height or width.
+    /// E.g. the radius `50%` is equal to `(50%, 50%)` and represents a x and y radius
+    /// of 50% of the rects width/height.
+    radius: 0,
+
+    stroke: auto,
+    fill: auto,
+  ),
   arc: (
     // Supported values:
     //   - "OPEN"

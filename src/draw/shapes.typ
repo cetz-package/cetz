@@ -1012,19 +1012,37 @@
         )
         (lo, hi)
       }
+
+      let style = styles.resolve(ctx.style, style, root: "rect")
+      let (x1, y1, z1) = a
+      let (x2, y2, z2) = b
+
+      let size = (calc.abs(x2 - x1), calc.abs(y2 - y1))
+      let (north-west: nw, north-east: ne,
+           south-west: sw, south-east: se) = util.as-corner-radius-dict(style.radius, size)
+
       let (transform, anchors) = anchor_.setup(
         (anchor) => {
           let (w, h, d) = vector.sub(b, a)
+
+          // Calculate corner points
+          let rot(v, angle) = (v.at(0) * calc.cos(angle),
+                               v.at(1) * calc.sin(angle))
+          let nw = vector.add((x1 + nw.at(0), y2 - nw.at(1)), rot(nw, 135deg))
+          let ne = vector.add((x2 - ne.at(0), y2 - ne.at(1)), rot(ne, 45deg))
+          let sw = vector.add((x1 + sw.at(0), y1 + sw.at(1)), rot(sw, -135deg))
+          let se = vector.add((x2 - se.at(0), y1 + se.at(1)), rot(se, -45deg))
+
           let center = vector.add(a, (w/2, h/2))
           (
             north: (center.at(0), b.at(1)),
-            north-east: b,
+            north-east: ne,
             east: (b.at(0), center.at(1)),
-            south-east: (b.at(0), a.at(1)),
+            south-east: se,
             south: (center.at(0), a.at(1)),
-            south-west: a,
+            south-west: sw,
             west: (a.at(0), center.at(1)),
-            north-west: (a.at(0), b.at(1)),
+            north-west: nw,
             center: center
           ).at(anchor)
         },
@@ -1034,16 +1052,49 @@
         offset-anchor: anchor,
         transform: ctx.transform
       )
-      
-      let style = styles.resolve(ctx.style, merge: style, root: "rect")
-      let (x1, y1, z1) = a
-      let (x2, y2, z2) = b
-      let drawables = drawable.path(
-        path-util.line-segment(((x1, y1, z1), (x2, y1, z2), (x2, y2, z2), (x1, y2, z1))),
-        fill: style.fill,
-        stroke: style.stroke,
-        close: true,
-      )
+
+      let drawables = {
+        let z = z1
+        let get-corner-pts(radius, pt, a, b) = {
+          let (rx, ry) = radius
+          if rx > 0 or ry > 0 {
+            let (xa, ya) = a
+            let (xb, yb) = b
+            (vector.add(pt, (xa * rx, ya * ry)),
+             vector.add(pt, (xb * rx, yb * ry)))
+          } else {
+            (pt, pt)
+          }
+        }
+
+        // Get segments for arc between start- and stop angle, starting
+        // at point.
+        let corner-arc(radius, start-angle, stop-angle, pt) = {
+          let (rx, ry) = radius
+          if rx > 0 or ry > 0 {
+            let (x, y, ..) = pt
+            drawable.arc(x, y, z, start-angle, stop-angle, rx, ry).segments
+          }
+        }
+
+        // Compute all eight corner points
+        let (p0, p1) = get-corner-pts(nw, (x1, y2, z), ( 0,-1), ( 1, 0))
+        let (p2, p3) = get-corner-pts(ne, (x2, y2, z), (-1, 0), ( 0,-1))
+        let (p4, p5) = get-corner-pts(se, (x2, y1, z), ( 0, 1), (-1, 0))
+        let (p6, p7) = get-corner-pts(sw, (x1, y1, z), ( 1, 0), ( 0, 1))
+
+        let segments = ()
+        segments += corner-arc(nw, 180deg, 90deg, p0)
+        segments += (path-util.line-segment((p1, p2)),)
+        segments += corner-arc(ne, 90deg, 0deg, p2)
+        segments += (path-util.line-segment((p3, p4)),)
+        segments += corner-arc(se, 0deg, -90deg, p4)
+        segments += (path-util.line-segment((p5, p6)),)
+        segments += corner-arc(sw, -90deg, -180deg, p6)
+        segments += (path-util.line-segment((p7, p0)),)
+
+        drawable.path(segments, fill: style.fill, stroke: style.stroke, close: true)
+      }
 
       return (
         ctx: ctx,

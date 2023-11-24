@@ -413,7 +413,7 @@
       assert(frame in (true, false, "set"),
              message: "Invalid frame mode")
       if frame == true {
-        rect((0, 0), size, ..style)
+        rect((0, 0), size, ..style, radius: 0)
       } else if frame == "set" { 
         let segments = ((),)
 

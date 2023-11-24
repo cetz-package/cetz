@@ -4,7 +4,6 @@
 #import "bezier.typ"
 
 #let default-samples = 25
-#let ctx-samples(ctx) = ctx.at("samples", default: default-samples)
 
 /// Get first position vector of a path segment
 ///
@@ -30,14 +29,13 @@
 /// - segments (array): List of path segments
 /// -> array: List of vectors
 #let bounds(segments) = {
-  let samples = default-samples
   let bounds = ()
 
   for s in segments {
-    let type = s.at(0)
-    if type == "line" {
+    let kind = s.at(0)
+    if kind == "line" {
       bounds += s.slice(1)
-    } else if type == "cubic" {
+    } else if kind == "cubic" {
       bounds.push(s.at(1))
       bounds.push(s.at(2))
       bounds += bezier.cubic-extrema(
@@ -52,8 +50,7 @@
 ///
 /// - s (array): Path segment
 /// -> float: Length of the segment in canvas units
-#let segment-length(s) = {
-  let samples = default-samples
+#let _segment-length(s, samples: default-samples) = {
   let (type, ..pts) = s
   if type == "line" {
     let len = 0
@@ -71,33 +68,36 @@
 /// Find point at position on polyline segment
 ///
 /// - s (array): Polyline path segment
-/// - t (float): Position (0 to 1)
+/// - t (float,ratio): Absolute (float) or relative (ratio) position
 /// -> vector: Position on the polyline
-#let point-on-polyline(s, t) = {
-  if t == 0 {
+#let _point-on-polyline(s, t) = {
+  if t == 0 or t == 0% {
     return s.at(1)
-  } else if t == 1 {
+  } else if t == 100% {
     return s.last()
   }
 
-  let l = segment-length(s)
-  if l == 0 {
+  let target = if type(t) == ratio {
+    t * _segment-length(s) / 100%
+  } else {
+    t
+  }
+
+  if target == 0 {
     return s.at(1)
   }
 
-  let traveled-length = 0
+  let traveled = 0
   for i in range(2, s.len()) {
-    let part-length = vector.dist(s.at(i - 1), s.at(i))
+    let part = vector.dist(s.at(i - 1), s.at(i))
 
-    if traveled-length / l <= t and (traveled-length + part-length) / l >= t {
-      let f = (t - traveled-length / l) / (part-length / l)
-
+    if traveled <= target and target <= traveled + part {
+      let t = (target - traveled) / part
       return vector.add(
-        s.at(i - 1),
-        vector.scale(vector.sub(s.at(i), s.at(i - 1)), f))
+        s.at(i - 1), vector.scale(vector.sub(s.at(i), s.at(i - 1)), t))
     }
 
-    traveled-length += part-length
+    traveled += part
   }
 
   return s.at(1)
@@ -106,14 +106,18 @@
 /// Get position on path segment
 ///
 /// - s (segment): Path segment
-/// - t (float): Position (from 0 to 1)
+/// - t (float,ratio): Absolute (float) or relative (ratio) position
+///
 /// -> vector: Position on segment
-#let point-on-segment(s, t) = {
-  let (type, ..pts) = s
-  if type == "line" {
-    return point-on-polyline(s, t)
-  } else if type == "cubic" {
-    let len = bezier.cubic-arclen(..pts) * calc.min(calc.max(0, t), 1)
+#let _point-on-segment(s, t) = {
+  let (kind, ..pts) = s
+  if kind == "line" {
+    return _point-on-polyline(s, t)
+  } else if kind == "cubic" {
+    let len = t
+    if type(len) == ratio {
+      len = bezier.cubic-arclen(..pts) * calc.min(calc.max(0, t / 100%), 1)
+    }
     return bezier.cubic-point(..pts, bezier.cubic-t-for-distance(..pts, len))
   }
 }
@@ -123,33 +127,85 @@
 /// - segments (array): List of path segments
 /// -> float: Total length of the path
 #let length(segments) = {
-  return segments.map(segment-length).sum()
+  return segments.map(_segment-length).sum()
+}
+
+/// Normalize path by inserting linear segments
+/// if the path contains gaps
+///
+/// - segments (array): List of path segments
+/// - close (bool): If true, insert a close segment if the first and last
+///   path point are different
+///
+/// -> array List of new segments
+#let normalize-path(segments, close: false) = {
+  let new = ()
+
+  let prev-pt = none
+  for s in segments {
+    let kind = s.at(0)
+    let start = segment-start(s)
+    let end = segment-end(s)
+
+    if prev-pt != none and prev-pt != start {
+      new.push(("line", prev-pt, start))
+    }
+
+    new.push(s)
+    prev-pt = end
+  }
+
+  if close and segment-start(new.first()) != segment-end(new.last()) {
+    new.push(("line", segment-start(new.first()), segment-end(new.last())))
+  }
+
+  return new
 }
 
 /// Get position on path
 ///
 /// - segments (array): List of path segments
-/// - t (float): Position (from 0 to 1)
+/// - t (float,ratio): Position (from 0 to 1)
 /// -> vector: Position on path
 #let point-on-path(segments, t) = {
-  if segments.len() == 1 {
-    return point-on-segment(segments.first(), t)
+  assert(type(t) in (int, float, ratio),
+    message: "Distance t must be of type number or ratio")
+
+  if segments.len() == 0 {
+    return none
+  } else if segments.len() == 1 {
+    return _point-on-segment(segments.first(), t)
   }
 
-  let l = length(segments)
+  let abs = type(t) != ratio
+  let target = calc.max(0, if type(t) == ratio {
+    t * length(segments) / 100%
+  } else {
+    t
+  })
 
-  let traveled-length = 0
+  if target == 0 {
+    return segment-start(segments.first())
+  }
+
+  // Total travel distance
+  let traveled = 0
   for s in segments {
-    let part-length = segment-length(s)
+    let part = _segment-length(s)
 
-    if traveled-length / l <= t and (traveled-length + part-length) / l >= t {
-      let f = (t - traveled-length / l) / (part-length / l)
-
-      return point-on-segment(s, f)
+    // This segment contains target
+    if traveled <= target and target <= traveled + part {
+      return if abs {
+        _point-on-segment(s, target - traveled)
+      } else {
+        _point-on-segment(s, (target - traveled) / part * 100%)
+      }
     }
 
-    traveled-length += part-length
+    traveled += part
   }
+
+  return segment-end(segments.last())
 }
 
 /// Get position and direction on path
@@ -170,8 +226,8 @@
   }
 
   let (a, b) = (
-    point-on-path(segments, pt),
-    point-on-path(segments, dir)
+    point-on-path(segments, pt * 100%),
+    point-on-path(segments, dir * 100%)
   )
   return (a, vector.scale(vector.norm(vector.sub(b, a)), scale))
 }
