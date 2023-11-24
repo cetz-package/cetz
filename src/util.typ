@@ -165,8 +165,20 @@
   return calc.max(..a)
 }
 
-/// Return value s as dictionary if s is a stroke compatible type
-#let _stroke-as-dict(s) = {
+/// Return stroke as dictionary
+///
+/// A stroke dictionary is a dictionary that is compatible to Typsts stroke
+/// type and can be passed to Typst functions that expect such.
+///
+/// This can be useful if you want to merge strokes using cetz style system,
+/// which only merges dictionaries.
+///
+/// - s (color,length,stroke,dictionary): Stroke compatible value that should
+///   get converted to a stroke dictionary. If passed a dictionary, that
+///   dictionary gets returned without modification.
+///
+/// -> dictionary
+#let as-stroke-dict(s) = {
   if type(s) == color {
     return (paint: s)
   } else if type(s) == length {
@@ -183,11 +195,6 @@
    if s.dash != auto {(dash: s.dash)})
 }
 
-/// Types that can get merged together to form a stroke
-#let _stroke-compat-types = (
-  stroke, color, length, dictionary
-)
-
 /// Merge dictionary a and b and return the result
 /// Prefers values of b. This function can merge Typst stroke types
 /// as if they were dictionaries.
@@ -196,12 +203,6 @@
 /// - b (dictionary): Dictionary b
 /// -> dictionary
 #let merge-dictionary(a, b, overwrite: true) = {
-  // Hack Alert! There is currently no better way I know of...
-  if type(a) in _stroke-compat-types and type(b) in _stroke-compat-types and type(a) != type(b) or (type(a) == stroke and type(b) == stroke) {
-    a = _stroke-as-dict(a)
-    b = _stroke-as-dict(b)
-  }
-
   if type(a) == dictionary and type(b) == dictionary {
     let c = a
     for (k, v) in b {

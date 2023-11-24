@@ -1,5 +1,6 @@
 #set page(width: auto, height: auto)
-#import "../../src/lib.typ": *
+#import "/src/lib.typ": *
+#import "/src/util.typ"
 
 #box(stroke: 2pt + red, canvas({
   import draw: *
@@ -58,9 +59,9 @@
 #box(stroke: 2pt + red, canvas({
   import draw: *
 
-  set-style(stroke: 5pt)
+  set-style(stroke: (thickness: 5pt))
   set-style(mark: (stroke: (cap: "round")))
   line((0,0), (1,0))
-  line((0,1), (1,1), stroke: blue)
-  line((0,2), (1,2), stroke: green + 1pt, mark: (end: ">"))
+  line((0,1), (1,1), stroke: util.as-stroke-dict(blue))
+  line((0,2), (1,2), stroke: util.as-stroke-dict(green + 1pt), mark: (end: ">"))
 }))

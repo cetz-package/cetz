@@ -28,7 +28,7 @@
 #let default = (
   root: (
     fill: none,
-    stroke: black + 1pt,
+    stroke: util.as-stroke-dict(black + 1pt),
     radius: 1,
   ),
   mark: _default-mark,
