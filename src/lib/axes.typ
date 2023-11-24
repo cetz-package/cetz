@@ -34,6 +34,7 @@
 
 #let default-style-schoolbook = util.merge-dictionary(default-style, (
   tick: (label: (offset: .1)),
+  label: (offset: .1),
   mark: (end: ">"),
   padding: .4))
 
