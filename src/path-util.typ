@@ -210,6 +210,8 @@
 
 /// Get position and direction on path
 ///
+/// TODO: Remove this function!
+///
 /// - segments (array): List of path segments
 /// - t (float): Position (from 0 to 1)
 /// - scale (float): Scaling factor

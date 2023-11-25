@@ -27,6 +27,9 @@
     place-along(rect((-1,0), (1,1)))
 
     translate((0, 2))
+    place-along(rect((-1,0), (1,1), radius: .35))
+
+    translate((0, 2))
     place-along(merge-path(close: true, {
       line((0,0), (1,0))
       bezier((), (0,1), (1,1))

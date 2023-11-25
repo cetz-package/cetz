@@ -986,7 +986,7 @@
 #let rect(a, b, name: none, anchor: none, ..style) = {
   // Coordinate check
   let t = (a, b).map(coordinate.resolve-system)
-  
+
   // No extra positional arguments from the style sink
   assert.eq(
     style.pos(),
@@ -999,6 +999,8 @@
     ctx => {
       let ctx = ctx
       let (ctx, a, b) = coordinate.resolve(ctx, a, b)
+      assert(a.at(2) == b.at(2),
+        message: "Both rect points must have the same z coordinate.")
       (a, b) = {
         let lo = (
           calc.min(a.at(0), b.at(0)),
@@ -1077,7 +1079,18 @@
           }
         }
 
-        // Compute all eight corner points
+        // Compute all eight corner points:
+        //
+        //    p1-------p2
+        //   / |       | \
+        // p0--+       +--p3
+        //  |             |
+        // p7--+       +--p4
+        //   \ |       | /
+        //    p6-------p5
+        //
+        // If a corner has radius (0,0), both of its
+        // corner points are the same.
         let (p0, p1) = get-corner-pts(nw, (x1, y2, z), ( 0,-1), ( 1, 0))
         let (p2, p3) = get-corner-pts(ne, (x2, y2, z), (-1, 0), ( 0,-1))
         let (p4, p5) = get-corner-pts(se, (x2, y1, z), ( 0, 1), (-1, 0))
