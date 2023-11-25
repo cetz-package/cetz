@@ -683,11 +683,10 @@ The palette library provides some predefined palettes.
 - `tango-dark` #show-palette(palette.tango-dark)
 
 == Angle <angle>
-#let angle-module = tidy.parse-module(read("src/lib/angle.typ"), name: "Angle")
 
 The `angle` function of the angle module allows drawing angles with an optional label.
 
-#tidy.show-module(angle-module, show-module-name: false)
+#doc-style.parse-show-module("/src/lib/angle.typ")
 
 ```example
 import cetz.angle: angle

@@ -11,13 +11,30 @@
   fill: none,
   stroke: auto,
   radius: .5,
-  label-radius: .25,
+  label-radius: 50%,
   mark: styles.default.mark,
 )
 
 /// Draw an angle between `a` and `b` through origin `origin`
 ///
+/// #example(```
+/// line((0,0), (1,1.5), name: "a")
+/// line((0,0), (2,-1), name: "b")
+///
+/// // Draw an angle between the two lines
+/// cetz.angle.angle("a.start", "a.end", "b.end", label: $ alpha $,
+///   mark: (end: ">"), radius: 1.5)
+/// cetz.angle.angle("a.start", "b.end", "a.end", label: $ alpha' $,
+///   radius: 50%, inner: false)
+/// ```)
+///
 /// *Style Root:* `angle`
+///
+/// *Style Keys:*
+///   #show-parameter-block("radius", ("number"), [
+///     The radius of the angles arc. If of type `ratio`, it is relative to the smaller distance of either origin to a or origin to b.], default: .5)
+///   #show-parameter-block("label-radius", ("number", "ratio"), [
+///     The radius of the angles label origin. If of type `ratio`, it is relative to `radius`.], default: 50%)
 ///
 /// *Anchors*
 /// / `"a"`: Point a
@@ -27,15 +44,13 @@
 /// / `"start"`: Arc start
 /// / `"end"`: Arc end
 ///
-/// You can use the `radius` and `label-radius` style-keys to set
-/// the angle and label radius.
-///
 /// - origin (coordinate): Angle origin
-/// - a (coordinate): Coordinate of side a
-/// - b (coordinate): Coordinate of side b
+/// - a (coordinate): Coordinate of side `a`, containing an angle between `origin` and `b`.
+/// - b (coordinate): Coordinate of side `b`, containing an angle between `origin` and `a`.
 /// - inner (bool): Draw the smaller (inner) angle
 /// - label (none,content,function): Draw a label at the angles "label" anchor.
-///   If label is a function, it gets the angle value passed as argument.
+///   If label is a function, it gets the angle value passed as argument. The function must
+///   be of the format `angle => content`.
 /// - name: (none,string): Element value
 /// - ..style (style): Style
 #let angle(
@@ -79,7 +94,16 @@
     (s, e, (s + e) / 2)
   }
 
+  // Radius can be relative to the min-distance between origin-a and origin-b
+  if type(style.radius) == ratio {
+    style.radius = style.radius * calc.min(vector.dist(origin, a), vector.dist(origin, b)) / 100%
+  }
   let (r, _) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
+
+  // Label radius can be relative to radius
+  if type(style.label-radius) == ratio {
+    style.label-radius = style.label-radius * style.radius / 100%
+  }
   let (ra, _) = util.resolve-radius(style.label-radius).map(util.resolve-number.with(ctx))
 
   let label-pt = vector.add(origin, (calc.cos(ss) * ra, calc.sin(ss) * ra, 0))
