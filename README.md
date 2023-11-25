@@ -52,7 +52,7 @@ CeTZ (CeTZ, ein Typst Zeichenpacket) is a library for drawing with [Typst](https
 
 ## Usage
 
-For information, see the [manual](manual.pdf?raw=true).
+For information, see the [manual (stable)](https://github.com/johannes-wolf/cetz/blob/stable/manual.pdf?raw=true).
 
 To use this package, simply add the following code to your document:
 ```
