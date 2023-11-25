@@ -3,26 +3,27 @@
 
 /// Add one or more box or whisker plots
 ///
+/// #example(```
+/// cetz.plot.plot(size: (2,2), x-tick-step: none, y-tick-step: none, {
+///   cetz.plot.add-boxwhisker((x: 1, // Location on x-axis
+///     outliers: (7, 65, 69),        // Optional outlier values
+///     min: 15, max: 60,             // Minimum and maximum
+///     q1: 25,                       // Quartiles: Lower
+///     q2: 35,                       //            Median
+///     q3: 50))                      //            Upper
+/// })
+/// ```)
+///
 /// - data (array, dictionary): dictionary or array of dictionaries containing the
-///                             needed entries to plot box and whisker plot.
+///   needed entries to plot box and whisker plot.
 ///
-///                             The following fields are supported:
-///                             - `x` (number) X-axis value
-///                             - `min` (number) Minimum value
-///                             - `max` (number) Maximum value
-///                             - `q1`, `q2`, `q3` (number) Quartiles from lower to
-///                                to upper
-///                             - `outliers` (array of numbers) Optional outliers
+///   The following fields are supported:
+///   - `x` (number) X-axis value
+///   - `min` (number) Minimum value
+///   - `max` (number) Maximum value
+///   - `q1`, `q2`, `q3` (number) Quartiles from lower to to upper
+///   - `outliers` (array of number) Optional outliers
 ///
-///                             *Examples:*
-///                             - ```typc
-///                               (x: 1                   // Location on x-axis
-///                                outliers: (7, 65, 69), // Optional outlier values
-///                                min: 15, max: 60       // Minimum and maximum
-///                                q1: 25,                // Quartiles: Lower
-///                                q2: 35,                //            Median
-///                                q3: 50)                //            Upper
-///                                ```
 /// - axes (array): Name of the axes to use ("x", "y"), note that not all
 ///                 plot styles are able to display a custom axis!
 /// - style (style): Style to use, can be used with a palette function
@@ -30,6 +31,7 @@
 /// - whisker-width (float): Width from edge-to-edge of the whisker of the box and whisker in plot units. Defaults to 0.5
 /// - mark (string): Mark to use for plotting outliers. Set `none` to disable. Defaults to "x"
 /// - mark-size (float): Size of marks for plotting outliers. Defaults to 0.15
+/// - label (none,content): Legend label to show for this plot.
 #let add-boxwhisker(data,
                     label: none,
                     axes: ("x", "y"),

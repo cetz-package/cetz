@@ -133,7 +133,8 @@
 /// - fill-below (bool): If true, fill functions below the axes (draw axes above filled plots), if false
 ///   filled areas get drawn above the plots axes.
 /// - name (string): The plots element name to be used when refering to anchors
-/// - legend (none, auto, coordinate): Position to place the legend at.
+/// - legend (none, auto, coordinate): Position to place the legend at. The legend
+///   is drawn if at least one plot with `label: ..` set to a value != `none` exists.
 ///   The following anchors are considered optimal for legend placement:
 ///     - `legend.north`:
 ///     - `legend.south`:

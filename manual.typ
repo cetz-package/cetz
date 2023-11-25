@@ -523,11 +523,11 @@ Types commonly used by function of the `plot` library:
 
 ```example
 import cetz.plot
-plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
-          x-unit: $degree$, y-max: .5, {
-  plot.add(domain: (0, 360), x => calc.sin(x * 1deg))
-  plot.add(domain: (0, 360), x => calc.cos(x * 1deg),
-           samples: 10, mark: "x", style: (mark: (stroke: blue)))
+plot.plot(size: (3,2), x-tick-step: calc.pi, y-tick-step: 1,
+                       x-format: v => $#{v/calc.pi} pi$, {
+  plot.add(domain: (0, 4*calc.pi), calc.sin,
+    samples: 15, line: "vhv", style: (mark: (stroke: blue)))
+  plot.add(domain: (0, 4*calc.pi), calc.sin)
 })
 ```
 
@@ -535,23 +535,12 @@ plot.plot(size: (3,2), x-tick-step: 180, y-tick-step: 1,
 import cetz.plot
 import cetz.palette
 
-// Axes can be styled!
-// Set the tick length to .1:
-set-style(axes: (tick: (length: .1)))
+// Let ticks point outwards by giving them negative length
+set-style(axes: (tick: (length: -.2, minor-length: -.1)))
 
 // Plot something
-plot.plot(size: (3,3), x-tick-step: 1, axis-style: "left", {
-  for i in range(0, 3) {
-    plot.add(domain: (-4, 2),
-      x => calc.exp(-(calc.pow(x + i, 2))),
-      fill: true, style: palette.tango)
-  }
-})
-```
-
-```example
-import cetz.plot
-plot.plot(size: (3,2), x-tick-step: 1, y-tick-step: 1, {
+plot.plot(size: (3,3), x-tick-step: 1, x-minor-tick-step: .2,
+                       y-tick-step: 1, y-minor-tick-step: .2, {
   let z(x, y) = {
     (1 - x/2 + calc.pow(x,5) + calc.pow(y,3)) * calc.exp(-(x*x) - (y*y))
   }
@@ -613,16 +602,14 @@ group(name: "a", {
 })
 // Center - Clustered
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-set-origin("a.south-east")
 group(name: "b", anchor: "south-west", {
-  anchor("center", (0,0))
+  anchor("center", "a.south-east")
   chart.barchart(size: (4, 3), mode: "clustered", value-key: (1,2,3), data)
 })
 // Right - Stacked
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-set-origin("b.south-east")
 group(name: "c", anchor: "south-west", {
-  anchor("center", (0,0))
+  anchor("center", "b.south-east")
   chart.barchart(size: (4, 3), mode: "stacked", value-key: (1,2,3), data)
 })
 ```
@@ -639,16 +626,14 @@ group(name: "a", {
 })
 // Center - Clustered
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-set-origin("a.south-east")
 group(name: "b", anchor: "south-west", {
-  anchor("center", (0,0))
+  anchor("center", "a.south-east")
   chart.columnchart(size: (4, 3), mode: "clustered", value-key: (1,2,3), data)
 })
 // Right - Stacked
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
-set-origin("b.south-east")
 group(name: "c", anchor: "south-west", {
-  anchor("center", (0,0))
+  anchor("center", "b.south-east")
   chart.columnchart(size: (4, 3), mode: "stacked", value-key: (1,2,3), data)
 })
 ```
