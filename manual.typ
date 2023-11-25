@@ -688,141 +688,33 @@ The `angle` function of the angle module allows drawing angles with an optional 
 
 #doc-style.parse-show-module("/src/lib/angle.typ")
 
-```example
-import cetz.angle: angle
-let (a, b, c) = ((0,0), (-1,1), (1.5,0))
-line(a, b)
-line(a, c)
-set-style(angle: (radius: 1, label-radius: .5), stroke: blue)
-angle(a, c, b, label: $alpha$, mark: (end: ">"), stroke: blue)
-set-style(stroke: red)
-angle(a, b, c, label: n => $#{n/1deg} degree$,
-  mark: (end: ">"), stroke: red, inner: false)
-```
-
 ==== Default `angle` Style
 #raw(repr(angle.default-style))
-/*
+
 == Decorations <decorations>
-// #let decorations-module = tidy.parse-module(read("src/lib/decorations.typ"), name: "Decorations")
 
 Various pre-made shapes and lines.
 
-// #show-module-fn(decorations-module, "brace")
-```example
-import cetz.decorations: brace
-let text = text.with(size: 12pt, font: "Linux Libertine")
-
-brace((0, 0), (4, -.5), pointiness: 25deg, outer-pointiness: auto, amplitude: .8, debug: true)
-brace((0, -.5), (0, -3.5), name: "brace")
-content("brace.content", [$P_1$])
-
-// styling can be passed to the underlying `merge-path` call
-brace((1, -3), (4, -3), amplitude: 1, pointiness: .5, stroke: orange + 2pt, fill: maroon, close: true, name: "saloon")
-content((rel: (0, -.15), to: "saloon.center"), text(fill: orange, smallcaps[*Saloon*]))
-
-// as part of another path
-set-origin((2, -5))
-merge-path({
-  brace((+1, .5), (+1, -.5), amplitude: .3, pointiness: .5)
-  brace((-1, -.5), (-1, .5), amplitude: .3, pointiness: .5)
-}, fill: white, close: true)
-content((0, 0), text(size: 10pt)[Hello, World!])
-
-brace((-1.5, -2.5), (2, -2.5), pointiness: 1, outer-pointiness: 1, stroke: olive, fill: green, name: "hill")
-content((rel: (.3, .1), to: "hill.center"), text[*εїз*])
-```
+#doc-style.parse-show-module("/src/lib/decorations.typ")
 
 ==== Styling
 
-#def-arg("amplitude", `<number>`, default: .7, [Determines how much the brace rises above the base line.])
-#def-arg("pointiness", `<number> or <angle>`, default: 15deg, [How pointy the spike should be. #0deg or `0` for maximum pointiness, #90deg or `1` for minimum.])
-#def-arg("outer-pointiness", `<number> or <angle> or <auto>`, default: 0, [How pointy the outer edges should be. #0deg or `0` for maximum pointiness (allowing for a smooth transition to a straight line), #90deg or `1` for minimum. Setting this to #auto will use the value set for `pointiness`.])
-#def-arg("content-offset", `<number>`, default: .3, [Offset of the `content` anchor from the spike.])
-#def-arg("debug-text-size", `<length>`, default: 6pt, [Font size of displayed debug points when `debug` is #true.])
-
-==== Default `brace` Style
+===== Default `brace` Style
 #decorations.brace-default-style
 
-#show-module-fn(decorations-module, "flat-brace")
-```example
-import cetz.decorations: flat-brace
-
-flat-brace((), (x: 5))
-flat-brace((0, 0), (5, 0), flip: true, aspect: .3)
-flat-brace((), (rel: (-2, -1)), name: "a")
-flat-brace((), (0, 0), amplitude: 1, curves: 1.5, outer-curves: .5)
-content("a.content", [$P_2$])
-
-flat-brace((0, -3), (5, -3), debug: true, amplitude: 1, aspect: .4, curves: (1.5, .9, 1, .1), outer-curves: (1, .3, .1, .7))
-
-// triangle and square braces
-flat-brace((0, -4), (2.4, -4), curves: (auto, 0, 0, 0))
-flat-brace((2.6, -4), (5, -4), curves: 0)
-
-merge-path(close: true, fill: white, {
-  move-to((.5, -6))
-  flat-brace((), (rel: (1, 1)))
-  flat-brace((), (rel: (2, 0)), flip: true, name: "top")
-  flat-brace((), (rel: (1, -1)))
-  flat-brace((), (rel: (-1, -1)))
-  flat-brace((), (rel: (-2, 0)), flip: true, name: "bottom")
-  flat-brace((), (rel: (-1, 1)))
-})
-content(("top.spike", .5, "bottom.spike"), [Hello, World!])
-```
-
-==== Styling
-
-#def-arg("amplitude", `<number>`, default: decorations.flat-brace-default-style.amplitude, [Determines how much the brace rises above the base line.])
-#def-arg("aspect", `<number>`, default: decorations.flat-brace-default-style.aspect, [Determines the fraction of the total length where the spike will be placed.])
-#block(breakable: false, def-arg("curves", `<array> or <number>`, default: decorations.flat-brace-default-style.curves, [
-  Customizes the control points of the curved parts.
-  Setting a single number is the same as setting ```typc (num, auto, auto, auto)```.
-  Setting any item to #auto will use its default value.
-  The first item specifies the curve widths as a fraction of the amplitude.
-  The second item specifies the length of the green and blue debug lines as a fraction of the curve's width.
-  The third item specifies the vertical offset of the red and purple debug lines as a fraction of the curve's height.
-  The fourth item specifies the horizontal offset of the red and purple debug lines as a fraction of the curve's width.
-]))
-#def-arg("outer-curves", `<array> or <number> or <auto>`, default: decorations.flat-brace-default-style.outer-curves, [
-  Customizes the control points of just the outer two curves (just the blue and purple debug lines).
-  Overrides settings from `curves`.
-  Setting the entire value or individual items to #auto uses the values from `curves` as fallbacks.
-])
-#def-arg("content-offset", `<number>`, default: decorations.flat-brace-default-style.content-offset, [Offset of the `content` anchor from the spike.])
-#def-arg("debug-text-size", `<length>`, default: decorations.flat-brace-default-style.debug-text-size, [Font size of displayed debug points when `debug` is #true.])
-
-==== Default `flat-brace` Style
+===== Default `flat-brace` Style
 #decorations.flat-brace-default-style
 
 = Advanced Functions
 
 == Coordinate
 
-#let coord-module = tidy.parse-module(read("src/coordinate.typ"), name: "Coordinate")
-#show-module-fn(coord-module, "resolve")
-
-```example
-line((0,0), (1,1), name: "l")
-get-ctx(ctx => {
-  // Get the vector of coordinate "l.start"
-  content("l.start", [#cetz.coordinate.resolve(ctx, "l.start").at(1)], frame: "rect",
-          stroke: none, fill: white)
-})
-```
+#doc-style.parse-show-module("/src/coordinate.typ")
 
 == Styles
 
-#let style-module = tidy.parse-module(read("src/styles.typ"), name: "Styles")
-#show-module-fn(style-module, "resolve")
+#doc-style.parse-show-module("/src/styles.typ")
 
-```example
-get-ctx(ctx => {
-  // Get the current line style
-  content((0,0), [#cetz.styles.resolve(ctx.style, (:), root: "line")])
-})
-```
 
 === Default Style <default-style>
 
@@ -957,3 +849,11 @@ my-star((0,6), inner-radius: .3, fill: yellow)
 Using custom elements instead of groups (as in @custom-elements) makes sense
 when doing advanced computations or even applying modifications to passed in
 elements.
+
+/*
+= Vector, Matrix and Complex Types
+
+#doc-style.parse-show-module("/src/vector.typ")
+#doc-style.parse-show-module("/src/matrix.typ")
+#doc-style.parse-show-module("/src/complex.typ")
+*/

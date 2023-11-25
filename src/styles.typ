@@ -109,6 +109,13 @@
 
 /// Resolve the current style root
 ///
+/// #example(```
+/// get-ctx(ctx => {
+///   // Get the current "mark" style
+///   content((0,0), [#cetz.styles.resolve(ctx.style, (:), root: "mark")])
+/// })
+/// ```)
+///
 /// - current (style): Current context style (`ctx.style`).
 /// - new (style): Style values overwriting the current style (or an empty dict).
 ///                I.e. inline styles passed with an element: `line(.., stroke: red)`.

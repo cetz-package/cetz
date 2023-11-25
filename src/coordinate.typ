@@ -309,6 +309,16 @@
 
 /// Resolve a list of coordinates to a absolute vectors
 ///
+/// #example(```
+/// line((0,0), (1,1), name: "l")
+/// get-ctx(ctx => {
+///   // Get the vector of coordinate "l.start" and "l.end"
+///   let (ctx, a, b) = cetz.coordinate.resolve(ctx, "l.start", "l.end")
+///   content("l.start", [#a], frame: "rect", stroke: none, fill: white)
+///   content("l.end",   [#b], frame: "rect", stroke: none, fill: white)
+/// })
+/// ```)
+///
 /// - ctx (context): Canvas context object
 /// - ..coordinates (coordinate): List of coordinates
 /// - update (bool): Update the context's last position

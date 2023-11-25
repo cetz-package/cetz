@@ -47,12 +47,12 @@
 /// - origin (coordinate): Angle origin
 /// - a (coordinate): Coordinate of side `a`, containing an angle between `origin` and `b`.
 /// - b (coordinate): Coordinate of side `b`, containing an angle between `origin` and `a`.
-/// - inner (bool): Draw the smaller (inner) angle
+/// - inner (bool): Draw the smaller (inner) angle if true, otherwise the outer angle gets drawn.
 /// - label (none,content,function): Draw a label at the angles "label" anchor.
 ///   If label is a function, it gets the angle value passed as argument. The function must
 ///   be of the format `angle => content`.
-/// - name: (none,string): Element value
-/// - ..style (style): Style
+/// - name (none,string): Element name, used for querying anchors.
+/// - ..style (style): Style key-value pairs.
 #let angle(
   origin,
   a,

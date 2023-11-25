@@ -373,7 +373,7 @@
 /// Fill the area between two graphs. This behaves same as `add` but takes
 /// a pair of data instead of a single data array/function.
 /// The area between both function plots gets filled. For a more detailed
-/// explanation of the arguments, see `plot.add`.
+/// explanation of the arguments, see @@add().
 ///
 /// This can be used to display an error-band of a function.
 ///
@@ -392,12 +392,12 @@
 ///   type function.
 /// - sample-at (array): Array of x-values the function(s) get sampled at in addition
 ///   to the default sampling.
-/// - line (string, dictionary): Line type to use, see `plot.add`.
+/// - line (string, dictionary): Line type to use, see @@add().
 /// - style (style): Style to use, can be used with a palette function.
 /// - label (none,content): Legend label to show for this plot.
 /// - axes (array): Name of the axes to use for plotting.
-/// - data-a (array,function): Data of the first plot, see `plot.add`.
-/// - data-b (array,function): Data of the second plot, see `plot.add`.
+/// - data-a (array,function): Data of the first plot, see @@add().
+/// - data-b (array,function): Data of the second plot, see @@add().
 #let add-fill-between(data-a,
                       data-b,
                       domain: auto,
