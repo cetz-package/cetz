@@ -377,7 +377,7 @@
               }
 
               if grid-mode.major and major or grid-mode.minor and not major {
-                let (grid-begin, grid-end) = if name in ("north", "south") {
+                let (grid-begin, grid-end) = if name in ("top", "bottom") {
                   ((x, 0), (x, h))
                 } else {
                   ((0, y), (w, y))
