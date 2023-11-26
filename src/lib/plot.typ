@@ -175,8 +175,10 @@
 ///   You can only "lock" two axes of different orientations.
 ///   #example(```
 ///   cetz.plot.plot(size: (2,1), x-tick-step: 1, y-tick-step: 1,
-///     x-equal: "y", {
-///     cetz.plot.add(domain: (0, 2 * calc.pi), t => (calc.cos(t), calc.sin(t)))
+///                  x-equal: "y",
+///   {
+///     cetz.plot.add(domain: (0, 2 * calc.pi),
+///       t => (calc.cos(t), calc.sin(t)))
 ///   })
 ///   ```)
 /// ])
@@ -198,8 +200,10 @@
 ///
 ///   #example(```
 ///   cetz.plot.plot(x-tick-step: none, y-tick-step: none,
-///             x-min: 0, x-max: 4, x-ticks: (1, 2, 3),
-///              y-min: 1, y-max: 2, y-ticks: ((1, [One]), (2, [Two])),
+///                  x-min: 0, x-max: 4,
+///                  x-ticks: (1, 2, 3),
+///                  y-min: 1, y-max: 2,
+///                  y-ticks: ((1, [One]), (2, [Two])),
 ///   {
 ///     cetz.plot.add(((0,0),))
 ///   })
@@ -235,9 +239,10 @@
 ///   The value `"both"` enables grid lines for both, major- and minor ticks.
 ///
 ///   #example(```
-///   cetz.plot.plot(x-tick-step: 1, y-tick-step: 1, y-minor-tick-step: .2,
-///             x-min: 0, x-max: 2, x-grid: true,
-///             y-min: 0, y-max: 2, y-grid: "both", {
+///   cetz.plot.plot(x-tick-step: 1, y-tick-step: 1,
+///                  y-minor-tick-step: .2,
+///                  x-min: 0, x-max: 2, x-grid: true,
+///                  y-min: 0, y-max: 2, y-grid: "both", {
 ///     cetz.plot.add(((0,0),))
 ///   })
 ///   ```)
@@ -470,7 +475,7 @@
 /// import cetz.plot
 /// import cetz.draw: *
 /// plot.plot(size: (2,2), name: "plot",
-///   x-tick-step: none, y-tick-step: none, {
+///           x-tick-step: none, y-tick-step: none, {
 ///   plot.add(((0,0), (1,1), (2,.5), (4,3)))
 ///   plot.add-anchor("pt", (1,1))
 /// })

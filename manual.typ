@@ -290,10 +290,10 @@ circle((-30deg, 3), radius: 0, name: "form")
 
 for (c, a) in (
   ("content", "south"),
-  ("structure", "north-west"),
-  ("form", "north-east")
+  ("structure", "north"),
+  ("form", "north")
 ) {
-  content(c, box(c + " oriented", inset: 5pt), anchor: a)
+  content(c, align(center, c + [\ oriented]), padding: .1, anchor: a)
 }
 
 stroke(gray + 1.2pt)
@@ -311,7 +311,8 @@ for (c, s, f, cont) in (
   (0.8, 0.8, 1, "Word"),
   (1, 0.05, 0.05, "ASCII")
 ) {
-  content((bary: (content: c, structure: s, form: f)), cont)
+  content((bary: (content: c, structure: s, form: f)),
+    cont, fill: rgb(50, 50, 255, 100), stroke: none, frame: "circle")
 }
 ```
 
