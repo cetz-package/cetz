@@ -45,7 +45,7 @@
   }
 }
 
-#let show-parameter-block(name, types, content, show-default: true, default: none, ..a) = {
+#let show-parameter-block(name, types, content, show-default: true, default: none, in-tidy: false, ..a) = {
   if type(types) != array {
     types = (types,)
   }
@@ -53,7 +53,15 @@
     // name <type>     Default: <default>
     block(breakable: false, width: 100%, stack(dir: ltr,
       [#text(weight: "bold", name + [:]) #types.map(tidy.styles.default.show-type).join(" or ")],
-      if show-default { align(right, [Default: #raw(lang: "typc", repr(default))]) }
+      if show-default {
+        align(right)[
+          Default: #raw(
+            lang: "typc",
+            // Tidy gives defaults as strings but outside of tidy we pass defaults as the actual values
+            if in-tidy { default } else { repr(default) }
+          )
+        ]
+      }
       )),
     // text
     block(inset: (left: .4cm), content)
@@ -67,7 +75,7 @@
 
 #let style = (
   show-function: show-function,
-  show-parameter-block: show-parameter-block,
+  show-parameter-block: show-parameter-block.with(in-tidy: true),
   show-type: show-type,
   show-outline: show-outline,
   show-parameter-list: show-parameter-list
