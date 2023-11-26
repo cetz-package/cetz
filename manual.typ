@@ -119,13 +119,8 @@ Some elements support compass anchors. TODO
 = Draw Function Reference
 
 == Canvas
-```typc
-canvas(background: none, length: 1cm, debug: false, body)
-```
-#def-arg("background", `<color>`, default: "none", "A color to be used for the background of the canvas.")
-#def-arg("length", `<length>`, default: "1cm", "Used to specify what 1 coordinate unit is.")
-#def-arg("debug", `<bool>`, default: "false", "Shows the bounding boxes of each element when `true`.")
-#def-arg("body", none, [A code block in which functions from `draw.typ` have been called.])
+
+#doc-style.parse-show-module("/src/canvas.typ")
 
 == Styling <styling>
 You can style draw elements by passing the relevant named arguments to their draw functions. All elements that draw something have stroke and fill styling unless said otherwise.
@@ -175,7 +170,7 @@ set-style(
   fill: green,
   stroke: (thickness: 5pt),
   // Stroke and fill for only rectangles
-  rect: (stroke: (dash: "dashed"), fill: blue), 
+  rect: (stroke: (dash: "dashed"), fill: blue),
 )
 rect((0,0), (1,1))
 circle((0.5, -1.5))

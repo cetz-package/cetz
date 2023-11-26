@@ -161,6 +161,12 @@
 /// It is also used as base for relative coordinates if not specified
 /// otherwise.
 ///
+/// #example(```
+/// circle((), radius: .25)
+/// move-to((1,0))
+/// circle((), radius: .15)
+/// ```)
+///
 /// - pt (coordinate): The coordinate to move to.
 #let move-to(pt) = {
   let t = coordinate.resolve-system(pt)
@@ -172,6 +178,12 @@
 }
 
 /// Span viewport between two coordinates and set-up scaling and translation
+///
+/// #example(```
+/// rect((0,0), (2,2))
+/// set-viewport((0,0), (2,2), bounds: (10, 10))
+/// circle((5,5))
+/// ```)
 ///
 /// - from (coordinate): Bottom-Left corner coordinate
 /// - to (coordinate): Top right corner coordinate

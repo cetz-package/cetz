@@ -14,6 +14,7 @@
   if type(source) == content {
     source = source.text
   }
+
   let radius = .25cm
   let border = 1pt + gray
   let canvas-background = yellow.lighten(95%)

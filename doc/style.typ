@@ -49,7 +49,7 @@
   if type(types) != array {
     types = (types,)
   }
-  block(breakable: false, width: 100%, stack(
+  block(breakable: true, width: 100%, stack(
     dir: ltr,
     [/ #name: #types.map(tidy.styles.default.show-type).join(" or ") \ #content],
     if show-default { align(right, [Default: #raw(lang: "typc", repr(default))]) }
