@@ -21,22 +21,11 @@
 /// tree.tree(([Root], ([A], [A.A], [A.B]), ([B], [B.A])))
 /// ```)
 ///
-/// - root (array): A nested array of content that describes the structure the tree should take. Example: `([root], [child 1], ([child 2], [grandchild 1]))`
-/// - draw-node (auto,function): The function to call to draw a node. The function will be passed two positional arguments, the node to draw and the node's parent, and is expected to return elements (`(node, parent-node) => elements`). The node's position is accessible through the "center" anchor or by using the previous position coordinate `()`.
-///   If `auto` is given, just the node's value will be drawn as content.
-///   The following predefined styles can be used:
-/// - draw-edge (none,auto,function): The function to call draw an edge between two nodes. The function will be passed the name of the starting node, the name of the ending node, and the end node and is expected to return elements (`(source-name, target-name, target-node) => elements`). If `auto` is given, a straight line will be drawn between nodes.
-/// - direction (string): A string describing the direction the tree should grow in ("up", "down", "left", "right")
-/// - parent-position (string): Positioning of parent nodes (begin, center, end)
-/// - grow (float): Depth grow factor
-/// - spread (float): Sibling spread factor
-/// - name (none,string): The tree elements name
+/// = parameters
 ///
 /// ==== Nodes
 ///
-/// A tree node is an array consisting of the nodes value at index $0$ followed by its
-/// child nodes. For the default `draw-node` function, the value (first item) of
-/// an node must be of type `<content>`.
+/// A tree node is an array consisting of the nodes value at index $0$ followed by its child nodes. For the default `draw-node` function, the value (first item) of an node must be of type `<content>`.
 ///
 /// *Example of a list of nodes:*
 /// #example(```
@@ -77,6 +66,16 @@
 ///   }
 /// )
 /// ```)
+/// - root (array): A nested array of content that describes the structure the tree should take. Example: `([root], [child 1], ([child 2], [grandchild 1]))`
+/// - draw-node (auto,function): The function to call to draw a node. The function will be passed two positional arguments, the node to draw and the node's parent, and is expected to return elements (`(node, parent-node) => elements`). The node's position is accessible through the "center" anchor or by using the previous position coordinate `()`.
+///   If `auto` is given, just the node's value will be drawn as content.
+///   The following predefined styles can be used:
+/// - draw-edge (none,auto,function): The function to call draw an edge between two nodes. The function will be passed the name of the starting node, the name of the ending node, and the end node and is expected to return elements (`(source-name, target-name, target-node) => elements`). If `auto` is given, a straight line will be drawn between nodes.
+/// - direction (string): A string describing the direction the tree should grow in ("up", "down", "left", "right")
+/// - parent-position (string): Positioning of parent nodes (begin, center, end)
+/// - grow (float): Depth grow factor
+/// - spread (float): Sibling spread factor
+/// - name (none,string): The tree elements name
 #let tree(
   root, 
   draw-node: auto,

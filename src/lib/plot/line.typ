@@ -171,16 +171,17 @@
 ///      use with `"linear"`, defaults to 0.
 ///
 ///   #example(```
+///   import cetz.plot
 ///   let points(offset: 0) = ((0,0), (1,1), (2,0), (3,1), (4,0)).map(((x,y)) => {
 ///     (x,y + offset * 1.5)
 ///   })
-///   cetz.plot.plot(size: (12, 3), axis-style: none, {
-///     cetz.plot.add(points(offset: 5), line: (type: "vhv", mid: .1))
-///     cetz.plot.add(points(offset: 4), line: "vhv")
-///     cetz.plot.add(points(offset: 3), line: "hv")
-///     cetz.plot.add(points(offset: 2), line: "vh")
-///     cetz.plot.add(points(offset: 1), line: "spline")
-///     cetz.plot.add(points(offset: 0), line: "linear")
+///   plot.plot(size: (12, 3), axis-style: none, {
+///     plot.add(points(offset: 5), line: (type: "vhv", mid: .1))
+///     plot.add(points(offset: 4), line: "vhv")
+///     plot.add(points(offset: 3), line: "hv")
+///     plot.add(points(offset: 2), line: "vh")
+///     plot.add(points(offset: 1), line: "spline")
+///     plot.add(points(offset: 0), line: "linear")
 ///   })
 ///   ```, vertical: true)
 ///
@@ -194,13 +195,13 @@
 ///   of the form `x => y`, where `x` is a value insides `domain`
 ///   and `y` must be numeric or a 2D vector (for parametric functions).
 ///   #example(```
-///
-///   cetz.plot.plot(size: (2, 2), axis-style: none, {
+///   import cetz.plot
+///   plot.plot(size: (2, 2), axis-style: none, {
 ///     // Using an array of points:
-///     cetz.plot.add(((0,0), (calc.pi/2,1),
+///     plot.add(((0,0), (calc.pi/2,1),
 ///                    (1.5*calc.pi,-1), (2*calc.pi,0)))
 ///     // Sampling a function:
-///     cetz.plot.add(domain: (0, 2*calc.pi), calc.sin)
+///     plot.add(domain: (0, 2*calc.pi), calc.sin)
 ///   })
 ///   ```)
 /// - label (none,content): Legend label to show for this plot.

@@ -29,7 +29,6 @@
   })
 #show link: set text(blue)
 
-
 // Outline
 #{
   show heading: none
@@ -504,6 +503,82 @@ Types commonly used by function of the `plot` library:
   ```
 
 #doc-style.parse-show-module("/src/lib/plot.typ")
+
+=== Legends <plot-legends>
+A legend for a plot will be drawn if at least one set of data with a label that is not `none` is given.
+The following anchors are available when placing a legend on a plot:
+  - `legend.north`
+  - `legend.south`
+  - `legend.east`
+  - `legend.west`
+  - `legend.north-east`
+  - `legend.north-west`
+  - `legend.south-east`
+  - `legend.south-west`
+  - `legend.inner-north`
+  - `legend.inner-south`
+  - `legend.inner-east`
+  - `legend.inner-west`
+  - `legend.inner-north-east`
+  - `legend.inner-north-west`
+  - `legend.inner-south-east`
+  - `legend.inner-south-west`
+```example
+import cetz.plot
+plot.plot(
+  size: (3,2),
+  x-tick-step: none,
+  y-tick-step: none,
+  legend: "legend.north", {
+  plot.add(
+    ((-1, -1), (1, 1)),
+    mark: "o",
+    label: $ f(x) $
+  )
+})
+```
+
+==== Styling
+*Root:* `legend`
+===== Keys
+#doc-style.show-parameter-block("orientation", ("direction"), default: ttb, [
+  The direction the legend items get layed out to.
+])
+#doc-style.show-parameter-block("default-position", ("string", "coordinate"), default: "legend.north-east", [
+  The default position the legend gets placed at.
+])
+#doc-style.show-parameter-block("layer", ("number"), default: 1, [
+  The layer index the legend gets drawn at, see on-layer.
+])
+#doc-style.show-parameter-block("fill", ("paint"), default: rgb(255,255,255,200), [
+  The legends frame background color.
+])
+#doc-style.show-parameter-block("stroke", ("stroke"), default: black, [
+  The legends frame stroke style.
+])
+#doc-style.show-parameter-block("padding", ("float"), default: .1, [
+  The legends frame padding, that is the distance added between its items and its frame.
+])
+#doc-style.show-parameter-block("offset", ("tuple"), default: (0,0), [
+  An offset tuple (x and y coordinates) to add to the legends position.
+])
+#doc-style.show-parameter-block("spacing", ("number"), default: .1, [
+  The spacing between the legend position and its frame.
+])
+#doc-style.show-parameter-block("item.spacing", ("number"), default: .05, [
+  The spacing between two legend items in canvas units.
+])
+#doc-style.show-parameter-block("item.preview.width", ("number"), default: .75, [
+  The width of a legend items preview picture, a small preview of the graph the legend item belongs to.
+])
+#doc-style.show-parameter-block("item.preview.height", ("number"), default: .3, [
+  The height of a legend items preview picture.
+])
+#doc-style.show-parameter-block("item.preview.margin", ("number"), default: .1, [
+  Margin between the preview picture and the item label.
+])
+
+
 #doc-style.parse-show-module("/src/lib/plot/line.typ")
 #doc-style.parse-show-module("/src/lib/plot/contour.typ")
 #doc-style.parse-show-module("/src/lib/plot/boxwhisker.typ")

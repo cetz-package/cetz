@@ -38,126 +38,14 @@
 /// })
 /// ```)
 ///
-/// *Legend Style Root:* `legend` \
-/// *Legend Style Keys:*
-/// #show-parameter-block("orientation", ("direction"), default: ttb, [
-///   The direction the legend items get layed out to.])
-/// #show-parameter-block("default-position", ("string", "coordinate"), default: "legend.north-east", [
-///   The default position the legend gets placed at.])
-/// #show-parameter-block("layer", ("number"), default: 1, [
-///   The layer index the legend gets drawn at, see @@on-layer().])
-/// #show-parameter-block("fill", ("paint"), default: rgb(255,255,255,200), [
-///   The legends frame background color.])
-/// #show-parameter-block("stroke", ("stroke"), default: black, [
-///   The legends frame stroke style.])
-/// #show-parameter-block("padding", ("float"), default: .1, [
-///   The legends frame padding, that is the distance added between its items and its frame.])
-/// #show-parameter-block("offset", ("tuple"), default: (0,0), [
-///   An offset tuple (x and y coordinates) to add to the legends position.])
-/// #show-parameter-block("spacing", ("number"), default: .1, [
-///   The spacing between the legend position and its frame.])
-/// #show-parameter-block("item.spacing", ("number"), default: .05, [
-///   The spacing between two legend items in canvas units.])
-/// #show-parameter-block("item.preview.width", ("number"), default: .75, [
-///   The width of a legend items preview picture, a small preview of the graph the legend item belongs to.])
-/// #show-parameter-block("item.preview.height", ("number"), default: .3, [
-///   The height of a legend items preview picture.])
-/// #show-parameter-block("item.preview.margin", ("number"), default: .1, [
-///   Margin between the preview picture and the item label.])
-///
 /// To draw elements insides a plot, using the plots coordinate system, use
 /// the `plot.add-annotation(..)` function.
 ///
-/// - body (body): Calls of `plot.add` or `plot.add-*` commands. Note that normal drawing
-///   commands like `line` or `rect` are not allowed insides the plots body, instead wrap
-///   them in `plot.add-annotation`, which lets you select the axes used for drawing.
-/// - size (array): Plot size tuple of `(<width>, <height>)` in canvas units.
-///   This is the plots inner plotting size without axes and labels.
-/// - axis-style (none, string): How the axes should be styled:
-///   / scientific: Frames plot area using a rectangle and draw axes `x` (bottom), `y` (left), `x2` (top), and `y2` (right) around it.
-///     If `x2` or `y2` are unset, they mirror their opposing axis.
-///   / scientific-auto: Draw set (used) axes `x` (bottom), `y` (left), `x2` (top) and `y2` (right) around
-///     the plotting area, forming a rect if all axes are in use or a L-shape if only `x` and `y` are in use.
-///   / school-book: Draw axes `x` (horizontal) and `y` (vertical) as arrows pointing to the right/top with both crossing at $(0, 0)$
-///   / left: Draw axes `x` and `y` as arrows, while the y axis stays on the left (at `x.min`)
-///               and the x axis at the bottom (at `y.min`)
-///   / `none`: Draw no axes (and no ticks).
+/// = parameters
 ///
-///   #example(```
-///   let opts = (x-tick-step: none, y-tick-step: none, size: (2,1))
-///   let data = cetz.plot.add(((-1,-1), (1,1),), mark: "o")
+/// = Options
 ///
-///   for name in (none, "school-book", "left", "scientific") {
-///     cetz.plot.plot(axis-style: name, ..opts, data, name: "plot")
-///     content(((0,-1), "-|", "plot.south"), repr(name))
-///     set-origin((3.5,0))
-///   }
-///   ```, vertical: true)
-/// - plot-style (style,function): Styling to use for drawing plot graphs.
-///   This style gets inherited by all plots and supports `palette` functions.
-///   The following style keys are supported:
-///   #show-parameter-block("stroke", ("none", "stroke"), default: 1pt, [
-///     Stroke style to use for stroking the graph.
-///   ])
-///   #show-parameter-block("fill", ("none", "paint"), default: none, [
-///     Paint to use for filled graphs. Note that not all graphs may support filling and
-///     that you may have to enable filling per graph, see `plot.add(fill: ..)`.
-///   ])
-/// - mark-style (style,function): Styling to use for drawing plot marks.
-///   This style gets inherited by all plots and supports `palette` functions.
-///   The following style keys are supported:
-///   #show-parameter-block("stroke", ("none", "stroke"), default: 1pt, [
-///     Stroke style to use for stroking the mark.
-///   ])
-///   #show-parameter-block("fill", ("none", "paint"), default: none, [
-///     Paint to use for filling marks.
-///   ])
-/// - fill-below (bool): If true, the filled shape of plots is drawn _below_ axes.
-/// - name (string): The plots element name to be used when refering to anchors
-/// - legend (none, auto, coordinate): The position the legend will be drawn at. The legend
-///   is drawn if at least set of data with `label: ..` set to a value != `none` is given.
-///   If set to `auto`, the placement in the legend style (style root: `legend`, key: `default-position`) gets used.
-///   If set to a `<coordinate>`, that coordinate, relative to the plots origin is used for
-///   placing the legend group.
-///
-///   The following anchors are available for legend placement:
-///     - `legend.north`
-///     - `legend.south`
-///     - `legend.east`
-///     - `legend.west`
-///     - `legend.north-east`
-///     - `legend.north-west`
-///     - `legend.south-east`
-///     - `legend.south-west`
-///     - `legend.inner-north`
-///     - `legend.inner-south`
-///     - `legend.inner-east`
-///     - `legend.inner-west`
-///     - `legend.inner-north-east`
-///     - `legend.inner-north-west`
-///     - `legend.inner-south-east`
-///     - `legend.inner-south-west`
-///
-///     But you are free to place the legend at other positions.
-///
-///     #example(```
-///     cetz.plot.plot(size: (3,2),
-///                    x-tick-step: none, y-tick-step: none,
-///                    legend: "legend.north", {
-///       cetz.plot.add(((-1,-1),(1,1),), mark: "o", label: $ f(x) $)
-///     })
-///     ```)
-/// - legend-anchor (auto, string): Anchor of the legend group to use as its origin.
-///   If set to `auto` and `lengend` is one of the predefined legend anchors, the
-///   opposite anchor to `legend` gets used.
-/// - legend-style (style): Style key-value overwrites for the legend style with style root `legend`.
-/// - ..options (any): Axis options, see _options_ above.
-///
-/// *Options* <plot-axis-options>
-///
-/// You can use the following options to customize each axis of the plot. You must
-/// pass them as named arguments prefixed by the axis name followed by a dash (`-`) they
-/// should taget. Example: `x-min: 0`, `y-ticks: (..)` or `x2-label: [..]`.
+/// You can use the following options to customize each axis of the plot. You must pass them as named arguments prefixed by the axis name followed by a dash (`-`) they should taget. Example: `x-min: 0`, `y-ticks: (..)` or `x2-label: [..]`.
 ///
 /// #show-parameter-block("label", ("none", "content"), default: "none", [
 ///   The axis' label. If and where the label is drawn depends on the `axis-style`.])
@@ -244,6 +132,59 @@
 ///   })
 ///   ```)
 /// ])
+///
+/// - body (body): Calls of `plot.add` or `plot.add-*` commands. Note that normal drawing
+///   commands like `line` or `rect` are not allowed insides the plots body, instead wrap
+///   them in `plot.add-annotation`, which lets you select the axes used for drawing.
+/// - size (array): Plot size tuple of `(<width>, <height>)` in canvas units.
+///   This is the plots inner plotting size without axes and labels.
+/// - axis-style (none, string): How the axes should be styled:
+///   / scientific: Frames plot area using a rectangle and draw axes `x` (bottom), `y` (left), `x2` (top), and `y2` (right) around it.
+///     If `x2` or `y2` are unset, they mirror their opposing axis.
+///   / scientific-auto: Draw set (used) axes `x` (bottom), `y` (left), `x2` (top) and `y2` (right) around
+///     the plotting area, forming a rect if all axes are in use or a L-shape if only `x` and `y` are in use.
+///   / school-book: Draw axes `x` (horizontal) and `y` (vertical) as arrows pointing to the right/top with both crossing at $(0, 0)$
+///   / left: Draw axes `x` and `y` as arrows, while the y axis stays on the left (at `x.min`)
+///               and the x axis at the bottom (at `y.min`)
+///   / `none`: Draw no axes (and no ticks).
+///
+///   #example(```
+///   let opts = (x-tick-step: none, y-tick-step: none, size: (2,1))
+///   let data = cetz.plot.add(((-1,-1), (1,1),), mark: "o")
+///
+///   for name in (none, "school-book", "left", "scientific") {
+///     cetz.plot.plot(axis-style: name, ..opts, data, name: "plot")
+///     content(((0,-1), "-|", "plot.south"), repr(name))
+///     set-origin((3.5,0))
+///   }
+///   ```, vertical: true)
+/// - plot-style (style,function): Styling to use for drawing plot graphs.
+///   This style gets inherited by all plots and supports `palette` functions.
+///   The following style keys are supported:
+///   #show-parameter-block("stroke", ("none", "stroke"), default: 1pt, [
+///     Stroke style to use for stroking the graph.
+///   ])
+///   #show-parameter-block("fill", ("none", "paint"), default: none, [
+///     Paint to use for filled graphs. Note that not all graphs may support filling and
+///     that you may have to enable filling per graph, see `plot.add(fill: ..)`.
+///   ])
+/// - mark-style (style,function): Styling to use for drawing plot marks.
+///   This style gets inherited by all plots and supports `palette` functions.
+///   The following style keys are supported:
+///   #show-parameter-block("stroke", ("none", "stroke"), default: 1pt, [
+///     Stroke style to use for stroking the mark.
+///   ])
+///   #show-parameter-block("fill", ("none", "paint"), default: none, [
+///     Paint to use for filling marks.
+///   ])
+/// - fill-below (bool): If true, the filled shape of plots is drawn _below_ axes.
+/// - name (string): The plots element name to be used when refering to anchors
+/// - legend (none, auto, coordinate): The position the legend will be drawn at. See @plot-legends for information about legends. If set to `<auto>`, the legend's "default-placement" styling will be used. If set to a `<coordinate>`, it will be taken as relative to the plot's origin.
+/// - legend-anchor (auto, string): Anchor of the legend group to use as its origin.
+///   If set to `auto` and `lengend` is one of the predefined legend anchors, the
+///   opposite anchor to `legend` gets used.
+/// - legend-style (style): Style key-value overwrites for the legend style with style root `legend`.
+/// - ..options (any): Axis options, see _options_ above.
 ///
 #let plot(body,
           size: (1, 1),

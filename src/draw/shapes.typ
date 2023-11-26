@@ -21,19 +21,19 @@
 
 /// Draws a circle or ellipse.
 ///
-/// #example(
-/// ```
+/// #example(```
 /// circle((0,0))
 /// // Draws an ellipse
 /// circle((0,-2), radius: (0.75, 0.5))
 /// ```)
-/// == parameters
+/// = parameters
 ///
-/// *Style Root* `circle` \
-/// *Style Keys*
+/// = Styling
+/// *Root:* `circle`
+/// == Keys
 ///   #show-parameter-block("radius", ("number", "array"), [A number that defines the size of the circle's radius. Can also be set to a tuple of two numbers to define the radii of an ellipse, the first number is the `x` radius and the second is the `y` radius.], default: 1)
 /// 
-/// *Anchors*\
+/// = Anchors
 ///   Supports compass anchors. The "center" anchor is the default.
 /// 
 /// - position (coordinate): The position to place the circle on.
@@ -115,9 +115,12 @@
 ///
 /// = parameters
 ///
-/// *Style Root* `circle`
+/// = Styling
+/// *Root:* `circle`
+/// == Keys
+///   `circle-through` has the same styling keys as @@circle() except for `radius` as the circle's radius is calculated by the given coordinates.
 ///
-/// *Anchors*\
+/// = Anchors
 ///   Supports the same anchors as `circle` as well as:
 ///   / a: Coordinate a
 ///   / b: Coordinate b
@@ -201,17 +204,17 @@
 /// arc((0,-0.5), start: 45deg, delta: 90deg, mode: "CLOSE")
 /// arc((0,-1), stop: 135deg, delta: 90deg, mode: "PIE")
 /// ```)
-/// Note that two of the three angle arugments (`start`, `stop` and `delta`) must be set.
-///
+/// Note that two of the three angle arguments (`start`, `stop` and `delta`) must be set.
 ///
 /// == parameters
 ///
-/// *Style Root* `arc`\
-/// *Style Keys*
+/// = Styling
+/// *Root:* `arc`\
+/// == Keys
 ///   #show-parameter-block("radius", ("number", "array"), [The radius of the arc. An eliptical arc can be created by passing a tuple of numbers where the first element is the x radius and the second element is the y radius.], default: 1)
 ///   #show-parameter-block("mode", ("string",), [The options are: "OPEN" no additional lines are drawn so just the arc is shown; "CLOSE" a line is drawn from the start to the end of the arc creating a circular segment; "PIE" lines are drawn from the start and end of the arc to the origin creating a circular sector.], default: "OPEN")
 ///
-/// *Anchors* \
+/// = Anchors
 ///   Supports compass anchors when `mode` is "PIE"
 ///   / center: The center of the arc, this is the default anchor.
 ///   / arc-center: The midpoint of the arc's curve.
@@ -411,8 +414,9 @@
 ///
 /// = parameters
 ///
-/// *Style Root* `mark`\
-/// *Style Keys*
+/// = Styling <mark-styling>
+/// *Root:* `mark`
+/// == Keys
 ///   #show-parameter-block("symbol", "string", [The type of mark to draw when using the `mark` function.], default: ">")
 ///   #show-parameter-block("start", ("string", "none", "array"), [The type of mark to draw at the start of a path.])
 ///   #show-parameter-block("end", ("string", "none", "array"), [The type of mark to draw at the end of a path.])
@@ -463,11 +467,13 @@
 /// 
 /// = parameters
 ///
-/// *Style Root* `line`\
-/// *Style Keys*\
-///   Supports marks
+/// = Styling 
+/// *Root:* `line`
+///
+/// == Keys
+///   Supports mark styling.
 /// 
-/// *Anchors*
+/// = Anchors
 ///   / start: The line's start position
 ///   / end: The line's end position
 ///
@@ -529,7 +535,7 @@
   },)
 }
 
-/// Draw a grid between two coordinates
+/// Draws a grid between two coordinates
 ///
 /// #example(```
 /// // Draw a grid
@@ -539,9 +545,12 @@
 /// grid((1,1), (2,2), stroke: blue, step: .25)
 /// ```)
 ///
-/// *Style Root* `grid`
+/// = parameters
 ///
-/// *Anchors*\
+/// = Styling
+/// *Root:* `grid`
+///
+/// = Anchors
 ///   Supports compass anchors.
 ///
 /// - from (coordinate): The top left of the grid
@@ -673,12 +682,13 @@
 ///
 ///
 /// = parameters
-/// *Style Root* `content`\
-/// *Style Keys*
+/// = Styling
+/// *Root:* `content`
+/// == Keys
 ///   #show-parameter-block("padding", ("number", "dictionary"), default: 0, [Sets the spacing around content. Can be a single number to set padding on all sides or a dictionary to specify each side specifically. The dictionary follows Typst's `pad` function: https://typst.app/docs/reference/layout/pad/])
 ///   #show-parameter-block("frame", ("string", "none"), default: none, [Sets the frame style. Can be `none`, "rect" or "circle" and inherits the `stroke` and `fill` style.])
 ///   
-/// *Anchors*\
+/// = Anchors
 ///   Supports compass anchors.
 ///   
 /// - ..args-style (coordinate, content, style): When one coordinate is given as a positional argument, the content will be placed at that position. When two coordinates are given as positional arguments, the content will be placed inside a rectangle between the two positions. All named arguments are styling and any additional positional arguments will panic.
@@ -864,9 +874,12 @@
 /// rect((-1.5, 1.5), (1.5, -1.5))
 /// ```)
 ///
-/// *Style Root* `rect`
+/// = parameters
 ///
-/// *Anchors*\
+/// = Styling
+/// *Root* `rect`
+///
+/// = Anchors
 ///   Supports compass anchors.
 ///
 /// - a (coordinate): Coordinate of the top left corner of the rectangle.
@@ -960,11 +973,12 @@
 ///
 /// = parameters
 /// 
-/// *Style Root* `bezier`\
-/// *Style Keys*\
+/// = Styling 
+/// *Root* `bezier`
+/// == Keys
 ///   Supports marks.
 ///   
-/// *Anchors*
+/// = Anchors
 ///   / ctrl-n: nth control point where n is an integer starting at 0
 ///   / start: The start position of the curve.
 ///   / end: The end position of the curve.
@@ -1081,12 +1095,13 @@
 ///
 /// = parameters
 ///
-/// *Style Root* `catmull`\
-/// *Style Keys*
+/// = Styling 
+/// *Root* `catmull`\
+/// == Keys
 ///   #show-parameter-block("tension", "float", [I need a description], default: 0.5)
 ///   Supports marks.
 ///
-/// *Anchors*
+/// = Anchors
 ///   / start: The position of the start of the curve.
 ///   / end: The position of the end of the curve.
 ///   / pt-n: The nth given position (0 indexed so "pt-0" is equal to "start")
@@ -1166,14 +1181,14 @@
 ///
 /// = parameters
 /// 
-/// *Style Root* `hobby`
-///
-/// *Style Keys* \
+/// = Styling
+/// *Root* `hobby`
+/// == Keys
 ///   Supports marks.
 ///   #show-parameter-block("omega", "idk", [The curve's curlyness])
 ///   #show-parameter-block("rho", "idk", [])
 ///
-/// *Anchors*
+/// = Anchors
 ///   / start: The position of the start of the curve.
 ///   / end: The position of the end of the curve.
 ///   / pt-n: The nth given position (0 indexed, so "pt-0" is equal to "start")
@@ -1259,7 +1274,7 @@
 /// ```)
 /// = parameters
 ///
-/// *Anchors*
+/// = Anchors
 ///   / start: The start of the merged path.
 ///   / end: The end of the merged path.
 ///

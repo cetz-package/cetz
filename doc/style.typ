@@ -14,14 +14,22 @@
     (fn.description,)
   }
   let parameter-index = description.position(e => {
-    type(e) == content and e.func() == heading and e.body == [parameters]
+    e.func() == heading and e.body == [parameters]
   })
+
+  description = description.map(e => if e.func() == heading {
+    let fields = e.fields()
+    let label = fields.remove("label", default: none)
+    heading(level: style-args.first-heading-level + 1 + fields.remove("level"), fields.remove("body"), ..fields); [#label]
+  } else { e })
   
   if parameter-index != none {
     description.slice(0, parameter-index).join()
   } else {
     description.join()
   }
+
+  set heading(level: style-args.first-heading-level + 2)
 
   block(breakable: style-args.break-param-descriptions, {
     heading("Parameters", level: style-args.first-heading-level + 2)
