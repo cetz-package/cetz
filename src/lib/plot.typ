@@ -86,14 +86,11 @@
 ///   #example(```
 ///   let opts = (x-tick-step: none, y-tick-step: none, size: (2,1))
 ///   let data = cetz.plot.add(((-1,-1), (1,1),), mark: "o")
-///   let show-style(name) = {
+///
+///   for name in (none, "school-book", "left", "scientific") {
 ///     cetz.plot.plot(axis-style: name, ..opts, data, name: "plot")
 ///     content(((0,-1), "-|", "plot.south"), repr(name))
 ///     set-origin((3.5,0))
-///   }
-///
-///   for name in (none, "school-book", "left", "scientific") {
-///     show-style(name)
 ///   }
 ///   ```, vertical: true)
 /// - plot-style (style,function): Styling to use for drawing plot graphs.
@@ -119,7 +116,7 @@
 /// - name (string): The plots element name to be used when refering to anchors
 /// - legend (none, auto, coordinate): The position the legend will be drawn at. The legend
 ///   is drawn if at least set of data with `label: ..` set to a value != `none` is given.
-///   If set to `auto`, the placement in the legend style (*Style Root* `legend`, *Key* `default-position`) gets used.
+///   If set to `auto`, the placement in the legend style (style root: `legend`, key: `default-position`) gets used.
 ///   If set to a `<coordinate>`, that coordinate, relative to the plots origin is used for
 ///   placing the legend group.
 ///
@@ -147,7 +144,7 @@
 ///     cetz.plot.plot(size: (3,2),
 ///                    x-tick-step: none, y-tick-step: none,
 ///                    legend: "legend.north", {
-///       cetz.plot.add(((-1,-1),(1,1),), mark: "o", label: $f(x)$)
+///       cetz.plot.add(((-1,-1),(1,1),), mark: "o", label: $ f(x) $)
 ///     })
 ///     ```)
 /// - legend-anchor (auto, string): Anchor of the legend group to use as its origin.

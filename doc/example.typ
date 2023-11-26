@@ -7,9 +7,9 @@
 
 
 /// Render an example from a string
-/// - source (string, raw):
-/// - args (arguments):
-/// - vertical (boolean)
+/// - source (string, raw): Example source code
+/// - args (arguments): Arguments passed down to the canvas
+/// - vertical (boolean): If true, show the code below the canvas
 #let example(source, ..args, vertical: false) = {
   if type(source) == content {
     source = source.text
