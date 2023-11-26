@@ -474,12 +474,6 @@ The tree library allows the drawing diagrams with simple tree layout algorithms
 
 #doc-style.parse-show-module("/src/lib/tree.typ")
 
-=== Node <tree-node>
-
-A tree node is an array of nodes. The first array item represents the
-current node, all following items are direct children of that node.
-The node itselfes can be of type `content` or `dictionary` with a key `content`.
-
 == Plot
 
 The library `plot` of CeTZ allows plotting data.
