@@ -49,11 +49,15 @@
   if type(types) != array {
     types = (types,)
   }
-  block(breakable: true, width: 100%, stack(
-    dir: ltr,
-    [/ #name: #types.map(tidy.styles.default.show-type).join(" or ") \ #content],
-    if show-default { align(right, [Default: #raw(lang: "typc", repr(default))]) }
-  ))
+  stack(dir: ttb, spacing: 1em,
+    // name <type>     Default: <default>
+    block(breakable: false, width: 100%, stack(dir: ltr,
+      [#text(weight: "bold", name + [:]) #types.map(tidy.styles.default.show-type).join(" or ")],
+      if show-default { align(right, [Default: #raw(lang: "typc", repr(default))]) }
+      )),
+    // text
+    block(inset: (left: .4cm), content)
+  )
 }
 
 

@@ -47,10 +47,10 @@
 /// - size (array): Plot size tuple of `(<width>, <height>)` in canvas units.
 ///   This is the plots inner plotting size without axes and labels.
 /// - axis-style (none, string): Axis style "scientific", "left", "school-book" #[
-///     #set term(padding: 1cm)
+///     #set terms(indent: 1cm)
 ///     / scientific: Frame plot area using a rect and draw axes `x` (bottom), `y` (left), `x2` (top), and `y2` (right) around it.
 ///       If `x2` or `y2` are unset, they mirror their opposing axis.
-///     / `"scientific-auto"`: Draw set (used) axes `x` (bottom), `y` (left), `x2` (top) and `y2` (right) around
+///     / scientific-auto: Draw set (used) axes `x` (bottom), `y` (left), `x2` (top) and `y2` (right) around
 ///       the plotting area, forming a rect.
 ///     / school-book: Draw axes `x` (horizontal) and `y` (vertical) as arrows pointing to the right/top with both crossing at $(0, 0)$
 ///     / left: Draw axes `x` and `y` as arrows, while the y axis stays on the left (at `x.min`)
