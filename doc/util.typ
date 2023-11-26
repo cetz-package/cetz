@@ -39,7 +39,7 @@
       dx: -left-fringe * 22cm + 5mm,
       text(3cm, right-color)[CeTZ]
     ) +
-    text(29pt)[ein Typst Zeichenpacket]
+    text(29pt)[ein Typst Zeichenpaket]
   )
   block(
     v(1cm) +
