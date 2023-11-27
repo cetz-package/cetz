@@ -70,3 +70,10 @@
 
   test((-1,-1), (3,1), radius: (north-west: (50%, .2), south-east: (50%, .2)))
 }))
+
+// Use fixed length values
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  test((-1,-1), (3,1), radius: .5cm)
+}))

@@ -130,46 +130,21 @@
   return segments.map(_segment-length).sum()
 }
 
-/// Normalize path by inserting linear segments
-/// if the path contains gaps
-///
-/// - segments (array): List of path segments
-/// - close (bool): If true, insert a close segment if the first and last
-///   path point are different
-///
-/// -> array List of new segments
-#let normalize-path(segments, close: false) = {
-  let new = ()
-
-  let prev-pt = none
-  for s in segments {
-    let kind = s.at(0)
-    let start = segment-start(s)
-    let end = segment-end(s)
-
-    if prev-pt != none and prev-pt != start {
-      new.push(("line", prev-pt, start))
-    }
-
-    new.push(s)
-    prev-pt = end
-  }
-
-  if close and segment-start(new.first()) != segment-end(new.last()) {
-    new.push(("line", segment-start(new.first()), segment-end(new.last())))
-  }
-
-  return new
-}
-
 /// Get position on path
 ///
 /// - segments (array): List of path segments
-/// - t (float,ratio): Position (from 0 to 1)
-/// -> vector: Position on path
+/// - t (int,float,ratio): Absolute position on the path if given an
+///   float or integer, or relative position if given a ratio from 0% to 100%
+/// -> none,vector: Position on path as vector clamped to the paths begin/end
+///    position.
+///    If the path is empy (segments == ()), none is returned
 #let point-on-path(segments, t) = {
   assert(type(t) in (int, float, ratio),
-    message: "Distance t must be of type number or ratio")
+    message: "Distance t must be of type int, float or ratio")
+  if type(t) == ratio {
+    assert(0% <= t and t <= 100%,
+      message: "Ratio must be between 0% and 100%, got: " + repr(t))
+  }
 
   if segments.len() == 0 {
     return none
@@ -210,7 +185,8 @@
 
 /// Get position and direction on path
 ///
-/// TODO: Remove this function!
+/// TODO: Replace this function by having point-on-path return both a point
+///       and a direction vector!
 ///
 /// - segments (array): List of path segments
 /// - t (float): Position (from 0 to 1)

@@ -144,8 +144,10 @@
     } else {
       float(num / ctx.length)
     }
+  } else if type(num) == ratio {
+    return num
   } else {
-    float(num)
+    return float(num)
   }
 }
 
@@ -241,6 +243,7 @@
 /// Get a corner-radius dictionary (north-east, north-west, south-east, south-west) from
 /// a corner-radius value. Returns none if all radii are zero or none
 ///
+/// - ctx (context): Canvas context object
 /// - radii (none, number, dictionary): Radius specification
 ///   Type of `padding`:
 ///   / `number`: All corners have the same radius
@@ -250,7 +253,7 @@
 ///
 /// -> dictionary Dictionary with the keys: north-east, north-west, south-east, south-west set
 ///    to corner radius tuples (x and y radius)
-#let as-corner-radius-dict(radii, size) = {
+#let as-corner-radius-dict(ctx, radii, size) = {
   if radii == none or radii == 0 {
     return (north-west: (0,0), north-east: (0,0),
             south-west: (0,0), south-east: (0,0))
@@ -286,6 +289,9 @@
   } else {
     (radii, radii, radii, radii)
   }).map(v => if type(v) != array { (v, v) } else { v })
+
+  // Resolve lengths to floats
+  radii = radii.map(t => t.map(resolve-number.with(ctx)))
 
   // Clamp radii to half the size
   radii = radii.map(t => t.enumerate().map(((i, v)) => {

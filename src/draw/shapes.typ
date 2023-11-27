@@ -1021,7 +1021,7 @@
 
       let size = (calc.abs(x2 - x1), calc.abs(y2 - y1))
       let (north-west: nw, north-east: ne,
-           south-west: sw, south-east: se) = util.as-corner-radius-dict(style.radius, size)
+           south-west: sw, south-east: se) = util.as-corner-radius-dict(ctx, style.radius, size)
 
       let (transform, anchors) = anchor_.setup(
         (anchor) => {
