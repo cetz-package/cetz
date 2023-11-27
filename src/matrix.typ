@@ -38,6 +38,22 @@
    (0, 0, 0, 1))
 }
 
+// Return 4x4 x-shear matrix
+#let transform-shear-x(factor) = {
+  ((1, factor, 0, 0),
+   (0, 1, 0, 0),
+   (0, 0, 1, 0),
+   (0, 0, 0, 1))
+}
+
+// Return 4x4 y-shear matrix
+#let transform-shear-y(factor) = {
+  ((1, 0, 0, 0),
+   (factor, 1, 0, 0),
+   (0, 0, 1, 0),
+   (0, 0, 0, 1))
+}
+
 // Return 4x4 scale matrix
 #let transform-scale(f) = {
   let (x, y, z) = if type(f) != dictionary {
