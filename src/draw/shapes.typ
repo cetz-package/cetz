@@ -204,7 +204,9 @@
 /// arc((0,-0.5), start: 45deg, delta: 90deg, mode: "CLOSE")
 /// arc((0,-1), stop: 135deg, delta: 90deg, mode: "PIE")
 /// ```)
+///
 /// Note that two of the three angle arguments (`start`, `stop` and `delta`) must be set.
+/// The current position `()` gets updated to the arc's end coordinate (anchor `arc-end`).
 ///
 /// == parameters
 ///
