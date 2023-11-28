@@ -2,14 +2,37 @@
 #import "../util.typ"
 #import "../draw.typ"
 #import "../coordinate.typ"
+#import "../intersection.typ"
+#import "../process.typ"
 #import "../vector.typ"
 #import "../matrix.typ"
 #import "../process.typ"
+#import "../aabb.typ"
+#import "../styles.typ"
 #import "../anchor.typ" as anchor_
 
 #let typst-content = content
 
-/// Lays out and renders tree nodes.
+/// Default edge draw callback
+#let default-draw-edge(from, to, parent, child) = {
+  draw.line(from, to)
+}
+
+/// Default node draw callback
+#let default-draw-node(node, _) = {
+  let text = if type(node) in (content, str, int, float) {
+    [#node]
+  } else if type(node) == dictionary {
+    node.content
+  }
+
+  draw.get-ctx(ctx => {
+    draw.content((), text)
+  })
+}
+
+
+/// Lais out and renders tree nodes.
 ///
 /// For each node, the `tree` function creates an anchor of the format
 /// `"node-<depth>-<child-index>"` that can be used to query a nodes position
@@ -90,9 +113,6 @@
   assert(grow > 0)
   assert(spread > 0)
 
-  // if direction == "down" { direction = "south" }
-  // if direction == "up" { direction = "north" }
-
   direction = (
     up: "north",
     down: "south",
@@ -100,45 +120,14 @@
     left: "west"
   ).at(direction)
 
-  let opposite-dir = (
-    west: "east", 
-    east: "west",
-    south: "north",
-    north: "south"
-  )
-
   if draw-edge == auto {
-    draw-edge = (source-name, target-name, target-node) => {
-      let (a, b) = (
-        source-name + "." + direction, 
-        target-name + "." + opposite-dir.at(direction)
-      )
-
-      draw.line(a, b)
-    }
+    draw-edge = default-draw-edge
   } else if draw-edge == none {
-    draw-edge = (..) => {}
+    draw-edge = (..) => { return () }
   }
 
   if draw-node == auto {
-    draw-node = (node, parent-name) => {
-      let content = node.content
-      if type(content) == str {
-        content = [#content]
-      } else if type(content) in (float, int) {
-        content = $#content$
-      } else if type(content) == dictionary and "content" in content {
-        content = content.content
-      } else if type(content) != typst-content {
-        panic("Unsupported content type " + type(content) + "! "+ "Provide your own `draw-node` implementation.")
-      }
-
-      if content != none {
-        draw.content((), content, name: "content")
-      } else {
-        draw.content((), [?], name: "content")
-      }
-    }
+    draw-node = default-draw-node
   }
   assert(draw-node != none, message: "Node draw callback must be set!")
 
@@ -168,7 +157,7 @@
   //
   // return:
   //   (node, left-x, right-x, shift-x)
-  let layout-node(node, shift-x, ctx) = {
+  let layout-node(node, shift-x) = {
     if node.children.len() == 0 {
       node.x = shift-x
       return (node, node.x, node.x)
@@ -181,7 +170,7 @@
         let child = node.children.at(i)
         let (child-min-x, child-max-x) = (none, none)
 
-        (child, child-min-x, child-max-x) = layout-node(child, shift-x, ctx)
+        (child, child-min-x, child-max-x) = layout-node(child, shift-x)
         node.children.at(i) = child
 
         left = util.min(child.x, left)
@@ -211,104 +200,71 @@
     }
   }
 
-  let layout(node, ctx) = {
-    let (n, ..) = layout-node(node, 0, ctx)
-    return n
-  }
-
   let node-position(node) = {
-    if direction == "south" {
+    if direction in ("south", "bottom") {
       return (node.x, -node.y)
-    } else if direction == "north" {
+    } else if direction in ("north", "top") {
       return (node.x, node.y)
-    } else if direction == "west" {
+    } else if direction in ("west", "left") {
       return (-node.y, node.x)
-    } else if direction == "east" {
+    } else if direction in ("east", "right") {
       return (node.y, node.x)
     } else {
       panic(message: "Invalid tree direction.")
     }
   }
 
-  let anchors(node, parent-path) = {
-    if parent-path != none {
-      parent-path += "-"
+  let build-element(node, parent-name) = {
+    let name = if parent-name != none {
+      parent-name + "-" + str(node.n)
     } else {
-      parent-path = ""
+      "0"
     }
 
-    let d = (:)
-    d.insert(parent-path + str(node.n), node-position(node))
-    for child in node.children {
-      d += anchors(child, parent-path + str(node.n))
-    }
-    return d
-  }
-
-  let render(node, parent-name) = {
-    let name = "node-" + str(node.depth) + "-" + str(node.n)
-
-    let cmds = ()
-    cmds += draw.group(name: name, {
-      draw.move-to(node-position(node))
-      draw.anchor("center", ())
-      draw-node(node, parent-name)
-    })
-
-    if parent-name != none {
-      cmds += draw-edge(parent-name, name, node)
+    // Render element
+    node.name = name
+    node.group-name = "g" + name
+    node.element = {
+      draw.anchor(node.name, node-position(node))
+      draw.group(name: node.group-name, {
+        draw.move-to(node-position(node))
+        draw.anchor("center", ())
+        draw-node(node, parent-name)
+      })
     }
 
-    for child in node.children {
-      cmds += render(child, name)
-    }
+    // Render children
+    node.children = node.children.map(c => build-element(c, name))
 
-    return cmds
+    // Render edges
+    node.edges = if node.children != () {
+      draw.group({
+        for child in node.children {
+          draw-edge(node.group-name, child.group-name, node, child)
+        }
+      })
+    } else { () }
+
+    return node
   }
 
   let root = build-node(root)
+  let (nodes, ..) = layout-node(root, 0)
 
-  return (ctx => {
-    let tree-root = layout(root, ctx)
-    let (ctx, drawables) = process.many(ctx, render(tree-root, none))
+  let node = build-element(nodes, none)
 
-    let anchors = anchors(tree-root, none)
+  // Render node recursive
+  let render(node) = {
+    if node.element != none {
+      node.element
+      if "children" in node {
+        for child in node.children {
+          render(child)
+        }
+      }
+      node.edges
+    }
+  }
 
-    return (
-      ctx: ctx,
-      name: name,
-      anchors: anchor_.setup(anchor => anchors.at(anchor), anchors.keys(), name: name, transform: ctx.transform).last(),
-      drawables: drawables
-    )
-  },)
-
-  // ((
-  //   name: name,
-  //   style: style.named(),
-  //   before: ctx => {
-  //     ctx.groups.push((
-  //       ctx: ctx,
-  //       anchors: (:),
-  //       tree-root: layout(root, ctx)
-  //     ))
-  //     return ctx
-  //   },
-  //   after: ctx => {
-  //     let self = ctx.groups.pop()
-  //     let nodes = ctx.nodes
-  //     ctx = self.ctx
-  //     if name != none {
-  //       ctx.nodes.insert(name, nodes.at(name))
-  //     }
-  //     return ctx
-  //   },
-  //   custom-anchors-ctx: (ctx) => {
-  //     let self = ctx.groups.last()
-  //     return anchors(self.tree-root, none)
-  //   },
-  //   children: (ctx) => {
-  //     let self = ctx.groups.last()
-  //     render(self.tree-root, none)
-  //   },
-  // ),)
+  draw.group(name: name, render(node))
 }

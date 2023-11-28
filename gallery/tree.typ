@@ -10,18 +10,29 @@
   import draw: *
 
   set-style(content: (padding: .2),
-    fill: gray.lighten(70%),
-    stroke: gray.lighten(70%))
+    fill: blue,
+    stroke: blue)
 
-  tree.tree(data, spread: 2.5, grow: 1.5, draw-node: (node, _) => {
-    circle((), radius: .45, stroke: none)
-    content((), node.content)
-  }, draw-edge: (from, to, _) => {
-    line((a: from, number: .6, abs: true, b: to),
-         (a: to, number: .6, abs: true, b: from), mark: (end: ">"))
+  tree.tree(data, spread: 2.5, grow: 1.4, draw-node: (node, _) => {
+    circle((), radius: .45)
+    content((), text(white, node.content))
+  }, draw-edge: (from, to, _, _) => {
+    line(from, to, mark: (end: ">"))
   }, name: "tree")
+})
 
-  // Draw a "custom" connection between two nodes
-  let (a, b) = ("tree.0-0-1", "tree.0-1-0",)
-  line((a: a, number: .6, abs: true, b: b), (a: b, number: .6, abs: true, b: a), mark: (end: ">", start: ">"))
+// You can use the tree API to draw lists of items
+#canvas(length: 1cm, {
+  import draw: *
+
+  let data = ([1], ([2], ([3], ([4], ([5],)))))
+
+  set-style(fill: none, stroke: blue)
+  tree.tree(data, direction: "right", grow: 1.1, draw-node: (node, _) => {
+    // Draw a block arrow shape
+    let shape = ((-.8, .5), (.9, 0), (.5, -.5),
+                 (-.5, -.5), (-.9, 0), (.5, .5))
+    line(..shape.map(pt => (rel: pt)), close: true)
+    content("center", text(blue, node.content))
+  }, draw-edge: none)
 })

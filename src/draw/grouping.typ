@@ -161,6 +161,7 @@
   },)
 }
 
+
 /// Groups one or more elements together. This element acts as a scope, all state changes such as transformations and styling only affect the elements in the group. Elements after the group are not affected by the changes inside the group.
 ///
 /// #example(```
