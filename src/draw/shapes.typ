@@ -311,7 +311,10 @@
       z
     )
 
-    // center is calculated based on observations of tikz's circular sector and semi circle shapes.
+    // Set the last position to arc-end
+    ctx.prev.pt = arc-end
+
+    // Center is calculated based on observations of tikz's circular sector and semi circle shapes.
     let center = if style.mode != "CLOSE" {
       // A circular sector's center anchor is placed half way between the sector-center and arc-center when the angle is 180deg. At 60deg it is placed 1/3 of the way between, this is mirrored at 300deg.
       vector.lerp(
