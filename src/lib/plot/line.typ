@@ -7,7 +7,7 @@
 // - data (array): Data points
 // - line (str,dictionary): Line line
 #let transform-lines(data, line) = {
-  let vhv-data(t) = {
+  let hvh-data(t) = {
     if type(t) == ratio {
       t = t / 1%
     }
@@ -40,7 +40,7 @@
   }
 
   let line-type = line.at("type", default: "linear")
-  assert(line-type in ("raw", "linear", "spline", "vh", "hv", "vhv"))
+  assert(line-type in ("raw", "linear", "spline", "vh", "hv", "hvh"))
 
   // Transform data into line-data
   let line-data = if line-type == "linear" {
@@ -50,11 +50,11 @@
                                     line.at("tension", default: .5),
                                     line.at("samples", default: 15))
   } else if line-type == "vh" {
-    return vhv-data(0)
+    return hvh-data(0)
   } else if line-type == "hv" {
-    return vhv-data(1)
-  } else if line-type == "vhv" {
-    return vhv-data(line.at("mid", default: .5))
+    return hvh-data(1)
+  } else if line-type == "hvh" {
+    return hvh-data(line.at("mid", default: .5))
   } else {
     return data
   }
@@ -176,8 +176,8 @@
 ///     (x,y + offset * 1.5)
 ///   })
 ///   plot.plot(size: (12, 3), axis-style: none, {
-///     plot.add(points(offset: 5), line: (type: "vhv", mid: .1))
-///     plot.add(points(offset: 4), line: "vhv")
+///     plot.add(points(offset: 5), line: (type: "hvh", mid: .1))
+///     plot.add(points(offset: 4), line: "hvh")
 ///     plot.add(points(offset: 3), line: "hv")
 ///     plot.add(points(offset: 2), line: "vh")
 ///     plot.add(points(offset: 1), line: "spline")

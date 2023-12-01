@@ -15,9 +15,9 @@
        plot.add(data(5), line: "spline", mark: "o")
        plot.add(data(10), line: "hv", mark: "o")
        plot.add(data(15), line: "vh", mark: "o")
-       plot.add(data(20), line: "vhv", mark: "o")
-       plot.add(data(25), line: (type: "vhv", mid: .25), mark: "o")
-       plot.add(data(30), line: (type: "vhv", mid: .75), mark: "o")
+       plot.add(data(20), line: "hvh", mark: "o")
+       plot.add(data(25), line: (type: "hvh", mid: .25), mark: "o")
+       plot.add(data(30), line: (type: "hvh", mid: .75), mark: "o")
     })
 }))
 

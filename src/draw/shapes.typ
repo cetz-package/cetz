@@ -213,7 +213,7 @@
 /// = Styling
 /// *Root:* `arc`\
 /// == Keys
-///   #show-parameter-block("radius", ("number", "array"), [The radius of the arc. An eliptical arc can be created by passing a tuple of numbers where the first element is the x radius and the second element is the y radius.], default: 1)
+///   #show-parameter-block("radius", ("number", "array"), [The radius of the arc. An elliptical arc can be created by passing a tuple of numbers where the first element is the x radius and the second element is the y radius.], default: 1)
 ///   #show-parameter-block("mode", ("string",), [The options are: "OPEN" no additional lines are drawn so just the arc is shown; "CLOSE" a line is drawn from the start to the end of the arc creating a circular segment; "PIE" lines are drawn from the start and end of the arc to the origin creating a circular sector.], default: "OPEN")
 ///
 /// = Anchors
@@ -885,7 +885,7 @@
 ///   Supports compass anchors.
 ///
 /// - a (coordinate): Coordinate of the top left corner of the rectangle.
-/// - b (coordinate): Coordinate of the bottom right corner of the rectanlge. You can draw a rectangle with a specified width and height by using relative coordinates for this parameter `(rel: (width, height))`.
+/// - b (coordinate): Coordinate of the bottom right corner of the rectangle. You can draw a rectangle with a specified width and height by using relative coordinates for this parameter `(rel: (width, height))`.
 /// - name (none,string):
 /// - anchor (none,string):
 /// - ..style (style):

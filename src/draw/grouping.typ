@@ -102,7 +102,7 @@
 ///
 /// You can add custom anchors to the group by using the `anchor` element while in the scope of said group, see `anchor` for more details. You can also copy over anchors from named child element by using the `copy-anchors` element as they are not accessible from outside the group.
 ///
-/// The default anchor is "center" but this can be overidden by using `anchor` to place a new anchor called "default".
+/// The default anchor is "center" but this can be overridden by using `anchor` to place a new anchor called "default".
 ///
 /// - body (elements, function): Elements to group together. A least one is required. A function that accepts `ctx` and returns elements is also accepted.
 /// - name (none, string):
