@@ -45,7 +45,7 @@
 ///
 /// = Options
 ///
-/// You can use the following options to customize each axis of the plot. You must pass them as named arguments prefixed by the axis name followed by a dash (`-`) they should taget. Example: `x-min: 0`, `y-ticks: (..)` or `x2-label: [..]`.
+/// You can use the following options to customize each axis of the plot. You must pass them as named arguments prefixed by the axis name followed by a dash (`-`) they should target. Example: `x-min: 0`, `y-ticks: (..)` or `x2-label: [..]`.
 ///
 /// #show-parameter-block("label", ("none", "content"), default: "none", [
 ///   The axis' label. If and where the label is drawn depends on the `axis-style`.])
@@ -178,7 +178,7 @@
 ///     Paint to use for filling marks.
 ///   ])
 /// - fill-below (bool): If true, the filled shape of plots is drawn _below_ axes.
-/// - name (string): The plots element name to be used when refering to anchors
+/// - name (string): The plots element name to be used when referring to anchors
 /// - legend (none, auto, coordinate): The position the legend will be drawn at. See @plot-legends for information about legends. If set to `<auto>`, the legend's "default-placement" styling will be used. If set to a `<coordinate>`, it will be taken as relative to the plot's origin.
 /// - legend-anchor (auto, string): Anchor of the legend group to use as its origin.
 ///   If set to `auto` and `lengend` is one of the predefined legend anchors, the
@@ -406,7 +406,7 @@
 
 /// Add an anchor to a plot environment
 ///
-/// This function is simillar to `draw.anchor` but it takes an additional
+/// This function is similar to `draw.anchor` but it takes an additional
 /// axis tuple to specify which axis coordinate system to use.
 ///
 /// #example(```

@@ -542,7 +542,7 @@ plot.plot(
 *Root:* `legend`
 ===== Keys
 #doc-style.show-parameter-block("orientation", ("direction"), default: ttb, [
-  The direction the legend items get layed out to.
+  The direction the legend items get laid out to.
 ])
 #doc-style.show-parameter-block("default-position", ("string", "coordinate"), default: "legend.north-east", [
   The default position the legend gets placed at.
@@ -591,7 +591,7 @@ import cetz.plot
 plot.plot(size: (3,2), x-tick-step: calc.pi, y-tick-step: 1,
                        x-format: v => $#{v/calc.pi} pi$, {
   plot.add(domain: (0, 4*calc.pi), calc.sin,
-    samples: 15, line: "vhv", style: (mark: (stroke: blue)))
+    samples: 15, line: "hvh", style: (mark: (stroke: blue)))
   plot.add(domain: (0, 4*calc.pi), calc.sin)
 })
 ```
