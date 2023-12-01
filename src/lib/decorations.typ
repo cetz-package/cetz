@@ -84,12 +84,12 @@
 
     let pointiness = style.pointiness
     assert(
-      type(pointiness) in (int, float)
-        and pointiness >= 0 and pointiness <= 1
-      or type(pointiness) == ratio
-        and pointiness >= 0% and pointiness <= 100%
-      or type(pointiness) == angle
-        and pointiness >= 0deg and pointiness <= 90deg,
+      (type(pointiness) in (int, float)
+        and pointiness >= 0 and pointiness <= 1)
+      or (type(pointiness) == ratio
+        and pointiness >= 0% and pointiness <= 100%)
+      or (type(pointiness) == angle
+        and pointiness >= 0deg and pointiness <= 90deg),
       message: "pointiness must be a factor between 0 and 1 or an angle between 0deg and 90deg, got " + repr(pointiness),
     )
     let pointiness = if type(pointiness) == angle { pointiness } else { pointiness * 90deg }
@@ -97,12 +97,12 @@
     let outer-pointiness = style.outer-pointiness
     assert(
       outer-pointiness == auto
-      or type(outer-pointiness) in (int, float)
-        and outer-pointiness >= 0 and outer-pointiness <= 1
-      or type(outer-pointiness) == ratio
+      or (type(outer-pointiness) in (int, float)
+        and outer-pointiness >= 0 and outer-pointiness <= 1)
+      or (type(outer-pointiness) == ratio)
         and outer-pointiness >= 0% and outer-pointiness <= 100%
-      or type(outer-pointiness) == angle
-        and outer-pointiness >= 0deg and outer-pointiness <= 90deg,
+      or (type(outer-pointiness) == angle
+        and outer-pointiness >= 0deg and outer-pointiness <= 90deg),
       message: "outer-pointiness must be a factor between 0 and 1 or an angle between 0deg and 90deg or auto, got " + repr(outer-pointiness),
     )
     let outer-pointiness = if outer-pointiness == auto {
@@ -272,10 +272,10 @@
 
     let aspect = style.aspect
     assert(
-      type(aspect) == ratio
-        and aspect >= 0% and aspect <= 100%
-      or type(aspect) == (int, float)
-        and aspect >= 0 and aspect <= 1,
+      (type(aspect) == ratio
+        and aspect >= 0% and aspect <= 100%)
+      or (type(aspect) in (int, float)
+        and aspect >= 0 and aspect <= 1),
       message: "aspect must be a ratio between 0% and 100%, got " + repr(aspect),
     )
     if type(aspect) == ratio { aspect /= 100% }

@@ -75,40 +75,45 @@
 ///
 /// #example(```
 /// // Outer rect
-/// rect((0,0), (2,2))
+/// rect((0, 0), (2, 2))
 /// // Inner rect
-/// translate((.5,.5,0))
-/// rect((0,0), (1,1))
+/// translate(x: .5, y: .5)
+/// rect((0, 0), (1, 1))
 /// ```)
 ///
-/// - vec (vector, dictionary): The vector to translate by. A dictionary can be given instead with optional keys `x`, `y` and `z` to translate in the relevant axis.
-/// - pre (bool): #box[Specify matrix multiplication order
-///                   - false: `World = World * Translate`
-///                   - true:  `World = Translate * World`]
-#let translate(vec, pre: true) = {
+/// - ..args (vector, float, length): A single vector or any combination of the named arguments `x`, `y` and `z` to translate by.
+///   A translation matrix with the given offsets gets multiplied with the current transformation depending on the value of `pre`.
+/// - pre (bool): Specify matrix multiplication order
+///   - false: `World = World * Translate`
+///   - true:  `World = Translate * World`
+#let translate(..args, pre: false) = {
+  assert((args.pos().len() == 1 and args.named() == (:)) or
+         (args.pos() == () and args.named() != (:)),
+    message: "Expected a single positional argument or one or more named arguments, got: " + repr(args))
+
+  let pos = args.pos()
+  let named = args.named()
+
+  let vec = if named != (:) {
+    (named.at("x", default: 0), named.at("y", default: 0), named.at("z", default: 0))
+  } else {
+    vector.as-vec(pos.at(0), init: (0, 0, 0))
+  }
+
   (ctx => {
-    let (x, y, z) = if type(vec) == "dictionary" {
-      (
-        vec.at("x", default: 0),
-        vec.at("y", default: 0),
-        vec.at("z", default: 0),
-      )
-    } else if type(vec) == "array" {
-      vec
-      if vec.len() <= 2 {
-        (0,)
-      }
+    // Allow translating by length values
+    let vec = vec.map(v => if type(v) == length {
+      util.resolve-number(ctx, v)
     } else {
-      panic("Invalid format '" + repr(vec) + "'")
+      v
+    })
+
+    let t = matrix.transform-translate(..vec)
+    if pre {
+      ctx.transform = matrix.mul-mat(t, ctx.transform)
+    } else {
+      ctx.transform = matrix.mul-mat(ctx.transform, t)
     }
-    
-    
-    let transforms = (matrix.transform-translate(x, -y, z), ctx.transform)
-    if not pre {
-      transforms = transforms.rev()
-    }
-    ctx.transform = matrix.mul-mat(..transforms)
-    
     return (ctx: ctx)
   },)
 }
@@ -116,22 +121,46 @@
 /// Scales the transformation matrix by the given factor(s).
 ///
 /// #example(```
-/// // Scale x-axis
-/// scale((x: 1.8))
+/// // Scale the y-axis
+/// scale(y: 50%)
 /// circle((0,0))
 /// ```)
 ///
-/// - factor (float,dictionary): A float to scale the transformation matrix by. A dictionary with optional keys `x`, `y` and `z` can also be given to scale in the respective directions.
-#let scale(factor) = {
-  (
-    ctx => {
-      ctx.transform = matrix.mul-mat(ctx.transform, matrix.transform-scale(factor))
-      return (ctx: ctx)
-    },
-  )
+/// - ..args (float, ratio): A single value to scale the transformation matrix by or per axis
+///   scaling factors. Accepts a single float or ratio value or any combination of the named arguments
+///   `x`, `y` and `z` to set per axis scaling factors. A ratio of 100% is the same as the value $1$.
+#let scale(..args) = {
+  assert((args.pos().len() == 1 and args.named() == (:)) or
+         (args.pos() == () and args.named() != (:)),
+    message: "Expected a single positional argument or one or more named arguments, got: " + repr(args))
+
+  let pos = args.pos()
+  let named = args.named()
+
+  let vec = if args.named() != (:) {
+    (named.at("x", default: 1), named.at("y", default: 1), named.at("z", default: 1))
+  } else if type(pos.at(0)) == array {
+    vector.as-vec(pos, init: (1, 1, 1))
+  } else {
+    let factor = pos.at(0)
+    (factor, factor, factor)
+  }
+
+  // Allow scaling using ratio values
+  vec = vec.map(v => if type(v) == ratio {
+    v / 100%
+  } else {
+    v
+  })
+
+  (ctx => {
+    ctx.transform = matrix.mul-mat(ctx.transform, matrix.transform-scale(vec))
+    return (ctx: ctx)
+  },)
 }
 
-/// Sets the given position as the origin
+/// Sets the given position as the new origin `(0, 0, 0)`
+///
 /// #example(```
 /// // Outer rect
 /// rect((0,0), (2,2), name: "r")
@@ -196,20 +225,21 @@
     let bounds = vector.as-vec(bounds, init: (1, 1, 1))
     
     let (ctx, from, to) = coordinate.resolve(ctx, from, to)
-
-    let (fx, fy, fz, tx, ty, tz) = from + to
+    let (fx, fy, fz) = from
+    let (tx, ty, tz) = to
     
     // Compute scaling
-    let (sx, sy, sz) = vector.sub((tx, ty, tz), (fx, fy, fz)).enumerate().map(((i, v)) => if bounds.at(i) == 0 {
+    let (sx, sy, sz) = vector.sub((tx, ty, tz),
+                                  (fx, fy, fz)).enumerate().map(((i, v)) => if bounds.at(i) == 0 {
       0
     } else {
       v / bounds.at(i)
     })
 
-    ctx.transform = matrix.mul-mat(ctx.transform, matrix.mul-mat(
-      matrix.transform-translate(fx, fy, fz),
-      matrix.transform-scale((x: sx, y: sy, z: sz)),
-    ))
+    ctx.transform = matrix.mul-mat(ctx.transform,
+      matrix.transform-translate(fx, fy, fz))
+    ctx.transform = matrix.mul-mat(ctx.transform,
+      matrix.transform-scale((sx, sy, sz)))
     return (ctx: ctx)
   },)
 }

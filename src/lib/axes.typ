@@ -260,7 +260,7 @@
       bounds: (x.max - x.min,
                y.max - y.min,
                0))
-    draw.translate((-x.min, y.min, 0), pre: false)
+    draw.translate((-x.min, -y.min))
     body
   })
 }
