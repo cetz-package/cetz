@@ -54,7 +54,7 @@
 /// #show-parameter-block("max", ("auto", "float"), default: "auto", [
 ///   Axis upper domain value. If this is set little than than `min`, the axis' direction is swapped])
 /// #show-parameter-block("equal", ("string"), default: "none", [
-///   Set the axis domain to keep a fixed aspect ration by multiplying the other axis domain by the plots aspect ratio,
+///   Set the axis domain to keep a fixed aspect ratio by multiplying the other axis domain by the plots aspect ratio,
 ///   depending on the other axis orientation (see `horizontal`).
 ///   This can be useful to force one axis to grow or shrink with another one.
 ///   You can only "lock" two axes of different orientations.

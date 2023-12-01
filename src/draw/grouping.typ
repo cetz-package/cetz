@@ -13,7 +13,8 @@
 
 #import "transformations.typ": move-to
 
-/// Calculates the intersections between multiple paths and create one anchor per intersection point.
+/// Calculates the intersections between multiple paths and creates one anchor
+/// per intersection point.
 ///
 /// All resulting anchors will be named numerically, starting at 0.
 /// i.e., a call `intersections("a", ...)` will generate the anchors

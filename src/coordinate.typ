@@ -307,7 +307,7 @@
   return t
 }
 
-/// Resolve a list of coordinates to a absolute vectors
+/// Resolve a list of coordinates to absolute vectors
 ///
 /// #example(```
 /// line((0,0), (1,1), name: "l")

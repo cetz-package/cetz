@@ -260,7 +260,7 @@
 ///   above z (z >= 0) or below z (z < 0) get plotted.
 ///   If you specify multiple z values, they get plotted in the order of specification.
 /// - x-domain (domain): X axis domain used if `data` is a function, that is the
-///   domain insides the function gets sampled.
+///   domain inside the function gets sampled.
 /// - y-domain (domain): Y axis domain used if `data` is a function, see `x-domain`.
 /// - x-samples (int): X axis domain samples (2 < n). Note that contour finding
 ///   can be quite slow. Using a big sample count can improve accuracy but can

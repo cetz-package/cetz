@@ -40,7 +40,9 @@
 /// circle((0,0))
 /// ```)
 ///
-/// - ..angles (angle): A single angle as a positional argument to rotate on the z-axis by. Named arguments of `x`, `y` or `z` can be given to rotate on their respective axis. You can give named arguments of `yaw`, `pitch` or `roll` to TODO
+/// - ..angles (angle): A single angle as a positional argument to rotate on the z-axis by.
+///   Named arguments of `x`, `y` or `z` can be given to rotate on their respective axis.
+///   You can give named arguments of `yaw`, `pitch` or `roll`, too.
 #let rotate(..angles) = {
   assert(angles.pos().len() == 1 or angles.named().len() > 0,
     message: "Rotate takes a single z-angle or angles " +
