@@ -8,7 +8,13 @@
 
 #let pi = calc.pi
 
-// Create identity matrix with dim `m`, `n`
+/// Create identity matrix with dimensions $m times n$
+///
+/// - m (int): Rows
+/// - n (int): Columns
+/// - one (float): Value to set as $1$
+/// - zero (float): Value to set as $0$
+/// -> matrix
 #let ident(m: 4, n: 4, one: 1, zero: 0) = {
   ({for m in range(0, m) {
     ({for n in range(0, n) {
@@ -17,12 +23,13 @@
     }})
 }
 
-// Return matrix dimension (m, n)
+/// Return matrix dimensions (m, n)
+/// -> tuple
 #let dim(m) = {
   return (m.len(), if m.len() > 0 {m.at(0).len()} else {0})
 }
 
-// Return 4x4 translation matrix
+/// Return a $4 times 4$ translation matrix
 #let transform-translate(x, y, z) = {
   ((1, 0, 0, x),
    (0, 1, 0, y),
@@ -30,7 +37,7 @@
    (0, 0, 0, 1))
 }
 
-// Return 4x4 z-shear matrix
+/// Return a $4 times 4$ z-shear matrix
 #let transform-shear-z(factor) = {
   ((1, 0, factor, 0),
    (0, 1,-factor, 0),
@@ -40,12 +47,14 @@
 
 // Return 4x4 scale matrix
 #let transform-scale(f) = {
-  let (x, y, z) = if type(f) != dictionary {
-    (f, f, f)
-  } else {
+  let (x, y, z) = if type(f) == array {
+    vector.as-vec(f, init: (1, 1, 1))
+  } else if type(f) == dictionary {
     (f.at("x", default: 1),
      f.at("y", default: 1),
      f.at("z", default: 1))
+  } else {
+    (f, f, f)
   }
   return(
    (x, 0, 0, 0),
