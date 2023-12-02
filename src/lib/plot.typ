@@ -52,7 +52,7 @@
 /// #show-parameter-block("min", ("auto", "float"), default: "auto", [
 ///   Axis lower domain value. If this is set greater than than `max`, the axis' direction is swapped])
 /// #show-parameter-block("max", ("auto", "float"), default: "auto", [
-///   Axis upper domain value. If this is set little than than `min`, the axis' direction is swapped])
+///   Axis upper domain value. If this is set to a lower value than `min`, the axis' direction is swapped])
 /// #show-parameter-block("equal", ("string"), default: "none", [
 ///   Set the axis domain to keep a fixed aspect ratio by multiplying the other axis domain by the plots aspect ratio,
 ///   depending on the other axis orientation (see `horizontal`).
@@ -79,8 +79,8 @@
 /// #show-parameter-block("minor-tick-step", ("none", "float"), default: "none", [
 ///   Like `tick-step`, but for minor tick marks. In contrast to ticks, minor ticks do not have labels.])
 /// #show-parameter-block("ticks", ("none", "array"), default: "none", [
-///   A List o0 custom tick marks to additionally draw along the axis. They can be passed as
-///   an array of `<floa>` values or an array of `(<float>, <content>)` tuples for
+///   A List of custom tick marks to additionally draw along the axis. They can be passed as
+///   an array of `<float>` values or an array of `(<float>, <content>)` tuples for
 ///   setting custom tick mark labels per mark.
 ///
 ///   #example(```
@@ -96,7 +96,7 @@
 ///
 ///   Examples: `(1, 2, 3)` or `((1, [One]), (2, [Two]), (3, [Three]))`])
 /// #show-parameter-block("format", ("none", "string", "function"), default: "float", [
-///   How to format the tick label: You can give a function that takes a `<float>` and returnu
+///   How to format the tick label: You can give a function that takes a `<float>` and return
 ///   `<content>` to use as the tick label. You can also give one of the predefined options:
 ///   / float: Floating point formatting rounded to two digits after the point (see `decimals`)
 ///   / sci: Scientific formatting with $times 10^n$ used as exponet syntax
@@ -134,7 +134,7 @@
 /// ])
 ///
 /// - body (body): Calls of `plot.add` or `plot.add-*` commands. Note that normal drawing
-///   commands like `line` or `rect` are not allowed insides the plots body, instead wrap
+///   commands like `line` or `rect` are not allowed inside the plots body, instead wrap
 ///   them in `plot.add-annotation`, which lets you select the axes used for drawing.
 /// - size (array): Plot size tuple of `(<width>, <height>)` in canvas units.
 ///   This is the plots inner plotting size without axes and labels.
@@ -427,8 +427,9 @@
 ///   Both values can have the special values "min" and
 ///   "max", which resolve to the axis min/max value.
 ///   Position is in axis space defined by the axes passed to `axes`.
-/// - axes (tuple): Name of the axes to use `("x", "y")`, note that both
-///   axes must exist, as `add-anchors` does not create axes on demand.
+/// - axes (tuple): Name of the axes to use `("x", "y")` as coordinate
+///   system for `position`. Note that both axes must be used,
+///   as `add-anchors` does not create them on demand.
 #let add-anchor(name, position, axes: ("x", "y")) = {
   ((
     type: "anchor",

@@ -192,7 +192,7 @@
 ///   graph. Uses the `mark` style key of `style` for drawing.
 /// - mark-size (float): Mark size in cavas units
 /// - data (array,function): Array of 2D data points (numeric) or a function
-///   of the form `x => y`, where `x` is a value insides `domain`
+///   of the form `x => y`, where `x` is a value in `domain`
 ///   and `y` must be numeric or a 2D vector (for parametric functions).
 ///   #example(```
 ///   import cetz.plot
@@ -270,8 +270,8 @@
   ),)
 }
 
-/// Add horizontal lines at one or more y-values. The lines start and end point
-/// is at its axis bounds.
+/// Add horizontal lines at one or more y-values. Every lines start and end points
+/// are at their axis bounds.
 ///
 /// #example(```
 /// cetz.plot.plot(size: (2,2), x-tick-step: none, y-tick-step: none, {
@@ -320,8 +320,8 @@
   ),)
 }
 
-/// Add vertical lines at one or more x-values. The lines start and end point
-/// is at its axis bounds.
+/// Add vertical lines at one or more x-values. Every lines start and end points
+/// are at their axis bounds.
 ///
 /// #example(```
 /// cetz.plot.plot(size: (2,2), x-tick-step: none, y-tick-step: none, {

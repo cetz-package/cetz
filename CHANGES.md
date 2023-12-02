@@ -7,6 +7,7 @@
 - **BREAKING** Rotation direction changed to CCW
 - **BREAKING** Removed the `shadow` function
 - **BREAKING** Changed the behaviour of `mark`
+- **BREAKING** Changed the behaviour of `translate` by changing the transformation order, changed arguments of `scale` and `translate`
 - Content padding has been improved to be configurable per side
 - Groups support same padding options as content
 - Mark offsetting has been fixed and improved
