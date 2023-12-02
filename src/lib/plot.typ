@@ -40,7 +40,7 @@
 /// ```)
 ///
 /// To draw elements insides a plot, using the plots coordinate system, use
-/// the `plot.add-annotation(..)` function.
+/// the `plot.annotate(..)` function.
 ///
 /// = parameters
 ///
@@ -136,7 +136,7 @@
 ///
 /// - body (body): Calls of `plot.add` or `plot.add-*` commands. Note that normal drawing
 ///   commands like `line` or `rect` are not allowed inside the plots body, instead wrap
-///   them in `plot.add-annotation`, which lets you select the axes used for drawing.
+///   them in `plot.annotate`, which lets you select the axes used for drawing.
 /// - size (array): Plot size tuple of `(<width>, <height>)` in canvas units.
 ///   This is the plots inner plotting size without axes and labels.
 /// - axis-style (none, string): How the axes should be styled:
