@@ -5,10 +5,10 @@
 #import "/src/util.typ": circle-arclen
 #import "/src/lib/palette.typ"
 
-/// Piechart Label Kind
+// Piechart Label Kind
 #let label-kind = (value: "VALUE", percentage: "%", label: "LABEL")
 
-/// Piechart Default Style
+// Piechart Default Style
 #let default-style = (
   stroke: none,
   /// Outer chart radius
@@ -53,6 +53,76 @@
 
 /// Draw a pie- or donut-chart
 ///
+/// #example(```
+/// import cetz.chart
+/// let data = (24, 31, 18, 21, 23, 18, 27, 17, 26, 13)
+/// let colors = gradient.linear(red, blue, green, yellow)
+///
+/// chart.piechart(
+///   data,
+///   radius: 1.5,
+///   slice-style: colors,
+///   inner-radius: .5,
+///   outer-label: (content: "%",))
+/// ```)
+///
+/// = Styling
+/// *Root* `piechart` \
+/// #show-parameter-block("radius", ("number"), [
+///   Outer radius of the chart.], default: 1)
+/// #show-parameter-block("inner-radius", ("number"), [
+///   Inner radius of the chart slices. If greater than zero, the chart becomes
+///   a "donut-chart".], default: 0)
+/// #show-parameter-block("gap", ("number", "angle"), [
+///   Gap between chart slices to leave empty. This does not increase the charts
+///   radius by pushing slices outwards, but instead shrinks the slice. Big
+///   values can result in slices becoming invisible if no space is left.], default: 0.5deg)
+/// #show-parameter-block("outset-offset", ("number", "ratio"), [
+///   Absolute, or radius relative distance to push slices marked for
+///   "outsetting" outwards from the center of the chart.], default: 10%)
+/// #show-parameter-block("outset-offset", ("string"), [
+///   The mode of how to perform "outsetting" of slices:
+///   - "OFFSET": Offset slice position by `outset-offset`, increasing their gap to their siblings
+///   - "RADIUS": Offset slice radius by `outset-offset`, which scales the slice and leaves the gap unchanged], default: "OFFSET")
+/// #show-parameter-block("start", ("angle"), [
+///   The pie-charts start angle. You can use this to draw charts not forming a full circle.], default: 0deg)
+/// #show-parameter-block("stop", ("angle"), [
+///   The pie-charts stop angle.], default: 360deg)
+/// #show-parameter-block("outer-label.content", ("none","string","function"), [
+///   Content to display outsides the charts slices.
+///   There are the following predefined values:
+///   / LABEL: Display the slices label (see `label-key`)
+///   / %: Display the percentage of the items value in relation to the sum of
+///     all values, rounded to the next integer
+///   / VALUE: Display the slices value
+///   If passed a `<function>` of the format `(value, label) => content`,
+///   that function gets called with each slices value and label and must return
+///   content, that gets displayed.], default: "LABEL")
+/// #show-parameter-block("outer-label.radius", ("number","ratio"), [
+///   Absolute, or radius relative distance from the charts center to position
+///   outer labels at.], default: 125%)
+/// #show-parameter-block("outer-label.angle", ("angle","auto"), [
+///   The angle of the outer label. If passed `auto`, the label gets rotated,
+///   so that the baseline is parallel to the slices secant. ], default: 0deg)
+/// #show-parameter-block("outer-label.anchor", ("string"), [
+///   The anchor of the outer label to use for positioning.], default: "center")
+/// #show-parameter-block("inner-label.content", ("none","string","function"), [
+///   Content to display insides the charts slices.
+///   See `outer-label.content` for the possible values.], default: none)
+/// #show-parameter-block("inner-label.radius", ("number","ratio"), [
+///   Distance of the inner label to the charts center. If passed a `<ratio>`,
+///   that ratio is relative to the mid between the inner and outer radius (`inner-radius` and `radius`)
+///   of the chart], default: 150%)
+/// #show-parameter-block("inner-label.angle", ("angle","auto"), [
+///   See `outer-label.angle`.], default: 0deg)
+/// #show-parameter-block("inner-label.anchor", ("string"), [
+///   See `outer-label.anchor`.], default: "center")
+///
+/// = Anchors
+///   The chart places one anchor per item at the radius of it's slice that
+///   gets named `"item-<index>"` (outer radius) and `"item-<index>-inner"` (inner radius),
+///   where index is the index of the sclice data in `data`.
+///
 /// - data (array): Array of data items. A data item can be:
 ///   - A number: A number that is used as the fraction of the slice
 ///   - An array: An array which is read depending on value-key, label-key and outset-key
@@ -60,14 +130,19 @@
 /// - value-key (none,int,string): Key of the "value" of a data item. If for example
 ///   data items are passed as dictionaries, the value-key is the key of the dictionary to
 ///   access the items chart value.
-/// - label-key (none,int,string): Same as the value-key but for getting an items label
-/// - outset-key (none,int,string): Same as the value-key but for getting if an item should get outset (highlighted)
+/// - label-key (none,int,string): Same as the value-key but for getting an items label content.
+/// - outset-key (none,int,string): Same as the value-key but for getting if an item should get outset (highlighted). The
+///   outset can be a bool, float or ratio. If of type `bool`, the outset distance from the
+///   style gets used.
 /// - outset (none,int,array): A single or multiple indices of items that should get offset from the center to the outsides
 ///   of the chart. Only used if outset-key is none!
 /// - slice-style (function,array,gradient): Slice style of the following types:
-///   - function: A function of the form `index => style` that must retutrn a style dictionary
-///   - array: An array of style dictionaries of at least one item
-///   - gradient: A gradient that gets sampled for each data item
+///   - function: A function of the form `index => style` that must return a style dictionary.
+///     This can be a `palette` function.
+///   - array: An array of style dictionaries of at least one item. For each slice the style at the slices
+///     index modulo the arrays length gets used.
+///   - gradient: A gradient that gets sampled for each data item using the the slices
+///     index divided by the number of slices as position.
 ///   If one of stroke or fill is not in the style dictionary, it is taken from the charts style.
 #let piechart(data,
               value-key: none,
@@ -93,7 +168,7 @@
       none
     },
     if outset-key != none {
-      item.at(outset-key) != false
+      item.at(outset-key, default: false)
     } else if outset != none {
       i == outset or (type(outset) == array and i in outset)
     } else {
@@ -168,7 +243,15 @@
       let end = start + delta
 
       // Apply item outset
-      let outset-offset = int(outset) * style.outset-offset
+      let outset-offset = if outset == true {
+        style.outset-offset
+      } else if outset == false {
+        0
+      } else if type(outset) in (float, ratio) {
+        outset
+      } else {
+        panic("Invalid type for outset. Expected bool, float or ratio, got: " + repr(outset))
+      }
       if type(outset-offset) == ratio {
         outset-offset = outset-offset * radius / 100%
       }
@@ -325,6 +408,7 @@
 
       // Place item anchor
       anchor("item-" + str(i), (rel: (mid-angle, radius), to: origin))
+      anchor("item-" + str(i) + "-inner", (rel: (mid-angle, inner-radius), to: origin))
 
       start = end
     }

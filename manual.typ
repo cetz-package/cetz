@@ -647,16 +647,9 @@ Axis names to be used for styling:
 
 With the `chart` library it is easy to draw charts.
 
-Supported charts are:
-- `barchart(..)` and `columnchart(..)`: A chart with horizontal/vertical growing bars
-  - `mode: "basic"`: (default): One bar per data row
-  - `mode: "clustered"`: Multiple grouped bars per data row
-  - `mode: "stacked"`: Multiple stacked bars per data row
-  - `mode: "stacked100"`: Multiple stacked bars relative to the sum of a data row
-- `boxwhisker(..)`: A box-plot chart
-
 #doc-style.parse-show-module("/src/lib/chart/barchart.typ")
 #doc-style.parse-show-module("/src/lib/chart/columnchart.typ")
+#doc-style.parse-show-module("/src/lib/chart/piechart.typ")
 #doc-style.parse-show-module("/src/lib/chart/boxwhisker.typ")
 
 === Examples -- Bar Chart <barchart-examples>
