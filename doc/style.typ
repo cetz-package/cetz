@@ -8,7 +8,7 @@
     #heading(fn.name, level: style-args.first-heading-level + 1)
     #label(style-args.label-prefix + fn.name + "()")
   ]
-  let description  = if is.sequence(fn.description) {
+  let description = if is.sequence(fn.description) {
     fn.description.children
   } else {
     (fn.description,)

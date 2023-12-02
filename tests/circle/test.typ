@@ -7,9 +7,9 @@
     set-style(radius: (4, .5), stroke: none)
     for r in range(0, 6) {
       group({
-        rotate(r * 30deg)
         translate((4.5, 4.5))
-        
+        rotate(r * 30deg)
+
         circle((0,0), fill: (red, green, blue, yellow).at(calc.rem(r, 4)))
       })
     }
