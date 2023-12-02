@@ -9,12 +9,23 @@
 /// An annotation is a sub-canvas that uses the plots coordinates specified
 /// by its x and y axis.
 ///
+/// #example(```
+/// import cetz.plot
+/// plot.plot(size: (2,2), x-tick-step: none, y-tick-step: none, {
+///   plot.add(domain: (0, 2*calc.pi), calc.sin)
+///   plot.add-annotation({
+///     rect((0, -1), (calc.pi, 1), fill: rgb(50,50,200,50))
+///     content((calc.pi, 0), [Here])
+///   })
+/// })
+/// ```)
+///
 /// Bounds calculation is done naively, therefore fixed size content _can_ grow
 /// out of the plot. You can adjust the padding manually to adjust for that. The
 /// feature of solving the correct bounds for fixed size elements might be added
 /// in the future.
 ///
-/// - body (drawable): CeTZ Draw commands
+/// - body (drawable): Elements to draw
 /// - axes (axes): X and Y axis names
 /// - resize (bool): If true, the plots axes get adjusted to contain the annotation
 /// - padding (none,number,dictionary): Annotation padding that is used for axis
