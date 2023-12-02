@@ -29,7 +29,7 @@
 #test-case({
   import draw: *
   cross((0,0))
-  translate((2,3,4))
+  translate((1,2,1))
   cross((0,0))
   test()
 })
