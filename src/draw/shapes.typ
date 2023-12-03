@@ -967,19 +967,43 @@
 /// Draws a rectangle between two coordinates.
 /// #example(``` 
 /// rect((0,0), (1,1))
-/// rect((-1.5, 1.5), (1.5, -1.5))
+/// rect((-.5, -.5), (rel: (2, 2)),
+///   radius: (north-east: (100%, .5),
+///            south-west: (100%, .5), rest: .2),
+///   stroke: red)
+/// rect((-1, -1), (rel: (3, 3)), radius: .5, stroke: blue)
 /// ```)
 ///
 /// = parameters
 ///
 /// = Styling
 /// *Root* `rect`
+/// == Keys
+///   #show-parameter-block("radius", ("number", "ratio", "dictionary"), default: 0, [
+///     The rectangles corner radius. If set to a single number, that radius is applied
+///     to all four corners of the rectangle. If passed a dictionary you can set
+///     radii per corner. The following keys support either a `<number, ratio>` or an array of `<number, ratio>`
+///     for specifying a different x- and y-radius:
+///     `north`, `east`, `south`, `west`, `north-west`, `north-east`, `south-west` and `south-east`. To set a default value for
+///     remaining corners, the `rest` key can be used.
+///
+///     Ratio values are relative to the rects width/height.
+///
+///     #example(```
+///     rect((0,0), (rel: (1,1)), radius: 0)
+///     rect((2,0), (rel: (1,1)), radius: 25%)
+///     rect((4,0), (rel: (1,1)), radius: (north: 50%))
+///     rect((6,0), (rel: (1,1)), radius: (north-east: 50%))
+///     rect((8,0), (rel: (1,1)), radius: (south-west: 0, rest: 50%))
+///     rect((10,0), (rel: (1,1)), radius: (rest: (20%, 50%)))
+///     ```, vertical: true)
+///   ])
 ///
 /// = Anchors
 ///   Supports compass anchors.
 ///
-/// - a (coordinate): Coordinate of the top left corner of the rectangle.
-/// - b (coordinate): Coordinate of the bottom right corner of the rectangle. You can draw a rectangle with a specified width and height by using relative coordinates for this parameter `(rel: (width, height))`.
+/// - a (coordinate): Coordinate of the bottom left corner of the rectangle.
+/// - b (coordinate): Coordinate of the top right corner of the rectangle. You can draw a rectangle with a specified width and height by using relative coordinates for this parameter `(rel: (width, height))`.
 /// - name (none,string):
 /// - anchor (none,string):
 /// - ..style (style):
@@ -1000,7 +1024,7 @@
       let ctx = ctx
       let (ctx, a, b) = coordinate.resolve(ctx, a, b)
       assert(a.at(2) == b.at(2),
-        message: "Both rect points must have the same z coordinate.")
+        message: "Both rectangle points must have the same z value.")
       (a, b) = {
         let lo = (
           calc.min(a.at(0), b.at(0)),
@@ -1027,7 +1051,16 @@
         (anchor) => {
           let (w, h, d) = vector.sub(b, a)
 
-          // Calculate corner points
+          // Calculate corner points for angle multiples of 45 degree.
+          // Corners are elliptical arcs with x and y radii, so the
+          // normalized corner vector is (x-radius * cos angle, y-radius * sin angle)
+          // which then gets substracted from the rectangular corner.
+          //
+          //  135deg ,-------, 45deg
+          //         |       |
+          //         | center|
+          //         |       |
+          // -135deg '-------' -45deg
           let rot(v, angle) = (v.at(0) * calc.cos(angle),
                                v.at(1) * calc.sin(angle))
           let nw = vector.add((x1 + nw.at(0), y2 - nw.at(1)), rot(nw, 135deg))
@@ -1057,6 +1090,23 @@
 
       let drawables = {
         let z = z1
+
+        // Compute two corner points offset by radius from origin pt.
+        //
+        //   x radius * a
+        //    |----|
+        // --p1←--pt  ---
+        //         |   | y radius * b
+        //         ↓   |
+        //         p2 ---
+        //         |
+        //
+        // parameters a and b function as direction vectors in which
+        // direction the resulting points p1 and p2 should get offset to.
+        //
+        // The point pt is the corner point of the non-rounded rectangle.
+        // If the radius is zero, we can just return that point for both
+        // new corners.
         let get-corner-pts(radius, pt, a, b) = {
           let (rx, ry) = radius
           if rx > 0 or ry > 0 {
@@ -1070,7 +1120,8 @@
         }
 
         // Get segments for arc between start- and stop angle, starting
-        // at point.
+        // at point. If radius is zero for both axes, x and y, nothing
+        // gets returned.
         let corner-arc(radius, start-angle, stop-angle, pt) = {
           let (rx, ry) = radius
           if rx > 0 or ry > 0 {
@@ -1090,7 +1141,8 @@
         //    p6-------p5
         //
         // If a corner has radius (0,0), both of its
-        // corner points are the same.
+        // corner points are the same. See the comment on get-corner-pts
+        // on how the corners get computed.
         let (p0, p1) = get-corner-pts(nw, (x1, y2, z), ( 0,-1), ( 1, 0))
         let (p2, p3) = get-corner-pts(ne, (x2, y2, z), (-1, 0), ( 0,-1))
         let (p4, p5) = get-corner-pts(se, (x2, y1, z), ( 0, 1), (-1, 0))
