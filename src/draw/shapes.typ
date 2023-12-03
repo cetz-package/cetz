@@ -215,6 +215,8 @@
 /// == Keys
 ///   #show-parameter-block("radius", ("number", "array"), [The radius of the arc. An elliptical arc can be created by passing a tuple of numbers where the first element is the x radius and the second element is the y radius.], default: 1)
 ///   #show-parameter-block("mode", ("string",), [The options are: "OPEN" no additional lines are drawn so just the arc is shown; "CLOSE" a line is drawn from the start to the end of the arc creating a circular segment; "PIE" lines are drawn from the start and end of the arc to the origin creating a circular sector.], default: "OPEN")
+///   #show-parameter-block("update-position", ("bool",), [Update the current canvas position to the arc's end point (anchor `"arc-end"`).
+///     This overrides the default of `true`, that allows chaining of (arc) elements.], default: true)
 ///
 /// = Anchors
 ///   Supports compass anchors when `mode` is "PIE"
@@ -312,7 +314,9 @@
     )
 
     // Set the last position to arc-end
-    ctx.prev.pt = arc-end
+    if style.update-position {
+      ctx.prev.pt = arc-end
+    }
 
     // Center is calculated based on observations of tikz's circular sector and semi circle shapes.
     let center = if style.mode != "CLOSE" {
