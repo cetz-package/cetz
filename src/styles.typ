@@ -105,14 +105,16 @@
     fill: auto,
     stroke: auto,
   ),
-  shadow: (
-    color: gray,
-    offset-x: .1,
-    offset-y: -.1,
-  ),
 )
 
 /// Resolve the current style root
+///
+/// #example(```
+/// get-ctx(ctx => {
+///   // Get the current "mark" style
+///   content((0,0), [#cetz.styles.resolve(ctx.style, (:), root: "mark")])
+/// })
+/// ```)
 ///
 /// - current (style): Current context style (`ctx.style`).
 /// - new (style): Style values overwriting the current style (or an empty dict).

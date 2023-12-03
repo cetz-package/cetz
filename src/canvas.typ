@@ -10,6 +10,14 @@
 #import "styles.typ"
 #import "process.typ"
 
+/// Set up a Canvas for drawing
+///
+/// - length (length,ratio): Used to specify what 1 coordinate unit is. If given a ratio, that ratio is
+///   relative to the containing elements width!
+/// - body (none,array,element): A code block in which functions from `draw.typ` have been called.
+/// - background (none,color): A color to be used for the background of the canvas.
+/// - debug (bool): Shows the bounding boxes of each element when `true`.
+/// -> content
 #let canvas(length: 1cm, debug: false, background: none, body) = layout(ly => style(st => {
   if body == none {
     return []
@@ -33,8 +41,6 @@
     debug: debug,
     // Previous element position & bbox
     prev: (pt: (0, 0, 0)),
-    // Current content padding size (added around content boxes)
-    content-padding: 0em,
     em-size: measure(box(width: 1em, height: 1em), st),
     style: (:),
     // Current transform

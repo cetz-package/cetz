@@ -7,7 +7,7 @@
 // - data (array): Data points
 // - line (str,dictionary): Line line
 #let transform-lines(data, line) = {
-  let vhv-data(t) = {
+  let hvh-data(t) = {
     if type(t) == ratio {
       t = t / 1%
     }
@@ -40,7 +40,7 @@
   }
 
   let line-type = line.at("type", default: "linear")
-  assert(line-type in ("raw", "linear", "spline", "vh", "hv", "vhv"))
+  assert(line-type in ("raw", "linear", "spline", "vh", "hv", "hvh"))
 
   // Transform data into line-data
   let line-data = if line-type == "linear" {
@@ -50,11 +50,11 @@
                                     line.at("tension", default: .5),
                                     line.at("samples", default: 15))
   } else if line-type == "vh" {
-    return vhv-data(0)
+    return hvh-data(0)
   } else if line-type == "hv" {
-    return vhv-data(1)
-  } else if line-type == "vhv" {
-    return vhv-data(line.at("mid", default: .5))
+    return hvh-data(1)
+  } else if line-type == "hvh" {
+    return hvh-data(line.at("mid", default: .5))
   } else {
     return data
   }
@@ -142,57 +142,69 @@
 ///                     drawing
 /// - epigraph (bool): Fill epigraph; uses the `epigraph` style key for
 ///                    drawing
-/// - fill (bool): Fill to y zero
+/// - fill (bool): Fill the shape of the plot
 /// - fill-type (string): Fill type:
-///                       / `"axis"`: Fill to y = 0
-///                       / `"shape"`: Fill the functions shape
+///   / `"axis"`: Fill the shape to y = 0
+///   / `"shape"`: Fill the complete shape
 /// - samples (int): Number of times the `data` function gets called for
-///                  sampling y-values. Only used if `data` is of
-///                  type function.
+///   sampling y-values. Only used if `data` is of type function. This parameter gets
+///   passed onto `sample-fn`.
 /// - sample-at (array): Array of x-values the function gets sampled at in addition
-///                      to the default sampling.
+///   to the default sampling. This parameter gets passed to `sample-fn`.
 /// - line (string, dictionary): Line type to use. The following types are
-///                              supported:
-///                              / `"linear"`: Linear line segments
-///                              / `"spline"`: A smoothed line
-///                              / `"vh"`: Move vertical and then horizontal
-///                              / `"hv"`: Move horizontal and then vertical
-///                              / `"vhv"`: Add a vertical step in the middle
-///                              / `"raw"`: Like linear, but without linearization.
+///   supported:
+///   / `"linear"`: Draw linear lines between points
+///   / `"spline"`: Calculate a Catmull-Rom through all points
+///   / `"vh"`: Move vertical and then horizontal
+///   / `"hv"`: Move horizontal and then vertical
+///   / `"vhv"`: Add a vertical step in the middle
+///   / `"raw"`: Like linear, but without linearization taking place. This is
+///     meant as a "fallback" for either bad performance or bugs.
 ///
-///                              `"linear"` _should_ never look different than `"raw"`.
+///   If the value is a dictionary, the type must be
+///   supplied via the `type` key. The following extra
+///   attributes are supported:
+///   / `"samples" <int>`: Samples of splines
+///   / `"tension" <float>`: Tension of splines
+///   / `"mid" <float>`: Mid-Point of vhv lines (0 to 1)
+///   / `"epsilon" <float>`: Linearization slope epsilon for
+///      use with `"linear"`, defaults to 0.
 ///
-///                              If the value is a dictionary, the type must be
-///                              supplied via the `type` key. The following extra
-///                              attributes are supported:
-///                              / `"samples" <int>`: Samples of splines
-///                              / `"tension" <float>`: Tension of splines
-///                              / `"mid" <float>`: Mid-Point of vhv lines (0 to 1)
-///                              / `"epsilon" <float>`: Linearization slope epsilon for
-///                                use with `"linear"`, defaults to 0.
-/// - style (style): Style to use, can be used with a palette function
-/// - axes (array): Name of the axes to use for plotting, note that not all
-///                 plot styles are able to display a custom axis!
+///   #example(```
+///   import cetz.plot
+///   let points(offset: 0) = ((0,0), (1,1), (2,0), (3,1), (4,0)).map(((x,y)) => {
+///     (x,y + offset * 1.5)
+///   })
+///   plot.plot(size: (12, 3), axis-style: none, {
+///     plot.add(points(offset: 5), line: (type: "hvh", mid: .1))
+///     plot.add(points(offset: 4), line: "hvh")
+///     plot.add(points(offset: 3), line: "hv")
+///     plot.add(points(offset: 2), line: "vh")
+///     plot.add(points(offset: 1), line: "spline")
+///     plot.add(points(offset: 0), line: "linear")
+///   })
+///   ```, vertical: true)
+///
+/// - style (style): Style to use, can be used with a `palette` function
+/// - axes (axes): Name of the axes to use for plotting. Reversing the axes
+///   means rotating the plot by 90 degrees.
 /// - mark (string): Mark symbol to place at each distinct value of the
-///                  graph. Uses the `mark` style key of `style` for drawing.
-///
-///                  The following marks are supported:
-///                  - `"*"` or `"x"` -- X
-///                  - `"+"` -- Cross
-///                  - `"|"` -- Bar
-///                  - `"-"` -- Dash
-///                  - `"o"` -- Circle
-///                  - `"triangle"` -- Triangle
-///                  - `"square"` -- Square
+///   graph. Uses the `mark` style key of `style` for drawing.
 /// - mark-size (float): Mark size in cavas units
 /// - data (array,function): Array of 2D data points (numeric) or a function
-///                          of the form `x => y`, where `x` is a value
-///                          insides `domain` and `y` must be numeric or
-///                          a 2D vector (for parametric functions).
-///
-///                          *Examples*
-///                          - `((0,0), (1,1), (2,-1))`
-///                          - x => calc.pow(x, 2)
+///   of the form `x => y`, where `x` is a value in `domain`
+///   and `y` must be numeric or a 2D vector (for parametric functions).
+///   #example(```
+///   import cetz.plot
+///   plot.plot(size: (2, 2), axis-style: none, {
+///     // Using an array of points:
+///     plot.add(((0,0), (calc.pi/2,1),
+///                    (1.5*calc.pi,-1), (2*calc.pi,0)))
+///     // Sampling a function:
+///     plot.add(domain: (0, 2*calc.pi), calc.sin)
+///   })
+///   ```)
+/// - label (none,content): Legend label to show for this plot.
 #let add(domain: auto,
          hypograph: false,
          epigraph: false,
@@ -258,12 +270,21 @@
   ),)
 }
 
-/// Add horizontal lines at values y
+/// Add horizontal lines at one or more y-values. Every lines start and end points
+/// are at their axis bounds.
+///
+/// #example(```
+/// cetz.plot.plot(size: (2,2), x-tick-step: none, y-tick-step: none, {
+///   cetz.plot.add(domain: (0, 4*calc.pi), calc.sin)
+///   // Add 3 horizontal lines
+///   cetz.plot.add-hline(-.5, 0, .5)
+/// })
+/// ```)
 ///
 /// - ..y (number): Y axis value(s) to add a line at
-/// - axes (array): Name of the axes to use for plotting, note that not all
-///                 plot styles are able to display a custom axis!
+/// - axes (array): Name of the axes to use for plotting
 /// - style (style): Style to use, can be used with a palette function
+/// - label (none,content): Legend label to show for this plot.
 #let add-hline(..y,
                axes: ("x", "y"),
                style: (:),
@@ -299,12 +320,22 @@
   ),)
 }
 
-/// Add vertical lines at values x.
+/// Add vertical lines at one or more x-values. Every lines start and end points
+/// are at their axis bounds.
+///
+/// #example(```
+/// cetz.plot.plot(size: (2,2), x-tick-step: none, y-tick-step: none, {
+///   cetz.plot.add(domain: (0, 2*calc.pi), calc.sin)
+///   // Add 3 vertical lines
+///   cetz.plot.add-vline(calc.pi/2, calc.pi, 3*calc.pi/2)
+/// })
+/// ```)
 ///
 /// - ..x (number): X axis values to add a line at
 /// - axes (array): Name of the axes to use for plotting, note that not all
 ///                 plot styles are able to display a custom axis!
 /// - style (style): Style to use, can be used with a palette function
+/// - label (none,content): Legend label to show for this plot.
 #let add-vline(..x,
                axes: ("x", "y"),
                style: (:),
@@ -340,25 +371,34 @@
   ),)
 }
 
-/// Fill the area between two graphs. This behaves same as `plot` but takes
+/// Fill the area between two graphs. This behaves same as `add` but takes
 /// a pair of data instead of a single data array/function.
-/// The area between both function plots gets filled.
+/// The area between both function plots gets filled. For a more detailed
+/// explanation of the arguments, see @@add().
 ///
 /// This can be used to display an error-band of a function.
 ///
+/// #example(```
+/// cetz.plot.plot(size: (2,2), x-tick-step: none, y-tick-step: none, {
+///   cetz.plot.add-fill-between(domain: (0, 2*calc.pi),
+///     calc.sin, // First function/data
+///     calc.cos) // Second function/data
+/// })
+/// ```)
+///
 /// - domain (domain): Domain of both `data-a` and `data-b`. The domain is used for
-///                    sampling functions only and has no effect on data arrays.
+///   sampling functions only and has no effect on data arrays.
 /// - samples (int): Number of times the `data-a` and `data-b` function gets called for
-///                  sampling y-values. Only used if `data-a` or `data-b` is of
-///                  type function.
+///   sampling y-values. Only used if `data-a` or `data-b` is of
+///   type function.
 /// - sample-at (array): Array of x-values the function(s) get sampled at in addition
-///                      to the default sampling.
-/// - line (string, dictionary): Line type to use, see `add`
-/// - style (style): Style to use, can be used with a palette function
-/// - axes (array): Name of the axes to use for plotting, note that not all
-///                 plot styles are able to display a custom axis!
-/// - data-a (array,function): Data of the first plot, see `add`
-/// - data-b (array,function): Data of the second plot, see `add`
+///   to the default sampling.
+/// - line (string, dictionary): Line type to use, see @@add().
+/// - style (style): Style to use, can be used with a palette function.
+/// - label (none,content): Legend label to show for this plot.
+/// - axes (array): Name of the axes to use for plotting.
+/// - data-a (array,function): Data of the first plot, see @@add().
+/// - data-b (array,function): Data of the second plot, see @@add().
 #let add-fill-between(data-a,
                       data-b,
                       domain: auto,

@@ -1,15 +1,27 @@
 /// Return a new vector of dimension `dim` with all fields
-/// set to `init` (defaults to 0).
+/// set to `init` (defaults to 0). A vector is a Typst array
+/// of numbers.
+///
+/// - dim (int): Vector dimension
+/// - init (float): Initial value of all fields
+/// -> vector
 #let new(dim, init: 0) = {
   return range(0, dim).map(x => init)
 }
 
 /// Return dimension of vector v
+///
+/// - v (vector): Vector
+/// -> int Dimension
 #let dim(v) = { assert(type(v) == array,
   message: "Expected vector to be of array type, got: " + repr(v)); return v.len() }
 
 
 /// Convert vector `v` to row or column matrix
+///
+/// - v (vector): Vector
+/// - mode ("row", "column"): Conversion mode
+/// -> matrix
 #let as-mat(v, mode: "row") = {
   if mode == "column" {
     return (v,)
@@ -22,6 +34,10 @@
 
 /// Convert vector to vector of different dimension
 /// with missing fields of `v` set to fields of vector `init`
+///
+/// - v (vector): Vector
+/// - init (vector): Vectors to use for all unset fields
+/// -> vector
 #let as-vec(v, init: (0, 0, 0)) = {
   for i in range(0, calc.min(dim(v), dim(init))) {
     init.at(i) = v.at(i)
@@ -30,12 +46,19 @@
 }
 
 
-/// Return length of vector v
+/// Return length/magnitude of a vector $norm(arrow(v))$
+///
+/// - v (vector): Vector
+/// -> float Length
 #let len(v) = {
   return calc.sqrt(v.fold(0, (s, c) => s + c * c))
 }
 
 /// Add two vectors of the same dimension
+///
+/// - v1 (vector): Vector a
+/// - v2 (vector): Vector b
+/// -> vector
 #let add(v1, v2) = {
   if dim(v1) != dim(v2) {
     v1 = as-vec(v1)
@@ -46,6 +69,10 @@
 }
 
 /// Subtract two vectors of the same dimension
+///
+/// - v1 (vector): Vector a
+/// - v2 (vector): Vector b
+/// -> vector
 #let sub(v1, v2) = {
   if dim(v1) != dim(v2) {
     v1 = as-vec(v1)
@@ -55,21 +82,24 @@
   return v1.zip(v2).map(((a, b)) => a - b)
 }
 
-/// Return distance of vector a and b
+/// Return distance of vector a and b by calculating the
+/// length of vector b - a.
+///
 /// - a (vector): Vector a
 /// - b (vector): Vector b
+/// -> float
 #let dist(a, b) = len(sub(b, a))
 
-/// Multiply each vector field with number `x`
+/// Multiply vector with scalar `x`
 #let scale(v, x) = v.map(s => s * x)
 
-/// Divide each vector field by number `x`
+/// Divide vector by scalar `x`
 #let div(v, x) = v.map(s => s / x)
 
 /// Negate each vector field
 #let neg(v) = scale(v, -1)
 
-/// Normalize vector (divide by its length)
+/// Normalize vector (divide by its length) $arrow(v)/norm(arrow(v))$
 #let norm(v) = div(v, len(v))
 
 /// Calculate dot product between two vectors `v1` and `v2`

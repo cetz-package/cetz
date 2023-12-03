@@ -19,6 +19,27 @@
 #import "styling.typ": *
 #import "grouping.typ": *
 
+/// Draws a circle or ellipse.
+///
+/// #example(```
+/// circle((0,0))
+/// // Draws an ellipse
+/// circle((0,-2), radius: (0.75, 0.5))
+/// ```)
+/// = parameters
+///
+/// = Styling
+/// *Root:* `circle`
+/// == Keys
+///   #show-parameter-block("radius", ("number", "array"), [A number that defines the size of the circle's radius. Can also be set to a tuple of two numbers to define the radii of an ellipse, the first number is the `x` radius and the second is the `y` radius.], default: 1)
+/// 
+/// = Anchors
+///   Supports compass anchors. The "center" anchor is the default.
+/// 
+/// - position (coordinate): The position to place the circle on.
+/// - name (none,string):
+/// - anchor (none,string):
+/// - ..style (style):
 #let circle(position, name: none, anchor: none, ..style) = {  
   // No extra positional arguments from the style sink
   assert.eq(
@@ -82,6 +103,35 @@
   },)
 }
 
+/// Draws a circle through three coordinates
+///
+/// #example(
+/// ```
+/// let (a, b, c) = ((0,0), (2,-.5), (1,1))
+/// line(a, b, c, close: true, stroke: gray)
+/// circle-through(a, b, c, name: "c")
+/// circle("c.center", radius: .05, fill: red)
+/// ```)
+///
+/// = parameters
+///
+/// = Styling
+/// *Root:* `circle`
+/// == Keys
+///   `circle-through` has the same styling keys as @@circle() except for `radius` as the circle's radius is calculated by the given coordinates.
+///
+/// = Anchors
+///   Supports the same anchors as `circle` as well as:
+///   / a: Coordinate a
+///   / b: Coordinate b
+///   / c: Coordinate c
+///
+/// - a (coordinate): Coordinate a
+/// - b (coordinate): Coordinate b
+/// - c (coordinate): Coordinate c
+/// - name (none,string):
+/// - anchor (none,string):
+/// - ..style (style):
 #let circle-through(a, b, c, name: none, anchor: none, ..style) = {
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
   style = style.named()
@@ -147,6 +197,41 @@
   },)
 }
 
+/// Draws a circular segment. 
+///
+/// #example(``` 
+/// arc((0,0), start: 45deg, stop: 135deg)
+/// arc((0,-0.5), start: 45deg, delta: 90deg, mode: "CLOSE")
+/// arc((0,-1), stop: 135deg, delta: 90deg, mode: "PIE")
+/// ```)
+///
+/// Note that two of the three angle arguments (`start`, `stop` and `delta`) must be set.
+/// The current position `()` gets updated to the arc's end coordinate (anchor `arc-end`).
+///
+/// == parameters
+///
+/// = Styling
+/// *Root:* `arc`\
+/// == Keys
+///   #show-parameter-block("radius", ("number", "array"), [The radius of the arc. An elliptical arc can be created by passing a tuple of numbers where the first element is the x radius and the second element is the y radius.], default: 1)
+///   #show-parameter-block("mode", ("string",), [The options are: "OPEN" no additional lines are drawn so just the arc is shown; "CLOSE" a line is drawn from the start to the end of the arc creating a circular segment; "PIE" lines are drawn from the start and end of the arc to the origin creating a circular sector.], default: "OPEN")
+///
+/// = Anchors
+///   Supports compass anchors when `mode` is "PIE"
+///   / center: The center of the arc, this is the default anchor.
+///   / arc-center: The midpoint of the arc's curve.
+///   / chord-center: Center of chord of the arc drawn between the start and end point.
+///   / origin: The origin of the arc's circle.
+///   / arc-start: The position at which the arc's curve starts.
+///   / arc-end: The position of the arc's curve end.
+///
+/// - position (coordinate): Position to place the arc at.
+/// - start (auto,angle): The angle at which the arc should start. Remember that `0deg` points directly towards the right and `90deg` points up.
+/// - stop (auto,angle): The angle at which the arc should stop.
+/// - delta (auto,angle): The change in angle away start or stop.
+/// - name (none,string):
+/// - anchor (none, string):
+/// - ..style (style):
 #let arc(
   position,
   start: auto,
@@ -304,6 +389,54 @@
   },)
 }
 
+/// Draws a single mark pointing at a target coordinate
+///
+/// #example(```
+/// mark((0,0), (1,0), symbol: ">", fill: black)
+/// mark((0,0), (1,1), symbol: ">", scale: 3, fill: black)
+/// ```)
+///
+/// Or as part of a path based element that supports the `mark` style key:
+///
+/// #example(vertical: true, ```
+/// rotate(-90deg)
+/// set-style(mark: (fill: black))
+/// line((1, -1), (1, 9), stroke: (paint: gray, dash: "dotted"))
+/// line((0, 8), (rel: (1, 0)), mark: (end: "left-harpoon"))
+/// line((0, 7), (rel: (1, 0)), mark: (end: "right-harpoon"))
+/// line((0, 6), (rel: (1, 0)), mark: (end: "<>"))
+/// line((0, 5), (rel: (1, 0)), mark: (end: "o"))
+/// line((0, 4), (rel: (1, 0)), mark: (end: "|"))
+/// line((0, 3), (rel: (1, 0)), mark: (end: "<"))
+/// line((0, 2), (rel: (1, 0)), mark: (end: ">"))
+/// set-style(mark: (fill: none))
+/// line((0, 1), (rel: (1, 0)), mark: (end: "<"))
+/// line((0, 0), (rel: (1, 0)), mark: (end: ">"))
+/// ```)
+///
+/// = parameters
+///
+/// = Styling <mark-styling>
+/// *Root:* `mark`
+/// == Keys
+///   #show-parameter-block("symbol", "string", [The type of mark to draw when using the `mark` function.], default: ">")
+///   #show-parameter-block("start", ("string", "none", "array"), [The type of mark to draw at the start of a path.])
+///   #show-parameter-block("end", ("string", "none", "array"), [The type of mark to draw at the end of a path.])
+///   #show-parameter-block("length", "number", [The length of the mark along its direction it is pointing.], default: 0.2)
+///   #show-parameter-block("width", "number", [The width of the mark along the normal of its direction.], default: 0.15)
+///   #show-parameter-block("inset", "number", [The distance by which something inside the arrow tip is set inwards.], default: 0.05)
+///   #show-parameter-block("scale", "float", [A factor that is applied to the mark's length, width and inset.], default: 1)
+///   #show-parameter-block("sep", "number", [The distance between multiple marks along their path.], default: 1)
+///   #show-parameter-block("flex", "boolean", [Only applicable when marks are used on curves such as bezier and hobby. If true, the mark will point along the secant of the curve. If false, the tangent at the marks tip is used.], default: true)
+///   #show-parameter-block("position-samples", "integer", [Only applicable when marks are used on curves such as bezier and hobby. The maximum number of samples to use for calculating curve positions. A higher number gives better results but may slow down compilation.], default: 30)
+/// 
+/// *Note*: The size of the mark depends on its style values, not
+/// the distance between `from` and `to`, which only determine its
+/// orientation.
+///
+/// - from (coordinate): The position to place the mark.
+/// - to (coordinate): The position the mark should point towards.
+/// - ..style (style):
 #let mark(from, to, ..style) = {
   assert.eq(
     style.pos(),
@@ -326,6 +459,29 @@
   },)
 }
 
+/// Draws a line, more than two points can be given to create a line-strip.
+/// 
+/// #example(```
+/// line((-1.5, 0), (1.5, 0))
+/// line((0, -1.5), (0, 1.5))
+/// line((-1, -1), (-0.5, 0.5), (0.5, 0.5), (1, -1), close: true)
+/// ```) 
+/// 
+/// = parameters
+///
+/// = Styling 
+/// *Root:* `line`
+///
+/// == Keys
+///   Supports mark styling.
+/// 
+/// = Anchors
+///   / start: The line's start position
+///   / end: The line's end position
+///
+/// - ..pts-style (coordinates, style): Positional two or more coordinates to draw lines between. Accepts style key-value pairs.
+/// - close (bool): If true, the line-strip gets closed to form a polygon
+/// - name (none,string):
 #let line(..pts-style, close: false, name: none) = {
   // Extra positional arguments from the pts-style sink are interpreted as coordinates.
   let pts = pts-style.pos()
@@ -381,6 +537,29 @@
   },)
 }
 
+/// Draws a grid between two coordinates
+///
+/// #example(```
+/// // Draw a grid
+/// grid((0,0), (2,2))
+/// 
+/// // Draw a smaller blue grid
+/// grid((1,1), (2,2), stroke: blue, step: .25)
+/// ```)
+///
+/// = parameters
+///
+/// = Styling
+/// *Root:* `grid`
+///
+/// = Anchors
+///   Supports compass anchors.
+///
+/// - from (coordinate): The top left of the grid
+/// - to (coordinate): The bottom right of the grid
+/// - step (number): Grid spacing.
+/// - name (none,string):
+/// - ..style (style):
 #let grid(from, to, step: 1, name: none, help-lines: false, ..style) = {
   (from, to).map(coordinate.resolve-system)
 
@@ -480,10 +659,47 @@
   },)
 }
 
+/// Positions Typst content in the canvas. Note that the content itself is not transformed only its position is.
+///
+/// #example(```
+/// content((0,0), [Hello World!])
+/// ```)
+/// To put text on a line you can let the function calculate the angle between its position and a second coordinate by passing it to `angle`: 
+///
+/// #example(```
+/// line((0, 0), (3, 1), name: "line")
+/// content(
+///   ("line.start", 0.5, "line.end"),
+///   angle: "line.end",
+///   padding: .1,
+///   anchor: "south", 
+///   [Text on a line]
+/// )
+/// ```)
+///
+/// #example(```
+/// // Place content in a rect between two coordinates
+/// content((0, 0), (2, 2), box(par(justify: false)[This is a long text.], stroke: 1pt, width: 100%, height: 100%, inset: 1em))
+/// ```)
+///
+///
+/// = parameters
+/// = Styling
+/// *Root:* `content`
+/// == Keys
+///   #show-parameter-block("padding", ("number", "dictionary"), default: 0, [Sets the spacing around content. Can be a single number to set padding on all sides or a dictionary to specify each side specifically. The dictionary follows Typst's `pad` function: https://typst.app/docs/reference/layout/pad/])
+///   #show-parameter-block("frame", ("string", "none"), default: none, [Sets the frame style. Can be `none`, "rect" or "circle" and inherits the `stroke` and `fill` style.])
+///   
+/// = Anchors
+///   Supports compass anchors.
+///   
+/// - ..args-style (coordinate, content, style): When one coordinate is given as a positional argument, the content will be placed at that position. When two coordinates are given as positional arguments, the content will be placed inside a rectangle between the two positions. All named arguments are styling and any additional positional arguments will panic.
+/// - angle (angle,coordinate): Rotates the content by the given angle. A coordinate can be given to rotate the content by the angle between it and the first coordinate given in `args`. This effectively points the right hand side of the content towards the coordinate. This currently exists because Typst's rotate function does not change the width and height of content.
+/// - anchor (none, string):
+/// - name (none, string):
 #let content(
     ..args-style,
     angle: 0deg,
-    clip: false,
     anchor: none, 
     name: none, 
   ) = {
@@ -654,6 +870,25 @@
   },)
 }
 
+/// Draws a rectangle between two coordinates.
+/// #example(``` 
+/// rect((0,0), (1,1))
+/// rect((-1.5, 1.5), (1.5, -1.5))
+/// ```)
+///
+/// = parameters
+///
+/// = Styling
+/// *Root* `rect`
+///
+/// = Anchors
+///   Supports compass anchors.
+///
+/// - a (coordinate): Coordinate of the top left corner of the rectangle.
+/// - b (coordinate): Coordinate of the bottom right corner of the rectangle. You can draw a rectangle with a specified width and height by using relative coordinates for this parameter `(rel: (width, height))`.
+/// - name (none,string):
+/// - anchor (none,string):
+/// - ..style (style):
 #let rect(a, b, name: none, anchor: none, ..style) = {
   // Coordinate check
   let t = (a, b).map(coordinate.resolve-system)
@@ -726,6 +961,34 @@
   )
 }
 
+/// Draws a quadratic or cubic bezier curve
+///
+/// #example(```
+/// let (a, b, c) = ((0, 0), (2, 0), (1, 1))
+/// line(a, c,  b, stroke: gray)
+/// bezier(a, b, c)
+/// 
+/// let (a, b, c, d) = ((0, -1), (2, -1), (.5, -2), (1.5, 0))
+/// line(a, c, d, b, stroke: gray)
+/// bezier(a, b, c, d)
+/// ```)
+///
+/// = parameters
+/// 
+/// = Styling 
+/// *Root* `bezier`
+/// == Keys
+///   Supports marks.
+///   
+/// = Anchors
+///   / ctrl-n: nth control point where n is an integer starting at 0
+///   / start: The start position of the curve.
+///   / end: The end position of the curve.
+///
+/// - start (coordinate): Start position
+/// - end (coordinate): End position (last coordinate)
+/// - name (none,string):
+/// - ..ctrl-style (coordinate,style): The first two positional arguments are taken as cubic bezier control points, where the first is the start control point and the second is the end control point. One control point can be given for a quadratic bezier curve instead. Named arguments are for styling.
 #let bezier(start, end, ..ctrl-style, name: none) = {
   // Extra positional arguments are treated like control points.
   let (ctrl, style) = (ctrl-style.pos(), ctrl-style.named())
@@ -796,7 +1059,22 @@
   )
 }
 
-
+/// Draw a cubic bezier curve through a set of three points. See `bezier` for style and anchor details.
+///
+/// #example(```
+/// let (a, b, c) = ((0, 0), (1, 1), (2, -1))
+/// line(a, b, c, stroke: gray)
+/// bezier-through(a, b, c, name: "b")
+///
+/// // Show calculated control points
+/// line(a, "b.ctrl-0", "b.ctrl-1", c, stroke: gray)
+/// ```)
+///
+/// - start (coordinate): Start position
+/// - pass-through (coordinate): Curve mid-point
+/// - end (coordinate): End coordinate
+/// - name (none,string):
+/// - ..style (style):
 #let bezier-through(start, pass-through, end, name: none, ..style) = {
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
   style = style.named()
@@ -810,6 +1088,29 @@
   },)
 }
 
+/// Draw a Catmull-Rom curve through a set of points.
+///
+/// #example(```
+/// catmull((0,0), (1,1), (2,-1), (3,0), tension: .4, stroke: blue)
+/// catmull((0,0), (1,1), (2,-1), (3,0), tension: .5, stroke: red)
+/// ```)
+///
+/// = parameters
+///
+/// = Styling 
+/// *Root* `catmull`\
+/// == Keys
+///   #show-parameter-block("tension", "float", [I need a description], default: 0.5)
+///   Supports marks.
+///
+/// = Anchors
+///   / start: The position of the start of the curve.
+///   / end: The position of the end of the curve.
+///   / pt-n: The nth given position (0 indexed so "pt-0" is equal to "start")
+///
+/// - ..pts-style (coordinate,style): Positional arguments should be coordinates that the curve should pass through. Named arguments are for styling.
+/// - close (bool): Closes the curve with a straight line between the start and end of the curve.
+/// - name (none,string):
 #let catmull(..pts-style, close: false, name: none) = {
   let (pts, style)  = (pts-style.pos(), pts-style.named())
 
@@ -873,7 +1174,32 @@
   },)
 }
 
-
+/// Draws a Hobby curve through a set of points.
+///
+/// #example(```
+/// hobby((0, 0), (1, 1), (2, -1), (3, 0), omega: 0, stroke: blue)
+/// hobby((0, 0), (1, 1), (2, -1), (3, 0), omega: 1, stroke: red)
+/// ```)
+///
+/// = parameters
+/// 
+/// = Styling
+/// *Root* `hobby`
+/// == Keys
+///   Supports marks.
+///   #show-parameter-block("omega", "idk", [The curve's curlyness])
+///   #show-parameter-block("rho", "idk", [])
+///
+/// = Anchors
+///   / start: The position of the start of the curve.
+///   / end: The position of the end of the curve.
+///   / pt-n: The nth given position (0 indexed, so "pt-0" is equal to "start")
+///
+/// - ..pts-style (coordinate,style): Positional arguments are the coordinates to use to draw the curve with, a minimum of two is required. Named arguments are for styling.
+/// - tb (auto,array): Incoming tension at `pts.at(n+1)` from `pts.at(n)` to `pts.at(n+1)`. The number given must be one less than the number of points.
+/// - ta (auto, array): Outgoing tension at `pts.at(n)` from `pts.at(n)` to `pts.at(n+1)`. The number given must be one less than the number of points.
+/// - close (bool): Closes the curve with a straight line between the start and end of the curve.
+/// - name (none,string):
 #let hobby(..pts-style, ta: auto, tb: auto, close: false, name: none) = {
   let (pts, style)  = (pts-style.pos(), pts-style.named())
 
@@ -940,10 +1266,26 @@
   },)
 }
 
+/// Merges two or more paths by concattenating their elements. Anchors and visual styling, such as `stroke` and `fill`, are not preserved. When an element's path does not start at the same position the previous element's path ended, a straight line is drawn between them so that the final path is continuous. You must then pay attention to the direction in which element paths are drawn.
+///
+/// #example(```
+/// merge-path(fill: white, {
+///   line((0, 0), (1, 0))
+///   bezier((), (0, 0), (1,1), (0,1))
+/// })
+/// ```)
+/// = parameters
+///
+/// = Anchors
+///   / start: The start of the merged path.
+///   / end: The end of the merged path.
+///
+/// - body (elements): Elements with paths to be merged together.
+/// - close (bool): Close the path with a straight line from the start of the path to its end.
+/// - name (none,string):
+/// - ..style (style):
 #let merge-path(body, close: false, name: none, ..style) = {
   // No extra positional arguments from the style sink
-  assert(type(body) in (array, function),
-    message: "Incorrect type for body: " + type(body))
   assert.eq(
     style.pos(),
     (),
@@ -955,7 +1297,6 @@
     ctx => {
       let ctx = ctx
       let segments = ()
-      let body = if type(body) == function { body(ctx) } else { body }
       for element in body {
         let r = process.element(ctx, element)
         if r != none {
@@ -1000,28 +1341,4 @@
       )
     },
   )
-}
-
-#let shadow(body, ..style) = {
-  assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
-  style = style.named()
-  return (ctx => {
-    let style = styles.resolve(ctx.style, style, root: "shadow")
-
-    let body = {
-      group({
-        set-style(fill: style.color, stroke: style.color)
-        translate((style.offset-x, style.offset-y, 0))
-        body
-      })
-      body
-    }
-
-    let (ctx, drawables, ..) = process.many(ctx, body)
-
-    return (
-      ctx: ctx,
-      drawables: drawables
-    )
-  },)
 }

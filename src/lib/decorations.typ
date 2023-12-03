@@ -5,7 +5,7 @@
 #import "../coordinate.typ"
 #import "../styles.typ"
 
-/// Rotates the vector 'ab' around 'a' and scales it to 'len', returns the absolute point 'c'.
+// Rotates the vector 'ab' around 'a' and scales it to 'len', returns the absolute point 'c'.
 #let _rotate-around(a, b, angle: 90deg, len: auto) = {
   let rel = vector.sub(b, a)
   let rotated = util.apply-transform(matrix.transform-rotate-z(angle), rel)
@@ -18,16 +18,34 @@
 }
 
 #let brace-default-style = (
-  amplitude: .7,
+  amplitude: .5,
   pointiness: 15deg,
-  outer-pointiness: 0,
+  outer-pointiness: 0deg,
   content-offset: .3,
   debug-text-size: 6pt,
 )
 
 /// Draw a curly brace between two points.
 ///
-/// *Style root:* `brace`.
+/// #example(```
+/// cetz.decorations.brace((0,1),(2,1))
+///
+/// cetz.decorations.brace((0,0),(2,0),
+///   pointiness: 45deg, outer-pointiness: 45deg)
+/// cetz.decorations.brace((0,-1),(2,-1),
+///   pointiness: 90deg, outer-pointiness: 90deg)
+/// ```)
+///
+/// *Style Root:* `brace`. \
+/// *Style Keys:*
+///   #show-parameter-block("amplitude", ("number"), [
+///     Sets the height of the brace, from its baseline to its middle tip.], default: .5)
+///   #show-parameter-block("pointiness", ("ratio", "angle"), [
+///     How pointy the spike should be. #0deg or `0%` for maximum pointiness, #90deg or `100%` for minimum.], default: 15deg)
+///   #show-parameter-block("outer-pointiness", ("ratio", "angle"), [
+///     How pointy the outer edges should be. #0deg or `0` for maximum pointiness (allowing for a smooth transition to a straight line), #90deg or `1` for minimum. Setting this to #auto will use the value set for `pointiness`.], default: 15deg)
+///   #show-parameter-block("content-offset", ("number","length"), [
+///     Offset of the `"content"` anchor from the spike of the brace.], default: .3)
 ///
 /// *Anchors:*
 ///   / start:   Where the brace starts, same as the `start` parameter.
@@ -36,14 +54,12 @@
 ///     by `amplitude` towards the pointing direction.
 ///   / content: Point to place content/text at, in front of the spike.
 ///   / center:  Center of the enclosing rectangle.
-///   / (a-k):   Debug points `a` through `k`.
 ///
 /// - start (coordinate): Start point
 /// - end (coordinate): End point
 /// - flip (bool): Flip the brace around
-/// - debug (bool): Show debug lines and points
-/// - name (string, none): Element name
-/// - ..style (style): Style attributes
+/// - name (string, none): Element name used for querying anchors
+/// - ..style (style): Style key-value pairs
 #let brace(
   start,
   end,
@@ -52,13 +68,13 @@
   name: none,
   ..style,
 ) = {
-  // validate coordinates
+  // Validate coordinates
   let t = (start, end).map(coordinate.resolve-system)
 
   group(name: name, ctx => {
-    // get styles and validate types and values
-    let style = util.merge-dictionary(brace-default-style,
-      styles.resolve(ctx.style, style.named(), root: "brace"))
+    // Get styles and validate types and values
+    let style = styles.resolve(ctx.style, style.named(),
+      root: "brace", base: brace-default-style)
 
     let amplitude = style.amplitude
     assert(
@@ -68,10 +84,12 @@
 
     let pointiness = style.pointiness
     assert(
-      type(pointiness) in (int, float)
-        and pointiness >= 0 and pointiness <= 1
-      or type(pointiness) == angle
-        and pointiness >= 0deg and pointiness <= 90deg,
+      (type(pointiness) in (int, float)
+        and pointiness >= 0 and pointiness <= 1)
+      or (type(pointiness) == ratio
+        and pointiness >= 0% and pointiness <= 100%)
+      or (type(pointiness) == angle
+        and pointiness >= 0deg and pointiness <= 90deg),
       message: "pointiness must be a factor between 0 and 1 or an angle between 0deg and 90deg, got " + repr(pointiness),
     )
     let pointiness = if type(pointiness) == angle { pointiness } else { pointiness * 90deg }
@@ -79,10 +97,12 @@
     let outer-pointiness = style.outer-pointiness
     assert(
       outer-pointiness == auto
-      or type(outer-pointiness) in (int, float)
-        and outer-pointiness >= 0 and outer-pointiness <= 1
-      or type(outer-pointiness) == angle
-        and outer-pointiness >= 0deg and outer-pointiness <= 90deg,
+      or (type(outer-pointiness) in (int, float)
+        and outer-pointiness >= 0 and outer-pointiness <= 1)
+      or (type(outer-pointiness) == ratio)
+        and outer-pointiness >= 0% and outer-pointiness <= 100%
+      or (type(outer-pointiness) == angle
+        and outer-pointiness >= 0deg and outer-pointiness <= 90deg),
       message: "outer-pointiness must be a factor between 0 and 1 or an angle between 0deg and 90deg or auto, got " + repr(outer-pointiness),
     )
     let outer-pointiness = if outer-pointiness == auto {
@@ -179,7 +199,7 @@
 
 #let flat-brace-default-style = (
   amplitude: .3,
-  aspect: .5,
+  aspect: 50%,
   curves: (1, .5, .6, .15),
   outer-curves: auto,
   content-offset: .3,
@@ -188,11 +208,31 @@
 
 /// Draw a flat curly brace between two points.
 ///
+/// #example(```
+/// cetz.decorations.flat-brace((0,1),(2,1))
+///
+/// cetz.decorations.flat-brace((0,0),(2,0),
+///   curves: .2,
+///   aspect: 25%)
+/// cetz.decorations.flat-brace((0,-1),(2,-1),
+///   outer-curves: 0,
+///   aspect: 75%)
+/// ```)
+///
 /// This mimics the braces from TikZ's `decorations.pathreplacing` library#footnote[https://github.com/pgf-tikz/pgf/blob/6e5fd71581ab04351a89553a259b57988bc28140/tex/generic/pgf/libraries/decorations/pgflibrarydecorations.pathreplacing.code.tex#L136-L185].
 /// In contrast to @@brace(), these braces use straight line segments, resulting
 /// in better looks for long braces with a small amplitude.
 ///
-/// *Style root:* `flat-brace`.
+/// *Style Root:* `flat-brace` \
+/// *Style Keys:*
+///   #show-parameter-block("amplitude", ("number"), [
+///     Determines how much the brace rises above the base line.], default: .3)
+///   #show-parameter-block("aspect", ("ratio"), [
+///     Determines the fraction of the total length where the spike will be placed.], default: 50%)
+///   #show-parameter-block("curves", ("number"), [
+///     Curviness factor of the brace, a factor of 0 means no curves.], default: auto)
+///   #show-parameter-block("outer-curves", ("auto", "number"), [
+///     Curviness factor of the outer curves of the brace. A factor of 0 means no curves.], default: auto)
 ///
 /// *Anchors:*
 ///   / start:   Where the brace starts, same as the `start` parameter.
@@ -200,14 +240,12 @@
 ///   / spike:   Point of the spike's top.
 ///   / content: Point to place content/text at, in front of the spike.
 ///   / center:  Center of the enclosing rectangle.
-///   / (a-h):   Debug points `a` through `h`.
 ///
 /// - start (coordinate): Start point
 /// - end (coordinate): End point
 /// - flip (bool): Flip the brace around
-/// - debug (bool): Show debug lines and points
-/// - name (string, none): Element name
-/// - ..style (style): Style attributes
+/// - name (string, none): Element name for querying anchors
+/// - ..style (style): Style key-value pairs
 #let flat-brace(
   start,
   end,
@@ -216,13 +254,13 @@
   name: none,
   ..style,
 ) = {
-  // validate coordinates
+  // Validate coordinates
   let t = (start, end).map(coordinate.resolve-system)
 
   group(name: name, ctx => {
-    // get styles and validate their types and values
-    let style = util.merge-dictionary(flat-brace-default-style,
-      styles.resolve(ctx.style, style.named(), root: "flat-brace"))
+    // Get styles and validate their types and values
+    let style = styles.resolve(ctx.style, style.named(),
+      root: "flat-brace", base: flat-brace-default-style)
 
     let amplitude = style.amplitude
     assert(
@@ -234,10 +272,13 @@
 
     let aspect = style.aspect
     assert(
-      type(aspect) in (int, float)
-        and aspect >= 0 and aspect <= 1,
-      message: "aspect must be a factor between 0 and 1, got " + repr(aspect),
+      (type(aspect) == ratio
+        and aspect >= 0% and aspect <= 100%)
+      or (type(aspect) in (int, float)
+        and aspect >= 0 and aspect <= 1),
+      message: "aspect must be a ratio between 0% and 100%, got " + repr(aspect),
     )
+    if type(aspect) == ratio { aspect /= 100% }
 
     let inner-curves = style.curves
     assert(

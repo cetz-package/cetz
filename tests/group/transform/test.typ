@@ -20,7 +20,7 @@
 #box(stroke: 2pt + red, canvas({
   import draw: *
 
-  scale((x: 2, y: .5))
+  scale(x: 2, y: 50%)
   show-group()
 }))
 
@@ -40,7 +40,7 @@
 #box(stroke: 2pt + red, canvas({
   import draw: *
 
-  show-group(body: scale((x: 2, y: .5)))
+  show-group(body: scale(x: 200%, y: .5))
 }))
 
 #box(stroke: 2pt + red, canvas({

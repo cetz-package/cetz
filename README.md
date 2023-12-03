@@ -1,6 +1,6 @@
 # CeTZ
 
-CeTZ (CeTZ, ein Typst Zeichenpacket) is a library for drawing with [Typst](https://typst.app) with an API inspired by TikZ and [Processing](https://processing.org/).
+CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https://typst.app) with an API inspired by TikZ and [Processing](https://processing.org/).
 
 ## Examples
 <!-- img width is set so the table gets evenly spaced by GitHubs css -->
@@ -56,7 +56,7 @@ For information, see the [manual](manual.pdf?raw=true).
 
 To use this package, simply add the following code to your document:
 ```
-#import "@preview/cetz:0.1.2"
+#import "@preview/cetz:0.2.0"
 
 #cetz.canvas({
   import cetz.draw: *
@@ -75,7 +75,7 @@ just install
 The installed version can be imported by prefixing the package name with `@local`.
 
 ```typ
-#import "@local/cetz:0.1.2"
+#import "@local/cetz:0.2.0"
 
 #cetz.canvas({
   import cetz.draw: *

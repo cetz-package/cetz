@@ -12,7 +12,7 @@
 #import "plot/contour.typ": add-contour
 #import "plot/boxwhisker.typ": add-boxwhisker
 #import "plot/util.typ" as plot-util
-#import "plot/legend.typ": draw-legend
+#import "plot/legend.typ" as plot-legend
 #import "plot/mark.typ"
 
 #let default-colors = (blue, red, green, yellow, black)
@@ -27,102 +27,165 @@
   return default-plot-style(i)
 }
 
-/// Add an anchor to a plot environment
+/// Create a plot environment. Data to be plotted is given by passing it to the
+/// `plot.add` or other plotting functions. The plot environment supports different
+/// axis styles to draw, see its parameter `axis-style:`.
 ///
-/// - name (string): Anchor name
-/// - position (array): Tuple of x and y values.
-///                     Both values can have the special values "min" and
-///                     "max", which resolve to the axis min/max value.
-///                     Position is in axis space!
-/// - axes (array): Name of the axes to use ("x", "y"), note that both
-///                 axes must exist!
-#let add-anchor(name, position, axes: ("x", "y")) = {
-  ((
-    type: "anchor",
-    name: name,
-    position: position,
-    axes: axes,
-  ),)
-}
-
-/// Create a plot environment
+/// #example(```
+/// import cetz.plot
+/// plot.plot(size: (2,2), x-tick-step: none, y-tick-step: none, {
+///   plot.add(((0,0), (1,1), (2,.5), (4,3)))
+/// })
+/// ```)
 ///
-/// Note: Data for plotting must be passed via `plot.add(..)`
+/// To draw elements insides a plot, using the plots coordinate system, use
+/// the `plot.add-annotation(..)` function.
 ///
-/// Note that different axis-styles can show different axes.
-/// The `"school-book"` and `"left"` style shows only axis "x" and "y",
-/// while the `"scientific"` style can show "x2" and "y2", if set
-/// (if unset, "x2" mirrors "x" and "y2" mirrors "y"). Other
-/// axes (e.G. "my-axis") work, but no ticks or labels will be shown.
+/// = parameters
 ///
-/// *Options*
+/// = Options
 ///
-/// The following options are supported per axis
-/// and must be prefixed by `<axis-name>-`, e.G.
-/// `x-min: 0` or `y-label: [y]`.
-/// #box[
-///   - label (content): Axis label
-///   - min (int): Axis minimum value
-///   - max (int): Axis maximum value
-///   - tick-step (none, float): Distance between major ticks (or no ticks if none)
-///   - minor-tick-step (none, float): Distance between minor ticks (or no ticks if none)
-///   - ticks (array): List of ticks values or value/label
-///                    tuples. Example `(1,2,3)` or `((1, [A]), (2, [B]),)`
-///   - format (string): Tick label format, `"float"`, `"sci"` (scientific)
-///                      or a custom function that receives a value and
-///                      returns a content (`value => content`).
-///   - grid (bool,string): Enable grid-lines at tick values:
-///                         - `"major"`: Enable major tick grid
-///                         - `"minor"`: Enable minor tick grid
-///                         - `"both"`: Enable major & minor tick grid
-///                         - `false`: Disable grid
-///   - unit (none, content): Tick label suffix
-///   - decimals (int): Number of decimals digits to display for tick labels
-/// ]
+/// You can use the following options to customize each axis of the plot. You must pass them as named arguments prefixed by the axis name followed by a dash (`-`) they should target. Example: `x-min: 0`, `y-ticks: (..)` or `x2-label: [..]`.
 ///
-/// - body (body): Calls of `plot.add` or `plot.add-*` commands
-/// - size (array): Plot canvas size tuple of width and height in canvas units
-/// - axis-style (none, string): Axis style "scientific", "left", "school-book"
-///     - `"scientific"`: Frame plot area and draw axes y, x, y2, and x2 around it
-///     - `"school-book"`: Draw axes x and y as arrows with both crossing at $(0, 0)$
-///     - `"left"`: Draw axes x and y as arrows, the y axis stays on the left (at `x.min`)
-///                 and the x axis at the bottom (at `y.min`)
-///     - `none`: Draw no axes (and no ticks).
-/// - plot-style (style,function): Style used for drawing plot graphs
-///                                This style gets inherited by all plots.
-/// - mark-style (style,function): Style used for drawing plot marks.
-///                                This style gets inherited by all plots.
-/// - fill-below (bool): Fill functions below the axes (draw axes above fills)
-/// - name (string): Element name
-/// - legend (none, auto, coordinate): Position to place the legend at.
-///                                    The following anchors are considered optimal
-///                                    for legend placement:
-///                                    - `legend.north`, `legend.south`, `legend.east`, `legend.west`
-///                                    - `legend.north-east`, `legend.north-west`, `legend.south-east`, `legend.south-west`
-///                                    - `legend.inner-north`, `legend.inner-south`, `legend.inner-east`, `legend.inner-west`
-///                                    - `legend.inner-north-east`, `legend.inner-north-west`, `legend.inner-south-east`, `legend.inner-south-west`
+/// #show-parameter-block("label", ("none", "content"), default: "none", [
+///   The axis' label. If and where the label is drawn depends on the `axis-style`.])
+/// #show-parameter-block("min", ("auto", "float"), default: "auto", [
+///   Axis lower domain value. If this is set greater than than `max`, the axis' direction is swapped])
+/// #show-parameter-block("max", ("auto", "float"), default: "auto", [
+///   Axis upper domain value. If this is set to a lower value than `min`, the axis' direction is swapped])
+/// #show-parameter-block("equal", ("string"), default: "none", [
+///   Set the axis domain to keep a fixed aspect ratio by multiplying the other axis domain by the plots aspect ratio,
+///   depending on the other axis orientation (see `horizontal`).
+///   This can be useful to force one axis to grow or shrink with another one.
+///   You can only "lock" two axes of different orientations.
+///   #example(```
+///   cetz.plot.plot(size: (2,1), x-tick-step: 1, y-tick-step: 1,
+///                  x-equal: "y",
+///   {
+///     cetz.plot.add(domain: (0, 2 * calc.pi),
+///       t => (calc.cos(t), calc.sin(t)))
+///   })
+///   ```)
+/// ])
+/// #show-parameter-block("horizontal", ("bool"), default: "axis name dependant", [
+///   If true, the axis is considered an axis that gets drawn horizontally, vertically otherwise.
+///   The default value depends on the axis name on axis creation. Axes which name start with `x` have this
+///   set to `true`, all others have it set to `false`. Each plot has to use one horizontal and one
+///   vertical axis for plotting, a combination of two y-axes will panic: ("y", "y2").
+/// ])
+/// #show-parameter-block("tick-step", ("none", "auto", "float"), default: "auto", [
+///   The increment between tick marks on the axis. If set to `auto`, an
+///   increment is determined. When set to `none`, incrementing tick marks are disabled.])
+/// #show-parameter-block("minor-tick-step", ("none", "float"), default: "none", [
+///   Like `tick-step`, but for minor tick marks. In contrast to ticks, minor ticks do not have labels.])
+/// #show-parameter-block("ticks", ("none", "array"), default: "none", [
+///   A List of custom tick marks to additionally draw along the axis. They can be passed as
+///   an array of `<float>` values or an array of `(<float>, <content>)` tuples for
+///   setting custom tick mark labels per mark.
 ///
-///                                    If set to `auto`, the placement is read from the legend style (root `legend`).
-/// - legend-anchor (auto, string): Anchor of the legend group to use as origin of the
-///                                 legend group.
-/// - legend-style (style): Legend style orverwrites.
-/// - ..options (any): The following options are supported per axis
-///                    and must be prefixed by `<axis-name>-`, e.G.
-///                    `x-min: 0`.
-///                    - min (int): Axis minimum
-///                    - max (int): Axis maximum
-///                    - horizontal (bool): Axis orientation; note that each
-///                      plot must use one vertical and one horizontal axis!
-///                      The default value for this parameter is guessed: Axes
-///                      starting with "x" are considered horizontal by default.
-///                      This does not affect the side the ticks of the axis are
-///                      drawn, but only the drawing direction.
-///                    - tick-step (float): Major tick step
-///                    - minor-tick-step (float): Major tick step
-///                    - ticks (array): List of ticks values or value/label
-///                                     tuples
-///                    - unit (content): Tick label suffix
-///                    - decimals (int): Number of decimals digits to display
+///   #example(```
+///   cetz.plot.plot(x-tick-step: none, y-tick-step: none,
+///                  x-min: 0, x-max: 4,
+///                  x-ticks: (1, 2, 3),
+///                  y-min: 1, y-max: 2,
+///                  y-ticks: ((1, [One]), (2, [Two])),
+///   {
+///     cetz.plot.add(((0,0),))
+///   })
+///   ```)
+///
+///   Examples: `(1, 2, 3)` or `((1, [One]), (2, [Two]), (3, [Three]))`])
+/// #show-parameter-block("format", ("none", "string", "function"), default: "float", [
+///   How to format the tick label: You can give a function that takes a `<float>` and return
+///   `<content>` to use as the tick label. You can also give one of the predefined options:
+///   / float: Floating point formatting rounded to two digits after the point (see `decimals`)
+///   / sci: Scientific formatting with $times 10^n$ used as exponet syntax
+///
+///   #example(```
+///   let formatter(v) = if v != 0 {$ #{v/calc.pi} pi $} else {$ 0 $}
+///   cetz.plot.plot(x-tick-step: calc.pi, y-tick-step: none,
+///             x-min: 0, x-max: 2 * calc.pi,
+///             x-format: formatter,
+///   {
+///     cetz.plot.add(((0,0),))
+///   })
+///   ```)
+/// ])
+/// #show-parameter-block("decimals", ("int"), default: "2", [
+///   Number of decimals digits to display for tick labels, if the format is set
+///   to `"float"`.
+/// ])
+/// #show-parameter-block("unit", ("none", "content"), default: "none", [
+///   Suffix to append to all tick labels.
+/// ])
+/// #show-parameter-block("grid", ("bool", "string"), default: "false", [
+///   If `true` or `"major"`, show grid lines for all major ticks. If set
+///   to `"minor"`, show grid lines for minor ticks only.
+///   The value `"both"` enables grid lines for both, major- and minor ticks.
+///
+///   #example(```
+///   cetz.plot.plot(x-tick-step: 1, y-tick-step: 1,
+///                  y-minor-tick-step: .2,
+///                  x-min: 0, x-max: 2, x-grid: true,
+///                  y-min: 0, y-max: 2, y-grid: "both", {
+///     cetz.plot.add(((0,0),))
+///   })
+///   ```)
+/// ])
+///
+/// - body (body): Calls of `plot.add` or `plot.add-*` commands. Note that normal drawing
+///   commands like `line` or `rect` are not allowed inside the plots body, instead wrap
+///   them in `plot.add-annotation`, which lets you select the axes used for drawing.
+/// - size (array): Plot size tuple of `(<width>, <height>)` in canvas units.
+///   This is the plots inner plotting size without axes and labels.
+/// - axis-style (none, string): How the axes should be styled:
+///   / scientific: Frames plot area using a rectangle and draw axes `x` (bottom), `y` (left), `x2` (top), and `y2` (right) around it.
+///     If `x2` or `y2` are unset, they mirror their opposing axis.
+///   / scientific-auto: Draw set (used) axes `x` (bottom), `y` (left), `x2` (top) and `y2` (right) around
+///     the plotting area, forming a rect if all axes are in use or a L-shape if only `x` and `y` are in use.
+///   / school-book: Draw axes `x` (horizontal) and `y` (vertical) as arrows pointing to the right/top with both crossing at $(0, 0)$
+///   / left: Draw axes `x` and `y` as arrows, while the y axis stays on the left (at `x.min`)
+///               and the x axis at the bottom (at `y.min`)
+///   / `none`: Draw no axes (and no ticks).
+///
+///   #example(```
+///   let opts = (x-tick-step: none, y-tick-step: none, size: (2,1))
+///   let data = cetz.plot.add(((-1,-1), (1,1),), mark: "o")
+///
+///   for name in (none, "school-book", "left", "scientific") {
+///     cetz.plot.plot(axis-style: name, ..opts, data, name: "plot")
+///     content(((0,-1), "-|", "plot.south"), repr(name))
+///     set-origin((3.5,0))
+///   }
+///   ```, vertical: true)
+/// - plot-style (style,function): Styling to use for drawing plot graphs.
+///   This style gets inherited by all plots and supports `palette` functions.
+///   The following style keys are supported:
+///   #show-parameter-block("stroke", ("none", "stroke"), default: 1pt, [
+///     Stroke style to use for stroking the graph.
+///   ])
+///   #show-parameter-block("fill", ("none", "paint"), default: none, [
+///     Paint to use for filled graphs. Note that not all graphs may support filling and
+///     that you may have to enable filling per graph, see `plot.add(fill: ..)`.
+///   ])
+/// - mark-style (style,function): Styling to use for drawing plot marks.
+///   This style gets inherited by all plots and supports `palette` functions.
+///   The following style keys are supported:
+///   #show-parameter-block("stroke", ("none", "stroke"), default: 1pt, [
+///     Stroke style to use for stroking the mark.
+///   ])
+///   #show-parameter-block("fill", ("none", "paint"), default: none, [
+///     Paint to use for filling marks.
+///   ])
+/// - fill-below (bool): If true, the filled shape of plots is drawn _below_ axes.
+/// - name (string): The plots element name to be used when referring to anchors
+/// - legend (none, auto, coordinate): The position the legend will be drawn at. See @plot-legends for information about legends. If set to `<auto>`, the legend's "default-placement" styling will be used. If set to a `<coordinate>`, it will be taken as relative to the plot's origin.
+/// - legend-anchor (auto, string): Anchor of the legend group to use as its origin.
+///   If set to `auto` and `lengend` is one of the predefined legend anchors, the
+///   opposite anchor to `legend` gets used.
+/// - legend-style (style): Style key-value overwrites for the legend style with style root `legend`.
+/// - ..options (any): Axis options, see _options_ above.
+///
 #let plot(body,
           size: (1, 1),
           axis-style: "scientific",
@@ -333,10 +396,45 @@
   if legend != none {
     let items = data.filter(d => "label" in d and d.label != none)
     if items.len() > 0 {
-      draw-legend(ctx, legend-style,
+      plot-legend.draw-legend(ctx, legend-style,
         items, size, "plot", legend, legend-anchor)
     }
   }
 
   draw.copy-anchors("plot")
 })
+
+/// Add an anchor to a plot environment
+///
+/// This function is similar to `draw.anchor` but it takes an additional
+/// axis tuple to specify which axis coordinate system to use.
+///
+/// #example(```
+/// import cetz.plot
+/// import cetz.draw: *
+/// plot.plot(size: (2,2), name: "plot",
+///           x-tick-step: none, y-tick-step: none, {
+///   plot.add(((0,0), (1,1), (2,.5), (4,3)))
+///   plot.add-anchor("pt", (1,1))
+/// })
+///
+/// line("plot.pt", ((), "|-", (0,1.5)), mark: (start: ">"), name: "line")
+/// content("line.end", [Here], anchor: "south", padding: .1)
+/// ```)
+///
+/// - name (string): Anchor name
+/// - position (tuple): Tuple of x and y values.
+///   Both values can have the special values "min" and
+///   "max", which resolve to the axis min/max value.
+///   Position is in axis space defined by the axes passed to `axes`.
+/// - axes (tuple): Name of the axes to use `("x", "y")` as coordinate
+///   system for `position`. Note that both axes must be used,
+///   as `add-anchors` does not create them on demand.
+#let add-anchor(name, position, axes: ("x", "y")) = {
+  ((
+    type: "anchor",
+    name: name,
+    position: position,
+    axes: axes,
+  ),)
+}

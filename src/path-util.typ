@@ -176,17 +176,21 @@
   return (a, vector.scale(vector.norm(vector.sub(b, a)), scale))
 }
 
+/// Create a line segment with points
+///
+/// - points (array): List of points
+/// -> array Segment
 #let line-segment(points) = {
-  ("line",)
-  points
+  ("line",) + points
 }
 
+/// Create a cubic bezier segment
+///
+/// - a (vector): Start
+/// - b (vector): End
+/// - ctrl-a (vector): Control point a
+/// - ctrl-b (vector): Control point b
+/// -> array Segment
 #let cubic-segment(a, b, ctrl-a, ctrl-b) = {
-  (
-    "cubic",
-    a,
-    b,
-    ctrl-a,
-    ctrl-b
-  )
+  ("cubic", a, b, ctrl-a, ctrl-b)
 }

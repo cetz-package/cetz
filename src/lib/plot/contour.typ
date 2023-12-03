@@ -242,32 +242,47 @@
 
 /// Add a contour plot of a sampled function or a matrix.
 ///
-/// - data (array, function): A function of the signature `(x, y) => z`
-///                           or an array of floats where the first
-///                           index is the row and the second index is the column.
+/// #example(```
+/// cetz.plot.plot(size: (2,2), x-tick-step: none, y-tick-step: none, {
+///   cetz.plot.add-contour(x-domain: (-3, 3), y-domain: (-3, 3),
+///     style: (fill: rgb(50,50,250,50)),
+///     fill: true,
+///     op: "<",        // Find contours where data < z
+///     z: (2.5, 2, 1), // Z values to find contours for
+///     (x, y) => calc.sqrt(x * x + y * y))
+/// })
+/// ```)
 ///
-///                           *Examples:*
-///                           - `(x, y) => x > 0`
-///                           - `(x, y) => 30 - (calc.pow(1 - x, 2)+calc.pow(1 - y, 2))`
+/// - data (array, function): A function of the signature `(x, y) => z`
+///   or an array of arrays of floats (a matrix) where the first
+///   index is the row and the second index is the column.
 /// - z (float, array): Z values to plot. Contours containing values
-///                     above z (z >= 0) or below z (z < 0) get plotted.
-///                     If you specify multiple z values, they get plotted in order.
-/// - x-domain (domain): X axis domain used if `data` is a function.
-/// - y-domain (domain): Y axis domain used if `data` is a function.
-/// - x-samples (int): X axis domain samples (2 < n)
+///   above z (z >= 0) or below z (z < 0) get plotted.
+///   If you specify multiple z values, they get plotted in the order of specification.
+/// - x-domain (domain): X axis domain used if `data` is a function, that is the
+///   domain inside the function gets sampled.
+/// - y-domain (domain): Y axis domain used if `data` is a function, see `x-domain`.
+/// - x-samples (int): X axis domain samples (2 < n). Note that contour finding
+///   can be quite slow. Using a big sample count can improve accuracy but can
+///   also lead to bad compilation performance.
 /// - y-samples (int): Y axis domain samples (2 < n)
-/// - interpolate (bool): Use linear interpolation between sample values
+/// - interpolate (bool): Use linear interpolation between sample values which can
+///   improve the resulting plot, especially if the contours are curved.
 /// - op (auto,string,function): Z value comparison oparator:
-///   / `">", ">=", "<", "<=", "!=", "=="`: Use the operator for comparison.
+///   / `">", ">=", "<", "<=", "!=", "=="`: Use the operator for comparison of `z` to
+///     the values from `data`.
 ///   / `auto`: Use ">=" for positive z values, "<=" for negative z values.
 ///   / `<function>`: Call comparison function of the format `(plot-z, data-z) => boolean`,
-///                   where `plot-z` is the z-value from the plots `z` argument and `data-z`
-///                   is the z-value of the data getting plotted.
+///     where `plot-z` is the z-value from the plots `z` argument and `data-z`
+///     is the z-value of the data getting plotted. The function must return true
+///     if at the combinations of arguments a contour is detected.
 /// - fill (bool): Fill each contour
-/// - style (style): Style to use, can be used with a palette function
-/// - axes (array): Name of the axes to use for plotting, note that not all
-///                 plot styles are able to display a custom axis!
+/// - style (style): Style to use for plotting, can be used with a palette function. Note
+///   that all z-levels use the same style!
+/// - axes (axes): Name of the axes to use for plotting.
 /// - limit (int): Limit of contours to create per z value before the function panics
+/// - label (none,content): Plot legend label to show. The legend preview for
+///   contour plots is a little rectangle drawn with the contours style.
 #let add-contour(data,
                  label: none,
                  z: (1,),
