@@ -65,7 +65,9 @@
   }
 }
 
-/// Find point at position on polyline segment
+/// Find point at position on polyline segment.
+/// If the distance t is < 0% or > 100% of the paths length
+/// the start/end point of the path is returned.
 ///
 /// - s (array): Polyline path segment
 /// - t (float,ratio): Absolute (float) or relative (ratio) position
@@ -77,14 +79,17 @@
     return s.last()
   }
 
+  let len = _segment-length(s)
   let target = if type(t) == ratio {
-    t * _segment-length(s) / 100%
+    t * len / 100%
   } else {
     t
   }
 
-  if target == 0 {
+  if target <= 0 {
     return s.at(1)
+  } else if target >= len {
+    return s.last()
   }
 
   let traveled = 0
@@ -137,7 +142,7 @@
 ///   float or integer, or relative position if given a ratio from 0% to 100%
 /// -> none,vector: Position on path as vector clamped to the paths begin/end
 ///    position.
-///    If the path is empy (segments == ()), none is returned
+///    If the path is empty (segments == ()), none is returned
 #let point-on-path(segments, t) = {
   assert(type(t) in (int, float, ratio),
     message: "Distance t must be of type int, float or ratio")

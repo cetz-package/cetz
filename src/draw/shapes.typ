@@ -981,7 +981,7 @@
 /// == Keys
 ///   #show-parameter-block("radius", ("number", "ratio", "dictionary"), default: 0, [
 ///     The rectangles corner radius. If set to a single number, that radius is applied
-///     to all four corners of the rectangle. If passed a dictionary you can set
+///     to all four corners of the rectangle. If passed a dictionary you can set the
 ///     radii per corner. The following keys support either a `<number, ratio>` or an array of `<number, ratio>`
 ///     for specifying a different x- and y-radius:
 ///     `north`, `east`, `south`, `west`, `north-west`, `north-east`, `south-west` and `south-east`. To set a default value for
@@ -1039,54 +1039,13 @@
         (lo, hi)
       }
 
-      let style = styles.resolve(ctx.style, style, root: "rect")
+      let style = styles.resolve(ctx.style, merge: style, root: "rect")
       let (x1, y1, z1) = a
       let (x2, y2, z2) = b
 
       let size = (calc.abs(x2 - x1), calc.abs(y2 - y1))
       let (north-west: nw, north-east: ne,
            south-west: sw, south-east: se) = util.as-corner-radius-dict(ctx, style.radius, size)
-
-      let (transform, anchors) = anchor_.setup(
-        (anchor) => {
-          let (w, h, d) = vector.sub(b, a)
-
-          // Calculate corner points for angle multiples of 45 degree.
-          // Corners are elliptical arcs with x and y radii, so the
-          // normalized corner vector is (x-radius * cos angle, y-radius * sin angle)
-          // which then gets substracted from the rectangular corner.
-          //
-          //  135deg ,-------, 45deg
-          //         |       |
-          //         | center|
-          //         |       |
-          // -135deg '-------' -45deg
-          let rot(v, angle) = (v.at(0) * calc.cos(angle),
-                               v.at(1) * calc.sin(angle))
-          let nw = vector.add((x1 + nw.at(0), y2 - nw.at(1)), rot(nw, 135deg))
-          let ne = vector.add((x2 - ne.at(0), y2 - ne.at(1)), rot(ne, 45deg))
-          let sw = vector.add((x1 + sw.at(0), y1 + sw.at(1)), rot(sw, -135deg))
-          let se = vector.add((x2 - se.at(0), y1 + se.at(1)), rot(se, -45deg))
-
-          let center = vector.add(a, (w/2, h/2))
-          (
-            north: (center.at(0), b.at(1)),
-            north-east: ne,
-            east: (b.at(0), center.at(1)),
-            south-east: se,
-            south: (center.at(0), a.at(1)),
-            south-west: sw,
-            west: (a.at(0), center.at(1)),
-            north-west: nw,
-            center: center
-          ).at(anchor)
-        },
-        ("north", "south-west", "south", "south-east", "north-west", "north-east", "east", "west", "center"),
-        default: "center",
-        name: name,
-        offset-anchor: anchor,
-        transform: ctx.transform
-      )
 
       let drawables = {
         let z = z1
@@ -1122,11 +1081,27 @@
         // Get segments for arc between start- and stop angle, starting
         // at point. If radius is zero for both axes, x and y, nothing
         // gets returned.
-        let corner-arc(radius, start-angle, stop-angle, pt) = {
+        //
+        // s----p0/
+        //      p1
+        //       |
+        //       e
+        //
+        // Returns a cubic bezier curve between s and e
+        // with the control points pointing from s in direction
+        // p0 * radius and from e in direction p1 * radius.
+        // The bezier approximates a 90 degree arc.
+        let corner-arc(radius, s, e, p0, p1) = {
           let (rx, ry) = radius
           if rx > 0 or ry > 0 {
-            let (x, y, ..) = pt
-            drawable.arc(x, y, z, start-angle, stop-angle, rx, ry).segments
+            let m = 0.551784
+            let p0 = (p0.at(0) * m * radius.at(0),
+                      p0.at(1) * m * radius.at(1))
+            let p1 = (p1.at(0) * m * radius.at(0),
+                      p1.at(1) * m * radius.at(1))
+            (path-util.cubic-segment(s, e,
+              vector.add(s, p0),
+              vector.add(e, p1)),)
           }
         }
 
@@ -1149,17 +1124,38 @@
         let (p6, p7) = get-corner-pts(sw, (x1, y1, z), ( 1, 0), ( 0, 1))
 
         let segments = ()
-        segments += corner-arc(nw, 180deg, 90deg, p0)
-        segments += (path-util.line-segment((p1, p2)),)
-        segments += corner-arc(ne, 90deg, 0deg, p2)
-        segments += (path-util.line-segment((p3, p4)),)
-        segments += corner-arc(se, 0deg, -90deg, p4)
-        segments += (path-util.line-segment((p5, p6)),)
-        segments += corner-arc(sw, -90deg, -180deg, p6)
-        segments += (path-util.line-segment((p7, p0)),)
+        segments += corner-arc(nw, p0, p1, (0, 1), (-1, 0))
+        if p1 != p2 { segments += (path-util.line-segment((p1, p2)),) }
+        segments += corner-arc(ne, p2, p3, (1, 0), (0, 1))
+        if p3 != p4 { segments += (path-util.line-segment((p3, p4)),) }
+        segments += corner-arc(se, p4, p5, (0, -1), (1, 0))
+        if p5 != p6 { segments += (path-util.line-segment((p5, p6)),) }
+        segments += corner-arc(sw, p6, p7, (-1, 0), (0,-1))
+        if p7 != p0 { segments += (path-util.line-segment((p7, p0)),) }
 
         drawable.path(segments, fill: style.fill, stroke: style.stroke, close: true)
       }
+
+      // Calculate border anchors
+      let center = vector.scale(vector.add(a, b), .5)
+      let border = anchor_.border.with(
+        center, size.at(0), size.at(1), drawables)
+
+      let (transform, anchors) = anchor_.setup(
+        (anchor) => {
+          if anchor in anchor_.compass-angle {
+            return border(anchor_.compass-angle.at(anchor))
+          }
+          else if anchor == "center" {
+            return center
+          }
+        },
+        ("north", "south-west", "south", "south-east", "north-west", "north-east", "east", "west", "center"),
+        default: "center",
+        name: name,
+        offset-anchor: anchor,
+        transform: ctx.transform
+      )
 
       return (
         ctx: ctx,

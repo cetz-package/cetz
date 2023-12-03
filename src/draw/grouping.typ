@@ -280,8 +280,8 @@
       } else {
         a
       }
-      if type(pos) == ratio {
-        pos /= 100%
+      if type(pos) != ratio {
+        pos *= 100%
       }
       out.insert(name, path-util.point-on-path(s, pos))
     }
