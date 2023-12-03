@@ -1,4 +1,4 @@
-#import "/src/util.typ"
+#import "../util.typ"
 
 /// Set current style
 ///

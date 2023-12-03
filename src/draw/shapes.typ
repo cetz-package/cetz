@@ -1,19 +1,19 @@
 #let typst-angle = angle
 #let typst-rotate = rotate
 
-#import "/src/coordinate.typ"
-#import "/src/drawable.typ"
-#import "/src/styles.typ"
-#import "/src/path-util.typ"
-#import "/src/util.typ"
-#import "/src/vector.typ"
-#import "/src/matrix.typ"
-#import "/src/process.typ"
-#import "/src/bezier.typ" as bezier_
-#import "/src/hobby.typ" as hobby_
-#import "/src/anchor.typ" as anchor_
-#import "/src/mark.typ" as mark_
-#import "/src/aabb.typ"
+#import "../coordinate.typ"
+#import "../drawable.typ"
+#import "../styles.typ"
+#import "../path-util.typ"
+#import "../util.typ"
+#import "../vector.typ"
+#import "../matrix.typ"
+#import "../process.typ"
+#import "../bezier.typ" as bezier_
+#import "../hobby.typ" as hobby_
+#import "../anchor.typ" as anchor_
+#import "../mark.typ" as mark_
+#import "../aabb.typ"
 
 #import "transformations.typ": *
 #import "styling.typ": *

@@ -1,9 +1,9 @@
 // CeTZ Library for drawing plots
-#import "/src/util.typ"
-#import "/src/draw.typ"
-#import "/src/matrix.typ"
-#import "/src/vector.typ"
-#import "/src/bezier.typ"
+#import "../util.typ"
+#import "../draw.typ"
+#import "../matrix.typ"
+#import "../vector.typ"
+#import "../bezier.typ"
 #import "axes.typ"
 #import "palette.typ"
 

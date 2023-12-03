@@ -1,7 +1,7 @@
-#import "/src/coordinate.typ"
-#import "/src/matrix.typ"
-#import "/src/vector.typ"
-#import "/src/util.typ"
+#import "../coordinate.typ"
+#import "../matrix.typ"
+#import "../vector.typ"
+#import "../util.typ"
 
 /// Sets the transformation matrix.
 ///

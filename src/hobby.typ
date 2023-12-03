@@ -1,5 +1,5 @@
-#import "/src/vector.typ"
-#import "/src/complex.typ"
+#import "vector.typ"
+#import "complex.typ"
 
 // Implementation by @Enivex
 //

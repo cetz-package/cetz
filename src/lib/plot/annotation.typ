@@ -1,8 +1,8 @@
 #import "util.typ"
 #import "sample.typ"
-#import "/src/draw.typ"
-#import "/src/process.typ"
-#import "/src/util.typ"
+#import "../../draw.typ"
+#import "../../process.typ"
+#import "../../util.typ"
 
 /// Add an annotation to the plot
 ///

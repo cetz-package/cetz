@@ -1,4 +1,4 @@
-#import "/src/draw.typ"
+#import "../../draw.typ"
 
 // Draw mark at point with size
 #let draw-mark-shape(pt, size, mark, style) = {

@@ -1,6 +1,6 @@
 #import "util.typ"
 #import "sample.typ"
-#import "/src/draw.typ"
+#import "../../draw.typ"
 
 // Find contours of a 2D array by using marching squares algorithm
 //

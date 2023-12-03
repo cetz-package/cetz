@@ -4,7 +4,7 @@
 #import "../util.typ"
 #import "../coordinate.typ"
 #import "../anchor.typ" as anchor_
-#import "/src/draw.typ"
+#import "../draw.typ"
 
 // Angle default-style
 #let default-style = (

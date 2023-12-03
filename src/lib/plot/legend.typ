@@ -1,6 +1,6 @@
-#import "/src/draw.typ"
-#import "/src/anchor.typ" as anchor_
-#import "/src/styles.typ"
+#import "../../draw.typ"
+#import "../../anchor.typ" as anchor_
+#import "../../styles.typ"
 #import "mark.typ": draw-mark-shape
 
 #let default-style = (
