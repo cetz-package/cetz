@@ -832,8 +832,8 @@ my-star((0,6), inner-radius: .3)
 = Internals
 == Context
 
-The state of the canvas is encoded in its context object. Elements or other
-draw calls may return a modified context element to the canvas to change its
+The state of the canvas is encoded in its context dictionary. Elements or other
+draw calls may return a modified context to the canvas to change its
 state, e.g. modifying the transformating matrix, adding a group or setting a style.
 
 ```example
@@ -847,7 +847,7 @@ get-ctx(ctx => {
 
 Each CeTZ element (`line`, `bezier`, `circle`, ...) returns an array of
 functions for drawing to the canvas. Such function takes the canvas'
-context object and must return an dictionary of the following keys:
+context and must return an dictionary of the following keys:
 - `ctx` (required): The (modified) canvas context object
 - `drawables`: List of drawables to render to the canvas
 - `anchors`: A function of the form `(<anchor-identifier>) => <vector>`
