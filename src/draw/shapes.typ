@@ -395,12 +395,12 @@
 /// the function fails.
 ///
 /// #example(```
-/// arc-through((0,0), (1,0), (2,0))
+/// arc-through((0,1), (1,1), (1,0))
 /// ```)
 ///
 /// *Style Root* `arc` \
 /// *Style Keys* \
-///   For style keys, see `arc`.
+///   Uses the same style keys as @@arc()
 ///
 /// *Anchors* \
 ///   For anchors see `arc`.
