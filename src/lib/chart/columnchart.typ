@@ -9,12 +9,17 @@
   x-inset: 1,
 )
 
-
 /// Draw a column chart. A column chart is a chart that represents data with
 /// rectangular bars that grow from bottom to top, proportional to the values
 /// they represent. For examples see @columnchart-examples.
 ///
-/// *Style root*: `columnchart`.
+/// = Styling
+/// *Root*: `columnchart`.
+/// #show-parameter-block("bar-width", "float", default: .8, [
+///   Width of a single bar (basic) or a cluster of bars (clustered) in the plot.])
+/// #show-parameter-block("x-inset", "float", default: 1, [
+///   Distance of the plot data to the plot's edges on the x-axis of the plot.])
+/// You can use any `plot` or `axes` related style keys, too.
 ///
 /// The `columnchart` function is a wrapper of the `plot` API. Arguments passed
 /// to `..plot-args` are passed to the `plot.plot` function.

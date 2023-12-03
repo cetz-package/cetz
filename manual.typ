@@ -657,6 +657,7 @@ Supported charts are:
 
 #doc-style.parse-show-module("/src/lib/chart/barchart.typ")
 #doc-style.parse-show-module("/src/lib/chart/columnchart.typ")
+#doc-style.parse-show-module("/src/lib/chart/boxwhisker.typ")
 
 === Examples -- Bar Chart <barchart-examples>
 ```example-vertical

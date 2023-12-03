@@ -13,7 +13,13 @@
 /// rectangular bars that grow from left to right, proportional to the values
 /// they represent. For examples see @barchart-examples.
 ///
-/// *Style root*: `barchart`.
+/// = Styling
+/// *Root*: `barchart`.
+/// #show-parameter-block("bar-width", "float", default: .8, [
+///   Width of a single bar (basic) or a cluster of bars (clustered) in the plot.])
+/// #show-parameter-block("y-inset", "float", default: 1, [
+///   Distance of the plot data to the plot's edges on the y-axis of the plot.])
+/// You can use any `plot` or `axes` related style keys, too.
 ///
 /// The `barchart` function is a wrapper of the `plot` API. Arguments passed
 /// to `..plot-args` are passed to the `plot.plot` function.
