@@ -245,21 +245,25 @@
   },)
 }
 
-/// TODO: Not writing the docs for this as it should be removed in place of better anchors before 0.2
-/// Place multiple anchors along a path
+/// Place multiple anchors along a path.
+///
+/// *DEPRECATED*
+///
+/// #example(```
+/// place-anchors(circle(()), "circle", ("a", 0), ("b", .5), ("c", .75))
+/// for-each-anchor("circle", n => {
+///   circle("circle." + n, radius: .1, fill: blue, stroke: none)
+/// })
+/// ```)
 ///
 /// - path (drawable): Single drawable
-/// - ..anchors (array): List of anchor dictionaries of the form `(pos: <float>, name: <string>)`, where
-///   `pos` is a relative position on the path from `0` to `1`.
-/// - name: (auto,string): If auto, take the name of the passed drawable. Otherwise sets the
-///   elements name
-#let place-anchors(path, ..anchors, name: auto) = {
-  let name = if name == auto and "name" in path.first() {
-    path.first().name
-  } else {
-    name
-  }
-  assert(type(name) == str, message: "Name must be of type string")
+/// - name: (string): The grouping elements name
+/// - ..anchors (array): List of anchor tuples `(name, pos)` or dictionaries of the
+///   form `(name: <string>, pos: <float, ratio>)`, where `pos` is a relative position
+///   on the path from `0` to `1` or 0% to 100%.
+#let place-anchors(path, name, ..anchors) = {
+  assert(type(name) == str,
+    message: "Name must be of type string, got: " + type(name))
   
   return (ctx => {
     let (ctx, drawables) = process.many(ctx, path)
@@ -269,8 +273,17 @@
     
     let out = (:)
     for a in anchors.pos() {
-      assert("name" in a, message: "Anchor must have a name set")
-      out.insert(a.name, path-util.point-on-path(s, a.pos))
+      assert(type(a) in (dictionary, array),
+        message: "Expected anchor tuple or dictionary, got: " + repr(a))
+      let (name, pos) = if type(a) == dictionary {
+        (a.name, a.pos)
+      } else {
+        a
+      }
+      if type(pos) == ratio {
+        pos /= 100%
+      }
+      out.insert(name, path-util.point-on-path(s, pos))
     }
 
     return (
