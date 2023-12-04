@@ -16,7 +16,7 @@
   //   - Dictionary: (top:, right:, bottom:, left:)
   padding: none,
   mark: (
-    scale: 1,     // A factor that is applied to length, widht, and inset.
+    scale: 1,     // A factor that is applied to length, width, and inset.
     length: .2,   // The size of the mark along its direction
     width: 0.15,  // The size of the mark along the normal of its direction
     inset: .05,   // The inner length of triangular shaped marks
@@ -119,7 +119,7 @@
 /// )
 /// #cetz.styles.resolve(dict, merge: (mark: (stroke: "yellow")), root: "line")
 /// The following is a more detailed explanation of how the algorithm works to use as a reference if needed. It should be updated whenever changes are made.
-/// Remember that dictionaries are recursivley merged, if an entry it is any other type it is simply updated. (dict + dict = merged dict, value + dict = dict, dict + value = value)
+/// Remember that dictionaries are recursively merged, if an entry it is any other type it is simply updated. (dict + dict = merged dict, value + dict = dict, dict + value = value)
 /// First if `base` is given, it will be merged without overwriting values onto `dict`. If `root` is given it will be merged onto that key of `dict`.
 /// Each level of `dict` is then processed with these steps. If `root` is given the level with that key will be the first, otherwise the whole of `dict` is processed.
 /// + Values on the corresponding level of `merge` are inserted into the level if the key does not exist on the level or if they are not both dictionaries. If they are both dictionaries their values will be inserted in the same stage at a lower level.
