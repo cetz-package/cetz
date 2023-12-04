@@ -61,6 +61,9 @@
     return []
   }
 
+  // Filter hidden drawables
+  drawables = drawables.filter(d => not d.hidden)
+
   // Order draw commands by z-index
   drawables = drawables.sorted(key: (cmd) => {
     return cmd.at("z-index", default: 0)

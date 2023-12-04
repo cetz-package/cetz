@@ -15,15 +15,17 @@
       element.drawables = (element.drawables,)
     }
     for drawable in element.drawables {
-      bounds = aabb.aabb(
-        if drawable.type == "path" {
-          path-util.bounds(drawable.segments)
-        } else if drawable.type == "content" {
-          let (x, y, _, w, h,) = drawable.pos + (drawable.width, drawable.height)
-          ((x + w / 2, y - h / 2, 0), (x - w / 2, y + h / 2, 0))
-        },
-        init: bounds
-      )
+      if not drawable.hidden {
+        bounds = aabb.aabb(
+          if drawable.type == "path" {
+            path-util.bounds(drawable.segments)
+          } else if drawable.type == "content" {
+            let (x, y, _, w, h,) = drawable.pos + (drawable.width, drawable.height)
+            ((x + w / 2, y - h / 2, 0), (x - w / 2, y + h / 2, 0))
+          },
+          init: bounds
+        )
+      }
     }
   }
   if "name" in element and type(element.name) == "string" and "anchors" in element {

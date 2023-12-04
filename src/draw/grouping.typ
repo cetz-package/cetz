@@ -13,6 +13,42 @@
 
 #import "transformations.typ": move-to
 
+/// Hides an element.
+///
+/// Hidden elements are not drawn to the canvas,
+/// are ignored when calculating bounding boxes and discarded by `merge-path`. All
+/// other behaviours remain the same as a non-hidden element.
+///
+/// #example(```
+/// set-style(radius: .5)
+/// intersections("i", {
+///   circle((0,0), name: "a")
+///   circle((1,2), name: "b")
+///   // Use a hidden line to find the border intersections
+///   hide(line("a.center", "b.center"))
+/// })
+/// line("i.0", "i.1")
+/// ```)
+///
+/// - body (element): One or more elements to hide
+#let hide(body) = {
+  if type(body) == array {
+    return body.map(f => {
+      (ctx) => {
+        let element = f(ctx)
+        if "drawables" in element {
+          element.drawables = element.drawables.map(d => {
+            d.hidden = true
+            return d
+          })
+        }
+        return element
+      }
+    })
+  }
+  return body
+}
+
 /// Calculates the intersections between multiple paths and creates one anchor
 /// per intersection point.
 ///
@@ -43,6 +79,8 @@
 ///   circle("i." + name, radius: .1, fill: blue)
 /// })
 /// ```)
+///
+/// You can calculate intersections with hidden elements by using @@hide().
 ///
 /// - name (string): Name to prepend to the generated anchors.
 /// - ..elements (elements,string): Elements and/or element names to calculate intersections with.

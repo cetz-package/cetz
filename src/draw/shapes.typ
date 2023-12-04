@@ -1528,6 +1528,9 @@
 ///   bezier((), (0, 0), (1,1), (0,1))
 /// })
 /// ```)
+///
+/// Elements hidden via `hide()` are ignored.
+///
 /// = parameters
 ///
 /// = Anchors
@@ -1564,6 +1567,7 @@
             }
           }
           for drawable in r.drawables {
+            if drawable.hidden { continue }
             assert.eq(drawable.type, "path")
             segments += drawable.segments
           }
