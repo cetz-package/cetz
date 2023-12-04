@@ -38,10 +38,6 @@
     stroke: auto,
     fill: auto
   ),
-  rect: (
-    stroke: auto,
-    fill: auto,
-  ),
   group: (
     padding: auto,
     fill: auto,
@@ -87,7 +83,6 @@
     /// E.g. the radius `50%` is equal to `(50%, 50%)` and represents a x and y radius
     /// of 50% of the rects width/height.
     radius: 0,
-
     stroke: auto,
     fill: auto,
   ),

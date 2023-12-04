@@ -113,7 +113,8 @@
 /// - s (segment): Path segment
 /// - t (float,ratio): Absolute (float) or relative (ratio) position
 ///
-/// -> vector: Position on segment
+/// -> vector: Position on segment as vector clamped to
+///   the segments begin/end position.
 #let _point-on-segment(s, t) = {
   let (kind, ..pts) = s
   if kind == "line" {
@@ -140,9 +141,7 @@
 /// - segments (array): List of path segments
 /// - t (int,float,ratio): Absolute position on the path if given an
 ///   float or integer, or relative position if given a ratio from 0% to 100%
-/// -> none,vector: Position on path as vector clamped to the paths begin/end
-///    position.
-///    If the path is empty (segments == ()), none is returned
+/// -> none,vector: Position on path. If the path is empty (segments == ()), none is returned
 #let point-on-path(segments, t) = {
   assert(type(t) in (int, float, ratio),
     message: "Distance t must be of type int, float or ratio")
@@ -157,12 +156,13 @@
     return _point-on-segment(segments.first(), t)
   }
 
-  let abs = type(t) != ratio
-  let target = calc.max(0, if type(t) == ratio {
-    t * length(segments) / 100%
+  let target = if type(t) == ratio {
+    t / 100% * length(segments)
   } else {
+    assert(0 <= t and t <= length(segments),
+      message: "Absolute distance must be in path range, is: " + repr(t))
     t
-  })
+  }
 
   if target == 0 {
     return segment-start(segments.first())
@@ -175,11 +175,7 @@
 
     // This segment contains target
     if traveled <= target and target <= traveled + part {
-      return if abs {
-        _point-on-segment(s, target - traveled)
-      } else {
-        _point-on-segment(s, (target - traveled) / part * 100%)
-      }
+      return _point-on-segment(s, target - traveled)
     }
 
     traveled += part
