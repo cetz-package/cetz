@@ -389,6 +389,90 @@
   },)
 }
 
+/// Draw an arc that passes through three points a, b and c.
+///
+/// Note that all three points must not lay on a straight line, otherwise
+/// the function fails.
+///
+/// #example(```
+/// arc-through((0,1), (1,1), (1,0))
+/// ```)
+///
+/// *Style Root* `arc` \
+/// *Style Keys* \
+///   Uses the same style keys as @@arc()
+///
+/// *Anchors* \
+///   For anchors see `arc`.
+///
+/// - a (coordinate): Start position of the arc
+/// - b (coordinate): Position the arc passes through
+/// - c (coordinate): End position of the arc
+/// - name (none,string): The arc elements node name that, if set can be used to query anchors
+/// - ..style (style): Style key value pairs. The function `arc-through` uses
+///   all keys that `arc` uses, but `radius`, as this is determined by the
+///   three input points.
+#let arc-through(
+  a,
+  b,
+  c,
+  name: none,
+  ..style,
+) = get-ctx(ctx => {
+  let (ctx, a, b, c) = coordinate.resolve(ctx, a, b, c)
+  assert(a.at(2) == b.at(2) and b.at(2) == c.at(2),
+    message: "The z coordinate of all points must be equal, but is: " + repr((a, b, c).map(v => v.at(2))))
+
+  // Calculate the circle center from three points or fails if all
+  // three points are on one straight line.
+  let center = util.calculate-circle-center-3pt(a, b, c)
+  let radius = vector.dist(center, a)
+
+  // Find the start and inner angle between a-center-c
+  let start = vector.angle2(center, a)
+  let delta = vector.angle(a, center, c)
+
+  // Returns a negative number if pt is left of the line a-b,
+  // if pt is right to a-b, a positive number is returned,
+  // otherwise zero.
+  let side-on-line(a, b, pt) = {
+    let (x1, y1, ..) = a
+    let (x2, y2, ..) = b
+    let (x,  y, ..)  = pt
+    return (x - x1) * (y2 - y1) - (y - y1) * (x2 - x1)
+  }
+
+  // Center & b     b is left,
+  //  are left      center not
+  //
+  //    +-b-+          +-b-+
+  //   /     \        /     \
+  //  |   C   |    --a-------c--
+  //   \     /        \  C  /
+  // ---a---c---       +---+
+  //
+  // If b and C are on the same side of a-c, the arcs radius is >= 180deg,
+  // otherwise the radius is < 180deg.
+  let center-is-left = side-on-line(a, c, center) < 0
+  let b-is-left = side-on-line(a, c, b) < 0
+
+  // If the center and point b are on the same side of a-c,
+  // the arcs delta must be > 180deg. Note, that delta is
+  // the inner angle between a-center-c, so we need to calculate
+  // the outer angle by subtracting from 360deg.
+  if center-is-left == b-is-left {
+    delta = 360deg - delta
+  }
+
+  // If b is left of a-c, swap a-c to c-a by using a negative delta
+  if b-is-left {
+    delta *= -1
+  }
+
+  return arc(a, start: start, delta: delta, radius: radius,
+    anchor: "arc-start", name: name, ..style)
+})
+
 /// Draws a single mark pointing at a target coordinate
 ///
 /// #example(```

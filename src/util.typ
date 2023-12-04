@@ -89,7 +89,8 @@
   return (calc.cos(angle) * rx + x, calc.sin(angle) * ry + y, z)
 }
 
-/// Calculate circle center from 3 points
+/// Calculate circle center from 3 points. The z coordinate
+/// is taken from point a.
 ///
 /// - a (vector): Point 1
 /// - b (vector): Point 2
@@ -129,11 +130,11 @@
     }
     let x = (d - c)/(a - b)
     let y = a * x + c
-    return (x, y, 0)
+    return (x, y)
   }
 
   assert(args.len() == 4, message: "Could not find circle center")
-  return line-intersection-2d(..args)
+  return vector.as-vec(line-intersection-2d(..args), init: (0, 0, a.at(2)))
 }
 
 #let resolve-number(ctx, num) = {

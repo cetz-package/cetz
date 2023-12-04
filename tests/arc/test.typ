@@ -34,3 +34,11 @@
     content((rel: (0, .5), to: "c." + a), [#a], frame: "rect", fill: white, stroke: none)
   })
 }))
+
+
+#box(stroke: 2pt + red, canvas(length: 1cm, {
+  import draw: *
+
+  arc((0,0), start: 45deg, delta: 90deg)
+  arc((0,0,1), start: 45deg, delta: 90deg, stroke: blue)
+}))

@@ -15,6 +15,7 @@
 - Catmull-Rom curves, Hobby curves and arcs now can have marks
 - Fixed and improved intersection calculation
 - Fixed marks pointing to +/- z
+- New element `arc-through` to draw an arc through three points
 
 ### Plot
 - Added `plot.add-contour(..)` for plotting contour plots
