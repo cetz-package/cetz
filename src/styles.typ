@@ -89,6 +89,7 @@
     //   - "PIE"
     mode: "OPEN",
     mark: _default-mark,
+    update-position: true,
   ),
   content: (
     // Allowed values:
