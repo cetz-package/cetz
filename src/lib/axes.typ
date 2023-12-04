@@ -370,7 +370,7 @@
               if label != none {
                 let label-pos = vector.add(tick-start,
                   vector.scale(tic-dir, -style.tick.label.offset))
-                content(label-pos, [#label],
+                content(label-pos, par(justify: false, [#label]),
                         anchor: if style.tick.label.anchor == auto {anchor}
                                 else {style.tick.label.anchor},
                         angle: style.tick.label.angle)
@@ -435,7 +435,7 @@
         group(
           content(
             position,
-            axis.label,
+            par(justify: false, axis.label),
             angle: angle,
             padding: style.label.offset
           ),
@@ -488,8 +488,8 @@
     let y-x = value-on-axis(x-axis, y-position) * w
 
     let axis-settings = (
-      (x-axis, "north",   (auto, x-y), (0, 1), "x"),
-      (y-axis, "east", (y-x, auto), (1, 0), "y"),
+      (x-axis, "north", (auto, x-y), (0, 1), "x"),
+      (y-axis, "east",  (y-x, auto), (1, 0), "y"),
     )
 
     line((-padding.left, x-y), (w + padding.right, x-y),
@@ -500,8 +500,8 @@
       if style.label.anchor == auto {
         anchor = "north-west"
       }
-      content((rel: (0, -style.tick.label.offset), to: "x-axis.end"),
-        anchor: anchor, x-axis.label)
+      content((rel: (0, -style.label.offset), to: "x-axis.end"),
+        anchor: anchor, par(justify: false, x-axis.label))
     }
 
     line((y-x, -padding.bottom), (y-x, h + padding.top),
@@ -512,8 +512,8 @@
       if style.label.anchor == auto {
         anchor = "south-east"
       }
-      content((rel: (-style.tick.label.offset, 0), to: "y-axis.end"),
-        anchor: anchor, y-axis.label)
+      content((rel: (-style.label.offset, 0), to: "y-axis.end"),
+        anchor: anchor, par(justify: false, y-axis.label))
     }
 
     // If both axes cross at the same value (mostly 0)
@@ -565,12 +565,12 @@
                 origin-drawn = true
                 content(vector.add((x, y),
                   vector.scale((1, 1), -style.tick.label.offset / 2)),
-                  [#label], anchor: "north-east")
+                  par(justify: false, [#label]), anchor: "north-east")
               }
             } else {
               content(vector.add(tick-begin,
                 vector.scale(tic-dir, -style.tick.label.offset)),
-                [#label], anchor: anchor)
+                par(justify: false, [#label]), anchor: anchor)
             }
           }
         }
