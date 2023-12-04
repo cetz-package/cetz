@@ -32,7 +32,9 @@
   if type(segments.first()) == str {
     segments = (segments,)
   }
-  if close {
+
+  segments = path-util.normalize(segments)
+  if close and path-util.segment-end(segments.last()) != path-util.segment-start(segments.first()) {
     segments.push(path-util.line-segment((
       path-util.segment-end(segments.last()),
       path-util.segment-start(segments.first()),
