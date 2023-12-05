@@ -42,7 +42,7 @@
     // Previous element position & bbox
     prev: (pt: (0, 0, 0)),
     em-size: measure(box(width: 1em, height: 1em), st),
-    style: (:),
+    style: styles.default,
     // Current transform
     transform: matrix.mul-mat(
       matrix.transform-shear-z(.5),

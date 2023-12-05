@@ -73,7 +73,7 @@
 
   group(name: name, ctx => {
     // Get styles and validate types and values
-    let style = styles.resolve(ctx.style, style.named(),
+    let style = styles.resolve(ctx.style, merge: style.named(),
       root: "brace", base: brace-default-style)
 
     let amplitude = style.amplitude
@@ -259,7 +259,7 @@
 
   group(name: name, ctx => {
     // Get styles and validate their types and values
-    let style = styles.resolve(ctx.style, style.named(),
+    let style = styles.resolve(ctx.style, merge: style.named(),
       root: "flat-brace", base: flat-brace-default-style)
 
     let amplitude = style.amplitude

@@ -174,8 +174,7 @@
   )
 
   group(ctx => {
-    let style = util.merge-dictionary(barchart-default-style,
-      styles.resolve(ctx.style, (:), root: "barchart"))
+    let style = styles.resolve(ctx.style, root: "barchart", base: barchart-default-style)
 
     axes.scientific(
       size: size,

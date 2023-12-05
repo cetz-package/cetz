@@ -1,14 +1,19 @@
 #set page(width: auto, height: auto)
-#import "../../src/lib.typ": *
+#import "/src/lib.typ": *
 
 // Schoolbook Axis Styling
 #box(stroke: 2pt + red, canvas({
   import draw: *
 
-  set-style(axes: (stroke: blue))
-  set-style(axes: (padding: .75))
-  set-style(axes: (x: (stroke: red)))
-  set-style(axes: (y: (stroke: green, tick: (stroke: blue, length: .3))))
+  set-style(axes: (
+    stroke: blue,
+    padding: .75,
+    x: (stroke: red),
+    y: (stroke: green, tick: (stroke: blue, length: .3))
+  ))
+  // set-style(axes: (padding: .75))
+  // set-style(axes: (x: (stroke: red)))
+  // set-style(axes: (y: (stroke: green, tick: (stroke: blue, length: .3))))
   axes.school-book(size: (6, 6),
     axes.axis(min: -1, max: 1, ticks: (step: 1, minor-step: auto,
       grid: "both")),

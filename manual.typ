@@ -658,7 +658,6 @@ Supported charts are:
 #doc-style.parse-show-module("/src/lib/chart/columnchart.typ")
 
 === Examples -- Bar Chart <barchart-examples>
-
 ```example-vertical
 import cetz.chart
 // Left - Basic
@@ -806,7 +805,7 @@ let my-star(center, name: none, ..style) = {
     let def-style = (n: 5, inner-radius: .5, radius: 1)
 
     // Resolve the current style ("star")
-    let style = cetz.styles.resolve(ctx.style, style.named(),
+    let style = cetz.styles.resolve(ctx.style, merge: style.named(),
       base: def-style, root: "star")
 
     // Compute the corner coordinates
@@ -829,6 +828,7 @@ my-star((0,3), n: 10)
 set-style(star: (fill: yellow)) // set-style works, too!
 my-star((0,6), inner-radius: .3)
 ```
+
 
 = Internals
 == Context
@@ -880,13 +880,13 @@ import cetz.vector
 let my-star(center, ..style) = {
   (ctx => {
     // Define a default style
-    let def-style = (n: 5, inner-radius: .5, radius: 1)
+    let def-style = (n: 5, inner-radius: .5, radius: 1, stroke: auto, fill: auto)
 
     // Resolve center to a vector
     let (ctx, center) = cetz.coordinate.resolve(ctx, center)
 
     // Resolve the current style ("star")
-    let style = cetz.styles.resolve(ctx.style, style.named(),
+    let style = cetz.styles.resolve(ctx.style, merge: style.named(),
       base: def-style, root: "star")
 
     // Compute the corner coordinates

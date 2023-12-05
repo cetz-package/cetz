@@ -30,6 +30,18 @@
     stroke: (paint: gray, dash: "dotted"),
     fill: none
   ),
+  x: (
+    fill: auto,
+    stroke: auto,
+    mark: auto,
+    tick: auto
+  ),
+  y: (
+    fill: auto,
+    stroke: auto,
+    mark: auto,
+    tick: auto
+  )
 )
 
 #let default-style-schoolbook = util.merge-dictionary(default-style, (
@@ -313,7 +325,7 @@
     anchor("data-top-right",   (w, h))
 
     let style = style.named()
-    style = styles.resolve(ctx.style, style, root: "axes",
+    style = styles.resolve(ctx.style, merge: style, root: "axes",
                            base: default-style)
 
     let padding = (
@@ -467,7 +479,7 @@
     let style = style.named()
     style = styles.resolve(
       ctx.style,
-      style,
+      merge: style,
       root: "axes",
       base: default-style-schoolbook
     )
@@ -492,9 +504,7 @@
       (y-axis, "east",  (y-x, auto), (1, 0), "y"),
     )
 
-    line((-padding.left, x-y), (w + padding.right, x-y),
-         ..util.merge-dictionary(style, style.at("x", default: (:))),
-         name: "x-axis")
+    line((-padding.left, x-y), (w + padding.right, x-y), ..style.x, name: "x-axis")
     if "label" in x-axis and x-axis.label != none {
       let anchor = style.label.anchor
       if style.label.anchor == auto {
@@ -504,9 +514,7 @@
         anchor: anchor, par(justify: false, x-axis.label))
     }
 
-    line((y-x, -padding.bottom), (y-x, h + padding.top),
-         ..util.merge-dictionary(style, style.at("y", default: (:))),
-         name: "y-axis")
+    line((y-x, -padding.bottom), (y-x, h + padding.top), ..style.y, name: "y-axis")
     if "label" in y-axis and y-axis.label != none {
       let anchor = style.label.anchor
       if style.label.anchor == auto {

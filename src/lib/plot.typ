@@ -310,8 +310,12 @@
       if type(data.at(i).mark-style) == function {
         data.at(i).mark-style = (data.at(i).mark-style)(i)
       }
-      data.at(i).mark-style = util.merge-dictionary(
-        mark-style-base, data.at(i).mark-style)
+      if type(data.at(i).mark-style) == dictionary {
+        data.at(i).mark-style = util.merge-dictionary(
+          mark-style-base,
+          data.at(i).mark-style
+        )
+      }
     }
   }
 

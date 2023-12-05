@@ -12,7 +12,7 @@
   stroke: auto,
   radius: .5,
   label-radius: 50%,
-  mark: styles.default.mark,
+  mark: auto,
 )
 
 /// Draw an angle between `a` and `b` through origin `origin`
@@ -62,7 +62,7 @@
   name: none,
   ..style
 ) = draw.group(name: name, ctx => {
-  let style = styles.resolve(ctx.style, style.named(), base: default-style, root: "angle")
+  let style = styles.resolve(ctx.style, merge: style.named(), base: default-style, root: "angle")
   let (ctx, origin, a, b) = coordinate.resolve(ctx, origin, a, b)
 
   assert(origin.at(2) == a.at(2) and a.at(2) == b.at(2),

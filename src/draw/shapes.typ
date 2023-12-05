@@ -51,7 +51,7 @@
   
   (ctx => {
     let (ctx, pos) = coordinate.resolve(ctx, position)
-    let style = styles.resolve(ctx.style, style, root: "circle")
+    let style = styles.resolve(ctx.style, merge: style, root: "circle")
     let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
     let (cx, cy, cz) = pos
     let (ox, oy) = (calc.cos(45deg) * rx, calc.sin(45deg) * ry)
@@ -143,7 +143,7 @@
 
     let center = util.calculate-circle-center-3pt(a, b, c)
 
-    let style = styles.resolve(ctx.style, style, root: "circle")
+    let style = styles.resolve(ctx.style, merge: style, root: "circle")
     let (cx, cy, cz) = center
     let r = vector.dist(a, (cx, cy))
     let (ox, oy) = (calc.cos(45deg) * r, calc.sin(45deg) * r)
@@ -266,7 +266,7 @@
   assert.ne(start-angle, stop-angle, message: "Angle must be greater than 0deg")
 
   return (ctx => {
-    let style = styles.resolve(ctx.style, style, root: "arc")
+    let style = styles.resolve(ctx.style, merge: style, root: "arc")
     assert(style.mode in ("OPEN", "PIE", "CLOSE"))
 
     let (ctx, arc-start) = coordinate.resolve(ctx, position)
@@ -540,7 +540,7 @@
   
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, from, to)
-    let style = styles.resolve(ctx.style, style, root: "mark")
+    let style = styles.resolve(ctx.style, merge: style, root: "mark")
     
     return (ctx: ctx, drawables: drawable.mark(
       ..pts,
@@ -585,7 +585,7 @@
   
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
-    let style = styles.resolve(ctx.style, style, root: "line")
+    let style = styles.resolve(ctx.style, merge: style, root: "line")
     let (transform, anchors) = anchor_.setup(
       (anchor) => {
         (
@@ -642,16 +642,17 @@
 ///
 /// = Styling
 /// *Root:* `grid`
+///   / step: TODO
+///   / help-lines: TODO
 ///
 /// = Anchors
 ///   Supports compass anchors.
 ///
 /// - from (coordinate): The top left of the grid
 /// - to (coordinate): The bottom right of the grid
-/// - step (number): Grid spacing.
 /// - name (none,string):
 /// - ..style (style):
-#let grid(from, to, step: 1, name: none, help-lines: false, ..style) = {
+#let grid(from, to, name: none, ..style) = {
   (from, to).map(coordinate.resolve-system)
 
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
@@ -665,17 +666,21 @@
       (calc.max(from.at(0), to.at(0)), calc.max(from.at(1), to.at(1)))
     )
 
-    let style = styles.resolve(ctx.style, style)
-    if help-lines {
+    let style = styles.resolve(ctx.style, merge: style, root: "grid", base: (
+      step: 1,
+      stroke: auto,
+      help-lines: false,
+    ))
+    if style.help-lines {
       style.stroke = 0.2pt + gray
     }
 
-    let (x-step, y-step) = if type(step) == dictionary {
-      (step.at("x", default: 1), step.at("y", default: 1))
-    } else if type(step) == array {
-      step
+    let (x-step, y-step) = if type(style.step) == dictionary {
+      (style.step.at("x", default: 1), style.step.at("y", default: 1))
+    } else if type(style.step) == array {
+      style.step
     } else {
-      (step, step)
+      (style.step, style.step)
     }.map(util.resolve-number.with(ctx))
 
     let drawables = {
@@ -685,7 +690,6 @@
           x += from.at(0)
           drawable.path(
             path-util.line-segment(((x, from.at(1)), (x, to.at(1)))),
-            fill: style.fill,
             stroke: style.stroke
           )
         })
@@ -698,7 +702,6 @@
           y += from.at(1)
           drawable.path(
             path-util.line-segment(((from.at(0), y), (to.at(1), y))),
-            fill: style.fill,
             stroke: style.stroke
           )
         })
@@ -816,7 +819,7 @@
   }
 
   return (ctx => {
-    let style = styles.resolve(ctx.style, style, root: "content")
+    let style = styles.resolve(ctx.style, merge: style, root: "content")
     let padding = util.as-padding-dict(style.padding)
     for (k, v) in padding {
       padding.insert(k, util.resolve-number(ctx, v))
@@ -1032,7 +1035,7 @@
         transform: ctx.transform
       )
       
-      let style = styles.resolve(ctx.style, style, root: "rect")
+      let style = styles.resolve(ctx.style, merge: style, root: "rect")
       let (x1, y1, z1) = a
       let (x2, y2, z2) = b
       let drawables = drawable.path(
@@ -1118,7 +1121,7 @@
         transform: ctx.transform
       )
 
-      let style = styles.resolve(ctx.style, style, root: "bezier")
+      let style = styles.resolve(ctx.style, merge: style, root: "bezier")
 
       let curve = (start, end, ..ctrl)
       let (marks, curve) = if style.mark != none {
@@ -1231,7 +1234,7 @@
       )
     }
 
-    let style = styles.resolve(ctx.style, style, root: "catmull")
+    let style = styles.resolve(ctx.style, merge: style, root: "catmull")
     let curves = bezier_.catmull-to-cubic(
       pts,
       style.tension,
@@ -1320,7 +1323,7 @@
       )
     }
 
-    let style = styles.resolve(ctx.style, style, root: "hobby")
+    let style = styles.resolve(ctx.style, merge: style, root: "hobby")
     let curves = hobby_.hobby-to-cubic(
       pts,
       ta: ta,
@@ -1407,7 +1410,7 @@
         }
       }
 
-      let style = styles.resolve(ctx.style, style)
+      let style = styles.resolve(ctx.style, merge: style)
 
       let (transform, anchors) = anchor_.setup(
         anchor => {

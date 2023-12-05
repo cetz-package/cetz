@@ -87,7 +87,7 @@
 // Draw a legend box at position relative to anchor of plot-element
 #let draw-legend(ctx, style, items, size, plot, position, anchor) = {
   let style = styles.resolve(
-    ctx.style, style, base: default-style, root: "legend")
+    ctx.style, merge: style, base: default-style, root: "legend")
   assert(style.orientation in (ttb, ltr),
     message: "Unsupported legend orientation.")
 
