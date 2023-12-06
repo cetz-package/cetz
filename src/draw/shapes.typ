@@ -556,8 +556,20 @@
 /// line((-1.5, 0), (1.5, 0))
 /// line((0, -1.5), (0, 1.5))
 /// line((-1, -1), (-0.5, 0.5), (0.5, 0.5), (1, -1), close: true)
-/// ```) 
-/// 
+/// ```)
+///
+/// If the first or last coordinate given is the name of an element,
+/// the intersection of that element and a line from the first or last
+/// two coordinates given is used as coordinate. This is useful to
+/// span a line between the borders of two elements. Note that this only
+/// works for elements that have an `"default"` anchor set.
+///
+/// #example(```
+/// circle((1,2), radius: .5, name: "a")
+/// rect((2,1), (rel: (1,1)), name: "b")
+/// line("a", "b")
+/// ```)
+///
 /// = parameters
 ///
 /// = Styling 
@@ -582,9 +594,72 @@
   
   // Coordinate check
   pts.map(coordinate.resolve-system)
+
+  // Find the intersection between line a-b next to b
+  // if no intersection could be found, return a.
+  let element-line-intersection(ctx, elem, a, b) = {
+    // Vectors a and b are not transformed yet, but the vectors of the
+    // drawable are.
+    let (ta, tb) = (a, b).map(v => {
+      matrix.mul-vec(ctx.transform, vector.as-vec(v, init: (0,0,0,1)))
+    })
+
+    let pts = ()
+    for drawable in elem.at("drawables", default: ()) {
+      pts += intersection.line-path(ta, tb, drawable)
+    }
+    return if pts == () {
+      a
+    } else {
+      let pt = pts.at(0)
+      let d = vector.dist(pt, b)
+      for i in range(1, pts.len()) {
+        let nd = vector.dist(pts.at(i), b)
+        if nd < d {
+          pt = pts.at(i)
+          d = nd
+        }
+      }
+
+      // Reverse the transformation
+      return matrix.mul-vec(matrix.inverse(ctx.transform),
+        vector.as-vec(pt, init: (0,0,0,1))).slice(0, 3)
+    }
+  }
   
   return (ctx => {
+    let first-elem = pts.first()
+    let first-is-elem = coordinate.resolve-system(first-elem) == "element"
+
+    let last-elem = pts.last()
+    let last-is-elem = coordinate.resolve-system(last-elem) == "element"
+
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
+
+    // If the first element, test for intersection
+    // of that element and a line from the two first coordinates of this
+    // line strip.
+    pts.first() = if first-is-elem {
+      let elem = ctx.nodes.at(first-elem)
+
+      let (a, b) = pts.slice(0, 2)
+      element-line-intersection(ctx, elem, a, b)
+    } else {
+      pts.first()
+    }
+
+    // If the last coordinate is an element, test for intersection
+    // of that element and a line from the two last coordinates of this
+    // line strip.
+    pts.last() = if last-is-elem {
+      let elem = ctx.nodes.at(last-elem)
+
+      let (a, b) = pts.slice(-2)
+      element-line-intersection(ctx, elem, a, b)
+    } else {
+      pts.last()
+    }
+
     let style = styles.resolve(ctx.style, merge: style, root: "line")
     let (transform, anchors) = anchor_.setup(
       (anchor) => {

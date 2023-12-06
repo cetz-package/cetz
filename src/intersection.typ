@@ -73,7 +73,7 @@
   }
 
   let pts = ()
-  for s in path.segments {
+  for s in path.at("segments", default: ()) {
     pts += segment(s)
   }
   return pts
@@ -101,7 +101,7 @@
   }
 
   let pts = ()
-  for s in a.segments {
+  for s in a.at("segments", default: ()) {
     let sv = linearize-segment(s)
     for ai in range(0, sv.len() - 1) {
       pts += line-path(sv.at(ai), sv.at(ai + 1), b)

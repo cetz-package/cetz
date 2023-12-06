@@ -11,11 +11,12 @@ CeTZ 0.2.0 requires Typst 0.10.0
 - **BREAKING** Changed the behaviour of `translate` by changing the transformation order, changed arguments of `scale` and `translate`
 - Content padding has been improved to be configurable per side
 - Groups support same padding options as content
-- Mark offsetting has been fixed and improved
-- Catmull-Rom curves, Hobby curves and arcs now can have marks
+- Fixed mark offsetting
 - Fixed and improved intersection calculation
 - Fixed marks pointing to +/- z
 - Fixed and improved the styling algorithm
+- Catmull-Rom curves, Hobby curves and arcs now can have marks
+- Line elements now use border intersection coordinates if first and/or last coordinate is an element name with a "default" anchor
 - Added element `arc-through` to draw an arc through three points
 - Added Hobby curves (`hobby`) in addition to catmull (thanks to @Enivex)
 - Added `radius` style to `rect` for drawing rounded rects
