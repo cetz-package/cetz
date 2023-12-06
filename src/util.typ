@@ -337,3 +337,28 @@
     .sorted(key: t => t.at(1))
     .map(t => t.at(0))
 }
+
+/// Get stroke as a dictionary with all fields that are missing or auto set to their defaults
+#let get-stroke(stroke) = {
+  if stroke == none {
+    return (paint: none, thickness: 0pt, join: none, cap: none, miter-limit: 4)
+  }
+
+  let default = (
+    paint: black,
+    thickness: 1pt,
+    join: "miter",
+    cap: "butt",
+    miter-limit: 4
+  )
+  let s = line(stroke: stroke).stroke
+  let stroke = (:)
+  for (k, v) in (paint: s.paint, thickness: s.thickness, join: s.join, cap: s.cap, miter-limit: s.miter-limit) {
+    if v == auto {
+      stroke.insert(k, default.at(k))
+    } else {
+      stroke.insert(k, v)
+    }
+  }
+  return s
+}
