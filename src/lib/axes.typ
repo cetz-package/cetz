@@ -336,6 +336,7 @@
     )
 
     let axis-settings = (
+      // (axis, side, anchor, placement, tic-dir, name)
       (left,   "west",  "east",  (0, auto), ( 1, 0), "left"),
       (right,  "east",  "west",  (w, auto), (-1, 0), "right"),
       (bottom, "south", "north", (auto, 0), (0,  1), "bottom"),
@@ -351,7 +352,10 @@
       for (axis, _, anchor, placement, tic-dir, name) in axis-settings {
         let style = style
         if name in style {
-          style = util.merge-dictionary(style, style.at(name))
+          style = styles.resolve(style, root: name, base: (
+            tick: auto,
+            grid: auto
+          ))
         }
 
         if axis != none {
