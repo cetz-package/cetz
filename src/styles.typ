@@ -1,30 +1,5 @@
 #import "util.typ"
 
-// Default mark style
-//
-// Assuming a mark ">" is pointing directly to the right:
-//   - length Sets the length of the mark along its direction (in this case, its horizontal size)
-//   - width  Sets the size of the mark along the normal of its direction
-//   - inset  Sets the inner length of triangular shaped marks
-//   - scale  A factor that is applied to all of the three attributes above
-//   - sep    Is the distance between multiple marks along their path
-//
-// If a mark is pointing to positive or negative z, the mark will be drawn
-// with width on the axis perpendicular to its direction and the styles `z-up`
-// vector.
-#let _default-mark = (
-  scale: 1,     // Scaling factor
-  length: .2,   // Length
-  width: 0.15,  // Width
-  inset: .05,   // Arrow mark base inset
-  sep: .1,      // Extra distance between marks
-  z-up: (0,1,0),// Z-Axis upwards vector
-  start: none,  // Mark start symbol(s)
-  end: none,    // Mark end symbol(s)
-  stroke: auto,
-  fill: none,
-)
-
 #let default = (
   fill: none,
   stroke: black + 1pt,
@@ -41,12 +16,12 @@
   //   - Dictionary: (top:, right:, bottom:, left:)
   padding: none,
   mark: (
-    scale: 1,     // Scaling factor
-    length: .2,   // Length
-    width: 0.15,  // Width
-    inset: .05,   // Arrow mark base inset
-    sep: .1,      // Extra distance between marks
-    z-up: (0,1,0),// Z-Axis upwards vector
+    scale: 1,     // A factor that is applied to length, widht, and inset.
+    length: .2,   // The size of the mark along its direction
+    width: 0.15,  // The size of the mark along the normal of its direction
+    inset: .05,   // The inner length of triangular shaped marks
+    sep: .1,      // The distance between multiple marks along their path
+    z-up: (0,1,0),// If a mark is pointing to +ve or -ve z, the mark will be drawn with width on the axis perpendicular to its direction and this vector.
     start: none,  // Mark start symbol(s)
     end: none,    // Mark end symbol(s)
     stroke: auto,
