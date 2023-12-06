@@ -280,8 +280,8 @@
       } else {
         a
       }
-      if type(pos) == ratio {
-        pos /= 100%
+      if type(pos) != ratio {
+        pos *= 100%
       }
       out.insert(name, path-util.point-on-path(s, pos))
     }
@@ -443,8 +443,8 @@
 
     let path = paths.first()
     let anchors = (
-      start: path-util.point-on-path(path.segments, 0),
-      end: path-util.point-on-path(path.segments, 1)
+      start: path-util.point-on-path(path.segments, 0%),
+      end: path-util.point-on-path(path.segments, 100%)
     )
 
     let style = styles.resolve(ctx.style, merge: style, root: "mark")
@@ -460,7 +460,7 @@
         )
       )
       if "name" in mark {
-        anchors.insert(m.name, path-util.point-on-path(path, mark.pos))
+        anchors.insert(m.name, path-util.point-on-path(path, mark.pos * 100%))
       }
     }
 

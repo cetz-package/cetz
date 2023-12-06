@@ -13,6 +13,7 @@
   offset: (0, 0),  // Legend displacement
   spacing: .1,     // Spacing between anchor and legend
   item: (
+    radius: 0,
     spacing: .05,  // Spacing between items
     preview: (
       width: .75,  // Preview width
@@ -20,6 +21,7 @@
       margin: .1   // Distance between preview and label
     )
   ),
+  radius: 0,
 )
 
 // Map position to legend group anchor
@@ -172,6 +174,6 @@
   // Fill legend background
   draw.on-layer(style.layer - .5, {
     draw.rect("legend.south-west",
-              "legend.north-east", fill: style.fill, stroke: style.stroke)
+              "legend.north-east", fill: style.fill, stroke: style.stroke, radius: style.radius)
   })
 }

@@ -144,8 +144,10 @@
     } else {
       float(num / ctx.length)
     }
+  } else if type(num) == ratio {
+    return num
   } else {
-    float(num)
+    return float(num)
   }
 }
 
@@ -236,4 +238,73 @@
   } else {
     return (top: padding, left: padding, bottom: padding, right: padding)
   }
+}
+
+/// Get a corner-radius dictionary (north-east, north-west, south-east, south-west) from
+/// a corner-radius value. Returns none if all radii are zero or none
+///
+/// - ctx (context): Canvas context object
+/// - radii (none, number, dictionary): Radius specification
+///   Type of `padding`:
+///   / `number`: All corners have the same radius
+///   / `tuple`: All corners have the same rx/ry radius
+///   / `dictionary`: Converts corner radius dictionary (rest, north, south, east, west, north-south, north-east, south-west, south-east)
+///     to a dictionary containing north-east, north-west, south-east and south-west
+///
+/// -> dictionary Dictionary with the keys: north-east, north-west, south-east, south-west set
+///    to corner radius tuples (x and y radius)
+#let as-corner-radius-dict(ctx, radii, size) = {
+  if radii == none or radii == 0 {
+    return (north-west: (0,0), north-east: (0,0),
+            south-west: (0,0), south-east: (0,0))
+  }
+
+  let radii = (if type(radii) == dictionary {
+    let rest = radii.at("rest", default: (0,0))
+    let north = radii.at("north", default: auto)
+    let south = radii.at("south", default: auto)
+    let west = radii.at("west", default: auto)
+    let east = radii.at("east", default: auto)
+
+    if north != auto or south != auto {
+      assert(west == auto and east == auto,
+        message: "Corner radius north/south and west/east are mutually exclusive! Use per corner radii: north-west, .. instead.")
+    }
+    if west != auto or east != auto {
+      assert(north == auto and south == auto,
+        message: "Corner radius north/south and west/east are mutually exclusive! Use per corner radii: north-west, .. instead.")
+    }
+
+    let north-east = if north != auto { north } else if east != auto { east } else {rest}
+    let north-west = if north != auto { north } else if west != auto { west } else {rest}
+    let south-east = if south != auto { south } else if east != auto { east } else {rest}
+    let south-west = if south != auto { south } else if west != auto { west } else {rest}
+
+    (radii.at("north-west", default: north-west),
+     radii.at("north-east", default: north-east),
+     radii.at("south-west", default: south-west),
+     radii.at("south-east", default: south-east))
+  } else if type(radii) == array {
+    panic("Invalid corner radius type: " + type(radii))
+  } else {
+    (radii, radii, radii, radii)
+  }).map(v => if type(v) != array { (v, v) } else { v })
+
+  // Resolve lengths to floats
+  radii = radii.map(t => t.map(resolve-number.with(ctx)))
+
+  // Clamp radii to half the size
+  radii = radii.map(t => t.enumerate().map(((i, v)) => {
+    calc.max(0, calc.min(if type(v) == ratio {
+        v * size.at(i) / 100%
+      } else { v }, size.at(i) / 2))
+  }))
+
+  let (nw, ne, sw, se) = radii
+  return (
+    north-west: nw,
+    north-east: ne,
+    south-west: sw,
+    south-east: se,
+  )
 }

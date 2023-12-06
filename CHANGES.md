@@ -11,11 +11,12 @@
 - Content padding has been improved to be configurable per side
 - Groups support same padding options as content
 - Mark offsetting has been fixed and improved
-- Added Hobby curves (`hobby`) in addition to catmull (thanks to @Enivex)
 - Catmull-Rom curves, Hobby curves and arcs now can have marks
 - Fixed and improved intersection calculation
 - Fixed marks pointing to +/- z
-- New element `arc-through` to draw an arc through three points
+- Added element `arc-through` to draw an arc through three points
+- Added Hobby curves (`hobby`) in addition to catmull (thanks to @Enivex)
+- Added `radius` style to `rect` for drawing rounded rects
 
 ### Plot
 - Added `plot.add-contour(..)` for plotting contour plots

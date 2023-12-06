@@ -14,7 +14,6 @@
       }
     }
 
-
     translate((0, 0))
     place-along(circle((0,0)))
 
@@ -26,6 +25,9 @@
 
     translate((0, 2))
     place-along(rect((-1,0), (1,1)))
+
+    translate((0, 2))
+    place-along(rect((-1,0), (1,1), radius: .35))
 
     translate((0, 2))
     place-along(merge-path(close: true, {

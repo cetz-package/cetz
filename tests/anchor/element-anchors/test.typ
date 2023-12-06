@@ -76,6 +76,11 @@
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
+  display(rect, (-1,-1), (1,1), radius: .5)
+}))
+
+#box(stroke: 2pt + red, canvas(length: 1cm, {
+  import draw: *
   display(bezier, (-2,0), (2,0), (-1,1), (1,-1))
 }))
 
