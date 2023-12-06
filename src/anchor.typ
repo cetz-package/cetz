@@ -110,22 +110,11 @@
     }
     pts += intersection.line-path(..test-line, drawable)
   }
-  assert(pts.len() > 0, message: strfmt("{} {} {}", test-line, drawables, angle))
 
   if pts.len() == 1 {
     return pts.first()
   }
 
   // Find the furthest intersection point from center
-  let pt = pts.first()
-  let d = vector.dist(center, pts.first())
-  for i in range(1, pts.len()) {
-    let nd = vector.dist(center, pts.at(i))
-    if nd > d {
-      d = nd
-      pt = pts.at(i)
-    }
-  }
-
-  return pt
+  return util.sort-points-by-distance(center, pts).last()
 }

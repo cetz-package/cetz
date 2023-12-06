@@ -318,3 +318,21 @@
     south-east: se,
   )
 }
+
+/// Sort list of points/vectors by distance to base
+/// - base (vector): Vector to measure distance to
+/// - pts (array of vector): List of points
+/// -> array Sorted list of points
+#let sort-points-by-distance(base, pts) = {
+  if pts.len() == 1 {
+    return pts
+  }
+
+  // Sort by transforming points into tuples of (point, distance),
+  // sorting them by key 1 and then transforming them back to points.
+  return pts.map(p => {
+      return (p, vector.dist(p, base))
+    })
+    .sorted(key: t => t.at(1))
+    .map(t => t.at(0))
+}
