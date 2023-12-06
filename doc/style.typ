@@ -1,4 +1,5 @@
 #import "example.typ": example
+#import "/src/lib.typ"
 
 #import "@preview/tidy:0.1.0"
 #import "@preview/t4t:0.3.2": is
@@ -95,7 +96,8 @@
       read(path),
       scope: (
         example: example,
-        show-parameter-block: show-parameter-block
+        show-parameter-block: show-parameter-block,
+        cetz: lib
       )
     ),
     show-outline: false,

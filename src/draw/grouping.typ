@@ -118,7 +118,7 @@
     message: "Unexpected positional arguments: " + repr(style.pos()),
   )
   (ctx => {
-    let style = styles.resolve(ctx, style.named(), root: "group")
+    let style = styles.resolve(ctx.style, merge: style.named(), root: "group")
 
     let bounds = none
     let drawables = ()
@@ -447,7 +447,7 @@
       end: path-util.point-on-path(path.segments, 1)
     )
 
-    let style = styles.resolve(ctx.style, style, root: "mark")
+    let style = styles.resolve(ctx.style, merge: style, root: "mark")
 
     for mark in marks {
       let (pos, dir) = path-util.direction(path.segments, mark.pos)

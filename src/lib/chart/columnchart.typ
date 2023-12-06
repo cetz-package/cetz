@@ -169,8 +169,8 @@
   )
 
   group(ctx => {
-    let style = util.merge-dictionary(columnchart-default-style,
-      styles.resolve(ctx.style, (:), root: "columnchart"))
+    let style = styles.resolve(ctx.style, root: "barchart", base: columnchart-default-style)
+
 
     axes.scientific(size: size,
                     left: y,

@@ -172,19 +172,14 @@
 /// - b (dictionary): Dictionary b
 /// -> dictionary
 #let merge-dictionary(a, b, overwrite: true) = {
-  if type(a) == dictionary and type(b) == dictionary {
-    let c = a
-    for (k, v) in b {
-      if not k in c {
-        c.insert(k, v)
-      } else {
-        c.at(k) = merge-dictionary(a.at(k), v, overwrite: overwrite)
-      }
+  for (k, v) in b {
+    if type(a) == dictionary and k in a and type(v) == dictionary and type(a.at(k)) == dictionary {
+      a.insert(k, merge-dictionary(a.at(k), v, overwrite: overwrite))
+    } else if overwrite or k not in a {
+      a.insert(k, v)
     }
-    return c
-  } else {
-    return if overwrite {b} else {a}
   }
+  return a
 }
 
 // Measure content in canvas coordinates
