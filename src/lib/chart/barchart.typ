@@ -97,7 +97,7 @@
   })
 
   draw.group(ctx => {
-    let style = styles.resolve(ctx.style, (:),
+    let style = styles.resolve(ctx.style, merge: (:),
       root: "barchart", base: barchart-default-style)
     draw.set-style(..style)
 

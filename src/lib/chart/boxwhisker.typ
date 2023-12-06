@@ -68,7 +68,8 @@
   })
 
   draw.group(ctx => {
-    let style = styles.resolve(ctx.style, (:), root: "boxwhisker", base: boxwhisker-default-style)
+    let style = styles.resolve(ctx.style, merge: (:),
+      root: "boxwhisker", base: boxwhisker-default-style)
     draw.set-style(..style)
 
     plot.plot(
