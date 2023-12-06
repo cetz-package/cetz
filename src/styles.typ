@@ -153,10 +153,10 @@
         for ancestor in ancestors {
           if k in ancestor {
             // If v is auto and the ancestor's value is not auto, update v.
-            if (ancestor.at(k) != auto and v == auto) {
+            if ancestor.at(k) != auto and v == auto {
               v = ancestor.at(k)
             // If both values are dictionaries, merge them. Values in v overwrite its ancestor's value.
-            } else if (is-dict and type(ancestor.at(k)) == dictionary) {
+            } else if is-dict and type(ancestor.at(k)) == dictionary {
               v = util.merge-dictionary(ancestor.at(k), v)
             }
             // Retain the updated value. Because all of the ancestors have already been processed even if a v is still auto that just means the key at the highest level either is auto or doesn't exist.
