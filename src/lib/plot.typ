@@ -14,6 +14,7 @@
 #import "plot/util.typ" as plot-util
 #import "plot/legend.typ" as plot-legend
 #import "plot/annotation.typ": annotate, calc-annotation-domain
+#import "plot/bar.typ": add-bar
 #import "plot/mark.typ"
 
 #let default-colors = (blue, red, green, yellow, black)
@@ -244,7 +245,7 @@
     } else { data.push(cmd) }
   }
 
-  assert(axis-style in (none, "scientific", "school-book", "left"),
+  assert(axis-style in (none, "scientific", "scientific-auto", "school-book", "left"),
     message: "Invalid plot style")
 
 
@@ -362,13 +363,26 @@
       }
     }
 
-    if axis-style == "scientific" {
+    if axis-style in ("scientific", "scientific-auto") {
+      let frame = if axis-style == "scientific" {
+        true
+      } else {
+        auto
+      }
+
+      let mirror = if axis-style == "scientific" {
+        auto
+      } else {
+        none
+      }
+
       axes.scientific(
         size: size,
+        frame: frame,
         bottom: axis-dict.at("x", default: none),
-        top: axis-dict.at("x2", default: auto),
+        top: axis-dict.at("x2", default: mirror),
         left: axis-dict.at("y", default: none),
-        right: axis-dict.at("y2", default: auto),)
+        right: axis-dict.at("y2", default: mirror),)
     } else if axis-style == "left" {
       axes.school-book(
         size: size,

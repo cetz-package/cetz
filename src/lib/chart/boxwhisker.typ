@@ -1,21 +1,34 @@
-#import "../palette.typ"
-#import "../plot.typ"
-#import "../../draw.typ"
-#import "../../canvas.typ"
+#import "/src/lib/plot.typ"
+#import "/src/draw.typ"
+#import "/src/styles.typ"
 
 #let boxwhisker-default-style = (
-  axes: (tick: (length: -0.1)),
-  grid: none,
+  axes: (tick: (length: 0)),
+  box-width: 0.75,
+  whisker-width: 0.5,
+  mark-size: 0.15,
 )
 
 /// Add one or more box or whisker plots.
 ///
 /// #example(```
-///   cetz.chart.boxwhisker(size: (2,2), label-key: none,
-///     y-min: 0, y-max: 70, y-tick-step: none,
-///     (x: 1, min: 15, max: 60,
-///      q1: 25, q2: 35, q3: 50))
+/// cetz.chart.boxwhisker(size: (2,2), label-key: none,
+///   y-min: 0, y-max: 70, y-tick-step: 20,
+///   (x: 1, min: 15, max: 60,
+///    q1: 25, q2: 35, q3: 50))
 /// ```)
+///
+/// = Styling
+/// *Root* `boxwhisker`
+/// #show-parameter-block("box-width", "float", default: .75, [
+///   The width of the box. Since boxes are placed 1 unit next to each other,
+///   a width of $1$ would make neighbouring boxes touch.])
+/// #show-parameter-block("whisker-width", "float", default: .5, [
+///   The width of the whisker, that is the horizontal bar on the top and bottom
+///   of the box.])
+/// #show-parameter-block("mark-size", "float", default: .15, [
+///   The scaling of the mark for the boxes outlier values in canvas units.])
+/// You can use any `plot` or `axes` related style keys, too.
 ///
 /// - data (array, dictionary): Dictionary or array of dictionaries containing the
 ///   needed entries to plot box and whisker plot.
@@ -25,59 +38,60 @@
 ///   *Examples:*
 ///   - ```typc
 ///     (x: 1                   // Location on x-axis
-/// outliers: (7, 65, 69), // Optional outliers
-/// min: 15, max: 60       // Minimum and maximum
-/// q1: 25,                // Quartiles: Lower
-/// q2: 35,                //            Median
-/// q3: 50)                //            Upper
+///      outliers: (7, 65, 69), // Optional outliers
+///      min: 15, max: 60       // Minimum and maximum
+///      q1: 25,                // Quartiles: Lower
+///      q2: 35,                //            Median
+///      q3: 50)                //            Upper
 ///   ```
 /// - size (array) : Size of chart. If the second entry is auto, it automatically scales to accommodate the number of entries plotted
-/// - y-min (float) : Lower end of y-axis range. If auto, defaults to lowest outlier or lowest min.
-/// - y-max (float) : Upper end of y-axis range. If auto, defaults to greatest outlier or greatest max.
 /// - label-key (integer, string): Index in the array where labels of each entry is stored
-/// - box-width (float): Width from edge-to-edge of the box of the box and whisker in plot units. Defaults to 0.75
-/// - whisker-width (float): Width from edge-to-edge of the whisker of the box and whisker in plot units. Defaults to 0.5
 /// - mark (string): Mark to use for plotting outliers. Set `none` to disable. Defaults to "x"
-/// - mark-size (float): Size of marks for plotting outliers. Defaults to 0.15
-/// - ..arguments (any): Additional arguments are passed to `plot.plot`
+/// - ..plot-args (any): Additional arguments are passed to `plot.plot`
 #let boxwhisker(data,
                 size: (1, auto),
-                y-min: auto,
-                y-max: auto,
                 label-key: 0,
-                box-width: 0.75,
-                whisker-width: 0.5,
                 mark: "*",
-                mark-size: 0.15,
-                ..arguments
+                ..plot-args
                 ) = {
   if type(data) == dictionary { data = (data,) }
 
-  if size.at(1) == auto {size.at(1) = (data.len() + 1)}
+  if type(size) != array {
+    size = (size, auto)
+  }
+  if size.at(1) == auto {
+    size.at(1) = (data.len() + 1)
+  }
 
   let x-tick-list = data.enumerate().map(((i, t)) => {
     (i + 1, if label-key != none { t.at(label-key, default: i) } else { [] })
   })
 
-  plot.plot(
-    size: size,
-    x-tick-step: none,
-    x-ticks: x-tick-list,
-    y-min: y-min,
-    y-max: y-max,
-    x-label: none,
-    ..arguments,
-    {
-      for (i, row) in data.enumerate() {
-        plot.add-boxwhisker(
-          (x: i + 1, ..row),
-          box-width: box-width,
-          whisker-width: whisker-width,
-          style: (:),
-          mark: mark,
-          mark-size: mark-size
-        )
-      }
-    }
-  )
+  draw.group(ctx => {
+    let style = styles.resolve(ctx.style, merge: (:),
+      root: "boxwhisker", base: boxwhisker-default-style)
+    draw.set-style(..style)
+
+    plot.plot(
+      size: size,
+      axis-style: "scientific-auto",
+      x-tick-step: none,
+      x-ticks: x-tick-list,
+      y-grid: true,
+      x-label: none,
+      y-label: none,
+      ..plot-args,
+      {
+        for (i, row) in data.enumerate() {
+          plot.add-boxwhisker(
+            (x: i + 1, ..row),
+            box-width: style.box-width,
+            whisker-width: style.whisker-width,
+            style: (:),
+            mark: mark,
+            mark-size: style.mark-size
+          )
+        }
+      })
+  })
 }

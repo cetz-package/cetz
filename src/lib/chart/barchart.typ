@@ -1,22 +1,28 @@
-#import "../axes.typ"
-#import "../palette.typ"
-#import "../../draw.typ"
-#import "../../util.typ"
-#import "../../styles.typ"
-
+#import "/src/lib/palette.typ"
+#import "/src/lib/plot.typ"
+#import "/src/draw.typ"
+#import "/src/styles.typ"
 
 #let barchart-default-style = (
-  axes: (tick: (length: 0))
+  axes: (tick: (length: 0)),
+  bar-width: .8,
+  y-inset: 1,
 )
-
-#import "barcol-common.typ": *
-
 
 /// Draw a bar chart. A bar chart is a chart that represents data with
 /// rectangular bars that grow from left to right, proportional to the values
 /// they represent. For examples see @barchart-examples.
 ///
-/// *Style root*: `barchart`.
+/// = Styling
+/// *Root*: `barchart`.
+/// #show-parameter-block("bar-width", "float", default: .8, [
+///   Width of a single bar (basic) or a cluster of bars (clustered) in the plot.])
+/// #show-parameter-block("y-inset", "float", default: 1, [
+///   Distance of the plot data to the plot's edges on the y-axis of the plot.])
+/// You can use any `plot` or `axes` related style keys, too.
+///
+/// The `barchart` function is a wrapper of the `plot` API. Arguments passed
+/// to `..plot-args` are passed to the `plot.plot` function.
 ///
 /// - data (array): Array of data rows. A row can be of type array or
 ///                 dictionary, with `label-key` and `value-key` being
@@ -25,7 +31,7 @@
 ///                 *Example*
 ///                 ```typc
 ///                 (([A], 1), ([B], 2), ([C], 3),)
-///                 ``` 
+///                 ```
 /// - label-key (int,string): Key to access the label of a data row.
 ///                           This key is used as argument to the
 ///                           rows `.at(..)` function.
@@ -33,51 +39,32 @@
 ///                           These keys are used as argument to the
 ///                           rows `.at(..)` function.
 /// - mode (string): Chart mode:
-///                  - `"basic"` -- Single bar per data row
-///                  - `"clustered"` -- Group of bars per data row
-///                  - `"stacked"` -- Stacked bars per data row
-///                  - `"stacked100"` -- Stacked bars per data row relative
-///                                      to the sum of the row
+///   / basic: Single bar per data row
+///   / clustered: Group of bars per data row
+///   / stacked: Stacked bars per data row
+///   / stacked100: Stacked bars per data row relative
+///     to the sum of the row
 /// - size (array): Chart size as width and height tuple in canvas unist;
-///                 height can be set to `auto`.
-/// - bar-width (float): Size of a bar in relation to the charts height.
+///                 width can be set to `auto`.
 /// - bar-style (style,function): Style or function (idx => style) to use for
 ///                               each bar, accepts a palette function.
-/// - x-tick-step (float): Step size of x axis ticks 
-/// - x-ticks (array): List of tick values or value/label tuples
-///
-///                    *Example*
-///                    
-///                    `(1, 5, 10)` or `((1, [One]), (2, [Two]), (10, [Ten]))`
 /// - x-unit (content,auto): Tick suffix added to each tick label
-/// - x-decimals (int): Number of x axis tick decimals
-/// - x-format (string,function): X axis tick format, `"float"`, `"sci"`
-///                               or a callback of the form `float => content`.
-/// - x-min (number,auto): X axis minimum value
-/// - x-max (number,auto): X axis maximum value
-/// - x-label (content,none): X axis label
 /// - y-label (content,none): Y axis label
+/// - x-label (content,none): x axis label
+/// - labels (none,content): Legend labels per x value group
+/// - ..plot-args (any): Arguments to pass to `plot.plot`
 #let barchart(data,
               label-key: 0,
               value-key: 1,
               mode: "basic",
-              size: (1, auto),
-              bar-width: .8,
+              size: (auto, 1),
               bar-style: palette.red,
-              x-tick-step: auto,
-              x-ticks: (),
-              x-unit: auto,
-              x-decimals: 1,
-              x-format: "float",
-              x-min: auto,
-              x-max: auto,
               x-label: none,
+              x-unit: auto,
               y-label: none,
+              labels: none,
+              ..plot-args
               ) = {
-  import draw: *
-
-  assert(mode in barchart-modes,
-    message: "Invalid barchart mode")
   assert(type(label-key) in (int, str))
   if mode == "basic" {
     assert(type(value-key) in (int, str))
@@ -85,113 +72,53 @@
     assert(type(value-key) == array)
   }
 
+  if type(value-key) != array {
+    value-key = (value-key,)
+  }
+
+  if type(size) != array {
+    size = (size, auto)
+  }
   if size.at(1) == auto {
     size.at(1) = (data.len() + 1)
   }
 
-  let max-value = (barchart-max-value-fn.at(mode))(data, value-key)
-  if x-max != auto {
-    max-value = x-max
-  }
-  let min-value = (barchart-min-value-fn.at(mode))(data, value-key)
-  if x-min != auto {
-    min-value = x-min
-  }
-
   let y-tic-list = data.enumerate().map(((i, t)) => {
-    (i, t.at(label-key))
+    (data.len() - i - 1, t.at(label-key))
   })
 
   let x-unit = x-unit
   if x-unit == auto {
     x-unit = if mode == "stacked100" {[%]} else []
   }
-  
-  let x = axes.axis(min: min-value, max: max-value,
-                    label: x-label,
-                    ticks: (grid: true, step: x-tick-step,
-                            minor-step: none,
-                            unit: x-unit, decimals: x-decimals,
-                            format: x-format, list: x-ticks))
-  let y = axes.axis(min: data.len(), max: -1,
-                    label: y-label,
-                    ticks: (grid: true,
-                            step: none,
-                            minor-step: none,
-                            list: y-tic-list))
 
-  let basic-draw-bar(idx, y, item, ..style) = {
-    rect(
-      (0, y - bar-width / 2),
-      (rel: (item.at(value-key), bar-width)),
-      ..bar-style(idx)
-    )
-  }
+  data = data.enumerate().map(((i, d)) => {
+    (data.len() - i - 1, ..value-key.map(k => d.at(k)))
+  })
 
-  let clustered-draw-bar(idx, y, item, ..style) = {
-    let y-offset = bar-width / 2
-    let sub-values = value-key.map(k => item.at(k))
-    let bar-width = bar-width / sub-values.len()
+  draw.group(ctx => {
+    let style = styles.resolve(ctx.style, merge: (:),
+      root: "barchart", base: barchart-default-style)
+    draw.set-style(..style)
 
-    for (sub-idx, sub) in sub-values.enumerate() {
-      rect(
-        (0, y - y-offset + sub-idx * bar-width),
-        (rel: (sub, bar-width)),
-        ..bar-style(sub-idx)
-      )
-    }
-  }
-
-  let stacked-draw-bar(idx, y, item, ..style) = {
-    let sub-values = value-key.map(k => item.at(k))
-
-    move-to((0, y))
-
-    let sum = 0
-    for (sub-idx, sub) in sub-values.enumerate() {
-      move-to((sum, y))
-      rect((sum, y - bar-width / 2),
-           (rel: (sub, bar-width)),
-           ..bar-style(sub-idx))
-      sum += sub
-    }
-  }
-
-  let stacked100-draw-bar(idx, y, item, ..style) = {
-    let sum = value-key.map(k => item.at(k)).sum()
-    for k in value-key {
-      item.at(k) *= 100 / sum
-    }
-
-    stacked-draw-bar(idx, y, item, ..style)
-  }
-
-  let draw-data = (
-    if mode == "basic" {basic-draw-bar} else
-    if mode == "clustered" {clustered-draw-bar} else
-    if mode == "stacked" {stacked-draw-bar} else
-    if mode == "stacked100" {stacked100-draw-bar}
-  )
-
-  group(ctx => {
-    let style = styles.resolve(ctx.style, root: "barchart", base: barchart-default-style)
-
-    axes.scientific(
-      size: size,
-      left: y,
-      right: none,
-      bottom: x,
-      top: none,
-      frame: "set",
-      ..style.axes
-    )
-    if data.len() > 0 {
-      if type(bar-style) != function { bar-style = ((i) => bar-style) }
-      axes.axis-viewport(size, x, y, {
-        for (i, row) in data.enumerate() {
-          draw-data(i, i, row)
-        }
-      })
-    }
+    let y-inset = calc.max(style.y-inset, style.bar-width / 2)
+    plot.plot(size: size,
+              axis-style: "scientific-auto",
+              x-label: x-label,
+              x-grid: true,
+              y-label: y-label,
+              y-min: -y-inset,
+              y-max: data.len() + y-inset - 1,
+              y-tick-step: none,
+              y-ticks: y-tic-list,
+              plot-style: bar-style,
+              ..plot-args,
+    {
+      plot.add-bar(data,
+        mode: mode,
+        labels: labels,
+        bar-width: -style.bar-width,
+        axes: ("y", "x"))
+    })
   })
 }

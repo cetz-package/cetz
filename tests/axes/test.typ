@@ -31,7 +31,7 @@
                                           angle: -45deg,
                                           anchor: "north-west"), length: -.1))))
   axes.scientific(size: (6, 6),
-    frame: "set",
+    frame: auto,
     top: none,
     bottom: axes.axis(min: -1, max: 1, ticks: (step: 1, minor-step: auto,
       grid: "both", unit: [ units])),

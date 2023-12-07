@@ -1,4 +1,4 @@
-#import "@preview/cetz:0.2.0": canvas, chart
+#import "@preview/cetz:0.2.0": canvas, chart, draw
 
 #set page(width: auto, height: auto, margin: .5cm)
 
@@ -12,11 +12,14 @@
 )
 
 #canvas({
+  draw.set-style(legend: (fill: white))
   chart.barchart(mode: "clustered",
                  size: (9, auto),
                  label-key: 0,
                  value-key: (..range(1, 5)),
                  bar-width: .8,
                  x-tick-step: 2.5,
-                 data2)
+                 data2,
+                 labels: ([Low], [Medium], [High], [Very high]),
+                 legend: "legend.inner-north-east",)
 })
