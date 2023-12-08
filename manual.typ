@@ -96,7 +96,8 @@ circle((0,0), radius: 0.3)
 ```
 
 === Compass Anchors
-Some elements support compass anchors. TODO
+Elements like `rect`, `circle`, `arc` and `group` support the following
+"compass direction" anchors:
 #align(center, {
   canvas({
     import draw:*
