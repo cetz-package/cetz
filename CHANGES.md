@@ -1,4 +1,5 @@
 # 0.2.0
+CeTZ 0.2.0 requires Typst 0.10.0
 
 ## Libs
 ### Draw
@@ -14,6 +15,7 @@
 - Catmull-Rom curves, Hobby curves and arcs now can have marks
 - Fixed and improved intersection calculation
 - Fixed marks pointing to +/- z
+- Fixed and improved the styling algorithm
 - Added element `arc-through` to draw an arc through three points
 - Added Hobby curves (`hobby`) in addition to catmull (thanks to @Enivex)
 - Added `radius` style to `rect` for drawing rounded rects
