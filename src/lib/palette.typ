@@ -4,10 +4,10 @@
 ///
 /// #example(```
 /// let p = cetz.palette.new(colors: (red, blue, green))
-/// for i in range(0, 6) {
+/// for i in range(0, p("len")) {
 ///   set-style(..p(i))
-///   rect((rel: (-1, 0)), (rel: (1, .4)))
-///   move-to((rel: (0, -.8)))
+///   circle((0,0), radius: .5)
+///   set-origin((1.1,0))
 /// }
 /// ```)
 ///
@@ -21,26 +21,26 @@
 ///   from the `colors` list, otherwise the base styles stroke color is used.
 /// ])
 ///
-/// You can use a pallette for stroking via: `red.with(stroke: true)`.
+/// You can use a palette for stroking via: `red.with(stroke: true)`.
 ///
 /// - base (style): Style dictionary to use as base style for the styles generated
 ///   per color
 /// - colors (none, array): List of colors the returned palette should return styles with
-/// - patterns (none, array): List of stroke patterns the returned palette should return styles with
+/// - dash (none, array): List of stroke dash patterns the returned palette should return styles with
 ///
 /// -> function Palette function of the form `index => style` that returns a style for an integer index
-#let new(base: base-style, colors: (), patterns: ()) = {
+#let new(base: base-style, colors: (), dash: ()) = {
   if not "stroke" in base { base.stroke = (paint: black, thickness: 1pt, dash: "solid") }
   if not "fill" in base { base.fill = none }
 
   let color-n = colors.len()
-  let pattern-n = patterns.len()
+  let pattern-n = dash.len()
   return (index, fill: true, stroke: false) => {
     if index == "len" { return calc.max(color-n, pattern-n, 1) }
 
     let style = base
     if pattern-n > 0 {
-      style.stroke.dash = patterns.at(calc.rem(index, pattern-n))
+      style.stroke.dash = dash.at(calc.rem(index, pattern-n))
     }
     if color-n > 0 {
       if stroke {
