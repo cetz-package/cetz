@@ -722,32 +722,48 @@ styled the same way, see @plot.style.
 #raw(repr(chart.boxwhisker-default-style))
 
 == Palette <palette>
-#let palette-module = tidy.parse-module(read("src/lib/palette.typ"), name: "Palette")
 
-A palette is a function that returns a style for an index.
+A palette is a function of the form `index => style` that takes an
+index, that can be any integer and returns a canvas style dictionary.
+If passed the string `"len"` it must return the length of its unique
+styles. An example use for palette functions is the `plot` library, which
+can use palettes to apply different styles per plot.
+
 The palette library provides some predefined palettes.
 
-#tidy.show-module(palette-module, show-module-name: false)
+#doc-style.parse-show-module("/src/lib/palette.typ")
 
-#let show-palette(p) = {
-  canvas({
-    import draw: *
-    for i in range(p("len")) {
+#let show-palette(p) = box({
+  let p = p.with(stroke: true)
+  canvas(length: 1em, {
+    import cetz.draw: *
+    for i in range(0, p("len")) {
       if calc.rem(i, 10) == 0 { move-to((rel: (0, -.5))) }
       rect((), (rel: (1,.5)), name: "r", ..p(i))
-      move-to("r.south-west")
+      move-to("r.south-east")
     }
   })
-} 
+})
 
 === List of predefined palettes
+#columns(2, [
 - `gray` #show-palette(palette.gray)
 - `red` #show-palette(palette.red)
+- `orange` #show-palette(palette.orange)
+- `light-green` #show-palette(palette.light-green)
+- `dark-green` #show-palette(palette.dark-green)
+- `turquoise` #show-palette(palette.turquoise)
+- `cyan` #show-palette(palette.cyan)
 - `blue` #show-palette(palette.blue)
+- `indigo` #show-palette(palette.indigo)
+- `purple` #show-palette(palette.purple)
+- `magenta` #show-palette(palette.magenta)
+- `pink` #show-palette(palette.pink)
 - `rainbow` #show-palette(palette.rainbow)
 - `tango-light` #show-palette(palette.tango-light)
 - `tango` #show-palette(palette.tango)
 - `tango-dark` #show-palette(palette.tango-dark)
+])
 
 == Angle <angle>
 

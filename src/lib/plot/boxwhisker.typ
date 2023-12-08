@@ -1,5 +1,5 @@
-#import "../../draw.typ"
-#import "../../util.typ"
+#import "/src/draw.typ"
+#import "/src/util.typ"
 
 /// Add one or more box or whisker plots
 ///
