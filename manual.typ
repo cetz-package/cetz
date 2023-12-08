@@ -67,7 +67,8 @@ Note that draw functions are imported inside the scope of the `canvas` block. Th
 Many CeTZ functions expect data in certain formats which we will call types. Note that these are actually made up of Typst primitives.
   / `<coordinate>`: Any coordinate system. See coordinate-systems.
   / `<number>`: Any of `<float>`, `<integer>` or `<length>`. 
-  / `<style>`: Named arguments (or a dictionary if used for a single argument) of style key-values
+  / `<style>`: Named arguments (or a dictionary if used for a single argument) of style key-values.
+  / `<context>`: An opaque CeTZ context object that holds internal state.
 
 == Anchors <anchors>
 Anchors positions relative to named elements. To use an anchor of an element, you must give the element a name using the `name` argument. All elements with the `name` argument allow anchors.
