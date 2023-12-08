@@ -10,7 +10,8 @@
 
 // Piechart Default Style
 #let default-style = (
-  stroke: none,
+  stroke: auto,
+  fill: auto,
   /// Outer chart radius
   radius: 1,
   /// Inner slice radius
@@ -184,7 +185,8 @@
   group(name: name, ctx => {
     anchor("center", (0,0))
 
-    let style = styles.resolve(ctx, style.named(), root: "piechart", base: default-style)
+    let style = styles.resolve(ctx,
+      merge: style.named(), root: "piechart", base: default-style)
 
     let gap = style.gap
     if type(gap) != angle {
