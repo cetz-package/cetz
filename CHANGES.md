@@ -33,6 +33,10 @@ CeTZ 0.2.0 requires Typst 0.10.0
 - Axis orientation can be changed, enabling rotation of plots
 - Plots now support legends!
 
+### Chart
+- Added `piechart` for drawing pie- and donut charts
+- Added `boxwhisker` for drawing boxwhisker charts
+
 # 0.1.2
 CeTZ requires Typst 0.8.0.
 

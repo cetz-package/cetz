@@ -7,8 +7,9 @@
 /// - b (vector): Line 1 point 2
 /// - c (vector): Line 2 point 1
 /// - d (vector): Line 2 point 2
+/// - ray (bool): treat both lines as infinite
 /// -> (vector,none)
-#let line-line(a, b, c, d) = {
+#let line-line(a, b, c, d, ray: false) = {
   let lli8(x1, y1, x2, y2, x3, y3, x4, y4) = {
     let nx = (x1*y2 - y1*x2)*(x3 - x4)-(x1 - x2)*(x3*y4 - y3*x4)
     let ny = (x1*y2 - y1*x2)*(y3 - y4)-(y1 - y2)*(x3*y4 - y3*x4)
@@ -30,7 +31,7 @@
       let My = calc.max(a.at(1), b.at(1)) + epsilon
       return mx <= x and Mx >= x and my <= y and My >= y
     }
-    if on-line(pt, a, b) and on-line(pt, c, d) {
+    if ray or (on-line(pt, a, b) and on-line(pt, c, d)) {
       return pt
     }
   }
