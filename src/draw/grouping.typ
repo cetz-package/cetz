@@ -460,6 +460,7 @@
       message: strfmt("Unknown element {} in elements {}", name, repr(ctx.nodes.keys()))
     )
     for anchor in (ctx.nodes.at(name).anchors)(()) {
+      if anchor == none { continue }
       move-to(name + "." + anchor)
       callback(anchor)
     }

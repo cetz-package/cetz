@@ -19,6 +19,16 @@
   south: 270deg,
   south-east: 315deg,
 )
+#let compass-directions = compass-angle.keys()
+#let compass-directions-with-center = compass-directions + ("center",)
+
+// Path distance anchors
+#let path-distances = (
+  start: 0%,
+  mid: 50%,
+  end: 100%,
+)
+#let path-distance-names = path-distances.keys()
 
 /// Setup an anchor calculation and handling function for an element. Unifies anchor error checking and calculation of the offset transform.
 ///
@@ -60,13 +70,13 @@
       assert.ne(default, none, message: strfmt("Element '{}' does not have a default anchor!", name))
       anchor = default
     }
-    assert(
-      anchor in anchor-names,
-      message: strfmt("Anchor '{}' not in anchors {} for element '{}'", anchor, repr(anchor-names), name)
-      // message: strfmt("Anchor '{}' not in anchors {}", anchor, repr(anchor-names)) + if name != none { strfmt(" for element '{}'", name) }
-    )
 
     let out = callback(anchor)
+    assert(
+      out != none,
+      message: strfmt("Anchor '{}' not in anchors {} for element '{}'", anchor, repr(anchor-names), name)
+    )
+
     return if transform != none {
       util.apply-transform(
         transform,
@@ -91,6 +101,9 @@
 /// - angle (angle): The angle to check for a border anchor at.
 /// -> vector
 #let border(center, x-dist, y-dist, drawables, angle) = {
+  x-dist += util.float-epsilon
+  y-dist += util.float-epsilon
+
   if type(drawables) == dictionary {
     drawables = (drawables,)
   }
@@ -118,4 +131,63 @@
 
   // Find the furthest intersection point from center
   return util.sort-points-by-distance(center, pts).last()
+}
+
+/// Handle path distance anchor
+#let resolve-distance(ctx, anchor, drawable) = {
+  if type(anchor) in (int, float, length, ratio) {
+    anchor = util.resolve-number(ctx, anchor)
+    return path-util.point-on-path(drawable.segments, anchor)
+  }
+}
+
+/// Handle border angle anchor
+#let resolve-border-angle(anchor, center, rx, ry, drawable) = {
+  return border(center, rx, ry, drawable, anchor)
+}
+
+/// Handle named compass direction
+#let resolve-compass-dir(anchor, center, rx, ry, drawable, with-center: true) = {
+  if type(anchor) == str {
+    return if anchor in compass-directions {
+      border(center, rx, ry, drawable, compass-angle.at(anchor))
+    } else if with-center and anchor == "center" {
+      center
+    }
+  }
+}
+
+#let resolve-line-shape(ctx, anchor, drawable) = {
+  if type(drawable) == array {
+    assert(drawable.len() == 1,
+      message: "Expected a single path, got " + repr(drawable))
+    drawable = drawable.first()
+  }
+
+  if type(anchor) == str and anchor in path-distance-names {
+    anchor = path-distances.at(anchor)
+  }
+
+  return resolve-distance(ctx, anchor, drawable)
+}
+
+// Handle anchor for a closed shape
+#let resolve-closed-shape(ctx, anchor, center, rx, ry, drawable) = {
+  if type(drawable) == array {
+    assert(drawable.len() == 1,
+      message: "Expected a single path, got " + repr(drawable))
+    drawable = drawable.first()
+  }
+
+  if type(anchor) == str and anchor in path-distance-names {
+    anchor = path-distances.at(anchor)
+  }
+
+  if type(anchor) == str {
+    return resolve-compass-dir(anchor, center, rx, ry, drawable)
+  } else if type(anchor) == angle {
+    return resolve-border-angle(anchor, center, rx, ry, drawable)
+  } else {
+    return resolve-distance(ctx, anchor, drawable)
+  }
 }
