@@ -1,7 +1,10 @@
+#import "@preview/oxifmt:0.2.0": strfmt
+
 // This file contains utility functions for path calculation
 #import "util.typ"
 #import "vector.typ"
 #import "bezier.typ"
+
 
 #let default-samples = 25
 
@@ -162,7 +165,8 @@
       ..pts,
       bezier.cubic-t-for-distance(
         ..pts,
-        if length == none { _segment-length(segment) } else { length } - distance
+        distance
+        // if length == none { _segment-length(segment) } else { length } - distance
       )
     )
   }
@@ -194,7 +198,7 @@
     assert(t >= 0% and t <= 100%)
     t = total * t / 100%
   } else {
-    assert(t >= 0 and t <= total)
+    assert(t >= 0 and t <= total, message: strfmt("t is expected to be between 0 and the length of the path ({}), got: {}", total, t))
   }
 
   if rev {
@@ -204,10 +208,12 @@
   for (i, segment-length) in segments.zip(lengths).enumerate() {
     let (segment, length) = segment-length
     if travelled <= t and t <= travelled + length {
+      
       return (
         index: i,
         segment: segment,
-        distance: travelled,
+        travelled: travelled,
+        distance: t - travelled,
         length: length
       )
     }
@@ -311,29 +317,37 @@
   ("cubic", a, b, ctrl-a, ctrl-b)
 }
 
-/// Shortens a segment by a given distance. If the distance is positive the end of the segment will be moved along the path towards the start of the segment and vice versa if the distance is negative.
+/// Shortens a segment by a given distance.
 #let shorten-segment(segment, distance) = {
   let (type, ..s) = segment
   if type == "line" {
-    let travelled = 0
-    if distance < 0 {
+    let rev = distance < 0
+    if rev {
+      distance *= -1
       s = s.rev()
     }
-    let prev = s.first()
-    for (i, next) in s.enumerate() {
-      let part = vector.dist(prev, next)
-      if travelled <= distance and (travelled + part) >= distance {
-        
-        segment = (vector.lerp(prev, next, (distance - travelled) / part),) + s.slice(i)
-        break
-      }
-      travelled += part
-      prev = next
-    }
+    let (start, end, distance, length) = _points-between-distance(s, distance)
+
+    s = (vector.lerp(s.at(start), s.at(end), distance / length),) + s.slice(end)
+    
+    // let travelled = 0
+    // if rev {
+    //   s = s.rev()
+    // }
+    // let prev = s.first()
+    // for (i, next) in s.enumerate() {
+    //   let part = vector.dist(prev, next)
+    //   if travelled <= distance and (travelled + part) >= distance {
+    //     segment = (vector.lerp(prev, next, (distance - travelled) / part),) + s.slice(i)
+    //     break
+    //   }
+    //   travelled += part
+    //   prev = next
+    // }
   } else {
-    segment = bezier.cubic-shorten(..s, distance)
+    s = bezier.cubic-shorten(..s, distance)
   }
-  return (type,) + segment
+  return (type,) + s
 }
 
 /// Shortens a path's segments by the given distances. The start of the path is shortened first by moving the point along the line towards the end. The end of the path is then shortened in the same way. When a distance is 0 no other calculations are made.

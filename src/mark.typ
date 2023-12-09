@@ -6,6 +6,27 @@
 #import "util.typ"
 #import "path-util.typ"
 
+#let calculate-tip-offset(style) = {
+  if style.length == 0 {
+    return 0
+  }
+  if style.stroke.join == "round" {
+    return style.stroke.thickness / 2
+  }
+  let angle = calc.atan(style.width / (2 * style.length)) * 2
+  // https://svgwg.org/svg2-draft/painting.html#LineJoin If the miter length divided by the stroke width exceeds the stroke miter limit then the miter join is converted to a bevel.
+  if style.stroke.join == "miter" {
+    let angle = calc.abs(angle)
+    let miter-limit = 1 / calc.sin(angle / 2)
+    if miter-limit <= style.stroke.miter-limit {
+      return miter-limit * (style.stroke.thickness / 2)
+    }
+  }
+
+  // style.stroke.join must be "bevel"
+  return calc.sin(angle/2) * (style.stroke.thickness / 2)
+}
+
 // <-
 // (style) => drawables
 #let marks = (
@@ -22,34 +43,82 @@
       fill: style.fill,
       stroke: style.stroke
     ),
+    tip-offset: calculate-tip-offset(style),
     distance: style.length
   )
 )
 
-#let place-marks-along-path(ctx, style, segments) = {
-  let thickness = util.get-stroke(style.stroke).thickness
+#let process-style(ctx, style) = {
+  assert(style.stroke != none)
+  style.stroke = util.resolve-stroke(style.stroke)
+  style.stroke.thickness = util.resolve-number(ctx, style.stroke.thickness)
 
   for (k, v) in style {
     if k in ("length", "width", "inset", "sep") {
       style.insert(k, if type(v) == ratio {
-        thickness * v
+        style.stroke.thickness * v
       } else {
         util.resolve-number(ctx, v)
       } * style.scale)
     }
   }
 
-  let (drawables, distance) = (marks.triangle)(style)
+  return style
+}
 
-  let (pos, dir) = path-util.direction(segments, 0)
-  dir = vector.angle2(pos, dir) + 0deg
-  let transform = matrix.mul-mat(
-    matrix.transform-translate(..pos),
-    matrix.transform-rotate-z(dir),
+/// Places a mark with the given style at a position pointing towards in the direction of the given angle.
+/// - style (dictionary): A dictionary of keys in order to style the mark. The following are the required keys.
+///   - stroke
+///   - fill
+///   - width
+///   - length
+///   - symbol
+///   - inset
+/// - pos (vector): The position to place the mark at.
+/// - angle (angle): The direction to point the mark towards.
+/// -> A dictionary with the keys:
+///   - drawables (drawables): The transformed drawables of the mark.
+///   - distance: The distance between the tip of the mark and the end.
+#let place-mark(style, pos, angle) = {
+  let (drawables, distance, tip-offset) = (marks.at(style.symbol))(style)
+
+  return (
+    drawables: drawable.apply-transform(
+      matrix.mul-mat(
+        matrix.transform-translate(..pos),
+        matrix.transform-rotate-z(angle),
+        matrix.transform-translate(tip-offset, 0, 0)
+      ),
+      drawables
+    ),
+    distance: distance + tip-offset
   )
-  drawables = drawable.apply-transform(transform, drawables)
+}
 
-  segments = path-util.shorten-path(segments, distance, 0)
+#let place-marks-along-path(ctx, style, segments) = {
+  style = process-style(ctx, style)
+  
+  let distance = (0, 0)
+  let drawables = ()
+  if style.start != none {
+    let (pos, dir) = path-util.direction(segments, 0%)
+    // panic(pos)
+    style.symbol = style.start
+    let mark = place-mark(style, pos, calc.atan2(dir.at(0), dir.at(1)))
+    drawables += mark.drawables
+    distance.first() = mark.distance
+  }
+  if style.end != none {
+    let (pos, dir) = path-util.direction(segments, 100%)
+    style.symbol = style.end
+    let mark = place-mark(style, pos, calc.atan2(dir.at(0), dir.at(1)) + 180deg)
+    drawables += mark.drawables
+    distance.last() = mark.distance
+  }
+  segments = path-util.shorten-path(segments, ..distance)
+  // panic(segments)
+  
+
 
   return (drawables, segments)
 
