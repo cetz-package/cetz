@@ -64,6 +64,8 @@
 
     for elem in elements.pos() {
       if type(elem) == str {
+        assert(elem in ctx.nodes,
+          message: "No such element '" + elem + "' in elements " + repr(ctx.nodes.keys()))
         named-drawables += ctx.nodes.at(elem).drawables
       } else {
         let new-drawables = ()
