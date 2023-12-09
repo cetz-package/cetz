@@ -129,22 +129,27 @@
    (0,0,0,1))
 }
 
-// Multiply matrix with matrix
-#let mul-mat(a, b) = {
-  let (dim-a, dim-b) = (a, b).map(dim)
-  let (m, n, p) = (
-    ..dim-a,
-    dim-b.last()
-  )
-  (
-    for i in range(m) {
-      (
-        for j in range(p) {
-          (range(n).map(k => a.at(i).at(k) * b.at(k).at(j)).sum(),)
-        }
-      ,)
-    }
-  )
+// Multiply matrices on top of each other.
+#let mul-mat(..matrices) = {
+  // assert(ms.named() == (:), message: "Unexpected named arguments: " + repr(ms.named()))
+  matrices = matrices.pos()
+  let out = matrices.remove(0)
+  for matrix in matrices {
+    let (m, n, p) = (
+      ..dim(out),
+      dim(matrix).last()
+    )
+    out = (
+      for i in range(m) {
+        (
+          for j in range(p) {
+            (range(n).map(k => out.at(i).at(k) * matrix.at(k).at(j)).sum(),)
+          }
+        ,)
+      }
+    )
+  }
+  return out
 }
 
 // Multiply 4x4 matrix with vector of size 3 or 4.

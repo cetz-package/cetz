@@ -338,8 +338,8 @@
     .map(t => t.at(0))
 }
 
-/// Get stroke as a dictionary with all fields that are missing or auto set to their defaults
-#let get-stroke(stroke) = {
+/// Resolves a stroke into a usable dictionary with all fields that are missing or auto set to their defaults
+#let resolve-stroke(stroke) = {
   if stroke == none {
     return (paint: none, thickness: 0pt, join: none, cap: none, miter-limit: 4)
   }
@@ -360,5 +360,5 @@
       stroke.insert(k, v)
     }
   }
-  return s
+  return stroke
 }
