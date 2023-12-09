@@ -252,7 +252,6 @@
   let (func, ..c) = c
   (ctx, ..c) = resolve(ctx, ..c)
   func(..c)
-  // (c.first())()
 }
 
 #let resolve-pos(ctx, c) = {
@@ -298,7 +297,11 @@
       "function"
     }
   } else if type(c) == str {
-    "anchor"
+    if c.contains(".") {
+      "anchor"
+    } else {
+      "element"
+    }
   }
 
   if t == none {
@@ -336,7 +339,7 @@
       resolve-polar(c)
     } else if t == "barycentric" {
       resolve-barycentric(ctx, c)
-    } else if t == "anchor" {
+    } else if t in ("element", "anchor") {
       resolve-anchor(ctx, c)
     } else if t == "tangent" {
       resolve-tangent(resolve, ctx, c)
@@ -361,12 +364,3 @@
 
   return (ctx, ..result)
 }
-
-// #let resolve-many(ctx, ..coordinates) = {
-//   let out = ()
-//   for c in coordinates.pos() {
-//     (ctx, c) = resolve(ctx, c)
-//     out.push(c)
-//   }
-//   return (ctx, ..out)
-// }

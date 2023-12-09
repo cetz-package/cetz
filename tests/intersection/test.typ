@@ -69,7 +69,7 @@
     content((0, 0), [Das ist\ ein Text!], frame: "circle", name: "a")
     content((2, 1), [Hallo!], frame: "circle", name: "b")
     // Invisible intersection line
-    line("a", "b", stroke: none)
+    line("a.default", "b.default", stroke: none)
   })
   line("i.0", "i.1", mark: (end: ">"))
 }))

@@ -27,7 +27,7 @@
     }
   }
   if "name" in element and type(element.name) == "string" and "anchors" in element {
-    ctx.nodes.insert(element.name, (anchors: element.anchors))
+    ctx.nodes.insert(element.name, element)
   }
 
   if ctx.debug and bounds != none {
