@@ -30,6 +30,10 @@
 )
 #let path-distance-names = path-distances.keys()
 
+// All default anchor names of closed shapes
+#let closed-shape-names = compass-directions-with-center + path-distance-names
+
+
 /// Setup an anchor calculation and handling function for an element. Unifies anchor error checking and calculation of the offset transform.
 ///
 /// A tuple of a transformation matrix and function will be returned.
@@ -157,6 +161,10 @@
   }
 }
 
+// Handle anchor for a line shape
+//
+// Line shapes have:
+// - Distance anchors
 #let resolve-line-shape(ctx, anchor, drawable) = {
   if type(drawable) == array {
     assert(drawable.len() == 1,
@@ -172,6 +180,11 @@
 }
 
 // Handle anchor for a closed shape
+//
+// Closed shapes have:
+// - Compass direction anchors
+// - Distance anchors
+// - Angle anchors
 #let resolve-closed-shape(ctx, anchor, center, rx, ry, drawable) = {
   if type(drawable) == array {
     assert(drawable.len() == 1,

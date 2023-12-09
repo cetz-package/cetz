@@ -67,7 +67,7 @@
         anchor_.resolve-closed-shape(
           ctx, anchor, (cx, cy, cz), rx, ry, path)
       },
-      anchor_.compass-directions-with-center,
+      anchor_.closed-shape-names,
       default: "center",
       name: name,
       offset-anchor: anchor,
@@ -139,7 +139,7 @@
         anchor_.resolve-closed-shape(
           ctx, anchor, center, r, r, path)
       },
-      anchor_.compass-directions-with-center,
+      anchor_.closed-shape-names,
       default: "center",
       name: name,
       offset-anchor: anchor,
@@ -322,7 +322,7 @@
             ctx, anchor, center, 2 * rx, 2 * ry, path)
         }
       },
-      ("arc-center", "chord-center", "origin", "arc-start", "arc-end") + anchor_.compass-directions-with-center,
+      ("arc-center", "chord-center", "origin", "arc-start", "arc-end") + anchor_.closed-shape-names,
       default: "arc-start",
       name: name,
       offset-anchor: anchor,
@@ -1144,7 +1144,7 @@
           return anchor_.resolve-closed-shape(
             ctx, anchor, center, width, height, drawables)
         },
-        anchor_.compass-directions-with-center,
+        anchor_.closed-shape-names,
         default: "center",
         name: name,
         offset-anchor: anchor,

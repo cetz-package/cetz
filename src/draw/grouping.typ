@@ -222,28 +222,29 @@
 
     let (transform, anchors) = anchor_.setup(
       anchor => {
-        let anchors = (:)
+        let anchors = group-ctx.groups.last().anchors
+        if type(anchor) == str and anchor in anchors {
+          return anchors.at(anchor)
+        }
+
         if bounds != none {
           let bounds = bounds
           (bounds.low.at(1), bounds.high.at(1)) = (bounds.high.at(1), bounds.low.at(1))
-          let mid = aabb.mid(bounds)
-          anchors += (
-            north: (mid.at(0), bounds.high.at(1)),
-            north-east: bounds.high,
-            east: (bounds.high.at(0), mid.at(1)),
-            south-east: (bounds.high.at(0), bounds.low.at(1)),
-            south: (mid.at(0), bounds.low.at(1)),
-            south-west: bounds.low,
-            west: (bounds.low.at(0), mid.at(1)),
-            north-west: (bounds.low.at(0), bounds.high.at(1)),
-            center: mid,
-          )
+          let center = aabb.mid(bounds)
+          let (width, height, _) = aabb.size(bounds)
+
+          return anchor_.resolve-closed-shape(
+            ctx, anchor, center, width, height, drawable.path(
+              path-util.line-segment((
+                (bounds.low.at(0), bounds.high.at(1)),
+                bounds.high,
+                (bounds.high.at(0), bounds.low.at(1)),
+                bounds.low,
+              )),
+              close: true))
         }
-        // Custom anchors need to be added last to override the compass anchors.
-        anchors += group-ctx.groups.last().anchors
-        return anchors.at(anchor)
       },
-      group-ctx.groups.last().anchors.keys() + if bounds != none { ("north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west", "center") },
+      group-ctx.groups.last().anchors.keys() + if bounds != none { anchor_.closed-shape-names },
       name: name,
       default: if bounds != none { "center" } else { none },
       offset-anchor: anchor
@@ -272,8 +273,8 @@
 /// - name (string): The name of the anchor
 /// - position (coordinate): The position of the anchor
 #let anchor(name, position) = {
-  assert(not name.ends-with(regex("[-+]+")),
-    message: "Anchors must not end with '-' or '+'!")
+  assert(name != none and name != "" and not name.starts-with("."),
+    message: "Anchors must not be none, \"\" or start with \".\"!")
 
   coordinate.resolve-system(position)
   return (ctx => {

@@ -70,7 +70,7 @@ Many CeTZ functions expect data in certain formats which we will call types. Not
   / `<style>`: Named arguments (or a dictionary if used for a single argument) of style key-values
 
 == Anchors <anchors>
-Anchors are named positions relative to named elements. To use an anchor of an element, you must give the element a name using the `name` argument. All elements with the `name` argument allow anchors.
+Anchors positions relative to named elements. To use an anchor of an element, you must give the element a name using the `name` argument. All elements with the `name` argument allow anchors.
 ```example
 // Name the circle
 circle((0,0), name: "circle")
