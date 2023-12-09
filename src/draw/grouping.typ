@@ -182,7 +182,7 @@
 ///   #show-parameter-block("padding", ("none", "number", "array", "dictionary"), default: none, [How much padding to add around the group's bounding box. `none` applies no padding. A number applies padding to all sides equally. A dictionary applies padding following Typst's `pad` function: https://typst.app/docs/reference/layout/pad/. An array follows CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`.])
 ///
 /// = Anchors
-///   Supports compass anchors. These are created based on the axis aligned bounding box of all the child elements of the group.
+///   Supports compass, distance and angle anchors. These are created based on the axis aligned bounding box of all the child elements of the group.
 ///
 /// You can add custom anchors to the group by using the `anchor` element while in the scope of said group, see `anchor` for more details. You can also copy over anchors from named child element by using the `copy-anchors` element as they are not accessible from outside the group.
 ///

@@ -34,8 +34,8 @@
 ///   #show-parameter-block("radius", ("number", "array"), [A number that defines the size of the circle's radius. Can also be set to a tuple of two numbers to define the radii of an ellipse, the first number is the `x` radius and the second is the `y` radius.], default: 1)
 /// 
 /// = Anchors
-///   Supports compass anchors. The "center" anchor is the default.
-/// 
+///   Supports compass, distance and angle anchors. The "center" anchor is the default.
+///
 /// - position (coordinate): The position to place the circle on.
 /// - name (none,string):
 /// - anchor (none,string):
@@ -180,7 +180,7 @@
 ///     This overrides the default of `true`, that allows chaining of (arc) elements.], default: true)
 ///
 /// = Anchors
-///   Supports compass anchors when `mode` is "PIE"
+///   Supports compass, distance anchors, plus angle anchors if mode is "PIE"
 ///   / center: The center of the arc, this is the default anchor.
 ///   / arc-center: The midpoint of the arc's curve.
 ///   / chord-center: Center of chord of the arc drawn between the start and end point.
@@ -527,7 +527,9 @@
 ///   Supports mark styling.
 /// 
 /// = Anchors
+///   Supports distance anchors.
 ///   / start: The line's start position
+///   / mid: The line's mid position
 ///   / end: The line's end position
 ///
 /// - ..pts-style (coordinates, style): Positional two or more coordinates to draw lines between. Accepts style key-value pairs.
@@ -1000,7 +1002,7 @@
 ///   ])
 ///
 /// = Anchors
-///   Supports compass anchors.
+///   Supports compass, distance and angle anchors.
 ///
 /// - a (coordinate): Coordinate of the bottom left corner of the rectangle.
 /// - b (coordinate): Coordinate of the top right corner of the rectangle. You can draw a rectangle with a specified width and height by using relative coordinates for this parameter `(rel: (width, height))`.
@@ -1181,8 +1183,10 @@
 ///   Supports marks.
 ///   
 /// = Anchors
+///   Supports distance anchors.
 ///   / ctrl-n: nth control point where n is an integer starting at 0
 ///   / start: The start position of the curve.
+///   / mid: The mid position of the curve
 ///   / end: The end position of the curve.
 ///
 /// - start (coordinate): Start position
@@ -1304,7 +1308,9 @@
 ///   Supports marks.
 ///
 /// = Anchors
+///   Supports distance anchors.
 ///   / start: The position of the start of the curve.
+///   / mid: The mid position of the curve
 ///   / end: The position of the end of the curve.
 ///   / pt-n: The nth given position (0 indexed so "pt-0" is equal to "start")
 ///
@@ -1391,7 +1397,9 @@
 ///   #show-parameter-block("rho", "idk", [])
 ///
 /// = Anchors
+///   Supports distance anchors.
 ///   / start: The position of the start of the curve.
+///   / mid: The mid position of the curve
 ///   / end: The position of the end of the curve.
 ///   / pt-n: The nth given position (0 indexed, so "pt-0" is equal to "start")
 ///
@@ -1480,7 +1488,9 @@
 /// = parameters
 ///
 /// = Anchors
+///   Supports distance anchors.
 ///   / start: The start of the merged path.
+///   / mid: The mid position of the merged path.
 ///   / end: The end of the merged path.
 ///
 /// - body (elements): Elements with paths to be merged together.
