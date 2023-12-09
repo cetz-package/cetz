@@ -74,3 +74,15 @@
   line("i.0", "i.1", mark: (end: ">"))
 }))
 
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  circle((0,0), name: "a")
+  rect((0,0), (2,2), name: "b")
+  intersections("i", "a", "b", {
+    line((-1,-1), (1,1))
+  })
+  for-each-anchor("i", (name) => {
+    circle("i."+name, radius: .1, fill: red)
+  })
+}))

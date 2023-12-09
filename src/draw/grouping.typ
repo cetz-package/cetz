@@ -22,26 +22,60 @@
 /// intersections.
 ///
 /// #example(```
-/// intersections("demo", {
+/// intersections("i", {
 ///   circle((0, 0))
 ///   bezier((0,0), (3,0), (1,-1), (2,1))
 ///   line((0,-1), (0,1))
 ///   rect((1.5,-1),(2.5,1))
 /// })
-/// for-each-anchor("demo", (name) => {
-///   circle("demo." + name, radius: .1, fill: black)
+/// for-each-anchor("i", (name) => {
+///   circle("i." + name, radius: .1, fill: blue)
+/// })
+/// ```)
+///
+/// You can also use named elements:
+///
+/// #example(```
+/// circle((0,0), name: "a")
+/// rect((0,0), (1,1), name: "b")
+/// intersections("i", "a", "b")
+/// for-each-anchor("i", (name) => {
+///   circle("i." + name, radius: .1, fill: blue)
 /// })
 /// ```)
 ///
 /// - name (string): Name to prepend to the generated anchors.
-/// - body (elements): Elements to calculate intersections with.
+/// - ..elements (elements,string): Elements and/or element names to calculate intersections with.
+///   Elements referred to by name are (unlike elements passed) not drawn by the intersections function!
 /// - samples (int): Number of samples to use for non-linear path segments. A higher sample count can give more precise results but worse performance.
-#let intersections(name, body, samples: 10) = {
+#let intersections(name, ..elements, samples: 10) = {
   samples = calc.clamp(samples, 2, 2500)
 
+  assert(type(name) == str and name != "",
+    message: "Intersection must have a name, got:" + repr(name))
+  assert(elements.pos() != (),
+    message: "You must at least give one element to intersections.")
+
   return (ctx => {
-    let (ctx, drawables, ..) = process.many(ctx, body)
-    let paths = drawables.filter(d => d.type == "path")
+    let ctx = ctx
+
+    let named-drawables = () // List of elements to calc intersections for
+    let drawables = () // List of elements to draw + calc intersections for
+
+    for elem in elements.pos() {
+      if type(elem) == str {
+        assert(elem in ctx.nodes,
+          message: "No such element '" + elem + "' in elements " + repr(ctx.nodes.keys()))
+        named-drawables += ctx.nodes.at(elem).drawables
+      } else {
+        let new-drawables = ()
+        (ctx: ctx, drawables: new-drawables, ..) = process.many(ctx, elem)
+        drawables += new-drawables
+      }
+    }
+
+    // Filter out elements that can not intersect
+    let paths = (named-drawables + drawables).filter(d => d.type == "path")
 
     let pts = ()
     if paths.len() > 1 { 
@@ -106,8 +140,9 @@
 /// The default anchor is "center" but this can be overridden by using `anchor` to place a new anchor called "default".
 ///
 /// - body (elements, function): Elements to group together. A least one is required. A function that accepts `ctx` and returns elements is also accepted.
+/// - anchor (none, string): Anchor to position the group and it's children relative to. For translation the difference between the groups `"center"` anchor
+///   and the passed anchor is used.
 /// - name (none, string):
-/// - anchor (none, string):
 /// - ..style (style):
 #let group(body, name: none, anchor: none, ..style) = {
   assert(type(body) in (array, function), message: "Incorrect type for body, expected an array or function. Instead got: " + repr(body))
