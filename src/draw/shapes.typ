@@ -63,15 +63,17 @@
       stroke: style.stroke)
 
     let (transform, anchors) = anchor_.setup(
-      (anchor) => {
-        anchor_.resolve-closed-shape(
-          ctx, anchor, (cx, cy, cz), rx, ry, path)
-      },
-      anchor_.closed-shape-names,
+      auto,
+      (),
       default: "center",
       name: name,
       offset-anchor: anchor,
-      transform: ctx.transform
+      transform: ctx.transform,
+      border-anchors: true,
+      path-anchors: true,
+      center: (cx, cy, cz),
+      radii: (rx, ry),
+      path: path,
     )
 
     return (
@@ -135,15 +137,17 @@
       stroke: style.stroke)
 
     let (transform, anchors) = anchor_.setup(
-      anchor => {
-        anchor_.resolve-closed-shape(
-          ctx, anchor, center, r, r, path)
-      },
-      anchor_.closed-shape-names,
+      auto,
+      (),
       default: "center",
       name: name,
       offset-anchor: anchor,
-      transform: ctx.transform
+      transform: ctx.transform,
+      border-anchors: true,
+      path-anchors: true,
+      center: center,
+      radii: (r, r),
+      path: path,
     )
 
     return (
@@ -311,15 +315,18 @@
               (path-util.segment-start(path.segments.first()),
                sector-center,
                path-util.segment-end(path.segments.last()))))
-            return anchor_.resolve-closed-shape(
-              ctx, anchor, center, 2 * rx, 2 * ry, path)
+            return anchor_.calculate-border-anchor(
+              anchor, center, 2 * rx, 2 * ry, path)
           } else {
-            return anchor_.resolve-line-shape(
-              ctx, anchor, path)
+            return anchor_.calculate-path-anchor(
+              anchor, path)
           }
         } else {
-          return anchor_.resolve-closed-shape(
-            ctx, anchor, center, 2 * rx, 2 * ry, path)
+          let pt = anchor_.calculate-border-anchor(
+            anchor, center, 2 * rx, 2 * ry, path)
+          if pt != none { return pt }
+          return anchor_.calculate-path-anchor(
+            anchor, path)
         }
       },
       ("arc-center", "chord-center", "origin", "arc-start", "arc-end") + anchor_.closed-shape-names,
@@ -602,12 +609,12 @@
 
     // Get bounds
     let (transform, anchors) = anchor_.setup(
-      (anchor) => {
-        return anchor_.resolve-line-shape(ctx, anchor, path)
-      },
-      anchor_.path-distance-names,
+      auto,
+      (),
       name: name,
       transform: ctx.transform,
+      path-anchors: true,
+      path: path
     )
 
     let drawables = (path,)
@@ -1142,15 +1149,17 @@
       let center = vector.scale(vector.add(a, b), .5)
       let (width, height, ..) = size
       let (transform, anchors) = anchor_.setup(
-        (anchor) => {
-          return anchor_.resolve-closed-shape(
-            ctx, anchor, center, width, height, drawables)
-        },
-        anchor_.closed-shape-names,
+        auto,
+        (),
         default: "center",
         name: name,
         offset-anchor: anchor,
-        transform: ctx.transform
+        transform: ctx.transform,
+        border-anchors: true,
+        path-anchors: true,
+        center: center,
+        radii: (width, height),
+        path: drawables,
       )
 
       return (
@@ -1237,13 +1246,13 @@
           } else if anchor == "ctrl-1" {
             return ctrl.at(1)
           }
-          return anchor_.resolve-line-shape(
-            ctx, anchor, path)
         },
-        ("ctrl-0", "ctrl-1") + anchor_.path-distance-names,
+        ("ctrl-0", "ctrl-1"),
         default: "start",
         name: name,
-        transform: ctx.transform
+        transform: ctx.transform,
+        path-anchors: true,
+        path: path,
       )
 
       if marks != none {
@@ -1354,13 +1363,13 @@
           if type(anchor) == str and anchor in a {
             return a.at(anchor)
           }
-          return anchor_.resolve-line-shape(
-            ctx, anchor, path)
         },
-        a.keys() + anchor_.path-distance-names,
+        a.keys(),
         name: name,
         default: "start",
-        transform: ctx.transform
+        transform: ctx.transform,
+        path-anchors: true,
+        path: path,
       )
     }
 
@@ -1448,13 +1457,13 @@
           if type(anchor) == str and anchor in a {
             return a.at(anchor)
           }
-          return anchor_.resolve-line-shape(
-            ctx, anchor, path)
         },
-        a.keys() + anchor_.path-distance-names,
+        a.keys(),
         name: name,
         default: "start",
-        transform: ctx.transform
+        transform: ctx.transform,
+        path-anchors: true,
+        path: path,
       )
     }
 
@@ -1534,13 +1543,12 @@
       let path = drawable.path(fill: style.fill, stroke: style.stroke, close: close, segments)
 
       let (transform, anchors) = anchor_.setup(
-        anchor => {
-          return anchor_.resolve-line-shape(
-            ctx, anchor, path)
-        },
-        anchor_.path-distance-names,
+        auto,
+        (),
         name: name,
         transform: ctx.transform,
+        path-anchors: true,
+        path: path,
       )
 
       return (

@@ -220,34 +220,38 @@
       aabb.padded(bounds, padding)
     }
 
+    // Calculate a bounding box path used for border
+    // anchor calculation.
+    let (center, width, height, path) = if bounds != none {
+      (bounds.low.at(1), bounds.high.at(1)) = (bounds.high.at(1), bounds.low.at(1))
+      let center = aabb.mid(bounds)
+      let (width, height, _) = aabb.size(bounds)
+      let path = drawable.path(
+        path-util.line-segment((
+          (bounds.low.at(0), bounds.high.at(1)),
+          bounds.high,
+          (bounds.high.at(0), bounds.low.at(1)),
+          bounds.low,
+        )), close: true)
+      (center, width, height, path)
+    } else { (none, none, none, none) }
+
     let (transform, anchors) = anchor_.setup(
       anchor => {
         let anchors = group-ctx.groups.last().anchors
         if type(anchor) == str and anchor in anchors {
           return anchors.at(anchor)
         }
-
-        if bounds != none {
-          let bounds = bounds
-          (bounds.low.at(1), bounds.high.at(1)) = (bounds.high.at(1), bounds.low.at(1))
-          let center = aabb.mid(bounds)
-          let (width, height, _) = aabb.size(bounds)
-
-          return anchor_.resolve-closed-shape(
-            ctx, anchor, center, width, height, drawable.path(
-              path-util.line-segment((
-                (bounds.low.at(0), bounds.high.at(1)),
-                bounds.high,
-                (bounds.high.at(0), bounds.low.at(1)),
-                bounds.low,
-              )),
-              close: true))
-        }
       },
-      group-ctx.groups.last().anchors.keys() + if bounds != none { anchor_.closed-shape-names },
+      group-ctx.groups.last().anchors.keys(),
       name: name,
       default: if bounds != none { "center" } else { none },
-      offset-anchor: anchor
+      offset-anchor: anchor,
+      path-anchors: bounds != none,
+      border-anchors: bounds != none,
+      center: center,
+      radii: (width, height),
+      path: path,
     )
     return (
       ctx: ctx,

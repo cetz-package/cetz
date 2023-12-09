@@ -72,6 +72,11 @@
   assert(name in ctx.nodes,
     message: "Unknown element '" + name + "' in elements " + repr(ctx.nodes.keys()))
 
+  // Resolve length anchors
+  if type(anchor) == length {
+    anchor = util.resolve-number(ctx, anchor)
+  }
+
   // Check if anchor is known
   let node = ctx.nodes.at(name)
   let pos = (node.anchors)(anchor)
