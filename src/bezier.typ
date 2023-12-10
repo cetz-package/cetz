@@ -493,6 +493,7 @@
 ///
 /// -> array Array of roots
 #let _cubic-roots(a, b, c, d) = {
+  let epsilon = 0.000001
   if calc.abs(a) < 1e-6 {
     if calc.abs(b) < 1e-6 {
       // Constant
@@ -502,7 +503,7 @@
 
       // Linear
       let root = -1 * d / c
-      if root < 0 and root > 1 {
+      if root < 0 - epsilon and root > 1 + epsilon {
         return ()
       }
       return (root,)
@@ -514,7 +515,7 @@
       dq = calc.sqrt(dq)
       let roots = (-1 * (dq + c) / (2 * b),
                         (dq - c) / (2 * b))
-      return roots.filter(t => t >= 0 and t <= 1)
+      return roots.filter(t => t >= 0 - epsilon and t <= 1 + epsilon)
     }
   }
 
@@ -543,7 +544,7 @@
      qq * calc.cos((th + 4 * calc.pi) / 3) + aa)
   }
 
-  return roots.filter(t => t >= 0 and t <= 1)
+  return roots.filter(t => t >= 0 - epsilon and t <= 1 + epsilon)
 }
 
 /// Calculate 2D cubic-bezier and line intersetction points
