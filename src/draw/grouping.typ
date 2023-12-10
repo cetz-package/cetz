@@ -112,9 +112,7 @@
       }
     }
 
-    // Filter out elements that can not intersect
-    let paths = (named-drawables + drawables).filter(d => d.type == "path")
-
+    let paths = named-drawables + drawables
     let pts = ()
     if paths.len() > 1 { 
       for (i, path-1) in paths.enumerate() {
