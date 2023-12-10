@@ -55,14 +55,18 @@
 
 #let resolve-anchor(ctx, c) = {
   // (name: <string>, anchor: <number, angle, string> or <none>)
-  // "name.anchor"
+  // "{name.}name.anchor"
   // "name"
   let (name, anchor) = if type(c) == str {
     let parts = c.split(".")
     if parts.len() == 1 {
       (parts.first(), "default")
     } else {
-      (parts.slice(0, -1).join("."), parts.last())
+      if parts.join(".") in ctx.nodes {
+        (parts.join("."), "default")
+      } else {
+        (parts.slice(0, -1).join("."), parts.last())
+      }
     }
   } else {
     (c.name, c.at("anchor", default: "default"))

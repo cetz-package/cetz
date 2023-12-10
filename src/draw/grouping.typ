@@ -207,8 +207,15 @@
     let bounds = none
     let drawables = ()
     let group-ctx = ctx
-    group-ctx.groups.push((anchors: (:)))
+    group-ctx.groups.push((anchors: (:), nodes: (:)))
     (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, if type(body) == function {body(ctx)} else {body})
+
+    // Append group elements to context
+    if name != none {
+      for (elem-name, elem) in group-ctx.groups.last().nodes {
+        ctx.nodes.insert(name + "." + elem-name, elem)
+      }
+    }
 
     // Apply bounds padding
     let bounds = if bounds != none {
