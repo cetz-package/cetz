@@ -41,7 +41,8 @@
     close: close,
     segments: segments,
     fill: fill,
-    stroke: stroke
+    stroke: stroke,
+    hidden: false
   )
 }
 
@@ -52,6 +53,7 @@
     width: width,
     height: height,
     body: body,
+    hidden: false,
   )
 }
 

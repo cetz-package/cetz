@@ -20,6 +20,7 @@ CeTZ 0.2.0 requires Typst 0.10.0
 - Added element `arc-through` to draw an arc through three points
 - Added Hobby curves (`hobby`) in addition to catmull (thanks to @Enivex)
 - Added `radius` style to `rect` for drawing rounded rects
+- Added `hide` function for hiding elements
 
 ### Plot
 - Added `plot.add-contour(..)` for plotting contour plots
