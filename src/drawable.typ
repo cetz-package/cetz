@@ -47,13 +47,13 @@
   )
 }
 
-#let content(pos, width, height, corners, body) = {
+#let content(pos, width, height, border, body) = {
   return (
     type: "content",
     pos: pos,
     width: width,
     height: height,
-    segments: (path-util.line-segment(corners + (corners.first(),)),),
+    segments: border,
     body: body,
     hidden: false,
   )

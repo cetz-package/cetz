@@ -60,14 +60,18 @@
     rotate(45deg)
     line((0,0), (calc.sqrt(2*calc.pow(2,2)),0))
   })
+  test({
+    // The marks must not generate intersections with the line!
+    line((0,0), (2,2), mark: (start: ">", end: ">"))
+  })
 })
 
 #box(stroke: 2pt + red, canvas({
   import draw: *
 
   intersections("i", {
-    content((0, 0), [Das ist\ ein Text!], frame: "circle", name: "a")
-    content((2, 1), [Hallo!], frame: "circle", name: "b")
+    content((0, 0), [This is\ Text!], frame: "circle", name: "a")
+    content((2, 1), [Hello!], frame: "circle", name: "b")
     // Invisible intersection line
     line("a.default", "b.default", stroke: none)
   })

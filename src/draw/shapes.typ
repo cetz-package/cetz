@@ -935,30 +935,25 @@
       )
     }
 
-    let drawables = ()
-    if style.frame in ("rect", "circle") {
-      drawables.push(
-        if style.frame == "rect" {
-          drawable.path(
-            path-util.line-segment((
-              anchors.north-west,
-              anchors.north-east,
-              anchors.south-east,
-              anchors.south-west
-            )),
-            close: true,
-            stroke: style.stroke,
-            fill: style.fill)
-        } else if style.frame == "circle" {
-          let (x, y, z) = util.calculate-circle-center-3pt(anchors.north-west, anchors.south-west, anchors.south-east)
-          let r = vector.dist((x, y, z), anchors.north-west)
-          drawable.ellipse(
-            x, y, z,
-            r, r,
-            stroke: style.stroke,
-            fill: style.fill
-          )
-        }
+    let border = if style.frame in (none, "rect") {
+      drawable.path(
+        path-util.line-segment((
+          anchors.north-west,
+          anchors.north-east,
+          anchors.south-east,
+          anchors.south-west
+        )),
+        close: true,
+        stroke: style.stroke,
+        fill: style.fill)
+    } else if style.frame == "circle" {
+      let (x, y, z) = util.calculate-circle-center-3pt(anchors.north-west, anchors.south-west, anchors.south-east)
+      let r = vector.dist((x, y, z), anchors.north-west)
+      drawable.ellipse(
+        x, y, z,
+        r, r,
+        stroke: style.stroke,
+        fill: style.fill
       )
     }
 
@@ -969,12 +964,16 @@
     let corners = (anchors.north-east, anchors.north-west,
                    anchors.south-west, anchors.south-east)
 
+    let drawables = ()
+    if style.frame != none {
+      drawables.push(border)
+    }
     drawables.push(
       drawable.content(
         anchors.center,
         aabb-width,
         aabb-height,
-        corners,
+        border.segments,
         typst-rotate(angle,
           block(
             width: width * ctx.length,
