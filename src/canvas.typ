@@ -55,8 +55,6 @@
   )
 
   let (ctx, bounds, drawables) = process.many(ctx, body)
-
-
   if bounds == none {
     return []
   }
@@ -76,20 +74,26 @@
     return vector.sub(c, orig)
   }
 
-  // repr(drawables)
-
   box(width: width, height: height, fill: background, align(top, {
     for drawable in drawables {
+      // Typst path elements have strange bounding boxes. We need to
+      // offset all paths to start at (0, 0) to make gradients work.
+      let (x, y, _) = if drawable.type == "path" {
+        vector.sub(
+          aabb.aabb(path-util.bounds(drawable.segments)).low,
+          bounds.low)
+      } else {
+        (0, 0, 0)
+      }
+
       place(if drawable.type == "path" {
         let vertices = ()
         for s in drawable.segments {
           let type = s.at(0)
           let coordinates = s.slice(1).map(c => {
             return (
-              (c.at(0) - bounds.low.at(0)) * length,
-              (c.at(1) - bounds.low.at(1)) * length,
-              // x * length,
-              // y+ bounds.t * length
+              (c.at(0) - bounds.low.at(0) - x) * length,
+              (c.at(1) - bounds.low.at(1) - y) * length,
             )
           })
           assert(
@@ -109,6 +113,7 @@
             vertices += coordinates
           }
         }
+
         path(
           stroke: drawable.stroke,
           fill: drawable.fill,
@@ -122,7 +127,7 @@
           dy: (drawable.pos.at(1) - bounds.low.at(1)) * length - height / 2,
           drawable.body,
         )
-      })
+      }, dx: x * length, dy: y * length)
     }
   }))
 }))
