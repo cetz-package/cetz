@@ -114,8 +114,7 @@
             vertices += coordinates
           }
         }
-
-        if type(drawable.stroke) == dictionary and type(drawable.stroke.thickness) != typst-length {
+        if type(drawable.stroke) == dictionary and "thickness" in drawable.stroke and type(drawable.stroke.thickness) != typst-length {
           drawable.stroke.thickness *= length
         }
         path(
