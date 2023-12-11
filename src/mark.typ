@@ -66,6 +66,18 @@
   return style
 }
 
+#let transform-mark(mark, pos, angle) = {
+  mark.drawables = drawable.apply-transform(
+    matrix.mul-mat(
+      matrix.transform-translate(..pos),
+      matrix.transform-rotate-z(angle),
+      matrix.transform-translate(mark.tip-offset, 0, 0)
+    ),
+    mark.drawables
+  )
+  return mark
+}
+
 /// Places a mark with the given style at a position pointing towards in the direction of the given angle.
 /// - style (dictionary): A dictionary of keys in order to style the mark. The following are the required keys.
 ///   - stroke
@@ -101,24 +113,39 @@
   let distance = (0, 0)
   let drawables = ()
   if style.start != none {
-    let (pos, dir) = path-util.direction(segments, 0%)
-    // panic(pos)
-    style.symbol = style.start
-    let mark = place-mark(style, pos, calc.atan2(dir.at(0), dir.at(1)))
+    let mark = (marks.at(style.start))(style)
+
+    let pos = path-util.point-on-path(segments, 0%)
+
+    let angle = if style.flex { 
+      vector.angle2(pos, path-util.point-on-path(segments, mark.distance, samples: style.position-samples))
+    } else {
+      let dir = path-util.direction(segments, 0%)
+      calc.atan2(dir.at(0), dir.at(1))
+    }
+
+    mark = transform-mark(mark, pos, angle)
     drawables += mark.drawables
     distance.first() = mark.distance
   }
   if style.end != none {
-    let (pos, dir) = path-util.direction(segments, 100%)
-    style.symbol = style.end
-    let mark = place-mark(style, pos, calc.atan2(dir.at(0), dir.at(1)) + 180deg)
+    let mark = (marks.at(style.end))(style)
+
+    let pos = path-util.point-on-path(segments, 100%)
+
+    let angle = if style.flex { 
+      vector.angle2(pos, path-util.point-on-path(segments, mark.distance, samples: style.position-samples))
+    } else {
+      let dir = path-util.direction(segments, 100%)
+      calc.atan2(dir.at(0), dir.at(1)) + 180deg
+    }
+
+    mark = transform-mark(mark, pos, angle)
     drawables += mark.drawables
     distance.last() = mark.distance
   }
-  segments = path-util.shorten-path(segments, ..distance)
-  // panic(segments)
-  
 
+  segments = path-util.shorten-path(segments, ..distance, mode: if style.flex { "CURVED" } else { "LINEAR" }, samples: style.position-samples)
 
   return (drawables, segments)
 

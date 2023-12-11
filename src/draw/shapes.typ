@@ -1225,15 +1225,16 @@
       }
 
       let style = styles.resolve(ctx.style, merge: style, root: "bezier")
-      let curve = (start, end, ..ctrl)
-      let (marks, curve) = if style.mark != none {
-        mark_.place-marks-along-bezier(ctx, curve, style, style.mark)
+
+      let segments = (path-util.cubic-segment(start, end, ..ctrl),)
+      let (marks, segments) = if style.mark != none {
+        mark_.place-marks-along-path(ctx, style.mark, segments)
       } else {
-        (none, curve)
+        (none, segments)
       }
 
       let path = drawable.path(
-        path-util.cubic-segment(..curve),
+        segments,
         fill: style.fill,
         stroke: style.stroke,
       )

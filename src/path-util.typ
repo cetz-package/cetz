@@ -112,35 +112,6 @@
 
   let (start, end, distance, length) = _points-between-distance(pts, distance)
   return vector.lerp(pts.at(start), pts.at(end), distance / length)
-  // if t <= 0 or t <= 0% {
-  //   return segment.at(1)
-  // } else if t == 100% {
-  //   return segment.last()
-  // }
-
-  // let length = _segment-length(s)
-  // t = if type(t) == ratio {
-  //   t * length / 100%
-  // }
-
-  // if t >= length {
-  //   return s.last()
-  // }
-
-  // let traveled = 0
-  // for i in range(2, s.len()) {
-  //   let part = vector.dist(s.at(i - 1), s.at(i))
-
-  //   if traveled <= target and target <= traveled + part {
-  //     let t = (target - traveled) / part
-  //     return vector.add(
-  //       s.at(i - 1), vector.scale(vector.sub(s.at(i), s.at(i - 1)), t))
-  //   }
-
-  //   traveled += part
-  // }
-
-  // return s.at(1)
 }
 
 /// Finds the point at a given distance from the start of a path segment. Distances greater than the length of the segment return the end of the path segment. Distances less than zero return the start of the segment.
@@ -149,24 +120,17 @@
 /// - distance (float): The distance along the path segment to find the point
 ///
 /// -> vector: The point on the path segment
-#let _point-on-segment(segment, distance, length: none) = {
+#let _point-on-segment(segment, distance, length: none, samples: default-samples) = {
   let (kind, ..pts) = segment
   if kind == "line" {
     return _point-on-line-segment(segment, distance)
   } else if kind == "cubic" {
-    // if type(t) == ratio {
-      
-    // }
-    // let len = t
-    // if type(len) == ratio {
-    //   len = bezier.cubic-arclen(..pts) * calc.min(calc.max(0, t / 100%), 1)
-    // }
     return bezier.cubic-point(
       ..pts,
       bezier.cubic-t-for-distance(
         ..pts,
-        distance
-        // if length == none { _segment-length(segment) } else { length } - distance
+        distance,
+        samples: samples
       )
     )
   }
@@ -174,8 +138,8 @@
 
 
 
-#let segment-at-t(segments, t, rev: false) = {
-  let lengths = segments.map(_segment-length)
+#let segment-at-t(segments, t, rev: false, samples: default-samples) = {
+  let lengths = segments.map(_segment-length.with(samples: samples))
   let total = lengths.sum()
 
   // if segments.len() == 0 {
@@ -210,10 +174,13 @@
     if travelled <= t and t <= travelled + length {
       
       return (
-        index: i,
+        index: if rev { segments.len() - i } else { i },
         segment: segment,
+        // Distance travelled
         travelled: travelled,
+        // Distance left
         distance: t - travelled,
+        // The length of the segment
         length: length
       )
     }
@@ -227,52 +194,15 @@
 /// - t (int,float,ratio): Absolute position on the path if given an
 ///   float or integer, or relative position if given a ratio from 0% to 100%
 /// -> none,vector: Position on path. If the path is empty (segments == ()), none is returned
-#let point-on-path(segments, t) = {
+#let point-on-path(segments, t, samples: default-samples) = {
   assert(
     type(t) in (int, float, ratio),
     message: "Distance t must be of type int, float or ratio"
   )
-  let (distance, segment, length, ..) = segment-at-t(segments, t)
+  let (distance, segment, length, ..) = segment-at-t(segments, t, samples: samples)
   return if segment != none {
-    _point-on-segment(segment, t - distance, length: length)
+    _point-on-segment(segment, distance, length: length, samples: samples)
   }
-  // if type(t) == ratio {
-  //   assert(0% <= t and t <= 100%,
-  //     message: "Ratio must be between 0% and 100%, got: " + repr(t))
-  // }
-
-  // if segments.len() == 0 {
-  //   return none
-  // } else if segments.len() == 1 {
-  //   return _point-on-segment(segments.first(), t)
-  // }
-
-  // let target = if type(t) == ratio {
-  //   t / 100% * length(segments)
-  // } else {
-  //   assert(0 <= t and t <= length(segments),
-  //     message: "Absolute distance must be in path range, is: " + repr(t))
-  //   t
-  // }
-
-  // if target == 0 {
-  //   return segment-start(segments.first())
-  // }
-
-  // Total travel distance
-  // let traveled = 0
-  // for s in segments {
-  //   let part = _segment-length(s)
-
-  //   // This segment contains target
-  //   if traveled <= target and target <= traveled + part {
-  //     return _point-on-segment(s, target - traveled)
-  //   }
-
-  //   traveled += part
-  // }
-
-  // return segment-end(segments.last())
 }
 
 /// Get position and direction on path
@@ -283,15 +213,15 @@
 /// - segments (array): List of path segments
 /// - t (float): Position (from 0 to 1)
 /// -> tuple: Tuple of the point at t and the scaled direction
-#let direction(segments, t) = {
-  let (segment, distance, length, ..) = segment-at-t(segments, t)
+#let direction(segments, t, samples: default-samples) = {
+  let (segment, distance, length, ..) = segment-at-t(segments, t, samples: samples)
   return (
-    _point-on-segment(segment, distance, length: length),
+    _point-on-segment(segment, distance, length: length, samples: samples),
     if segment.first() == "line" {
       let (start, end, distance, length) = _points-between-distance(segment.slice(1), distance)
       vector.norm(vector.sub(segment.at(end+1), segment.at(start+1)))
     } else {
-      bezier.cubic-derivative(..segment.slice(1), distance / length)
+      bezier.cubic-derivative(..segment.slice(1), distance / length, samples: samples)
     }
   )
 
@@ -318,7 +248,7 @@
 }
 
 /// Shortens a segment by a given distance.
-#let shorten-segment(segment, distance) = {
+#let shorten-segment(segment, distance, mode: "CURVED", samples: default-samples) = {
   let (type, ..s) = segment
   if type == "line" {
     let rev = distance < 0
@@ -329,23 +259,12 @@
     let (start, end, distance, length) = _points-between-distance(s, distance)
 
     s = (vector.lerp(s.at(start), s.at(end), distance / length),) + s.slice(end)
-    
-    // let travelled = 0
-    // if rev {
-    //   s = s.rev()
-    // }
-    // let prev = s.first()
-    // for (i, next) in s.enumerate() {
-    //   let part = vector.dist(prev, next)
-    //   if travelled <= distance and (travelled + part) >= distance {
-    //     segment = (vector.lerp(prev, next, (distance - travelled) / part),) + s.slice(i)
-    //     break
-    //   }
-    //   travelled += part
-    //   prev = next
-    // }
   } else {
-    s = bezier.cubic-shorten(..s, distance)
+    s = if mode == "LINEAR" {
+      bezier.cubic-shorten-linear(..s, distance)
+    } else {
+      bezier.cubic-shorten(..s, distance, samples: samples)
+    }
   }
   return (type,) + s
 }
@@ -356,31 +275,37 @@
 /// - start-distance (int, float): The distance to shorten from the start of the path.
 /// - end-distance (int, float): The distance to shorten from the end fo the path
 /// -> segments Segments of the path that have been shortened
-#let shorten-path(segments, start-distance, end-distance) = {
-  let total = length(segments)
-  let is-end = false
-  for distance in (start-distance, end-distance) {
-    if distance == 0 {
-      is-end = true
-      continue
-    }
-    if is-end {
-      segments = segments.rev()
-    }
-    let travelled = 0
-    let new = ()
-    for s in segments {
-      let part = _segment-length(s)
-      if travelled <= distance and (travelled + part) >= distance {
-        new.push(shorten-segment(s, (distance - travelled) * if is-end { -1 } else { 1 }))
-        segments = new
-        break
-      }
-      travelled += part
-      new.push(s)
-    }
-    is-end = true
-    total -= distance
+#let shorten-path(segments, start-distance, end-distance, mode: "CURVED", samples: default-samples) = {
+  if start-distance > 0 {
+    let (segment, distance, index, ..) = segment-at-t(
+      segments,
+      start-distance
+    )
+    segments = segments.slice(0, index)
+    segments.push(
+      shorten-segment(
+        segment, 
+        distance,
+        mode: mode,
+        samples: samples
+      )
+    )
+  }
+  if end-distance > 0 {
+    let (segment, distance, index, ..) = segment-at-t(
+      segments,
+      end-distance,
+      rev: true
+    )
+    segments = segments.slice(index)
+    segments.insert(0,
+      shorten-segment(
+        segment, 
+        -distance,
+        mode: mode,
+        samples: samples
+      )
+    )
   }
   return segments
 }

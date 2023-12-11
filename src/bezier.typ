@@ -233,7 +233,7 @@
   let (left, right) = split-rec((s, c1, c2, e), t, (), ())
 
   return ((left.at(0), left.at(3), left.at(1), left.at(2)),
-          (right.at(0), right.at(3), right.at(1), right.at(2)))
+          (right.at(3), right.at(0), right.at(2), right.at(1)))
 }
 
 /// Approximate cubic curve length
