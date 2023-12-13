@@ -66,7 +66,7 @@
   } else if type == "cubic" {
     return bezier.cubic-arclen(..pts, samples: samples)
   } else {
-    panic("Invalid segment: " + type)
+    panic("Invalid segment: " + type, s)
   }
 }
 
@@ -167,12 +167,13 @@
 
   if rev {
     segments = segments.rev()
+    lengths = lengths.rev()
   }
   let travelled = 0
   for (i, segment-length) in segments.zip(lengths).enumerate() {
     let (segment, length) = segment-length
     if travelled <= t and t <= travelled + length {
-      
+      // if rev { panic(t - travelled) }
       return (
         index: if rev { segments.len() - i } else { i },
         segment: segment,
@@ -199,9 +200,15 @@
     type(t) in (int, float, ratio),
     message: "Distance t must be of type int, float or ratio"
   )
-  let (distance, segment, length, ..) = segment-at-t(segments, t, samples: samples)
+  let rev = if type(t) == ratio and t < 0% or type(t) in ("int", "float") and t < 0 {
+    t *= -1
+    true
+  } else {
+    false
+  }
+  let (distance, segment, length, ..) = segment-at-t(segments, t, samples: samples, rev: rev)
   return if segment != none {
-    _point-on-segment(segment, distance, length: length, samples: samples)
+    _point-on-segment(segment, if rev { length - distance } else { distance }, length: length, samples: samples)
   }
 }
 
@@ -259,6 +266,10 @@
     let (start, end, distance, length) = _points-between-distance(s, distance)
 
     s = (vector.lerp(s.at(start), s.at(end), distance / length),) + s.slice(end)
+      // panic(s)
+    if rev {
+      s = s.rev()
+    }
   } else {
     s = if mode == "LINEAR" {
       bezier.cubic-shorten-linear(..s, distance)
@@ -281,8 +292,8 @@
       segments,
       start-distance
     )
-    segments = segments.slice(0, index)
-    segments.push(
+    segments = segments.slice(index + 1)
+    segments.insert(0,
       shorten-segment(
         segment, 
         distance,
@@ -297,8 +308,8 @@
       end-distance,
       rev: true
     )
-    segments = segments.slice(index)
-    segments.insert(0,
+    segments = segments.slice(0, index - 1)
+    segments.push(
       shorten-segment(
         segment, 
         -distance,

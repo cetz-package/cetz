@@ -108,6 +108,7 @@
 }
 
 #let place-marks-along-path(ctx, style, segments) = {
+  // panic(segments)
   style = process-style(ctx, style)
   
   let distance = (0, 0)
@@ -120,32 +121,33 @@
     let angle = if style.flex { 
       vector.angle2(pos, path-util.point-on-path(segments, mark.distance, samples: style.position-samples))
     } else {
-      let dir = path-util.direction(segments, 0%)
+      let (_, dir) = path-util.direction(segments, 0%)
       calc.atan2(dir.at(0), dir.at(1))
     }
 
     mark = transform-mark(mark, pos, angle)
     drawables += mark.drawables
-    distance.first() = mark.distance
+    distance.first() = mark.distance + mark.tip-offset
   }
   if style.end != none {
     let mark = (marks.at(style.end))(style)
 
     let pos = path-util.point-on-path(segments, 100%)
-
+    // style.flex = false
     let angle = if style.flex { 
-      vector.angle2(pos, path-util.point-on-path(segments, mark.distance, samples: style.position-samples))
+      vector.angle2(pos, path-util.point-on-path(segments, -mark.distance, samples: style.position-samples))
     } else {
-      let dir = path-util.direction(segments, 100%)
+      let (_, dir) = path-util.direction(segments, 100%)
       calc.atan2(dir.at(0), dir.at(1)) + 180deg
     }
 
     mark = transform-mark(mark, pos, angle)
     drawables += mark.drawables
-    distance.last() = mark.distance
+    distance.last() = mark.distance + mark.tip-offset
   }
 
   segments = path-util.shorten-path(segments, ..distance, mode: if style.flex { "CURVED" } else { "LINEAR" }, samples: style.position-samples)
+  // panic(segments)
 
   return (drawables, segments)
 
