@@ -66,12 +66,18 @@
   return style
 }
 
-#let transform-mark(mark, pos, angle) = {
+#let transform-mark(mark, pos, angle, flip: false, reverse: false, slant: none) = {
   mark.drawables = drawable.apply-transform(
     matrix.mul-mat(
-      matrix.transform-translate(..pos),
-      matrix.transform-rotate-z(angle),
-      matrix.transform-translate(mark.tip-offset, 0, 0)
+      ..(
+          // matrix.transform-scale(-1),
+        matrix.transform-translate(..pos),
+        matrix.transform-rotate-z(angle + if reverse { 180deg }),
+        matrix.transform-translate(if reverse { -mark.length }  else { mark.tip-offset }, 0, 0),
+        if slant not in (none, 0deg) {
+          matrix.transform-shear-x(slant)
+        },
+      ).filter(e => e != none)
     ),
     mark.drawables
   )
@@ -115,35 +121,36 @@
   let drawables = ()
   if style.start != none {
     let mark = (marks.at(style.start))(style)
+    mark.length = mark.distance + mark.tip-offset
 
     let pos = path-util.point-on-path(segments, 0%)
 
     let angle = if style.flex { 
-      vector.angle2(pos, path-util.point-on-path(segments, mark.distance, samples: style.position-samples))
+      vector.angle2(pos, path-util.point-on-path(segments, mark.length, samples: style.position-samples))
     } else {
       let (_, dir) = path-util.direction(segments, 0%)
       calc.atan2(dir.at(0), dir.at(1))
     }
 
-    mark = transform-mark(mark, pos, angle)
+    mark = transform-mark(mark, pos, angle, reverse: style.reverse, slant: style.slant)
     drawables += mark.drawables
-    distance.first() = mark.distance + mark.tip-offset
+    distance.first() = mark.length
   }
   if style.end != none {
     let mark = (marks.at(style.end))(style)
+    mark.length = mark.distance + mark.tip-offset
 
     let pos = path-util.point-on-path(segments, 100%)
-    // style.flex = false
     let angle = if style.flex { 
-      vector.angle2(pos, path-util.point-on-path(segments, -mark.distance, samples: style.position-samples))
+      vector.angle2(pos, path-util.point-on-path(segments, -mark.length, samples: style.position-samples))
     } else {
       let (_, dir) = path-util.direction(segments, 100%)
       calc.atan2(dir.at(0), dir.at(1)) + 180deg
     }
 
-    mark = transform-mark(mark, pos, angle)
+    mark = transform-mark(mark, pos, angle, reverse: style.reverse, slant: style.slant)
     drawables += mark.drawables
-    distance.last() = mark.distance + mark.tip-offset
+    distance.last() = mark.length
   }
 
   segments = path-util.shorten-path(segments, ..distance, mode: if style.flex { "CURVED" } else { "LINEAR" }, samples: style.position-samples)

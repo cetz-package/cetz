@@ -37,6 +37,14 @@
    (0, 0, 0, 1))
 }
 
+// Return 4x4 x-shear matrix
+#let transform-shear-x(factor) = {
+  ((1, factor, 0, 0),
+   (0, 1, 0, 0),
+   (0, 0, 1, 0),
+   (0, 0, 0, 1))
+}
+
 /// Return a $4 times 4$ z-shear matrix
 #let transform-shear-z(factor) = {
   ((1, 0, factor, 0),
