@@ -1,0 +1,20 @@
+#!/bin/env python
+import glob, os, sys, re
+
+import_regexp = re.compile(f'#(import|include)\\s*"(/.+)"')
+
+def replace_imports(filename):
+    s = None
+    with open(filename, "r") as file:
+        s = file.read()
+        def abs_to_rel(captures):
+            g = captures.groups()
+            p = os.path.relpath("." + g[1], os.path.dirname(filename))
+            return f'#{g[0]} "{p}"'
+        s = re.sub(import_regexp, abs_to_rel, s)
+    with open(filename, "w") as file:
+        file.write(s)
+
+os.chdir(sys.argv[1])
+for file in glob.iglob("./**/*.typ", recursive=True):
+    replace_imports(file)
