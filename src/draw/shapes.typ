@@ -238,12 +238,12 @@
     let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
 
     // Calculate marks and optimized angles
-    let (marks, draw-arc-start, draw-start-angle, draw-stop-angle) = if style.mark != none {
-      mark_.place-marks-along-arc(ctx, start-angle, stop-angle,
-        arc-start, rx, ry, style, style.mark)
-    } else {
-      (none, arc-start, start-angle, stop-angle)
-    }
+    // let (marks, draw-arc-start, draw-start-angle, draw-stop-angle) = if style.mark != none {
+    //   mark_.place-marks-along-arc(ctx, start-angle, stop-angle,
+    //     arc-start, rx, ry, style, style.mark)
+    // } else {
+    //   (none, arc-start, start-angle, stop-angle)
+    // }
 
     let (x, y, z) = arc-start
     let path = drawable.arc(
@@ -255,6 +255,12 @@
       stroke: style.stroke,
       fill: style.fill,
       mode: style.mode,)
+
+    if style.mark != none {
+      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, path.segments)
+      path.segments = segments
+      path (path,) + marks
+    }
 
     let sector-center = (
       x - rx * calc.cos(start-angle),
@@ -294,6 +300,17 @@
         0.5
       )
     }
+
+    // compass anchors are placed on the shapes border in tikz so prototype version is setup for use here
+    let border = anchor_.border.with(
+      center, 
+      2*rx, 2*ry, 
+      drawables + if style.mode == "OPEN" {
+        (drawable.path((
+          path-util.line-segment((arc-start, sector-center, arc-end)),
+        )),)
+      }
+    )
 
     let (transform, anchors) = anchor_.setup(
       anchor => {
@@ -346,7 +363,7 @@
       anchors: anchors,
       drawables: drawable.apply-transform(
         transform,
-        path,
+        drawables,
       )
     )
   },)
@@ -1336,15 +1353,16 @@
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
     let style = styles.resolve(ctx.style, merge: style, root: "catmull")
-    let curves = bezier_.catmull-to-cubic(
+    let segments = bezier_.catmull-to-cubic(
       pts,
       style.tension,
-      close: close)
+      close: close
+    ).map(c => path-util.cubic-segment(..c))
 
-    let (marks, curves) = if style.mark != none {
-      mark_.place-marks-along-beziers(ctx, curves, style, style.mark)
+    let (marks, segments) = if style.mark != none {
+      mark_.place-marks-along-path(ctx, style.mark, segments)
     } else {
-      (none, curves)
+      (none, segments)
     }
 
     let path = drawable.path(
@@ -1427,18 +1445,19 @@
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
     let style = styles.resolve(ctx.style, merge: style, root: "hobby")
-    let curves = hobby_.hobby-to-cubic(
+    let segments = hobby_.hobby-to-cubic(
       pts,
       ta: ta,
       tb: tb,
       omega: style.omega,
       rho: style.rho,
-      close: close)
+      close: close
+    ).map(c => path-util.cubic-segment(..c))
 
-    let (marks, curves) = if style.mark != none {
-      mark_.place-marks-along-beziers(ctx, curves, style, style.mark)
+    let (marks, segments) = if style.mark != none {
+      mark_.place-marks-along-path(ctx, style.mark, segments)
     } else {
-      (none, curves)
+      (none, segments)
     }
 
     let path = drawable.path(
