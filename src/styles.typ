@@ -26,6 +26,9 @@
     end: none,    // Mark end symbol(s)
     stroke: auto,
     fill: auto,
+    slant: none,
+    flip: false,
+    reverse: false,
     /// If true, the mark points in the direction of the secant from
     /// its base to its tip. If false, the tangent at the marks tip is used.
     flex: true,
