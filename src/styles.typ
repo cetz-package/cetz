@@ -27,6 +27,7 @@
     stroke: auto,
     fill: auto,
     slant: none,
+    harpoon: false,
     flip: false,
     reverse: false,
     /// If true, the mark points in the direction of the secant from

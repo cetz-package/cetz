@@ -13,7 +13,7 @@
   if style.stroke.join == "round" {
     return style.stroke.thickness / 2
   }
-  let angle = calc.atan(style.width / (2 * style.length)) * 2
+  let angle = calc.atan(style.width / (2 * style.length) / if style.harpoon { 2 } else { 1 } ) * 2
   // https://svgwg.org/svg2-draft/painting.html#LineJoin If the miter length divided by the stroke width exceeds the stroke miter limit then the miter join is converted to a bevel.
   if style.stroke.join == "miter" {
     let angle = calc.abs(angle)
@@ -36,7 +36,7 @@
         (
           (0, 0),
           (style.length, style.width/2),
-          (style.length, -style.width/2)
+          if style.harpoon { (style.length, 0) } else { (style.length, -style.width/2) }
         )
       ),
       close: true,
@@ -49,7 +49,7 @@
 )
 
 #let process-style(ctx, style) = {
-  assert(style.stroke != none)
+  // assert(style.stroke != none)
   style.stroke = util.resolve-stroke(style.stroke)
   style.stroke.thickness = util.resolve-number(ctx, style.stroke.thickness)
 
@@ -72,11 +72,21 @@
       ..(
           // matrix.transform-scale(-1),
         matrix.transform-translate(..pos),
-        matrix.transform-rotate-z(angle + if reverse { 180deg }),
-        matrix.transform-translate(if reverse { -mark.length }  else { mark.tip-offset }, 0, 0),
+        matrix.transform-rotate-z(angle),
+        matrix.transform-translate(if reverse { mark.length }  else { mark.tip-offset }, 0, 0),
         if slant not in (none, 0deg) {
           matrix.transform-shear-x(slant)
         },
+        if flip or reverse {
+          matrix.transform-scale({
+            if flip {
+              (y: -1)
+            }
+            if reverse {
+              (x: -1)
+            }
+          })
+        }
       ).filter(e => e != none)
     ),
     mark.drawables
@@ -114,7 +124,6 @@
 }
 
 #let place-marks-along-path(ctx, style, segments) = {
-  // panic(segments)
   style = process-style(ctx, style)
   
   let distance = (0, 0)
@@ -132,7 +141,7 @@
       calc.atan2(dir.at(0), dir.at(1))
     }
 
-    mark = transform-mark(mark, pos, angle, reverse: style.reverse, slant: style.slant)
+    mark = transform-mark(mark, pos, angle, reverse: style.reverse, slant: style.slant, flip: style.flip)
     drawables += mark.drawables
     distance.first() = mark.length
   }
@@ -154,7 +163,6 @@
   }
 
   segments = path-util.shorten-path(segments, ..distance, mode: if style.flex { "CURVED" } else { "LINEAR" }, samples: style.position-samples)
-  // panic(segments)
 
   return (drawables, segments)
 
