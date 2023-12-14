@@ -45,6 +45,25 @@
     ),
     tip-offset: calculate-tip-offset(style),
     distance: style.length
+  ),
+  stealth: (style) => (
+    drawables: drawable.path(
+      path-util.line-segment(
+        (
+          (0, 0),
+          (style.length, style.width/2),
+          (style.length - style.inset, 0),
+          if not style.harpoon {
+            (style.length, -style.width/2)
+          }
+        ).filter(c => c != none)
+      ),
+      stroke: style.stroke,
+      close: true,
+      fill: style.fill
+    ),
+    distance: style.length - style.inset,
+    tip-offset: calculate-tip-offset(style)
   )
 )
 
