@@ -1,4 +1,5 @@
-#import "@preview/oxifmt:0.2.0": strfmt
+#import "deps.typ"
+#import deps.oxifmt: strfmt
 
 #import "matrix.typ"
 #import "vector.typ"
