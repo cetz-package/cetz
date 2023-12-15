@@ -749,7 +749,7 @@
           y *= y-step
           y += from.at(1)
           drawable.path(
-            path-util.line-segment(((from.at(0), y), (to.at(1), y))),
+            path-util.line-segment(((from.at(0), y), (to.at(0), y))),
             stroke: style.stroke
           )
         })

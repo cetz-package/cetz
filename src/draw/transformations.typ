@@ -3,6 +3,24 @@
 #import "/src/vector.typ"
 #import "/src/util.typ"
 
+// Utility for applying translation to and from
+// the origin to apply a transformation matrix to.
+//
+// - ctx (context): Context
+// - transform (matrix): Transformation matrix
+// - origin (coordinate): Origin coordinate or none
+#let _transform-around-origin(ctx, transform, origin) = {
+  if origin != none {
+    let (_, origin) = coordinate.resolve(ctx, origin, update: false)
+    let a = matrix.transform-translate(..origin)
+    let b = matrix.transform-translate(..vector.scale(origin, -1))
+
+    matrix.mul-mat(a, matrix.mul-mat(transform, b))
+  } else {
+    transform
+  }
+}
+
 /// Sets the transformation matrix.
 ///
 /// - mat (none, matrix): The 4x4 transformation matrix to set. If `none` is passed, the transformation matrix is set to the identity matrix (`matrix.ident()`).
@@ -43,7 +61,8 @@
 /// - ..angles (angle): A single angle as a positional argument to rotate on the z-axis by.
 ///   Named arguments of `x`, `y` or `z` can be given to rotate on their respective axis.
 ///   You can give named arguments of `yaw`, `pitch` or `roll`, too.
-#let rotate(..angles) = {
+/// - origin (none,coordinate): Origin to rotate around, or (0, 0, 0) if set to `none`.
+#let rotate(..angles, origin: none) = {
   assert(angles.pos().len() == 1 or angles.named().len() > 0,
     message: "Rotate takes a single z-angle or angles " +
              "(x, y, z or yaw, pitch, roll) as named arguments, got: " + repr(angles))
@@ -68,7 +87,8 @@
   }
 
   (ctx => {
-    ctx.transform = matrix.mul-mat(ctx.transform, mat)
+    ctx.transform = matrix.mul-mat(ctx.transform,
+      _transform-around-origin(ctx, mat, origin))
     return (ctx: ctx)
   },)
 }
@@ -131,7 +151,8 @@
 /// - ..args (float, ratio): A single value to scale the transformation matrix by or per axis
 ///   scaling factors. Accepts a single float or ratio value or any combination of the named arguments
 ///   `x`, `y` and `z` to set per axis scaling factors. A ratio of 100% is the same as the value $1$.
-#let scale(..args) = {
+/// - origin (none,coordinate): Origin to rotate around, or (0, 0, 0) if set to `none`.
+#let scale(..args, origin: none) = {
   assert((args.pos().len() == 1 and args.named() == (:)) or
          (args.pos() == () and args.named() != (:)),
     message: "Expected a single positional argument or one or more named arguments, got: " + repr(args))
@@ -156,7 +177,9 @@
   })
 
   (ctx => {
-    ctx.transform = matrix.mul-mat(ctx.transform, matrix.transform-scale(vec))
+    let mat = matrix.transform-scale(vec)
+    ctx.transform = matrix.mul-mat(ctx.transform,
+      _transform-around-origin(ctx, mat, origin))
     return (ctx: ctx)
   },)
 }
