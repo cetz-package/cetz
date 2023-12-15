@@ -1,6 +1,7 @@
-#import "./vector.typ"
-#import "./util.typ"
-#import "@preview/oxifmt:0.2.0": strfmt
+#import "vector.typ"
+#import "util.typ"
+#import "deps.typ"
+#import deps.oxifmt: strfmt
 
 #let resolve-xyz(c) = {
   // (x: <number> or <none>, y: <number> or <none>, z: <number> or <none>)

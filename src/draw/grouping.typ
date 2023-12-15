@@ -1,5 +1,3 @@
-#import "@preview/oxifmt:0.2.0": strfmt
-
 #import "/src/process.typ"
 #import "/src/intersection.typ"
 #import "/src/path-util.typ"
@@ -10,6 +8,8 @@
 #import "/src/coordinate.typ"
 #import "/src/aabb.typ"
 #import "/src/anchor.typ" as anchor_
+#import "/src/deps.typ"
+#import deps.oxifmt: strfmt
 
 #import "transformations.typ": move-to
 
