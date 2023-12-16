@@ -4,8 +4,8 @@
 gallery_dir := "./gallery"
 test_dir := "./tests"
 
-package target:
-  ./scripts/package "{{target}}"
+package target *options:
+  ./scripts/package "{{target}}" {{options}}
 
 install target="@local":
   ./scripts/package "{{target}}"

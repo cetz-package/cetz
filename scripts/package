@@ -24,7 +24,7 @@ else
 fi
 
 if (( $# < 1 )) || [[ "${1:-}" == "help" ]]; then
-  echo "package TARGET"
+  echo "package TARGET [--relative-paths]"
   echo ""
   echo "Packages all relevant files into a directory named '${PKG_PREFIX}/<version>'"
   echo "at TARGET. If TARGET is set to @local, the local Typst package directory"
@@ -45,8 +45,22 @@ function read-toml() {
 }
 
 SOURCE="$(cd "$(dirname "$0")"; pwd -P)/.." # macOS has no realpath
-TARGET="${1:?Missing target path or @local}"
+TARGET="${1:?Missing target path or @local}"; shift
 VERSION="$(read-toml "$SOURCE/typst.toml" "version")"
+
+OPT_RELATIVE_PATHS=false
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --relative-paths)
+      OPT_RELATIVE_PATHS=true
+      shift
+      ;;
+    *)
+      echo "Unexpected option $1!"
+      exit 1
+      ;;
+  esac
+done
 
 if [[ "$TARGET" == "@local" ]] || [[ "$TARGET" == "install" ]]; then
   TARGET="${DATA_DIR}/typst/packages/local/"
@@ -67,5 +81,11 @@ echo "Packaged to: $TARGET"
 if rm -rf "${TARGET:?}" 2>/dev/null; then
   echo "Overwriting existing version."
 fi
+
+if $OPT_RELATIVE_PATHS; then
+  echo "Changing imports to relative."
+  "$SOURCE/scripts/relpaths" "$TMP"
+fi
+
 mkdir -p "$TARGET"
 mv "$TMP"/* "$TARGET"
