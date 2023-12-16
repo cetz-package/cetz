@@ -7,8 +7,9 @@
 #let typst-content = content
 
 // Global defaults
-#let tic-limit = 100
 #let default-style = (
+  tick-limit: 100,
+  minor-tick-limit: 1000,
   fill: none,
   stroke: black,
   label: (
@@ -136,11 +137,13 @@
 /// Compute list of linear ticks for axis
 ///
 /// - axis (axis): Axis
-#let compute-linear-ticks(axis) = {
+#let compute-linear-ticks(axis, style) = {
   let (min, max) = (axis.min, axis.max)
   let dt = max - min; if (dt == 0) { dt = 1 }
   let ticks = axis.ticks
   let ferr = util.float-epsilon
+  let tick-limit = style.tick-limit
+  let minor-tick-limit = style.minor-tick-limit
 
   let l = ()
   if ticks != none {
@@ -151,10 +154,12 @@
       if axis.min > axis.max { ticks.step *= -1 }
 
       let s = 1 / ticks.step
-      let n = range(int(min * s), int(max * s + 1.5))
 
-      assert(n.len() <= tic-limit,
-             message: "Number of major ticks exceeds limit.")
+      let num-ticks = int(max * s + 1.5)  - int(min * s)
+      assert(num-ticks <= tick-limit,
+             message: "Number of major ticks exceeds limit " + str(tick-limit))
+
+      let n = range(int(min * s), int(max * s + 1.5))
       for t in n {
         let v = (t / s - min) / dt
         if v >= 0 - ferr and v <= 1 + ferr {
@@ -169,11 +174,12 @@
              message: "Axis minor tick step must be positive")
 
       let s = 1 / ticks.minor-step
+
+      let num-ticks = int(max * s + 1.5) - int(min * s)
+      assert(num-ticks <= minor-tick-limit,
+             message: "Number of minor ticks exceeds limit " + str(minor-tick-limit))
+
       let n = range(int(min * s), int(max * s + 1.5))
-
-      assert(n.len() <= tic-limit * 10,
-             message: "Number of minor ticks exceeds limit.")
-
       for t in n {
         let v = (t / s - min) / dt
         if v in major-tick-values {
@@ -222,7 +228,7 @@
 ///   (rel-value: float, label: content, major: bool)
 ///
 /// - axis (axis): Axis object
-#let compute-ticks(axis) = {
+#let compute-ticks(axis, style) = {
   let find-max-n-ticks(axis, n: 11) = {
     let dt = calc.abs(axis.max - axis.min)
     let scale = calc.pow(10, calc.floor(calc.log(dt, base: 10) - 1))
@@ -252,7 +258,7 @@
     }
   }
 
-  let ticks = compute-linear-ticks(axis)
+  let ticks = compute-linear-ticks(axis, style)
   ticks += fixed-ticks(axis)
   return ticks
 }
@@ -352,10 +358,7 @@
       for (axis, _, anchor, placement, tic-dir, name) in axis-settings {
         let style = style
         if name in style {
-          style = styles.resolve(style, root: name, base: (
-            tick: auto,
-            grid: auto
-          ))
+          style = styles.resolve(style, merge: style.at(name))
         }
 
         if axis != none {
@@ -367,7 +370,7 @@
 
           let is-mirror = axis.at("is-mirror", default: false)
 
-          for (pos, label, major) in compute-ticks(axis) {
+          for (pos, label, major) in compute-ticks(axis, style) {
             let (x, y) = placement
             if x == auto { x = pos * w + padding.l }
             if y == auto { y = pos * h + padding.b }
@@ -537,7 +540,7 @@
       if axis != none {
         let style = style
         if name in style {
-          style = util.merge-dictionary(style, style.at(name))
+          style = styles.resolve(style, merge: style.at(name))
         }
 
         let grid-mode = axis.ticks.at("grid", default: false)
@@ -546,7 +549,7 @@
           minor: grid-mode in ("minor", "both")
         )
 
-        for (pos, label, major) in compute-ticks(axis) {
+        for (pos, label, major) in compute-ticks(axis, style) {
           let (x, y) = placement
           if x == auto { x = pos * w }
           if y == auto { y = pos * h }
