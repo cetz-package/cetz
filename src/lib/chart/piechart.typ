@@ -140,10 +140,10 @@
 /// - slice-style (function,array,gradient): Slice style of the following types:
 ///   - function: A function of the form `index => style` that must return a style dictionary.
 ///     This can be a `palette` function.
-///   - array: An array of style dictionaries of at least one item. For each slice the style at the slices
+///   - array: An array of style dictionaries or fill colors of at least one item. For each slice the style at the slices
 ///     index modulo the arrays length gets used.
 ///   - gradient: A gradient that gets sampled for each data item using the the slices
-///     index divided by the number of slices as position.
+///     index divided by the number of slices as position on the gradient.
 ///   If one of stroke or fill is not in the style dictionary, it is taken from the charts style.
 #let piechart(data,
               value-key: none,
@@ -209,9 +209,16 @@
     let style-at = if type(slice-style) == function {
       slice-style
     } else if type(slice-style) == array {
-      i => slice-style.at(calc.rem(i, slice-style.len()))
+      i => {
+        let s = slice-style.at(calc.rem(i, slice-style.len()))
+        if type(s) == color {
+          (fill: s)
+        } else {
+          s
+        }
+      }
     } else if type(slice-style) == gradient {
-      i => (fill: slice-style.sample(i / data.len() * 100%), stroke: style.stroke)
+      i => (fill: slice-style.sample(i / data.len() * 100%))
     }
 
     let start-angle = style.start
