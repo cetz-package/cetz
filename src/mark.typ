@@ -5,6 +5,9 @@
 #import "matrix.typ"
 #import "util.typ"
 #import "path-util.typ"
+#import "styles.typ"
+
+#let check-mark(style) = (style.start, style.end, style.symbol).any(v => v != none)
 
 #let calculate-tip-offset(style) = {
   if style.length == 0 {
@@ -67,22 +70,63 @@
   )
 )
 
-#let process-style(ctx, style) = {
-  // assert(style.stroke != none)
-  style.stroke = util.resolve-stroke(style.stroke)
-  style.stroke.thickness = util.resolve-number(ctx, style.stroke.thickness)
 
-  for (k, v) in style {
-    if k in ("length", "width", "inset", "sep") {
-      style.insert(k, if type(v) == ratio {
-        style.stroke.thickness * v
-      } else {
-        util.resolve-number(ctx, v)
-      } * style.scale)
-    }
+#let process-style(ctx, style, root) = {
+  let base-style = (
+    symbol: auto,
+    fill: auto,
+    stroke: auto,
+    slant: auto,
+    harpoon: auto,
+    flip: auto,
+    reverse: auto,
+    inset: auto,
+    width: auto,
+    scale: auto,
+    length: auto,
+    sep: auto,
+    flex: auto,
+    position-samples: auto
+  )
+
+  if type(style.at(root)) != array {
+    style.at(root) = (style.at(root),)
+  }
+  if type(style.symbol) != array {
+    style.symbol = (style.symbol,)
   }
 
-  return style
+  let out = ()
+  for i in range(calc.max(style.at(root).len(), style.symbol.len())) {
+    let style = style
+    style.symbol = style.symbol.at(i, default: auto)
+    style.at(root) = style.at(root).at(i, default: auto)
+
+    if type(style.symbol) == dictionary {
+      style = styles.resolve(style, merge: style.symbol)
+    }
+
+    if type(style.at(root)) == str {
+      style.symbol = style.at(root)
+    } else if type(style.at(root)) == dictionary {
+      style = styles.resolve(style, root: root, base: base-style)
+    }
+
+    style.stroke = util.resolve-stroke(style.stroke)
+    style.stroke.thickness = util.resolve-number(ctx, style.stroke.thickness)
+
+    for (k, v) in style {
+      if k in ("length", "width", "inset", "sep") {
+        style.insert(k, if type(v) == ratio {
+          style.stroke.thickness * v
+        } else {
+          util.resolve-number(ctx, v)
+        } * style.scale)
+      }
+    }
+    out.push(style)
+  }
+  return out
 }
 
 #let transform-mark(mark, pos, angle, flip: false, reverse: false, slant: none) = {
@@ -142,46 +186,96 @@
   )
 }
 
+#let place-mark-on-path(ctx, styles, segments, is-end: false) = {
+  if type(styles) != array {
+    styles = (styles,)
+  }
+  let distance = 0
+  let drawables = ()
+  for style in styles {
+    if style.symbol == none {
+      continue
+    }
+    let mark = (marks.at(style.symbol))(style)
+    mark.length = mark.distance + mark.tip-offset
+
+    let pos = path-util.point-on-path(
+      segments,
+      if distance != 0 {
+        distance * if is-end { -1 } else { 1 }
+      } else {
+        if is-end { 
+          100%
+        } else {
+          0%
+        }
+      }
+    )
+
+    let angle = if style.flex {
+      vector.angle2(
+        pos,
+        path-util.point-on-path(
+          segments,
+          (mark.length + distance) * if is-end { -1 } else { 1 },
+          samples: style.position-samples
+        )
+      )
+    } else {
+      let (_, dir) = path-util.direction(
+        segments,
+        if is-end {
+          100%
+        } else {
+          0%
+        }
+      )
+      calc.atan2(dir.at(0), dir.at(1)) + if is-end { 180deg }
+    }
+
+    mark = transform-mark(
+      mark,
+      pos,
+      angle,
+      reverse: style.reverse,
+      slant: style.slant, flip: style.flip
+    )
+    drawables += mark.drawables
+    distance += mark.length
+  }
+
+  return (
+    drawables: drawables,
+    distance: distance
+  )
+}
+
 #let place-marks-along-path(ctx, style, segments) = {
-  style = process-style(ctx, style)
-  
   let distance = (0, 0)
   let drawables = ()
-  if style.start != none {
-    let mark = (marks.at(style.start))(style)
-    mark.length = mark.distance + mark.tip-offset
-
-    let pos = path-util.point-on-path(segments, 0%)
-
-    let angle = if style.flex { 
-      vector.angle2(pos, path-util.point-on-path(segments, mark.length, samples: style.position-samples))
-    } else {
-      let (_, dir) = path-util.direction(segments, 0%)
-      calc.atan2(dir.at(0), dir.at(1))
-    }
-
-    mark = transform-mark(mark, pos, angle, reverse: style.reverse, slant: style.slant, flip: style.flip)
-    drawables += mark.drawables
-    distance.first() = mark.length
+  if style.start != none or style.symbol != none {
+    
+    let (drawables: start-drawables, distance: start-distance) = place-mark-on-path(
+      ctx,
+      process-style(ctx, style, "start"),
+      segments
+    )
+    drawables += start-drawables
+    distance.first() = start-distance
   }
-  if style.end != none {
-    let mark = (marks.at(style.end))(style)
-    mark.length = mark.distance + mark.tip-offset
-
-    let pos = path-util.point-on-path(segments, 100%)
-    let angle = if style.flex { 
-      vector.angle2(pos, path-util.point-on-path(segments, -mark.length, samples: style.position-samples))
-    } else {
-      let (_, dir) = path-util.direction(segments, 100%)
-      calc.atan2(dir.at(0), dir.at(1)) + 180deg
-    }
-
-    mark = transform-mark(mark, pos, angle, reverse: style.reverse, slant: style.slant)
-    drawables += mark.drawables
-    distance.last() = mark.length
+  if style.end != none or style.symbol != none {
+    let (drawables: end-drawables, distance: end-distance) = place-mark-on-path(
+      ctx,
+      process-style(ctx, style, "end"),
+      segments,
+      is-end: true
+    )
+    drawables += end-drawables
+    distance.last() = end-distance
   }
-
-  segments = path-util.shorten-path(segments, ..distance, mode: if style.flex { "CURVED" } else { "LINEAR" }, samples: style.position-samples)
+  if distance != (0, 0) {
+    segments = path-util.shorten-path(segments, ..distance, mode: if style.flex { "CURVED" } else { "LINEAR" }, samples: style.position-samples)
+  }
 
   return (drawables, segments)
 
