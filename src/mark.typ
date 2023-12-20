@@ -74,7 +74,7 @@
       ..(
         matrix.transform-translate(..pos),
         matrix.transform-rotate-z(angle),
-        matrix.transform-translate(if reverse { mark.length }  else { mark.tip-offset }, 0, 0),
+        matrix.transform-translate(if reverse { mark.length } else { mark.tip-offset }, 0, 0),
         if slant not in (none, 0deg) {
           matrix.transform-shear-x(slant)
         },
@@ -133,6 +133,7 @@
   let distance = 0
   let drawables = ()
   for (i, style) in styles.enumerate() {
+    let is-last = i + 1 == styles.len()
     if style.symbol == none {
       continue
     }
@@ -200,8 +201,12 @@
     )
     drawables += mark.drawables
     distance += mark.length
-    if i + 1 < styles.len() {
+    if not is-last {
       distance += style.sep
+    } else if not style.reverse {
+      // The last mark with an inset needs to offset the
+      // distance, so that the path connects to the tip
+      distance -= mark.at("inset", default: 0)
     }
   }
 

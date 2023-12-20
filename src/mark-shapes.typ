@@ -100,12 +100,29 @@
       tip-offset: style.stroke.thickness / 2,
     )
   },
+  tee: (style) => (
+    drawables: drawable.path(
+      path-util.line-segment((
+        (style.length, -style.width/2),
+        (0, -style.width/2),
+        (0, +style.width/2),
+        (style.length, +style.width/2))),
+      stroke: style.stroke,
+      fill: none,
+      close: false,
+    ),
+    distance: style.length,
+    inset: style.length,
+    tip-offset: style.stroke.thickness / 2,
+  )
 )
 
 // Mark mnemonics
 #let mnemonics = (
   ">": ("triangle", false),
   "<": ("triangle", true),
+  "]": ("tee",      false),
+  "[": ("tee",      true),
   "|": ("bar",      false),
   "o": ("circle",   false),
 )
