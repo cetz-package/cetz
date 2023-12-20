@@ -70,13 +70,44 @@
     ),
     distance: style.length - style.inset,
     tip-offset: calculate-tip-offset(style)
-  )
+  ),
+  bar: (style) => (
+    drawables: drawable.path(
+      path-util.line-segment(((0, -style.width/2), (0, +style.width/2))),
+      stroke: style.stroke,
+      fill: none,
+      close: false,
+    ),
+    distance: 0,
+    tip-offset: style.stroke.thickness / 2,
+  ),
+  ellipse: (style) => (
+    drawables: drawable.ellipse(
+      style.length / 2, 0, 0, style.length / 2, style.width / 2,
+      stroke: style.stroke,
+      fill: style.fill),
+    distance: style.length,
+    tip-offset: style.stroke.thickness / 2,
+  ),
+  circle: (style) => {
+    let radius = calc.min(style.length, style.width) / 2
+    (
+      drawables: drawable.ellipse(
+        radius, 0, 0, radius, radius,
+        stroke: style.stroke,
+        fill: style.fill),
+      distance: radius * 2,
+      tip-offset: style.stroke.thickness / 2,
+    )
+  },
 )
 
 // Mark mnemonics
 #let mnemonics = (
   ">": ("triangle", false),
   "<": ("triangle", true),
+  "|": ("bar",      false),
+  "o": ("circle",   false),
 )
 
 // Get a mark shape + rever tuple for a mark name
