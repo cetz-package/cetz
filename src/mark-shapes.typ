@@ -73,12 +73,18 @@
   ),
   bar: (style) => (
     drawables: drawable.path(
-      path-util.line-segment(((0, -style.width/2), (0, +style.width/2))),
+      path-util.line-segment(
+        if style.harpoon {
+          ((0, 0), (0, +style.width/2))
+        } else {
+          ((0, -style.width/2), (0, +style.width/2))
+        }),
       stroke: style.stroke,
       fill: none,
       close: false,
     ),
     distance: 0,
+    inset: style.length + style.stroke.thickness / 2,
     tip-offset: style.stroke.thickness / 2,
   ),
   ellipse: (style) => (
@@ -102,17 +108,23 @@
   },
   tee: (style) => (
     drawables: drawable.path(
-      path-util.line-segment((
-        (style.length, -style.width/2),
-        (0, -style.width/2),
-        (0, +style.width/2),
-        (style.length, +style.width/2))),
+      path-util.line-segment(
+        if style.harpoon {
+          ((style.length, style.width/2),
+           (0, style.width/2),
+           (0, 0))
+        } else {
+          ((style.length, -style.width/2),
+           (0, -style.width/2),
+           (0, +style.width/2),
+           (style.length, +style.width/2))
+        }),
       stroke: style.stroke,
       fill: none,
       close: false,
     ),
     distance: style.length,
-    inset: style.length,
+    inset: style.length + style.stroke.thickness / 2,
     tip-offset: style.stroke.thickness / 2,
   )
 )

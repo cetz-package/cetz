@@ -68,7 +68,7 @@
   return out
 }
 
-#let transform-mark(mark, pos, angle, flip: false, reverse: false, slant: none) = {
+#let transform-mark(mark, pos, angle, flip: false, reverse: false, slant: none, harpoon: false) = {
   mark.drawables = drawable.apply-transform(
     matrix.mul-mat(
       ..(
@@ -197,7 +197,9 @@
       pos,
       angle,
       reverse: style.reverse,
-      slant: style.slant, flip: style.flip
+      slant: style.slant,
+      flip: style.flip,
+      harpoon: style.harpoon,
     )
     drawables += mark.drawables
     distance += mark.length
