@@ -129,7 +129,7 @@
   }
   let distance = 0
   let drawables = ()
-  for style in styles {
+  for (i, style) in styles.enumerate() {
     if style.symbol == none {
       continue
     }
@@ -179,6 +179,9 @@
     )
     drawables += mark.drawables
     distance += mark.length
+    if i + 1 < styles.len() {
+      distance += style.sep
+    }
   }
 
   return (

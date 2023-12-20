@@ -136,8 +136,6 @@
   }
 }
 
-
-
 #let segment-at-t(segments, t, rev: false, samples: default-samples) = {
   let lengths = segments.map(_segment-length.with(samples: samples))
   let total = lengths.sum()
@@ -157,7 +155,6 @@
   for (i, segment-length) in segments.zip(lengths).enumerate() {
     let (segment, length) = segment-length
     if travelled <= t and t <= travelled + length {
-      // if rev { panic(t - travelled) }
       return (
         index: if rev { segments.len() - i } else { i },
         segment: segment,
