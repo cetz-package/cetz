@@ -5,7 +5,7 @@
 #import "util.typ"
 #import "path-util.typ"
 #import "styles.typ"
-#import "mark-shapes.typ"
+#import "mark-shapes.typ": get-mark
 
 #let check-mark(style) = (style.start, style.end, style.symbol).any(v => v != none)
 
@@ -107,8 +107,8 @@
 /// -> A dictionary with the keys:
 ///   - drawables (drawables): The transformed drawables of the mark.
 ///   - distance: The distance between the tip of the mark and the end.
-#let place-mark(style, pos, angle) = {
-  let (drawables, distance, tip-offset) = (mark-shapes.marks.at(style.symbol))(style)
+#let place-mark(ctx, style, pos, angle) = {
+  let (drawables, distance, tip-offset) = (get-mark(ctx, style.symbol))(style)
 
   return (
     drawables: drawable.apply-transform(
@@ -133,7 +133,7 @@
     if style.symbol == none {
       continue
     }
-    let mark = (mark-shapes.marks.at(style.symbol))(style)
+    let mark = (get-mark(ctx, style.symbol))(style)
     mark.length = mark.distance + mark.tip-offset
 
     let pos = path-util.point-on-path(

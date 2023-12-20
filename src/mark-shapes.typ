@@ -72,3 +72,18 @@
     tip-offset: calculate-tip-offset(style)
   )
 )
+
+// Mark mnemonics
+#let mnemonics = (
+  ">": "triangle",
+)
+
+// Get a mark shape for a mark name
+#let get-mark(ctx, symbol) = {
+  // TODO: Support user supplied marks by looking them up in the ctx style
+
+  if not symbol in marks {
+    symbol = mnemonics.at(symbol)
+  }
+  return marks.at(symbol)
+}
