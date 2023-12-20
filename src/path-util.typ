@@ -203,17 +203,16 @@
 /// -> tuple: Tuple of the point at t and the scaled direction
 #let direction(segments, t, samples: default-samples) = {
   let (segment, distance, length, ..) = segment-at-t(segments, t, samples: samples)
+  let (kind, ..pts) = segment
   return (
     _point-on-segment(segment, distance, length: length, samples: samples),
-    if segment.first() == "line" {
-      let (start, end, distance, length) = _points-between-distance(segment.slice(1), distance)
+    if kind == "line" {
+      let (start, end, distance, length) = _points-between-distance(pts, distance)
       vector.norm(vector.sub(segment.at(end+1), segment.at(start+1)))
     } else {
-      bezier.cubic-derivative(..segment.slice(1), distance / length, samples: samples)
+      bezier.cubic-derivative(..pts, bezier.cubic-t-for-distance(..pts, distance, samples: samples))
     }
   )
-
-  // return (a, vector.scale(vector.norm(vector.sub(b, a)), scale))
 }
 
 /// Create a line segment with points
