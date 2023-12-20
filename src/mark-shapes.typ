@@ -158,14 +158,14 @@
     distance: style.length
   )},
   hook: (style) => {
-    let rx = calc.min(style.length / 2, style.width / 2)
+    let rx = calc.min(style.length, style.width / 2) / 2
     (drawables: drawable.path(
-      (path-util.line-segment(((style.length,0), (rx, 0))),
+      (path-util.line-segment(((style.length, 0), (rx, 0))),
        path-util.cubic-segment(
          (rx, 0),
          (rx, style.width / 2),
-         (0, 0),
-         (0, style.width / 2)
+         (-rx, 0),
+         (-rx, style.width / 2)
        ),
        path-util.line-segment(((rx, style.width / 2), (style.length, style.width / 2)))
       ),

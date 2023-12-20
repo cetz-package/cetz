@@ -457,9 +457,10 @@
 /// #example(vertical: true, ```
 /// rotate(-90deg)
 /// set-style(mark: (fill: black))
-/// line((1, -1), (1, 9), stroke: (paint: gray, dash: "dotted"))
-/// line((0, 8), (rel: (1, 0)), mark: (end: ">", harpoon: true))
-/// line((0, 7), (rel: (1, 0)), mark: (end: ">", harpoon: true, flip: true))
+/// line((1, -1), (1, 10), stroke: (paint: gray, dash: "dotted"))
+/// line((0, 9), (rel: (1, 0)), mark: (end: ">", harpoon: true))
+/// line((0, 8), (rel: (1, 0)), mark: (end: ">", harpoon: true, flip: true))
+/// line((0, 7), (rel: (1, 0)), mark: (end: "hook"))
 /// line((0, 6), (rel: (1, 0)), mark: (end: "<>"))
 /// line((0, 5), (rel: (1, 0)), mark: (end: "o"))
 /// line((0, 4), (rel: (1, 0)), mark: (end: "|"))
