@@ -727,6 +727,9 @@ styled the same way, see @plot.style.
 ==== Default `boxwhisker` Style
 #raw(repr(chart.boxwhisker-default-style))
 
+==== Default `piechart` Style
+#raw(repr(chart.piechart-default-style))
+
 == Palette <palette>
 
 A palette is a function of the form `index => style` that takes an

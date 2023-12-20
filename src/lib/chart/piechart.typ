@@ -51,6 +51,7 @@
     anchor: "center",
   ),
 )
+#let piechart-default-style = default-style
 
 /// Draw a pie- or donut-chart
 ///
