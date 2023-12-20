@@ -700,8 +700,6 @@ group(name: "c", anchor: "south-west", {
 })
 ```
 
-#doc-style.parse-show-module("/src/lib/chart/boxwhisker.typ")
-
 === Styling
 
 Charts share their axis system with plots and therefore can be
