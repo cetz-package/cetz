@@ -142,22 +142,6 @@
   let lengths = segments.map(_segment-length.with(samples: samples))
   let total = lengths.sum()
 
-  // if segments.len() == 0 {
-  //   return none
-  // } else if t in (0%, 0) {
-  //   return (
-  //     index: 0,
-  //     segment: segments.first(),
-  //     distance: 0
-  //   )
-  // } else if t in (100%, total) {
-  //   return (
-  //     index: segments.len(),
-  //     segment: segments.last(),
-  //     distance: total
-  //   )
-  // }
-
   if type(t) == ratio {
     assert(t >= 0% and t <= 100%)
     t = total * t / 100%

@@ -506,12 +506,16 @@
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, from, to)
     let style = styles.resolve(ctx.style, merge: style, root: "mark")
-    
-    return (ctx: ctx, drawables: drawable.mark(
-      ..pts,
-      style.symbol,
-      style
-    ))
+
+    if style.end == none {
+      style.end = style.symbol
+    }
+    style.start = none
+    style.symbol = none
+
+    let segments = (path-util.line-segment(pts),)
+    let (drawables, _) = mark_.place-marks-along-path(ctx, style, segments)
+    return (ctx: ctx, drawables: drawables)
   },)
 }
 
