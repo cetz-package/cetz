@@ -239,14 +239,14 @@
 
     let (x, y, z) = arc-start
     let path = drawable.arc(
-      ..draw-arc-start,
-      draw-start-angle,
-      draw-stop-angle,
+      ..arc-start,
+      start-angle,
+      stop-angle,
       rx,
       ry,
       stroke: style.stroke,
       fill: style.fill,
-      mode: style.mode,)
+      mode: style.mode)
 
     if mark_.check-mark(style.mark) {
       let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, path.segments)
