@@ -9,15 +9,24 @@
 
 #let check-mark(style) = (style.start, style.end, style.symbol).any(v => v != none)
 
+// Calculate triangular tip offset, depending on the strokes
+// join type.
+//
+// The angle is calculated for an isosceles triangle of base style.widh
+// and height style.length
 #let calculate-tip-offset(style) = {
-  if style.length == 0 {
-    return 0
-  }
   if style.stroke.join == "round" {
     return style.stroke.thickness / 2
   }
+
+  if style.length == 0 {
+    return 0
+  }
+
   let angle = calc.atan(style.width / (2 * style.length) / if style.harpoon { 2 } else { 1 } ) * 2
-  // https://svgwg.org/svg2-draft/painting.html#LineJoin If the miter length divided by the stroke width exceeds the stroke miter limit then the miter join is converted to a bevel.
+  // If the miter length divided by the stroke width exceeds
+  // the stroke miter limit then the miter join is converted to a bevel.
+  // See: https://svgwg.org/svg2-draft/painting.html#LineJoin
   if style.stroke.join == "miter" {
     let angle = calc.abs(angle)
     let miter-limit = 1 / calc.sin(angle / 2)
@@ -30,8 +39,9 @@
   return calc.sin(angle/2) * (style.stroke.thickness / 2)
 }
 
-// <-
-// (style) => drawables
+// Dictionary of built-in mark styles
+//
+// (style) => (drawables:, tip-offset:, distance:)
 #let marks = (
   triangle: (style) => (
     drawables: drawable.path(
@@ -133,7 +143,6 @@
   mark.drawables = drawable.apply-transform(
     matrix.mul-mat(
       ..(
-          // matrix.transform-scale(-1),
         matrix.transform-translate(..pos),
         matrix.transform-rotate-z(angle),
         matrix.transform-translate(if reverse { mark.length }  else { mark.tip-offset }, 0, 0),
@@ -254,7 +263,6 @@
   let distance = (0, 0)
   let drawables = ()
   if style.start != none or style.symbol != none {
-    
     let (drawables: start-drawables, distance: start-distance) = place-mark-on-path(
       ctx,
       process-style(ctx, style, "start"),
@@ -278,5 +286,4 @@
   }
 
   return (drawables, segments)
-
 }
