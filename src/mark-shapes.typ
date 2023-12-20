@@ -190,7 +190,7 @@
   "o":  ("circle",   false),
 )
 
-// Get a mark shape + rever tuple for a mark name
+// Get a mark shape + reverse tuple for a mark name
 #let get-mark(ctx, symbol) = {
   // TODO: Support user supplied marks by looking them up in the ctx style
 

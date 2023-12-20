@@ -264,7 +264,7 @@
 /// 
 /// - segments (segments): The segments of the path to shorten.
 /// - start-distance (int, float): The distance to shorten from the start of the path.
-/// - end-distance (int, float): The distance to shorten from the end fo the path
+/// - end-distance (int, float): The distance to shorten from the end of the path
 /// -> segments Segments of the path that have been shortened
 #let shorten-path(segments, start-distance, end-distance, mode: "CURVED", samples: default-samples) = {
   if start-distance > 0 {
