@@ -126,17 +126,68 @@
     distance: style.length,
     inset: style.length + style.stroke.thickness / 2,
     tip-offset: style.stroke.thickness / 2,
-  )
+  ),
+  diamond: (style) => (
+    drawables: drawable.path(
+      path-util.line-segment(
+        if style.harpoon {
+          ((0,0), (style.length / 2, style.width / 2), (style.length, 0))
+        } else {
+          ((0,0), (style.length / 2, style.width / 2), (style.length, 0), (style.length / 2, -style.width / 2))
+        }
+      ),
+      close: true,
+      fill: style.fill,
+      stroke: style.stroke
+    ),
+    tip-offset: calculate-tip-offset(style),
+    distance: style.length
+  ),
+  rect: (style) => {
+    let top = if style.harpoon { 0 } else { -style.width / 2 }
+    let width = if style.harpoon { style.width / 2 } else { style.width }
+    (drawables: drawable.path(
+      path-util.line-segment(
+        ((0, top), (0, top + width), (style.length, top + width), (style.length, top))
+      ),
+      close: true,
+      fill: style.fill,
+      stroke: style.stroke
+    ),
+    tip-offset: calculate-tip-offset(style),
+    distance: style.length
+  )},
+  hook: (style) => {
+    let rx = calc.min(style.length / 2, style.width / 2)
+    (drawables: drawable.path(
+      (path-util.line-segment(((style.length,0), (rx, 0))),
+       path-util.cubic-segment(
+         (rx, 0),
+         (rx, style.width / 2),
+         (0, 0),
+         (0, style.width / 2)
+       ),
+       path-util.line-segment(((rx, style.width / 2), (style.length, style.width / 2)))
+      ),
+      close: false,
+      fill: none,
+      stroke: style.stroke
+    ),
+    tip-offset: calculate-tip-offset(style),
+    distance: style.length
+  )},
 )
 
 // Mark mnemonics
 #let mnemonics = (
-  ">": ("triangle", false),
-  "<": ("triangle", true),
-  "]": ("tee",      false),
-  "[": ("tee",      true),
-  "|": ("bar",      false),
-  "o": ("circle",   false),
+  ">":  ("triangle", false),
+  "<":  ("triangle", true),
+  "<>": ("diamond", false),
+  "[]": ("rect",    false),
+  "]":  ("tee",      false),
+  "[":  ("tee",      true),
+  "|":  ("bar",      false),
+  "o":  ("circle",   false),
 )
 
 // Get a mark shape + rever tuple for a mark name
