@@ -455,7 +455,7 @@
 /// Or as part of a path based element that supports the `mark` style key:
 ///
 /// #example(vertical: true, ```
-/// rotate(-90deg)
+/// rotate(90deg)
 /// set-style(mark: (fill: black))
 /// line((1, -1), (1, 10), stroke: (paint: gray, dash: "dotted"))
 /// line((0, 9), (rel: (1, 0)), mark: (end: ">", harpoon: true))
