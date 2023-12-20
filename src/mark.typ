@@ -1,4 +1,5 @@
 #let typst-length = length
+
 #import "drawable.typ"
 #import "vector.typ"
 #import "matrix.typ"
@@ -108,7 +109,9 @@
 ///   - drawables (drawables): The transformed drawables of the mark.
 ///   - distance: The distance between the tip of the mark and the end.
 #let place-mark(ctx, style, pos, angle) = {
-  let (drawables, distance, tip-offset) = (get-mark(ctx, style.symbol))(style)
+  let (mark-fn, reverse) = get-mark(ctx, style.symbol)
+  style.reverse = (style.reverse or reverse) and not (style.reverse and reverse)
+  let (drawables, distance, tip-offset) = mark-fn(style)
 
   return (
     drawables: drawable.apply-transform(
@@ -133,7 +136,9 @@
     if style.symbol == none {
       continue
     }
-    let mark = (get-mark(ctx, style.symbol))(style)
+    let (mark-fn, reverse) = get-mark(ctx, style.symbol)
+    style.reverse = (style.reverse or reverse) and not (style.reverse and reverse)
+    let mark = mark-fn(style)
     mark.length = mark.distance + mark.tip-offset
 
     let pos = if style.flex {
