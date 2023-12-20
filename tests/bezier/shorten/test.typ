@@ -20,7 +20,7 @@
   line((0,0), (3,3), mark: (start: ">", end: ">", length: 1, width: .8))
   line((1,0), (4,3), mark: (start: ">", end: ">", fill: red))
   line((2,0), (5,3), mark: (start: "<>", end: "<>", fill: red))
-  line((3,0), (6,3), mark: (start: "right-harpoon", end: "right-harpoon", width: .4, length: .6, fill: red))
+  line((3,0), (6,3), mark: (start: "triangle", end: "triangle", harpoon: true, width: .4, length: .6, fill: red))
 }))
 
 #for d in (0, .1, .25, .5, 1, 2, 3) {
