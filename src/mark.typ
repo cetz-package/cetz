@@ -168,7 +168,7 @@
       } else {
         path-util.segment-start(segments.first())
       }
-      vector.add(pt, vector.scale(vector.norm(dir), distance))
+      vector.sub(pt, vector.scale(vector.norm(dir), distance * if is-end { 1 } else { -1 }))
     }
 
     let angle = if style.flex {
