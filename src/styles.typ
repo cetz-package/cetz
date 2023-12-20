@@ -31,8 +31,8 @@
     harpoon: false,
     flip: false,
     reverse: false,
-    /// If true, the mark points in the direction of the secant from
-    /// its base to its tip. If false, the tangent at the marks tip is used.
+    /// If false, the mark points in the direction of the paths start/end direction.
+    /// Curved paths get shortened linearly.
     flex: true,
     /// Max. number of samples to use for calculating curve positions
     /// a higher number gives better results but may slow down compilation.

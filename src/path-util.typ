@@ -120,7 +120,7 @@
 /// - distance (float): The distance along the path segment to find the point
 ///
 /// -> vector: The point on the path segment
-#let _point-on-segment(segment, distance, length: none, samples: default-samples) = {
+#let _point-on-segment(segment, distance, samples: default-samples) = {
   let (kind, ..pts) = segment
   if kind == "line" {
     return _point-on-line-segment(segment, distance)
@@ -189,7 +189,7 @@
   }
   let (distance, segment, length, ..) = segment-at-t(segments, t, samples: samples, rev: rev)
   return if segment != none {
-    _point-on-segment(segment, if rev { length - distance } else { distance }, length: length, samples: samples)
+    _point-on-segment(segment, if rev { length - distance } else { distance }, samples: samples)
   }
 }
 
@@ -205,12 +205,13 @@
   let (segment, distance, length, ..) = segment-at-t(segments, t, samples: samples)
   let (kind, ..pts) = segment
   return (
-    _point-on-segment(segment, distance, length: length, samples: samples),
+    _point-on-segment(segment, distance, samples: samples),
     if kind == "line" {
       let (start, end, distance, length) = _points-between-distance(pts, distance)
       vector.norm(vector.sub(segment.at(end+1), segment.at(start+1)))
     } else {
-      bezier.cubic-derivative(..pts, bezier.cubic-t-for-distance(..pts, distance, samples: samples))
+      let t = bezier.cubic-t-for-distance(..pts, distance, samples: samples)
+      bezier.cubic-derivative(..pts, t)
     }
   )
 }
@@ -246,7 +247,6 @@
     let (start, end, distance, length) = _points-between-distance(s, distance)
 
     s = (vector.lerp(s.at(start), s.at(end), distance / length),) + s.slice(end)
-      // panic(s)
     if rev {
       s = s.rev()
     }

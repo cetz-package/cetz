@@ -136,18 +136,34 @@
     let mark = (get-mark(ctx, style.symbol))(style)
     mark.length = mark.distance + mark.tip-offset
 
-    let pos = path-util.point-on-path(
-      segments,
-      if distance != 0 {
-        distance * if is-end { -1 } else { 1 }
-      } else {
-        if is-end { 
+    let pos = if style.flex {
+      path-util.point-on-path(
+        segments,
+        if distance != 0 {
+          distance * if is-end { -1 } else { 1 }
+        } else {
+          if is-end {
+            100%
+          } else {
+            0%
+          }
+        }
+      )
+    } else {
+      let (_, dir) = path-util.direction(
+        segments,
+        if is-end {
           100%
         } else {
           0%
-        }
+        })
+      let pt = if is-end {
+        path-util.segment-end(segments.last())
+      } else {
+        path-util.segment-start(segments.first())
       }
-    )
+      vector.add(pt, vector.scale(vector.norm(dir), distance))
+    }
 
     let angle = if style.flex {
       vector.angle2(
