@@ -246,7 +246,7 @@
       ry,
       stroke: style.stroke,
       fill: style.fill,
-      mode: style.mode)
+      mode: style.mode),)
 
     if mark_.check-mark(style.mark) {
       let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, path.segments)
