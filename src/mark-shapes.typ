@@ -1,5 +1,6 @@
 #import "drawable.typ"
 #import "path-util.typ"
+#import "vector.typ"
 
 // Calculate triangular tip offset, depending on the strokes
 // join type.
@@ -29,6 +30,21 @@
 
   // style.stroke.join must be "bevel"
   return calc.sin(angle/2) * (style.stroke.thickness / 2)
+}
+
+#let _star-shape(n, style, angle-offset: 0deg) = {
+  let radius(angle) = {
+    vector.dist((0,0), (calc.cos(angle) * style.length, calc.sin(angle) * style.width)) / 2
+  }
+  range(0, n)
+    .map(i => i * 360deg / n + angle-offset)
+    .filter(a => not style.harpoon or (a >= 0deg and a <= 180deg))
+    .map(a => {
+      let d = vector.scale(vector.rotate-z((1, 0, 0), a), radius(a))
+
+      drawable.path(path-util.line-segment(((0,0,0), vector.add((0,0,0), d))),
+        stroke: style.stroke, close: false)
+  })
 }
 
 
@@ -208,6 +224,22 @@
     distance: style.length,
     inset: style.length
   ),
+  plus: (style) => (
+    drawables: _star-shape(4, style),
+    tip-offset: 0,
+    distance: style.length / 2,
+  ),
+  x: (style) => (
+    drawables: _star-shape(4, style, angle-offset: 45deg),
+    tip-offset: 0,
+    distance: style.length / 2,
+    inset: style.length / 2
+  ),
+  star: (style) => (
+    drawables: _star-shape(5, style),
+    tip-offset: 0,
+    distance: style.length / 2,
+  )
 )
 #let names = marks.keys()
 
@@ -221,6 +253,9 @@
   "[":  ("bracket",  true),
   "|":  ("bar",      false),
   "o":  ("circle",   false),
+  "+":  ("plus",     false),
+  "x":  ("x",        false),
+  "*":  ("star",     false),
 )
 
 // Get a mark shape + reverse tuple for a mark name
