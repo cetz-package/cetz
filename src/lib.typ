@@ -12,6 +12,8 @@
 #import "process.typ"
 #import "util.typ"
 #import "path-util.typ"
+#import "mark.typ"
+#import "mark-shapes.typ"
 
 // Libraries
 #import "lib/axes.typ"

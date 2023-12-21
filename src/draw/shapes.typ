@@ -13,6 +13,7 @@
 #import "/src/hobby.typ" as hobby_
 #import "/src/anchor.typ" as anchor_
 #import "/src/mark.typ" as mark_
+#import "/src/mark-shapes.typ" as mark-shapes_
 #import "/src/aabb.typ"
 
 #import "transformations.typ": *
@@ -449,27 +450,26 @@
 ///
 /// #example(```
 /// mark((0,0), (1,0), symbol: ">", fill: black)
-/// mark((0,0), (1,1), symbol: ">", scale: 3, fill: black)
+/// mark((0,0), (1,1), symbol: "stealth", scale: 3, fill: black)
 /// ```)
 ///
 /// Or as part of a path based element that supports the `mark` style key:
 ///
 /// #example(vertical: true, ```
-/// rotate(90deg)
-/// set-style(mark: (fill: black))
-/// line((1, -1), (1, 10), stroke: (paint: gray, dash: "dotted"))
-/// line((0, 9), (rel: (1, 0)), mark: (end: ">", harpoon: true))
-/// line((0, 8), (rel: (1, 0)), mark: (end: ">", harpoon: true, flip: true))
-/// line((0, 7), (rel: (1, 0)), mark: (end: "hook"))
-/// line((0, 6), (rel: (1, 0)), mark: (end: "<>"))
-/// line((0, 5), (rel: (1, 0)), mark: (end: "o"))
-/// line((0, 4), (rel: (1, 0)), mark: (end: "|"))
-/// line((0, 3), (rel: (1, 0)), mark: (end: "<"))
-/// line((0, 2), (rel: (1, 0)), mark: (end: ">"))
-/// set-style(mark: (fill: none))
-/// line((0, 1), (rel: (1, 0)), mark: (end: "<"))
-/// line((0, 0), (rel: (1, 0)), mark: (end: ">"))
+/// set-style(mark: (scale: 1.5, stroke: red))
+/// for (i, name) in cetz.mark-shapes.names.enumerate() {
+///   line((0, 0), (0, 1), mark: (end: name))
+///   content((0, 0), angle: 45deg, name, anchor: "north-east", padding: .1)
+///   set-origin((.75, 0))
+/// }
 /// ```)
+///
+/// The following short names are available:
+/// #table(columns: 2*6, stroke: gray,
+///   ..(for (short, item) in cetz.mark-shapes.mnemonics {
+///     ([#raw(short)], [#item.at(0) #if item.at(1) {[ (reverse) ]}],)
+///   })
+/// )
 ///
 /// = parameters
 ///
