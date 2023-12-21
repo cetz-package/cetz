@@ -115,7 +115,7 @@
   }
 
   draw.on-layer(style.layer, {
-    draw.group(name: "legend", padding: style.padding, ctx => {
+    draw.group(name: "legend-container", padding: style.padding, ctx => {
       import draw: *
 
       set-origin(position)
@@ -173,7 +173,7 @@
 
   // Fill legend background
   draw.on-layer(style.layer - .5, {
-    draw.rect("legend.south-west",
-              "legend.north-east", fill: style.fill, stroke: style.stroke, radius: style.radius)
+    draw.rect("legend-container.south-west",
+              "legend-container.north-east", fill: style.fill, stroke: style.stroke, radius: style.radius)
   })
 }
