@@ -22,6 +22,7 @@ CeTZ 0.2.0 requires Typst 0.10.0
 - Added `radius` style to `rect` for drawing rounded rects
 - Added `hide` function for hiding elements
 - Added distance, ratio and angle anchors to elements
+- Added nested element access via dot separated paths
 
 ### Plot
 - Added `plot.add-contour(..)` for plotting contour plots
