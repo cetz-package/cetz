@@ -209,6 +209,7 @@
     inset: style.length
   ),
 )
+#let names = marks.keys()
 
 // Mark mnemonics
 #let mnemonics = (
