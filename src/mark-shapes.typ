@@ -248,18 +248,18 @@
   )},
   plus: (style) => (
     drawables: _star-shape(4, style),
-    tip-offset: 0,
+    tip-offset: style.length / 2,
     distance: style.length / 2,
   ),
   x: (style) => (
     drawables: _star-shape(4, style, angle-offset: 45deg),
-    tip-offset: 0,
+    tip-offset: style.length / 2,
     distance: style.length / 2,
     inset: style.length / 2
   ),
   star: (style) => (
     drawables: _star-shape(5, style),
-    tip-offset: 0,
+    tip-offset: style.length / 2,
     distance: style.length / 2,
   )
 )
