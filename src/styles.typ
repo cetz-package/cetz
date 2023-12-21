@@ -16,14 +16,15 @@
   //   - Dictionary: (top:, right:, bottom:, left:)
   padding: none,
   mark: (
-    scale: 1,     // A factor that is applied to length, width, and inset.
-    length: .2,   // The size of the mark along its direction
-    width: 0.15,  // The size of the mark along the normal of its direction
-    inset: .05,   // The inner length of triangular shaped marks
-    sep: .1,      // The distance between multiple marks along their path
-    z-up: (0,1,0),// If a mark is pointing to +ve or -ve z, the mark will be drawn with width on the axis perpendicular to its direction and this vector.
-    start: none,  // Mark start symbol(s)
-    end: none,    // Mark end symbol(s)
+    scale: 1,         // A factor that is applied to length, width, and inset.
+    length: .2,       // The size of the mark along its direction
+    width: 0.15,      // The size of the mark along the normal of its direction
+    inset: .05,       // The inner length of triangular shaped marks
+    sep: .1,          // The distance between multiple marks along their path
+    start: none,      // Mark start symbol(s)
+    end: none,        // Mark end symbol(s)
+    xy-up: (0, 0, 1), // Up vector for 2D marks
+    z-up: (0, 1, 0),  // Up vector for 3D marks
     symbol: none,
     stroke: auto,
     fill: auto,

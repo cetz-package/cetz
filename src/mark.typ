@@ -68,12 +68,18 @@
   return out
 }
 
-#let transform-mark(mark, pos, angle, flip: false, reverse: false, slant: none, harpoon: false) = {
+#let transform-mark(style, mark, pos, dir, flip: false, reverse: false, slant: none, harpoon: false) = {
+  let up = style.xy-up
+  if dir.at(2) != 0 {
+    up = style.z-up
+  }
+
   mark.drawables = drawable.apply-transform(
     matrix.mul-mat(
       ..(
         matrix.transform-translate(..pos),
-        matrix.transform-rotate-z(angle),
+        matrix.transform-rotate-dir(dir, up),
+        matrix.transform-rotate-z(90deg),
         matrix.transform-translate(if reverse { mark.length } else { mark.tip-offset }, 0, 0),
         if slant not in (none, 0deg) {
           matrix.transform-shear-x(slant)
@@ -171,15 +177,14 @@
       vector.sub(pt, vector.scale(vector.norm(dir), distance * if is-end { 1 } else { -1 }))
     }
 
-    let angle = if style.flex {
-      vector.angle2(
-        pos,
-        path-util.point-on-path(
-          segments,
-          (mark.length + distance) * if is-end { -1 } else { 1 },
-          samples: style.position-samples
-        )
-      )
+    let dir = if style.flex {
+      let a = pos
+      let b = path-util.point-on-path(
+        segments,
+        (mark.length + distance) * if is-end { -1 } else { 1 },
+        samples: style.position-samples)
+
+      vector.sub(b, a)
     } else {
       let (_, dir) = path-util.direction(
         segments,
@@ -189,13 +194,14 @@
           0%
         }
       )
-      calc.atan2(dir.at(0), dir.at(1)) + if is-end { 180deg }
+      vector.scale(dir, if is-end { -1 } else { 1 })
     }
 
     mark = transform-mark(
+      style,
       mark,
       pos,
-      angle,
+      dir,
       reverse: style.reverse,
       slant: style.slant,
       flip: style.flip,

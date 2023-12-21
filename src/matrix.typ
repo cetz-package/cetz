@@ -71,6 +71,21 @@
    (0, 0, 0, 1))
 }
 
+// Return 4x4 rotate xyz matrix for direction and up vector
+#let transform-rotate-dir(dir, up) = {
+  dir = vector.norm(dir)
+  up = vector.norm(up)
+
+  let (dx, dy, dz) = dir
+  let (ux, uy, uz) = up
+  let (rx, ry, rz) = vector.norm(vector.cross(dir, up))
+
+  ((rx, dx, ux, 0),
+   (ry, dy, uy, 0),
+   (rz, dz, uz, 0),
+   (0,   0,  0, 1))
+}
+
 // Return 4x4 rotate x matrix
 #let transform-rotate-x(angle) = {
   // let (cos, sin) = (calc.cos, calc.sin)
