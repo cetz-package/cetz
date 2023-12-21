@@ -141,6 +141,7 @@
       stroke: style.stroke
     ),
     tip-offset: calculate-tip-offset(style),
+    base-offset: calculate-tip-offset(style),
     distance: style.length
   ),
   rect: (style) => {

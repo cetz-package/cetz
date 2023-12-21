@@ -145,8 +145,13 @@
     }
     let (mark-fn, reverse) = get-mark(ctx, style.symbol)
     style.reverse = (style.reverse or reverse) and not (style.reverse and reverse)
+
     let mark = mark-fn(style)
-    mark.length = mark.distance + mark.tip-offset
+    mark.length = mark.distance + if style.reverse {
+      mark.at("base-offset", default: style.stroke.thickness / 2)
+    } else {
+      mark.at("tip-offset", default: style.stroke.thickness / 2)
+    }
 
     let pos = if style.flex {
       path-util.point-on-path(
