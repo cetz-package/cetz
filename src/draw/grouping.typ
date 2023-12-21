@@ -214,6 +214,9 @@
     if name != none {
       for (elem-name, elem) in group-ctx.groups.last().nodes {
         ctx.nodes.insert(name + "." + elem-name, elem)
+        if ctx.groups != () {
+          ctx.groups.last().nodes.insert(name + "." + elem-name, elem)
+        }
       }
     }
 
