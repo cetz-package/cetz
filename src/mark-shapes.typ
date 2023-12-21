@@ -22,9 +22,11 @@
   // See: https://svgwg.org/svg2-draft/painting.html#LineJoin
   if style.stroke.join == "miter" {
     let angle = calc.abs(angle)
-    let miter-limit = 1 / calc.sin(angle / 2)
-    if miter-limit <= style.stroke.miter-limit {
-      return miter-limit * (style.stroke.thickness / 2)
+    if angle > 0deg {
+      let miter-limit = 1 / calc.sin(angle / 2)
+      if miter-limit <= style.stroke.miter-limit {
+        return miter-limit * (style.stroke.thickness / 2)
+      }
     }
   }
 
@@ -46,7 +48,6 @@
         stroke: style.stroke, close: false)
   })
 }
-
 
 // Dictionary of built-in mark styles
 //
@@ -224,6 +225,27 @@
     distance: style.length,
     inset: style.length
   ),
+  barbed: (style) => {
+    // Force join to "round" as other joins look bad
+    style.stroke.join = "round"
+    let ctrl-a = (style.length, 0)
+    let ctrl-b = (0, 0)
+    (drawables: drawable.path(
+      (path-util.cubic-segment(
+         (style.length, style.width / 2), (0,0),
+         ctrl-a, ctrl-b),)
+      + if not style.harpoon {
+        (path-util.cubic-segment(
+          (0,0), (style.length, -style.width / 2),
+          ctrl-b, ctrl-a),)
+      } else { () },
+      close: false,
+      fill: none,
+      stroke: style.stroke),
+    tip-offset: calculate-tip-offset(style),
+    distance: style.length,
+    inset: style.length
+  )},
   plus: (style) => (
     drawables: _star-shape(4, style),
     tip-offset: 0,
