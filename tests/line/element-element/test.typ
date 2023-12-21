@@ -40,8 +40,16 @@
   import draw: *
 
   set-style(content: (padding: .1))
-  test(content((0,0), [Text], frame: "rect", name: "a"),
-       content((1,1), [Text], frame: "rect", name: "b"))
+  test(content((0,0), [Text], name: "a"),
+       content((1,1), [Text], name: "b"))
+}))
+
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  set-style(content: (padding: .1))
+  test(content((0,0), [Text], frame: "circle", name: "a"),
+       content((1,1), [Text], frame: "circle", name: "b"))
 }))
 
 #box(stroke: 2pt + red, canvas({

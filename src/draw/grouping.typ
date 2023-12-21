@@ -97,34 +97,45 @@
   return (ctx => {
     let ctx = ctx
 
-    let named-drawables = () // List of elements to calc intersections for
-    let drawables = () // List of elements to draw + calc intersections for
+    // List of drawables to calc intersections for;
+    // grouped by element.
+    let named-drawables = ()
+    // List of drawables passed as elements to calc intersections for;
+    // grouped by element.
+    let drawables = ()
 
     for elem in elements.pos() {
       if type(elem) == str {
         assert(elem in ctx.nodes,
           message: "No such element '" + elem + "' in elements " + repr(ctx.nodes.keys()))
-        named-drawables += ctx.nodes.at(elem).drawables
+        named-drawables.push(ctx.nodes.at(elem).drawables)
       } else {
-        let new-drawables = ()
-        (ctx: ctx, drawables: new-drawables, ..) = process.many(ctx, elem)
-        drawables += new-drawables
+        for sub in elem {
+          let sub-drawables = ()
+          (ctx: ctx, drawables: sub-drawables, ..) = process.element(ctx, sub)
+          if sub-drawables != none and sub-drawables != () {
+            drawables.push(sub-drawables)
+          }
+        }
       }
     }
 
-    // Filter out elements that can not intersect
-    let paths = (named-drawables + drawables).filter(d => d.type == "path")
-
+    let elems = named-drawables + drawables
     let pts = ()
-    if paths.len() > 1 { 
-      for (i, path-1) in paths.enumerate() {
-        for path-2 in paths.slice(i+1) {
-          for pt in intersection.path-path(
-            path-1,
-            path-2,
-            samples: samples
-          ) {
-            if pt not in pts { pts.push(pt) }
+    if elems.len() > 1 {
+      for (i, elem-1) in elems.enumerate() {
+        for j in range(i + 1, elems.len()) {
+          let elem-2 = elems.at(j)
+          for path-1 in elem-1 {
+            for path-2 in elem-2 {
+              for pt in intersection.path-path(
+                path-1,
+                path-2,
+                samples: samples
+              ) {
+                if pt not in pts { pts.push(pt) }
+              }
+            }
           }
         }
       }
@@ -145,7 +156,7 @@
         transform: none,
         name: name
       ).last(),
-      drawables: drawables
+      drawables: drawables.flatten()
     )
   },)
 }

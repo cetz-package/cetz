@@ -1,6 +1,7 @@
 #import "path-util.typ"
 #import "vector.typ"
 #import "util.typ"
+#import "path-util.typ"
 
 #let apply-transform(transform, drawables) = {
   if type(drawables) == dictionary {
@@ -46,12 +47,13 @@
   )
 }
 
-#let content(pos, width, height, body) = {
+#let content(pos, width, height, border, body) = {
   return (
     type: "content",
     pos: pos,
     width: width,
     height: height,
+    segments: border,
     body: body,
     hidden: false,
   )
