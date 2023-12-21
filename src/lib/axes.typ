@@ -61,8 +61,8 @@
 }
 
 #let default-style-schoolbook = util.merge-dictionary(default-style, (
-  x: (stroke: auto, fill: none, mark: (end: ">")),
-  y: (stroke: auto, fill: none, mark: (end: ">")),
+  x: (stroke: auto, fill: none, mark: (end: "straight")),
+  y: (stroke: auto, fill: none, mark: (end: "straight")),
   origin: (label: (offset: .05cm)),
   tick: (label: (offset: .1cm)),
   padding: .4cm))
