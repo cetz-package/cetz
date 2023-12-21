@@ -135,10 +135,11 @@
   }
 
   if mode == "PIE" and calc.abs(delta) < 360deg {
-    segments.insert(0, path-util.line-segment(((x, y, z), segments.first().at(1))))
-    segments.push(path-util.line-segment((segments.last().at(2), (x, y, z))))
+    segments.push(path-util.line-segment((
+      path-util.segment-end(segments.last()),
+      (x, y, z),
+      path-util.segment-start(segments.first()))))
   }
-  // panic(segments)
 
   return path(
     fill: fill,

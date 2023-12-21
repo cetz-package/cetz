@@ -182,7 +182,7 @@
 ///   #show-parameter-block("padding", ("none", "number", "array", "dictionary"), default: none, [How much padding to add around the group's bounding box. `none` applies no padding. A number applies padding to all sides equally. A dictionary applies padding following Typst's `pad` function: https://typst.app/docs/reference/layout/pad/. An array follows CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`.])
 ///
 /// = Anchors
-///   Supports compass anchors. These are created based on the axis aligned bounding box of all the child elements of the group.
+///   Supports compass, distance and angle anchors. These are created based on the axis aligned bounding box of all the child elements of the group.
 ///
 /// You can add custom anchors to the group by using the `anchor` element while in the scope of said group, see `anchor` for more details. You can also copy over anchors from named child element by using the `copy-anchors` element as they are not accessible from outside the group.
 ///
@@ -220,33 +220,38 @@
       aabb.padded(bounds, padding)
     }
 
+    // Calculate a bounding box path used for border
+    // anchor calculation.
+    let (center, width, height, path) = if bounds != none {
+      (bounds.low.at(1), bounds.high.at(1)) = (bounds.high.at(1), bounds.low.at(1))
+      let center = aabb.mid(bounds)
+      let (width, height, _) = aabb.size(bounds)
+      let path = drawable.path(
+        path-util.line-segment((
+          (bounds.low.at(0), bounds.high.at(1)),
+          bounds.high,
+          (bounds.high.at(0), bounds.low.at(1)),
+          bounds.low,
+        )), close: true)
+      (center, width, height, path)
+    } else { (none, none, none, none) }
+
     let (transform, anchors) = anchor_.setup(
       anchor => {
-        let anchors = (:)
-        if bounds != none {
-          let bounds = bounds
-          (bounds.low.at(1), bounds.high.at(1)) = (bounds.high.at(1), bounds.low.at(1))
-          let mid = aabb.mid(bounds)
-          anchors += (
-            north: (mid.at(0), bounds.high.at(1)),
-            north-east: bounds.high,
-            east: (bounds.high.at(0), mid.at(1)),
-            south-east: (bounds.high.at(0), bounds.low.at(1)),
-            south: (mid.at(0), bounds.low.at(1)),
-            south-west: bounds.low,
-            west: (bounds.low.at(0), mid.at(1)),
-            north-west: (bounds.low.at(0), bounds.high.at(1)),
-            center: mid,
-          )
+        let anchors = group-ctx.groups.last().anchors
+        if type(anchor) == str and anchor in anchors {
+          return anchors.at(anchor)
         }
-        // Custom anchors need to be added last to override the compass anchors.
-        anchors += group-ctx.groups.last().anchors
-        return anchors.at(anchor)
       },
-      group-ctx.groups.last().anchors.keys() + if bounds != none { ("north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west", "center") },
+      group-ctx.groups.last().anchors.keys(),
       name: name,
       default: if bounds != none { "center" } else { none },
-      offset-anchor: anchor
+      offset-anchor: anchor,
+      path-anchors: bounds != none,
+      border-anchors: bounds != none,
+      center: center,
+      radii: (width, height),
+      path: path,
     )
     return (
       ctx: ctx,
@@ -272,6 +277,9 @@
 /// - name (string): The name of the anchor
 /// - position (coordinate): The position of the anchor
 #let anchor(name, position) = {
+  assert(name != none and name != "" and not name.starts-with("."),
+    message: "Anchors must not be none, \"\" or start with \".\"!")
+
   coordinate.resolve-system(position)
   return (ctx => {
     assert(
@@ -457,6 +465,7 @@
       message: strfmt("Unknown element {} in elements {}", name, repr(ctx.nodes.keys()))
     )
     for anchor in (ctx.nodes.at(name).anchors)(()) {
+      if anchor == none { continue }
       move-to(name + "." + anchor)
       callback(anchor)
     }

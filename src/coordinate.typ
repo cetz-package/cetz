@@ -54,10 +54,9 @@
 
 
 #let resolve-anchor(ctx, c) = {
-  // (name: <string>, anchor: <string> or <none>)
+  // (name: <string>, anchor: <number, angle, string> or <none>)
   // "name.anchor"
   // "name"
-
   let (name, anchor) = if type(c) == str {
     let parts = c.split(".")
     if parts.len() == 1 {
@@ -70,15 +69,25 @@
   }
 
   // Check if node is known
-  assert(
-    name in ctx.nodes,
-    message: strfmt("Unknown element '{}' in elements {}", name, repr(ctx.nodes.keys()))
-  )
+  assert(name in ctx.nodes,
+    message: "Unknown element '" + name + "' in elements " + repr(ctx.nodes.keys()))
 
-  return util.revert-transform(
+  // Resolve length anchors
+  if type(anchor) == length {
+    anchor = util.resolve-number(ctx, anchor)
+  }
+
+  // Check if anchor is known
+  let node = ctx.nodes.at(name)
+  let pos = (node.anchors)(anchor)
+  assert(pos != none,
+    message: "Unknown anchor '" + repr(anchor) + "' for element '" + name + "'")
+
+  let pos = util.revert-transform(
     ctx.transform,
-    (ctx.nodes.at(name).anchors)(anchor)
-  )
+    pos)
+
+  return pos
 }
 
 #let resolve-barycentric(ctx, c) = {

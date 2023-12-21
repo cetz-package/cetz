@@ -34,8 +34,8 @@
 ///   #show-parameter-block("radius", ("number", "array"), [A number that defines the size of the circle's radius. Can also be set to a tuple of two numbers to define the radii of an ellipse, the first number is the `x` radius and the second is the `y` radius.], default: 1)
 /// 
 /// = Anchors
-///   Supports compass anchors. The "center" anchor is the default.
-/// 
+///   Supports compass, distance and angle anchors. The "center" anchor is the default.
+///
 /// - position (coordinate): The position to place the circle on.
 /// - name (none,string):
 /// - anchor (none,string):
@@ -56,49 +56,31 @@
     let (cx, cy, cz) = pos
     let (ox, oy) = (calc.cos(45deg) * rx, calc.sin(45deg) * ry)
 
+    let path = drawable.ellipse(
+      cx, cy, cz,
+      rx, ry,
+      fill: style.fill,
+      stroke: style.stroke)
+
     let (transform, anchors) = anchor_.setup(
-      (anchor) => {
-        (
-          north: (cx, cy + ry),
-          north-east: (cx + ox, cy + oy),
-          east: (cx + rx, cy),
-          south-east: (cx + ox, cy - oy),
-          south: (cx, cy - ry),
-          south-west: (cx - ox, cy - oy),
-          west: (cx - rx, cy),
-          north-west: (cx - ox, cy + oy),
-          center: (cx, cy)
-        ).at(anchor)
-        (cz,)
-      },
-      (
-        "north",
-        "north-east",
-        "east",
-        "south-east",
-        "south",
-        "south-west",
-        "west",
-        "north-west",
-        "center",
-      ),
+      auto,
+      (),
       default: "center",
       name: name,
       offset-anchor: anchor,
-      transform: ctx.transform
+      transform: ctx.transform,
+      border-anchors: true,
+      path-anchors: true,
+      center: (cx, cy, cz),
+      radii: (rx, ry),
+      path: path,
     )
 
     return (
       ctx: ctx,
       name: name,
       anchors: anchors,
-      // anchors: calculate-anchor.with(transform: transform),
-      drawables: drawable.apply-transform(transform, drawable.ellipse(
-        cx, cy, cz,
-        rx, ry,
-        fill: style.fill,
-        stroke: style.stroke,
-      )),
+      drawables: drawable.apply-transform(transform, path),
     )
   },)
 }
@@ -148,36 +130,24 @@
     let r = vector.dist(a, (cx, cy))
     let (ox, oy) = (calc.cos(45deg) * r, calc.sin(45deg) * r)
 
+    let path = drawable.ellipse(
+      cx, cy, 0,
+      r, r,
+      fill: style.fill,
+      stroke: style.stroke)
+
     let (transform, anchors) = anchor_.setup(
-      anchor => {
-        (
-          north: (cx, cy + r),
-          north-east: (cx + ox, cy + oy),
-          east: (cx + r, cy),
-          south-east: (cx + ox, cy - oy),
-          south: (cx, cy - r),
-          south-west: (cx - ox, cy - oy),
-          west: (cx - r, cy),
-          north-west: (cx - ox, cy + oy),
-          center: (cx, cy)
-        ).at(anchor)
-        (cz,)
-      },
-      (
-        "north",
-        "north-east",
-        "east",
-        "south-east",
-        "south",
-        "south-west",
-        "west",
-        "north-west",
-        "center",
-      ),
+      auto,
+      (),
       default: "center",
       name: name,
       offset-anchor: anchor,
-      transform: ctx.transform
+      transform: ctx.transform,
+      border-anchors: true,
+      path-anchors: true,
+      center: center,
+      radii: (r, r),
+      path: path,
     )
 
     return (
@@ -186,12 +156,7 @@
       anchors: anchors,
       drawables: drawable.apply-transform(
         transform,
-        drawable.ellipse(
-          cx, cy, 0,
-          r, r,
-          fill: style.fill,
-          stroke: style.stroke
-        )
+        path
       )
     )
   },)
@@ -219,7 +184,7 @@
 ///     This overrides the default of `true`, that allows chaining of (arc) elements.], default: true)
 ///
 /// = Anchors
-///   Supports compass anchors when `mode` is "PIE"
+///   Supports compass, distance anchors, plus angle anchors if mode is "PIE"
 ///   / center: The center of the arc, this is the default anchor.
 ///   / arc-center: The midpoint of the arc's curve.
 ///   / chord-center: Center of chord of the arc drawn between the start and end point.
@@ -281,7 +246,7 @@
     }
 
     let (x, y, z) = arc-start
-    let path = (drawable.arc(
+    let path = drawable.arc(
       ..draw-arc-start,
       draw-start-angle,
       draw-stop-angle,
@@ -289,12 +254,7 @@
       ry,
       stroke: style.stroke,
       fill: style.fill,
-      mode: style.mode,
-    ),)
-
-    if marks != none {
-      path += marks
-    }
+      mode: style.mode,)
 
     let sector-center = (
       x - rx * calc.cos(start-angle),
@@ -335,54 +295,50 @@
       )
     }
 
-    // compass anchors are placed on the shapes border in tikz so prototype version is setup for use here
-    let border = anchor_.border.with(
-      center, 
-      2*rx, 2*ry, 
-      path + if style.mode == "OPEN" {
-        (
-          drawable.path((
-            path-util.line-segment((arc-start, sector-center, arc-end)),
-          ))
-        ,)
-      }
-    )
-
     let (transform, anchors) = anchor_.setup(
       anchor => {
-        if anchor in anchor_.compass-angle {
-          return border(anchor_.compass-angle.at(anchor))
-        }
-        (
+        let pt = if type(anchor) == str {(
           arc-start: arc-start,
           origin: sector-center,
           arc-end: arc-end,
           arc-center: arc-center,
           chord-center: chord-center,
           center: center,
-        ).at(anchor)
+        ).at(anchor, default: none)}
+        if pt != none { return pt }
+        if style.mode == "OPEN" {
+          if type(anchor) == str and anchor in anchor_.compass-directions {
+            // Compass anchors are placed on the shapes border in
+            // TikZ so prototype version is setup for use here
+            let path = path
+            path.segments.push(path-util.line-segment(
+              (path-util.segment-start(path.segments.first()),
+               sector-center,
+               path-util.segment-end(path.segments.last()))))
+            return anchor_.calculate-border-anchor(
+              anchor, center, 2 * rx, 2 * ry, path)
+          } else {
+            return anchor_.calculate-path-anchor(
+              anchor, path)
+          }
+        } else {
+          let pt = anchor_.calculate-border-anchor(
+            anchor, center, 2 * rx, 2 * ry, path)
+          if pt != none { return pt }
+          return anchor_.calculate-path-anchor(
+            anchor, path)
+        }
       },
-      (
-        "north",
-        "north-east",
-        "east",
-        "south-east",
-        "south",
-        "south-west",
-        "west",
-        "north-west",
-        "center",
-        "arc-center",
-        "chord-center",
-        "origin",
-        "arc-start",
-        "arc-end"
-      ),
+      ("arc-center", "chord-center", "origin", "arc-start", "arc-end") + anchor_.closed-shape-names,
       default: "arc-start",
       name: name,
       offset-anchor: anchor,
       transform: ctx.transform,
     )
+
+    if marks != none {
+      path = (path,) + marks
+    }
 
     return (
       ctx: ctx,
@@ -578,7 +534,9 @@
 ///   Supports mark styling.
 /// 
 /// = Anchors
+///   Supports distance anchors.
 ///   / start: The line's start position
+///   / mid: The line's mid position
 ///   / end: The line's end position
 ///
 /// - ..pts-style (coordinates, style): Positional two or more coordinates to draw lines between. Accepts style key-value pairs.
@@ -634,20 +592,6 @@
     }
 
     let style = styles.resolve(ctx.style, merge: style, root: "line")
-    let (transform, anchors) = anchor_.setup(
-      (anchor) => {
-        (
-          start: pts.first(),
-          end: pts.last()
-        ).at(anchor)
-      },
-      (
-        "start",
-        "end"
-      ),
-      name: name,
-      transform: ctx.transform,
-    )
 
     // Place marks and adjust points
     let (marks, pts) = if style.mark != none {
@@ -656,13 +600,24 @@
       (none, pts)
     }
 
-    let drawables = (drawable.path(
+    // Line path
+    let path = drawable.path(
       (path-util.line-segment(pts),),
       fill: style.fill,
       stroke: style.stroke,
-      close: close,
-    ),)
+      close: close)
 
+    // Get bounds
+    let (transform, anchors) = anchor_.setup(
+      auto,
+      (),
+      name: name,
+      transform: ctx.transform,
+      path-anchors: true,
+      path: path
+    )
+
+    let drawables = (path,)
     if marks != none {
       drawables += marks
     }
@@ -761,18 +716,20 @@
     let center = ((from.first() + to.first()) / 2, (from.last() + to.last()) / 2)
     let (transform, anchors) = anchor_.setup(
       anchor => {
-        (
-          north: (center.first(), to.last()),
-          north-east: to,
-          east: (to.first(), center.last()),
-          south-east: (to.first(), from.last()),
-          south: (center.first(), from.last()),
-          south-west: from,
-          west: (from.first(), center.last()),
-          north-west: (from.first(), to.last()),
-          center: center,
-        ).at(anchor)
-        (0,)
+        if type(anchor) == str {
+          (
+            north: (center.first(), to.last()),
+            north-east: to,
+            east: (to.first(), center.last()),
+            south-east: (to.first(), from.last()),
+            south: (center.first(), from.last()),
+            south-west: from,
+            west: (from.first(), center.last()),
+            north-west: (from.first(), to.last()),
+            center: center,
+          ).at(anchor)
+          (0,)
+        }
       },
       (
         "north",
@@ -992,7 +949,9 @@
 
     let (transform, anchors) = anchor_.setup(
       anchor => {
-        anchors.at(anchor)
+        if type(anchor) == str {
+          anchors.at(anchor)
+        }
       },
       anchors.keys(),
       default: if auto-size { "center" } else { "north-west" },
@@ -1050,7 +1009,7 @@
 ///   ])
 ///
 /// = Anchors
-///   Supports compass anchors.
+///   Supports compass, distance and angle anchors.
 ///
 /// - a (coordinate): Coordinate of the bottom left corner of the rectangle.
 /// - b (coordinate): Coordinate of the top right corner of the rectangle. You can draw a rectangle with a specified width and height by using relative coordinates for this parameter `(rel: (width, height))`.
@@ -1188,23 +1147,19 @@
 
       // Calculate border anchors
       let center = vector.scale(vector.add(a, b), .5)
-      let border = anchor_.border.with(
-        center, size.at(0), size.at(1), drawables)
-
+      let (width, height, ..) = size
       let (transform, anchors) = anchor_.setup(
-        (anchor) => {
-          if anchor in anchor_.compass-angle {
-            return border(anchor_.compass-angle.at(anchor))
-          }
-          else if anchor == "center" {
-            return center
-          }
-        },
-        ("north", "south-west", "south", "south-east", "north-west", "north-east", "east", "west", "center"),
+        auto,
+        (),
         default: "center",
         name: name,
         offset-anchor: anchor,
-        transform: ctx.transform
+        transform: ctx.transform,
+        border-anchors: true,
+        path-anchors: true,
+        center: center,
+        radii: (width, height),
+        path: drawables,
       )
 
       return (
@@ -1237,8 +1192,10 @@
 ///   Supports marks.
 ///   
 /// = Anchors
+///   Supports distance anchors.
 ///   / ctrl-n: nth control point where n is an integer starting at 0
 ///   / start: The start position of the curve.
+///   / mid: The mid position of the curve
 ///   / end: The end position of the curve.
 ///
 /// - start (coordinate): Start position
@@ -1268,23 +1225,7 @@
         (start, end, ..ctrl) = bezier_.quadratic-to-cubic(start, end, ..ctrl)
       }
 
-      let (transform, anchors) = anchor_.setup(
-        anchor => {
-          (
-            start: start,
-            end: end,
-            ctrl-0: ctrl.at(0),
-            ctrl-1: ctrl.at(1),
-          ).at(anchor)
-        },
-        ("start", "end", "ctrl-0", "ctrl-1"),
-        default: "start",
-        name: name,
-        transform: ctx.transform
-      )
-
       let style = styles.resolve(ctx.style, merge: style, root: "bezier")
-
       let curve = (start, end, ..ctrl)
       let (marks, curve) = if style.mark != none {
         mark_.place-marks-along-bezier(ctx, curve, style, style.mark)
@@ -1292,14 +1233,30 @@
         (none, curve)
       }
 
-      let drawables = (drawable.path(
+      let path = drawable.path(
         path-util.cubic-segment(..curve),
         fill: style.fill,
         stroke: style.stroke,
-      ),)
+      )
+
+      let (transform, anchors) = anchor_.setup(
+        anchor => {
+          if anchor == "ctrl-0" {
+            return ctrl.at(0)
+          } else if anchor == "ctrl-1" {
+            return ctrl.at(1)
+          }
+        },
+        ("ctrl-0", "ctrl-1"),
+        default: "start",
+        name: name,
+        transform: ctx.transform,
+        path-anchors: true,
+        path: path,
+      )
 
       if marks != none {
-        drawables += marks
+        path = (path,) + marks
       }
 
       return (
@@ -1308,7 +1265,7 @@
         anchors: anchors,
         drawables: drawable.apply-transform(
           transform,
-          drawables
+          path
         )
       )
     },
@@ -1360,7 +1317,9 @@
 ///   Supports marks.
 ///
 /// = Anchors
+///   Supports distance anchors.
 ///   / start: The position of the start of the curve.
+///   / mid: The mid position of the curve
 ///   / end: The position of the end of the curve.
 ///   / pt-n: The nth given position (0 indexed so "pt-0" is equal to "start")
 ///
@@ -1376,26 +1335,6 @@
 
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
-
-    let (transform, anchors) = {
-      let a = (
-        start: pts.first(),
-        end: pts.last(),
-      )
-      for (i, pt) in pts.enumerate() {
-        a.insert("pt-" + str(i), pt)
-      }
-      anchor_.setup(
-        anchor => {
-          a.at(anchor)
-        },
-        a.keys(),
-        name: name,
-        default: "start",
-        transform: ctx.transform
-      )
-    }
-
     let style = styles.resolve(ctx.style, merge: style, root: "catmull")
     let curves = bezier_.catmull-to-cubic(
       pts,
@@ -1408,14 +1347,34 @@
       (none, curves)
     }
 
-    let drawables = (
-      drawable.path(
-        curves.map(c => path-util.cubic-segment(..c)),
-        fill: style.fill,
-        stroke: style.stroke,
-        close: close),)
+    let path = drawable.path(
+      curves.map(c => path-util.cubic-segment(..c)),
+      fill: style.fill,
+      stroke: style.stroke,
+      close: close)
+
+    let (transform, anchors) = {
+      let a = (:)
+      for (i, pt) in pts.enumerate() {
+        a.insert("pt-" + str(i), pt)
+      }
+      anchor_.setup(
+        anchor => {
+          if type(anchor) == str and anchor in a {
+            return a.at(anchor)
+          }
+        },
+        a.keys(),
+        name: name,
+        default: "start",
+        transform: ctx.transform,
+        path-anchors: true,
+        path: path,
+      )
+    }
+
     if marks != none {
-      drawables += marks
+      path = (path,) + marks
     }
 
     return (
@@ -1424,7 +1383,7 @@
       anchors: anchors,
       drawables: drawable.apply-transform(
         transform,
-        drawables
+        path
       )
     )
   },)
@@ -1447,7 +1406,9 @@
 ///   #show-parameter-block("rho", "idk", [])
 ///
 /// = Anchors
+///   Supports distance anchors.
 ///   / start: The position of the start of the curve.
+///   / mid: The mid position of the curve
 ///   / end: The position of the end of the curve.
 ///   / pt-n: The nth given position (0 indexed, so "pt-0" is equal to "start")
 ///
@@ -1465,26 +1426,6 @@
 
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
-
-    let (transform, anchors) = {
-      let a = (
-        start: pts.first(),
-        end: pts.last(),
-      )
-      for (i, pt) in pts.enumerate() {
-        a.insert("pt-" + str(i), pt)
-      }
-      anchor_.setup(
-        anchor => {
-          a.at(anchor)
-        },
-        a.keys(),
-        name: name,
-        default: "start",
-        transform: ctx.transform
-      )
-    }
-
     let style = styles.resolve(ctx.style, merge: style, root: "hobby")
     let curves = hobby_.hobby-to-cubic(
       pts,
@@ -1500,14 +1441,34 @@
       (none, curves)
     }
 
-    let drawables = (
-      drawable.path(
-        curves.map(c => path-util.cubic-segment(..c)),
-        fill: style.fill,
-        stroke: style.stroke,
-        close: close),)
+    let path = drawable.path(
+      curves.map(c => path-util.cubic-segment(..c)),
+      fill: style.fill,
+      stroke: style.stroke,
+      close: close)
+
+    let (transform, anchors) = {
+      let a = (:)
+      for (i, pt) in pts.enumerate() {
+        a.insert("pt-" + str(i), pt)
+      }
+      anchor_.setup(
+        anchor => {
+          if type(anchor) == str and anchor in a {
+            return a.at(anchor)
+          }
+        },
+        a.keys(),
+        name: name,
+        default: "start",
+        transform: ctx.transform,
+        path-anchors: true,
+        path: path,
+      )
+    }
+
     if marks != none {
-      drawables += marks
+      path = (path,) + marks
     }
 
     return (
@@ -1516,7 +1477,7 @@
       anchors: anchors,
       drawables: drawable.apply-transform(
         transform,
-        drawables
+        path
       )
     )
   },)
@@ -1536,7 +1497,9 @@
 /// = parameters
 ///
 /// = Anchors
+///   Supports distance anchors.
 ///   / start: The start of the merged path.
+///   / mid: The mid position of the merged path.
 ///   / end: The end of the merged path.
 ///
 /// - body (elements): Elements with paths to be merged together.
@@ -1577,27 +1540,22 @@
       }
 
       let style = styles.resolve(ctx.style, merge: style)
+      let path = drawable.path(fill: style.fill, stroke: style.stroke, close: close, segments)
 
       let (transform, anchors) = anchor_.setup(
-        anchor => {
-          (
-            start: path-util.segment-start(segments.first()),
-            end: path-util.segment-end(segments.last()),
-          ).at(anchor)
-        },
-        (
-          "start",
-          "end"
-        ),
+        auto,
+        (),
         name: name,
         transform: ctx.transform,
+        path-anchors: true,
+        path: path,
       )
 
       return (
         ctx: ctx,
         name: name,
         anchors: anchors,
-        drawables: drawable.path(fill: style.fill, stroke: style.stroke, close: close, segments),
+        drawables: path,
       )
     },
   )
