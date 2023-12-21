@@ -106,7 +106,7 @@
       tip-offset: style.stroke.thickness / 2,
     )
   },
-  tee: (style) => (
+  bracket: (style) => (
     drawables: drawable.path(
       path-util.line-segment(
         if style.harpoon {
@@ -159,16 +159,28 @@
   )},
   hook: (style) => {
     let rx = calc.min(style.length, style.width / 2) / 2
+    let length = calc.max(style.length - style.inset, rx)
+    let lower = (
+      path-util.line-segment(((length, style.width / 2), (rx, style.width / 2))),
+      path-util.cubic-segment(
+        (rx, style.width / 2),
+        (rx, 0),
+        (-rx, style.width / 2),
+        (-rx, 0)),
+      path-util.line-segment(((rx, 0), (style.length, 0))))
+    let upper = (
+      path-util.line-segment(((style.length, 0), (rx, 0))),
+      path-util.cubic-segment(
+        (rx, 0),
+        (rx, -style.width / 2),
+        (-rx, 0),
+        (-rx, -style.width / 2)),
+      path-util.line-segment(((rx, -style.width / 2), (length, -style.width / 2))))
+
     (drawables: drawable.path(
-      (path-util.line-segment(((style.length, 0), (rx, 0))),
-       path-util.cubic-segment(
-         (rx, 0),
-         (rx, style.width / 2),
-         (-rx, 0),
-         (-rx, style.width / 2)
-       ),
-       path-util.line-segment(((rx, style.width / 2), (style.length, style.width / 2)))
-      ),
+      lower + (if not style.harpoon {
+        upper
+      } else { () }),
       close: false,
       fill: none,
       stroke: style.stroke
@@ -176,16 +188,35 @@
     tip-offset: calculate-tip-offset(style),
     distance: style.length
   )},
+  straight: (style) => (
+    drawables: drawable.path(
+      path-util.line-segment(
+        if style.harpoon {
+          ((style.length, style.width/2),
+           (0, 0),)
+        } else {
+          ((style.length, +style.width/2),
+           (0, 0),
+           (style.length, -style.width/2),)
+        }),
+      close: false,
+      fill: none,
+      stroke: style.stroke
+    ),
+    tip-offset: calculate-tip-offset(style),
+    distance: style.length,
+    inset: style.length
+  ),
 )
 
 // Mark mnemonics
 #let mnemonics = (
   ">":  ("triangle", false),
   "<":  ("triangle", true),
-  "<>": ("diamond", false),
-  "[]": ("rect",    false),
-  "]":  ("tee",      false),
-  "[":  ("tee",      true),
+  "<>": ("diamond",  false),
+  "[]": ("rect",     false),
+  "]":  ("bracket",  false),
+  "[":  ("bracket",  true),
   "|":  ("bar",      false),
   "o":  ("circle",   false),
 )
