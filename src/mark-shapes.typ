@@ -110,14 +110,14 @@
     drawables: drawable.path(
       path-util.line-segment(
         if style.harpoon {
-          ((style.length, style.width/2),
+          ((style.length - style.inset, style.width/2),
            (0, style.width/2),
            (0, 0))
         } else {
-          ((style.length, -style.width/2),
+          ((style.length - style.inset, -style.width/2),
            (0, -style.width/2),
            (0, +style.width/2),
-           (style.length, +style.width/2))
+           (style.length - style.inset, +style.width/2))
         }),
       stroke: style.stroke,
       fill: none,
