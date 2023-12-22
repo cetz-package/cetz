@@ -182,6 +182,7 @@
 ///   #show-parameter-block("mode", ("string",), [The options are: "OPEN" no additional lines are drawn so just the arc is shown; "CLOSE" a line is drawn from the start to the end of the arc creating a circular segment; "PIE" lines are drawn from the start and end of the arc to the origin creating a circular sector.], default: "OPEN")
 ///   #show-parameter-block("update-position", ("bool",), [Update the current canvas position to the arc's end point (anchor `"arc-end"`).
 ///     This overrides the default of `true`, that allows chaining of (arc) elements.], default: true)
+///   #show-parameter-block("rotation", ("angle",), [The angle to rotate the ellipse by before calculating the arc.], default: 0deg)
 ///
 /// = Anchors
 ///   Supports compass, distance anchors, plus angle anchors if mode is "PIE"
@@ -224,15 +225,16 @@
   
   // Coordinate check
   let t = coordinate.resolve-system(position)
-  
-  let start-angle = if start == auto { stop - delta } else { start }
-  let stop-angle = if stop == auto { start + delta } else { stop }
-  // Border angles can break if the angle is 0.
-  assert.ne(start-angle, stop-angle, message: "Angle must be greater than 0deg")
 
   return (ctx => {
     let style = styles.resolve(ctx.style, merge: style, root: "arc")
     assert(style.mode in ("OPEN", "PIE", "CLOSE"))
+    assert(type(style.rotation) == angle, message: "rotation must be an abgle, got " + repr(style.rotation))
+
+    let start-angle = if start == auto { stop - delta } else { start } + style.rotation
+    let stop-angle = if stop == auto { start + delta } else { stop } + style.rotation
+    // Border angles can break if the angle is 0.
+    assert.ne(start-angle, stop-angle, message: "Angle must be greater than 0deg")
 
     let (ctx, arc-start) = coordinate.resolve(ctx, position)
     let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
@@ -333,7 +335,22 @@
       default: "arc-start",
       name: name,
       offset-anchor: anchor,
-      transform: ctx.transform,
+      // rotate around arc-start by -style.rotation
+      transform: matrix.translate(
+        matrix.mul-mat(
+          matrix.translate(ctx.transform, (
+            +arc-start.at(0),
+            -arc-start.at(1),
+            +arc-start.at(2),
+          )),
+          matrix.transform-rotate-z(-style.rotation)
+        ),
+        (
+          -arc-start.at(0),
+          +arc-start.at(1),
+          -arc-start.at(2),
+        ),
+      ),
     )
 
     if marks != none {

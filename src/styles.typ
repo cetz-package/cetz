@@ -96,7 +96,8 @@
     mark: auto,
     stroke: auto,
     fill: auto,
-    radius: auto
+    radius: auto,
+    rotation: 0deg,
   ),
   content: (
     padding: auto,
