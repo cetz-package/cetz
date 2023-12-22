@@ -453,6 +453,65 @@
     anchor: "arc-start", name: name, ..style)
 })
 
+#let arc-2pt(start, end, radius, sweep: false, large-arc: false, rotation: 0deg, ..style) = get-ctx(ctx => {
+  let (ctx, start, end) = coordinate.resolve(ctx, ..(start, end))
+  assert(start.at(2) == end.at(2),
+    message: "The z coordinate of both points must be equal, but is: " + repr((start, end).map(v => v.at(2))))
+
+  // algorithm based on https://www.w3.org/TR/SVG/implnote.html#ArcConversionEndpointToCenter
+  let (rx, ry) = util.resolve-radius(radius)
+  let start- = util.apply-transform(
+    matrix.transform-rotate-z(rotation),
+    vector.div(vector.sub(end, start), 2),
+  )
+
+  let rx-sq = calc.pow(rx, 2)
+  let ry-sq = calc.pow(ry, 2)
+  let x1-sq = calc.pow(start-.at(0), 2)
+  let y1-sq = calc.pow(start-.at(1), 2)
+  let center- = vector.scale(
+    (
+      +rx * start-.at(1) / ry,
+      -ry * start-.at(0) / rx,
+    ),
+    calc.sqrt(
+      (rx-sq * ry-sq - rx-sq * y1-sq - ry-sq * x1-sq)
+      / (rx-sq * y1-sq + ry-sq * x1-sq)
+    ) * if sweep == large-arc { -1 } else { 1 },
+  )
+
+  let angle-fn(u, v) = {
+    let (ux, uy) = u
+    let (vx, vy) = v
+    let sign = ux * vy - uy * vx
+    sign = if sign < 0 { -1 } else { 1 }
+    return sign * calc.acos(vector.dot(u, v) / (vector.len(u) * vector.len(v)))
+  }
+
+  let start-angle = angle-fn((1, 0), (
+    (-start-.at(0) - center-.at(0)) / rx,
+    (-start-.at(1) - center-.at(1)) / ry,
+  ))
+  let delta = calc.rem(angle-fn(
+    (
+      (-start-.at(0) - center-.at(0)) / rx,
+      (-start-.at(1) - center-.at(1)) / ry,
+    ),
+    (
+      (start-.at(0) - center-.at(0)) / rx,
+      (start-.at(1) - center-.at(1)) / ry,
+    ),
+  ).deg(), 360) * 1deg
+  if sweep and delta > 0deg {
+    delta -= 360deg
+  } else if not sweep and delta < 0deg {
+    delta += 360deg
+  }
+
+  return arc(start, start: start-angle - rotation, delta: delta, radius: radius,
+    anchor: "arc-start", rotation: rotation, ..style)
+})
+
 /// Draws a single mark pointing at a target coordinate
 ///
 /// #example(```
