@@ -52,17 +52,17 @@
 /// - s (array): Path segment
 /// -> float: Length of the segment in canvas units
 #let _segment-length(s, samples: default-samples) = {
-  let (type, ..pts) = s
-  if type == "line" {
+  let (kind, ..pts) = s
+  if kind == "line" {
     let len = 0
     for i in range(1, pts.len()) {
       len += vector.len(vector.sub(pts.at(i - 1), pts.at(i)))
     }
     return len
-  } else if type == "cubic" {
+  } else if kind == "cubic" {
     return bezier.cubic-arclen(..pts, samples: samples)
   } else {
-    panic("Invalid segment: " + type, s)
+    panic("Invalid segment: " + kind, s)
   }
 }
 
@@ -166,19 +166,11 @@
     }
     travelled += length
   }
-  return if t >= 0 {
-    (index: if rev { 0 } else { segments.len() - 1 },
-     segment: segments.last(),
-     travelled: total,
-     distance: t - total,
-     length: lengths.last())
-  } else {
-    (index: if rev { segments.len() - 1 } else { 0 },
-     segment: segments.first(),
-     travelled: 0,
-     distance: t,
-     length: lengths.first())
-  }
+  return (index: if rev { 0 } else { segments.len() - 1 },
+    segment: segments.last(),
+    travelled: total,
+    distance: t,
+    length: lengths.last())
 }
 
 #let _extrapolated-point-on-segment(segment, distance, rev: false, samples: 100) = {
@@ -288,16 +280,26 @@
 
 /// Shortens a segment by a given distance.
 #let shorten-segment(segment, distance, mode: "CURVED", samples: default-samples) = {
-  let (type, ..s) = segment
-  if type == "line" {
-    let rev = distance < 0
+  let rev = distance < 0
+  if distance >= _segment-length(segment) {
+    return line-segment(if rev {
+      (segment-start(segment), segment-start(segment))
+    } else {
+      (segment-end(segment), segment-end(segment))
+    })
+  }
+
+  let (kind, ..s) = segment
+  if kind == "line" {
     if rev {
       distance *= -1
       s = s.rev()
     }
     let (start, end, distance, length) = _points-between-distance(s, distance)
+    if length != 0 {
+      s = (vector.lerp(s.at(start), s.at(end), distance / length),) + s.slice(end)
+    }
 
-    s = (vector.lerp(s.at(start), s.at(end), distance / length),) + s.slice(end)
     if rev {
       s = s.rev()
     }
@@ -308,7 +310,7 @@
       bezier.cubic-shorten(..s, distance, samples: samples)
     }
   }
-  return (type,) + s
+  return (kind,) + s
 }
 
 /// Shortens a path's segments by the given distances. The start of the path is shortened first by moving the point along the line towards the end. The end of the path is then shortened in the same way. When a distance is 0 no other calculations are made.
@@ -320,16 +322,11 @@
 #let shorten-path(segments, start-distance, end-distance, mode: "CURVED", samples: default-samples) = {
   let total = length(segments)
 
-  // For empty paths, return a zero length line segment
-  if start-distance + end-distance >= total {
-    let pt = segment-start(segments.first())
-    return (line-segment((pt, pt)),)
-  }
-
   if start-distance > 0 {
     let (segment, distance, index, ..) = segment-at-t(
       segments,
-      start-distance
+      start-distance,
+      clamp: true,
     )
     segments = segments.slice(index + 1)
     segments.insert(0,
@@ -345,7 +342,8 @@
     let (segment, distance, index, ..) = segment-at-t(
       segments,
       end-distance,
-      rev: true
+      rev: true,
+      clamp: true,
     )
     segments = segments.slice(0, index - 1)
     segments.push(

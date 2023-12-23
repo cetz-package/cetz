@@ -239,20 +239,17 @@
       harpoon: style.harpoon,
     )
 
-    drawables += mark.drawables
-    distance += mark.length
-    if not is-last {
-      distance += style.sep
-    } else if not style.reverse {
-      // The last mark with an inset needs to offset the
-      // distance, so that the path connects to the tip
-      distance -= mark.at("inset", default: 0)
+    // Shorten path to this mark
+    let inset = mark.at("inset", default: 0)
+    if style.shorten-to != none and (style.shorten-to == auto or i <= style.shorten-to) {
+      shorten-distance = distance + mark.length - inset
     }
 
-    // Shorten path to this mark
-    if style.shorten-to != none and (style.shorten-to == auto or i <= style.shorten-to) {
-      shorten-distance = distance
-    }
+    drawables += mark.drawables
+    distance += mark.length
+
+    // Add separator
+    distance += style.sep
   }
 
   return (
