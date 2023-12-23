@@ -193,7 +193,8 @@
       }
       vector.sub(pt, vector.scale(vector.norm(dir), distance * if is-end { 1 } else { -1 }))
     }
-    assert.ne(pos, none)
+    assert.ne(pos, none,
+      message: "Could not determine mark position")
 
     let dir = if style.flex {
       let a = pos
@@ -224,7 +225,8 @@
         vector.scale(dir, if is-end { -1 } else { 1 })
       }
     }
-    assert.ne(dir, none)
+    assert.ne(pos, none,
+      message: "Could not determine mark direction")
 
     mark = transform-mark(
       style,
