@@ -44,11 +44,8 @@
       bounds += bezier.cubic-extrema(..pts)
     }
   }
-
   return bounds
 }
-
-
 
 /// Calculate length of a single path segment
 ///
@@ -260,7 +257,12 @@
       vector.norm(vector.sub(segment.at(end+1), segment.at(start+1)))
     } else {
       let t = bezier.cubic-t-for-distance(..pts, distance, samples: samples)
-      bezier.cubic-derivative(..pts, t)
+      let dir = bezier.cubic-derivative(..pts, t)
+      if vector.len(dir) == 0 {
+        vector.norm(vector.sub(pts.at(1), pts.at(0)))
+      } else {
+        dir
+      }
     }
   )
 }

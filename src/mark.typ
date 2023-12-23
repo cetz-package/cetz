@@ -165,11 +165,6 @@
       mark.at("tip-offset", default: style.stroke.thickness / 2)
     }
 
-    // Shorten path to this mark
-    if style.shorten-to == auto or i <= style.shorten-to {
-      shorten-distance = distance + mark.length
-    }
-
     let pos = if style.flex {
       path-util.point-on-path(
         segments,
@@ -241,6 +236,7 @@
       flip: style.flip,
       harpoon: style.harpoon,
     )
+
     drawables += mark.drawables
     distance += mark.length
     if not is-last {
@@ -249,6 +245,11 @@
       // The last mark with an inset needs to offset the
       // distance, so that the path connects to the tip
       distance -= mark.at("inset", default: 0)
+    }
+
+    // Shorten path to this mark
+    if style.shorten-to == auto or i <= style.shorten-to {
+      shorten-distance = distance
     }
   }
 
