@@ -30,7 +30,7 @@
     fill(top)
     line((x - .5, y, 0), (x - .5, y, 1),
           (x + .5, y, 1), (x + .5, y, 0), close: true)
-    content((x, -.1), title+h(0.5em), anchor: "east", angle: -90deg)
+    content((x, -.1), title, padding: .1, anchor: "east", angle: 90deg)
   }
 
   // Draw data
