@@ -17,11 +17,11 @@
   padding: none,
   mark: (
     scale: 1,         // A factor that is applied to length, width, and inset.
-    length: .2,       // The size of the mark along its direction
-    width: 0.15,      // The size of the mark along the normal of its direction
-    inset: .05,       // The inner length of some mark shapes, like triangles and brackets
-    sep: .1,          // The distance between multiple marks along their path
-    offset: 0,
+    length: .2cm,     // The size of the mark along its direction
+    width: 0.15cm,    // The size of the mark along the normal of its direction
+    inset: .05cm,     // The inner length of some mark shapes, like triangles and brackets
+    sep: .1cm,        // The distance between multiple marks along their path
+    offset: 0cm,
     start: none,      // Mark start symbol(s)
     end: none,        // Mark end symbol(s)
     symbol: none,     // Mark symbol

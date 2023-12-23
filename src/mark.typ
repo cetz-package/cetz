@@ -59,7 +59,7 @@
     style.stroke.thickness = util.resolve-number(ctx, style.stroke.thickness)
 
     for (k, v) in style {
-      if k in ("length", "width", "inset", "sep") {
+      if k in ("length", "width", "inset", "sep", "offset") {
         style.insert(k, if type(v) == ratio {
           style.stroke.thickness * v
         } else {
