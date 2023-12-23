@@ -279,7 +279,7 @@
 }
 
 /// Shortens a segment by a given distance.
-#let shorten-segment(segment, distance, mode: "CURVED", samples: default-samples) = {
+#let shorten-segment(segment, distance, snap-to: none, mode: "CURVED", samples: default-samples) = {
   let rev = distance < 0
   if distance >= _segment-length(segment) {
     return line-segment(if rev {
@@ -309,6 +309,12 @@
     } else {
       bezier.cubic-shorten(..s, distance, samples: samples)
     }
+
+    // Shortening beziers suffers from rounding or precision errors
+    // so we "snap" the curve start/end to the snap-points, if provided.
+    if snap-to != none {
+      if rev { s.at(1) = snap-to } else { s.at(0) = snap-to }
+    }
   }
   return (kind,) + s
 }
@@ -318,9 +324,15 @@
 /// - segments (segments): The segments of the path to shorten.
 /// - start-distance (int, float): The distance to shorten from the start of the path.
 /// - end-distance (int, float): The distance to shorten from the end of the path
+/// - pos (none, tuple): Tuple of points to "snap" the path ends to
 /// -> segments Segments of the path that have been shortened
-#let shorten-path(segments, start-distance, end-distance, mode: "CURVED", samples: default-samples) = {
+#let shorten-path(segments, start-distance, end-distance, snap-to: none, mode: "CURVED", samples: default-samples) = {
   let total = length(segments)
+  let (snap-start, snap-end) = if snap-to == none {
+    (none, none)
+  } else {
+    snap-to
+  }
 
   if start-distance > 0 {
     let (segment, distance, index, ..) = segment-at-t(
@@ -334,7 +346,8 @@
         segment, 
         distance,
         mode: mode,
-        samples: samples
+        samples: samples,
+        snap-to: snap-start
       )
     )
   }
@@ -351,7 +364,8 @@
         segment, 
         -distance,
         mode: mode,
-        samples: samples
+        samples: samples,
+        snap-to: snap-end
       )
     )
   }

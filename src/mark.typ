@@ -145,6 +145,7 @@
   }
   let distance = 0
   let shorten-distance = 0
+  let shorten-pos = none
   let drawables = ()
   for (i, style) in styles.enumerate() {
     let is-last = i + 1 == styles.len()
@@ -243,6 +244,8 @@
     let inset = mark.at("inset", default: 0)
     if style.shorten-to != none and (style.shorten-to == auto or i <= style.shorten-to) {
       shorten-distance = distance + mark.length - inset
+      shorten-pos = vector.add(pos,
+        vector.scale(vector.norm(dir), mark.length - inset))
     }
 
     drawables += mark.drawables
@@ -254,24 +257,27 @@
 
   return (
     drawables: drawables,
-    distance: shorten-distance
+    distance: shorten-distance,
+    pos: shorten-pos
   )
 }
 
 #let place-marks-along-path(ctx, style, segments) = {
   let distance = (0, 0)
+  let snap-to = (none, none)
   let drawables = ()
   if style.start != none or style.symbol != none {
-    let (drawables: start-drawables, distance: start-distance) = place-mark-on-path(
+    let (drawables: start-drawables, distance: start-distance, pos: pt) = place-mark-on-path(
       ctx,
       process-style(ctx, style, "start"),
       segments
     )
     drawables += start-drawables
     distance.first() = start-distance
+    snap-to.first() = pt
   }
   if style.end != none or style.symbol != none {
-    let (drawables: end-drawables, distance: end-distance) = place-mark-on-path(
+    let (drawables: end-drawables, distance: end-distance, pos: pt) = place-mark-on-path(
       ctx,
       process-style(ctx, style, "end"),
       segments,
@@ -279,9 +285,10 @@
     )
     drawables += end-drawables
     distance.last() = end-distance
+    snap-to.last() = pt
   }
   if distance != (0, 0) {
-    segments = path-util.shorten-path(segments, ..distance, mode: if style.flex { "CURVED" } else { "LINEAR" }, samples: style.position-samples)
+    segments = path-util.shorten-path(segments, ..distance, mode: if style.flex { "CURVED" } else { "LINEAR" }, samples: style.position-samples, snap-to: snap-to)
   }
 
   return (drawables, segments)
