@@ -10,6 +10,8 @@
 #let default-style = (
   tick-limit: 100,
   minor-tick-limit: 1000,
+  auto-tick-factors: (1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10), // Tick factor to try
+  auto-tick-count: 11, // Number of ticks the plot tries to place
   fill: none,
   stroke: black,
   label: (
@@ -245,7 +247,7 @@
     if scale > 100000 or scale < .000001 {return none}
 
     let (step, best) = (none, 0)
-    for s in (1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10) {
+    for s in style.auto-tick-factors {
       s = s * scale
 
       let divs = calc.abs(dt / s)
@@ -258,7 +260,7 @@
   }
 
   if axis.ticks.step == auto {
-    axis.ticks.step = find-max-n-ticks(axis, n: 11)
+    axis.ticks.step = find-max-n-ticks(axis, n: style.auto-tick-count)
   }
   if axis.ticks.minor-step == auto {
     axis.ticks.minor-step = if axis.ticks.step != none {
