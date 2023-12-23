@@ -164,8 +164,7 @@
           } else {
             0%
           }
-        }
-      )
+        }, extrapolate: true)
     } else {
       let (_, dir) = path-util.direction(
         segments,
@@ -173,7 +172,8 @@
           100%
         } else {
           0%
-        })
+        },
+        clamp: true)
       let pt = if is-end {
         path-util.segment-end(segments.last())
       } else {
@@ -181,15 +181,24 @@
       }
       vector.sub(pt, vector.scale(vector.norm(dir), distance * if is-end { 1 } else { -1 }))
     }
+    assert.ne(pos, none)
 
     let dir = if style.flex {
       let a = pos
       let b = path-util.point-on-path(
         segments,
         (mark.length + distance) * if is-end { -1 } else { 1 },
-        samples: style.position-samples)
-
-      vector.sub(b, a)
+        samples: style.position-samples,
+        extrapolate: true)
+      if b != none and a != b {
+        vector.sub(b, a)
+      } else {
+        let (_, dir) = path-util.direction(
+          segments,
+          distance,
+          clamp: true)
+        vector.scale(dir, if is-end { -1 } else { 1 })
+      }
     } else {
       let (_, dir) = path-util.direction(
         segments,
@@ -197,10 +206,13 @@
           100%
         } else {
           0%
-        }
-      )
-      vector.scale(dir, if is-end { -1 } else { 1 })
+        },
+        clamp: true)
+      if dir != none {
+        vector.scale(dir, if is-end { -1 } else { 1 })
+      }
     }
+    assert.ne(dir, none)
 
     mark = transform-mark(
       style,

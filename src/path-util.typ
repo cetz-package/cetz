@@ -118,9 +118,10 @@
 ///
 /// - segment (segment): Path segment
 /// - distance (float): The distance along the path segment to find the point
+/// - extrapolate (bool): If true, use linear extrapolation for distances outsides the path
 ///
 /// -> vector: The point on the path segment
-#let _point-on-segment(segment, distance, samples: default-samples) = {
+#let _point-on-segment(segment, distance, samples: default-samples, extrapolate: false) = {
   let (kind, ..pts) = segment
   if kind == "line" {
     return _point-on-line-segment(segment, distance)
@@ -136,15 +137,16 @@
   }
 }
 
-#let segment-at-t(segments, t, rev: false, samples: default-samples) = {
+#let segment-at-t(segments, t, rev: false, samples: default-samples, clamp: false) = {
   let lengths = segments.map(_segment-length.with(samples: samples))
   let total = lengths.sum()
 
   if type(t) == ratio {
-    assert(t >= 0% and t <= 100%)
     t = total * t / 100%
-  } else {
-    assert(t >= 0 and t <= total, message: strfmt("t is expected to be between 0 and the length of the path ({}), got: {}", total, t))
+  }
+  if not clamp {
+    assert(t >= 0 and t <= total,
+      message: strfmt("t is expected to be between 0 and the length of the path ({}), got: {}", total, t))
   }
 
   if rev {
@@ -168,6 +170,42 @@
     }
     travelled += length
   }
+  return if t >= 0 {
+    (index: if rev { 0 } else { segments.len() - 1 },
+     segment: segments.last(),
+     travelled: total,
+     distance: t - total,
+     length: lengths.last())
+  } else {
+    (index: if rev { segments.len() - 1 } else { 0 },
+     segment: segments.first(),
+     travelled: 0,
+     distance: t,
+     length: lengths.first())
+  }
+}
+
+#let _extrapolated-point-on-segment(segment, distance, rev: false, samples: 100) = {
+  let (kind, ..pts) = segment
+  let (pt, dir) = if kind == "line" {
+    let (a, b) = if rev {
+      (pts.at(0), pts.at(1))
+    } else {
+      (pts.at(-2), pts.at(-1))
+    }
+    (if rev {a} else {b}, vector.sub(b, a))
+  } else {
+    let dir = bezier.cubic-derivative(..pts, if rev { 0 } else { 1 })
+    if vector.len(dir) == 0 {
+      dir = vector.sub(pts.at(1), pts.at(0))
+    }
+    (if rev {pts.at(0)} else {pts.at(1)}, dir)
+  }
+
+  if vector.len(dir) != 0 {
+    return vector.add(pt, vector.scale(vector.norm(dir), distance * if rev { -1 } else { 1 }))
+  }
+  return none
 }
 
 /// Get position on path
@@ -175,34 +213,46 @@
 /// - segments (array): List of path segments
 /// - t (int,float,ratio): Absolute position on the path if given an
 ///   float or integer, or relative position if given a ratio from 0% to 100%
+/// - extrapolate (bool): If true, use linear extrapolation if distance is outsides the paths range
 /// -> none,vector: Position on path. If the path is empty (segments == ()), none is returned
-#let point-on-path(segments, t, samples: default-samples) = {
+#let point-on-path(segments, t, samples: default-samples, extrapolate: false) = {
   assert(
     type(t) in (int, float, ratio),
     message: "Distance t must be of type int, float or ratio"
   )
   let rev = if type(t) == ratio and t < 0% or type(t) in ("int", "float") and t < 0 {
-    t *= -1
     true
   } else {
     false
   }
-  let (distance, segment, length, ..) = segment-at-t(segments, t, samples: samples, rev: rev)
+  if rev {
+    t *= -1
+  }
+
+  // Extrapolate at path boundaries if enabled
+  if extrapolate {
+    let total = length(segments)
+    let absolute-t = if type(t) == ratio { t / 100% * total } else { t }
+    if absolute-t > total {
+      return _extrapolated-point-on-segment(segments.first(), absolute-t - total, rev: rev, samples: samples)
+    }
+  }
+
+  let segment = segment-at-t(segments, t, samples: samples, rev: rev)
   return if segment != none {
-    _point-on-segment(segment, if rev { length - distance } else { distance }, samples: samples)
+    let (distance, segment, length, ..) = segment
+    _point-on-segment(segment, if rev { length - distance } else { distance }, samples: samples, extrapolate: extrapolate)
   }
 }
 
 /// Get position and direction on path
 ///
-/// TODO: Replace this function by having point-on-path return both a point
-///       and a direction vector!
-///
 /// - segments (array): List of path segments
 /// - t (float): Position (from 0 to 1)
+/// - clamp (bool): Clamp position between 0 and 1
 /// -> tuple: Tuple of the point at t and the scaled direction
-#let direction(segments, t, samples: default-samples) = {
-  let (segment, distance, length, ..) = segment-at-t(segments, t, samples: samples)
+#let direction(segments, t, samples: default-samples, clamp: false) = {
+  let (segment, distance, length, ..) = segment-at-t(segments, t, samples: samples, clamp: clamp)
   let (kind, ..pts) = segment
   return (
     _point-on-segment(segment, distance, samples: samples),
@@ -267,6 +317,14 @@
 /// - end-distance (int, float): The distance to shorten from the end of the path
 /// -> segments Segments of the path that have been shortened
 #let shorten-path(segments, start-distance, end-distance, mode: "CURVED", samples: default-samples) = {
+  let total = length(segments)
+
+  // For empty paths, return a zero length line segment
+  if start-distance + end-distance >= total {
+    let pt = segment-start(segments.first())
+    return (line-segment((pt, pt)),)
+  }
+
   if start-distance > 0 {
     let (segment, distance, index, ..) = segment-at-t(
       segments,
