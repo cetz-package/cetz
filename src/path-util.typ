@@ -35,14 +35,13 @@
   let bounds = ()
 
   for s in segments {
-    let kind = s.at(0)
+    let (kind, ..pts) = s
     if kind == "line" {
-      bounds += s.slice(1)
+      bounds += pts
     } else if kind == "cubic" {
-      bounds.push(s.at(1))
-      bounds.push(s.at(2))
-      bounds += bezier.cubic-extrema(
-        s.at(1), s.at(2), s.at(3), s.at(4))
+      bounds.push(pts.at(0))
+      bounds.push(pts.at(1))
+      bounds += bezier.cubic-extrema(..pts)
     }
   }
 

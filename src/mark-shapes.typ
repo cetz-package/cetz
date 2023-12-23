@@ -100,7 +100,7 @@
       fill: none,
       close: false,
     ),
-    distance: style.stroke.thickness / 2,
+    distance: 0,
     tip-offset: style.stroke.thickness / 2,
   ),
   ellipse: (style) => (
