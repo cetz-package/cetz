@@ -42,7 +42,7 @@
     /// Index of the mark the path should get shortened to, or auto
     /// to shorten to the last mark. To apply different values per side,
     /// set the default to `0` and to `auto` for the mark you want to
-    /// shorten the path to.
+    /// shorten the path to. Set to `none` to disable path shortening.
     shorten-to: auto,
   ),
   circle: (

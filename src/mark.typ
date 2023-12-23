@@ -248,7 +248,7 @@
     }
 
     // Shorten path to this mark
-    if style.shorten-to == auto or i <= style.shorten-to {
+    if style.shorten-to != none and (style.shorten-to == auto or i <= style.shorten-to) {
       shorten-distance = distance
     }
   }
