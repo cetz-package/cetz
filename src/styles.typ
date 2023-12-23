@@ -29,7 +29,7 @@
     symbol: none,
     stroke: auto,
     fill: auto,
-    slant: none,
+    slant: none,      // Slant factor - 0%: no slant, 100%: 45 degree slant
     harpoon: false,
     flip: false,
     reverse: false,

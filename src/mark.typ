@@ -84,7 +84,10 @@
         matrix.transform-rotate-dir(dir, up),
         matrix.transform-rotate-z(90deg),
         matrix.transform-translate(if reverse { mark.length } else { mark.tip-offset }, 0, 0),
-        if slant not in (none, 0deg) {
+        if slant not in (none, 0%) {
+          if type(slant) == ratio {
+            slant /= 100%
+          }
           matrix.transform-shear-x(slant)
         },
         if flip or reverse {
