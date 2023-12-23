@@ -1,8 +1,8 @@
 // CeTZ Library for drawing graph axes
-#import "../util.typ"
-#import "../draw.typ"
-#import "../vector.typ"
-#import "../styles.typ"
+#import "/src/util.typ"
+#import "/src/draw.typ"
+#import "/src/vector.typ"
+#import "/src/styles.typ"
 
 #let typst-content = content
 
@@ -10,19 +10,21 @@
 #let default-style = (
   tick-limit: 100,
   minor-tick-limit: 1000,
+  auto-tick-factors: (1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10), // Tick factor to try
+  auto-tick-count: 11, // Number of ticks the plot tries to place
   fill: none,
   stroke: black,
   label: (
-    offset: .2,
+    offset: .2cm,
     anchor: auto,
   ),
   tick: (
     fill: none,
     stroke: black,
-    length: .1,
-    minor-length: .08,
+    length: .1cm,
+    minor-length: .08cm,
     label: (
-      offset: .2,
+      offset: .2cm,
       angle: 0deg,
       anchor: auto,
     )
@@ -31,24 +33,34 @@
     stroke: (paint: gray, dash: "dotted"),
     fill: none
   ),
-  x: (
-    fill: auto,
-    stroke: auto,
-    mark: auto,
-    tick: auto
-  ),
-  y: (
-    fill: auto,
-    stroke: auto,
-    mark: auto,
-    tick: auto
-  )
 )
 
+#let _prepare-style(ctx, style) = {
+  if type(style) != dictionary { return style }
+  let n = util.resolve-number.with(ctx)
+
+  style.label.offset = n(style.label.offset)
+  style.tick.length = n(style.tick.length)
+  style.tick.minor-length = n(style.tick.minor-length)
+  style.tick.label.offset = n(style.tick.label.offset)
+
+  if "padding" in style {
+    style.padding = n(style.padding)
+  }
+
+  if "origin" in style {
+    style.origin.label.offset = n(style.origin.label.offset)
+  }
+
+  return style
+}
+
 #let default-style-schoolbook = util.merge-dictionary(default-style, (
-  tick: (label: (offset: .1)),
-  mark: (end: ">"),
-  padding: .4))
+  x: (stroke: auto, fill: none, mark: (end: ">")),
+  y: (stroke: auto, fill: none, mark: (end: ">")),
+  origin: (label: (offset: .05cm)),
+  tick: (label: (offset: .1cm)),
+  padding: .4cm))
 
 // Construct Axis Object
 //
@@ -235,7 +247,7 @@
     if scale > 100000 or scale < .000001 {return none}
 
     let (step, best) = (none, 0)
-    for s in (1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10) {
+    for s in style.auto-tick-factors {
       s = s * scale
 
       let divs = calc.abs(dt / s)
@@ -248,7 +260,7 @@
   }
 
   if axis.ticks.step == auto {
-    axis.ticks.step = find-max-n-ticks(axis, n: 11)
+    axis.ticks.step = find-max-n-ticks(axis, n: style.auto-tick-count)
   }
   if axis.ticks.minor-step == auto {
     axis.ticks.minor-step = if axis.ticks.step != none {
@@ -333,6 +345,7 @@
     let style = style.named()
     style = styles.resolve(ctx.style, merge: style, root: "axes",
                            base: default-style)
+    style = _prepare-style(ctx, style)
 
     let padding = (
       l: padding.at("west", default: 0),
@@ -359,6 +372,7 @@
         let style = style
         if name in style {
           style = styles.resolve(style, merge: style.at(name))
+          style = _prepare-style(ctx, style)
         }
 
         if axis != none {
@@ -488,8 +502,8 @@
       ctx.style,
       merge: style,
       root: "axes",
-      base: default-style-schoolbook
-    )
+      base: default-style-schoolbook)
+    style = _prepare-style(ctx, style)
 
     let x-position = calc.min(calc.max(y-axis.min, x-position), y-axis.max)
     let y-position = calc.min(calc.max(x-axis.min, y-position), x-axis.max)
@@ -541,6 +555,7 @@
         let style = style
         if name in style {
           style = styles.resolve(style, merge: style.at(name))
+          style = _prepare-style(ctx, style)
         }
 
         let grid-mode = axis.ticks.at("grid", default: false)
@@ -579,7 +594,7 @@
               if not origin-drawn {
                 origin-drawn = true
                 content(vector.add((x, y),
-                  vector.scale((1, 1), -style.tick.label.offset / 2)),
+                  (-style.origin.label.offset, -style.origin.label.offset)),
                   par(justify: false, [#label]), anchor: "north-east")
               }
             } else {
