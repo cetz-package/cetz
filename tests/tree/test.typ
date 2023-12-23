@@ -16,12 +16,10 @@
     fill: gray.lighten(70%),
     stroke: gray.lighten(70%))
 
-  tree(data, spread: 2.5, grow: 1.5, draw-node: (node, _) => {
-    circle((), radius: .45, stroke: none)
-    content((), node.content)
+  tree(data, spread: 2.5, grow: 2, draw-node: (node, ..) => {
+    content((), node.content, frame: "circle")
   }, draw-edge: (from, to, ..) => {
-    line((a: from, number: .6, abs: true, b: to),
-         (a: to, number: .6, abs: true, b: from), mark: (end: ">"))
+    line(from, to, mark: (start: "stealth", end: "stealth"))
   }, name: "tree")
 
   // Draw a "custom" connection between two nodes

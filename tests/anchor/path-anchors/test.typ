@@ -20,6 +20,11 @@
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
+  display(line, (0,0), (.75,1), (1.25,-1), (2,0))
+}))
+
+#box(stroke: 2pt + red, canvas(length: 1cm, {
+  import draw: *
   display(circle, (0,0))
 }))
 
