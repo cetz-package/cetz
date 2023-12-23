@@ -19,8 +19,9 @@
     scale: 1,         // A factor that is applied to length, width, and inset.
     length: .2,       // The size of the mark along its direction
     width: 0.15,      // The size of the mark along the normal of its direction
-    inset: .05,       // The inner length of triangular shaped marks
+    inset: .05,       // The inner length of some mark shapes, like triangles and brackets
     sep: .1,          // The distance between multiple marks along their path
+    offset: 0,
     start: none,      // Mark start symbol(s)
     end: none,        // Mark end symbol(s)
     xy-up: (0, 0, 1), // Up vector for 2D marks

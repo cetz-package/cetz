@@ -24,7 +24,10 @@
     scale: auto,
     length: auto,
     sep: auto,
+    offset: auto,
     flex: auto,
+    xy-up: auto,
+    z-up: auto,
     position-samples: auto
   )
 
@@ -143,6 +146,10 @@
     if style.symbol == none {
       continue
     }
+
+    // Apply mark offset
+    distance += style.offset
+
     let (mark-fn, reverse) = get-mark(ctx, style.symbol)
     style.reverse = (style.reverse or reverse) and not (style.reverse and reverse)
 
