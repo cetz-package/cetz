@@ -24,9 +24,9 @@
     offset: 0,
     start: none,      // Mark start symbol(s)
     end: none,        // Mark end symbol(s)
+    symbol: none,     // Mark symbol
     xy-up: (0, 0, 1), // Up vector for 2D marks
     z-up: (0, 1, 0),  // Up vector for 3D marks
-    symbol: none,
     stroke: auto,
     fill: auto,
     slant: none,      // Slant factor - 0%: no slant, 100%: 45 degree slant
@@ -38,7 +38,12 @@
     flex: true,
     /// Max. number of samples to use for calculating curve positions
     /// a higher number gives better results but may slow down compilation.
-    position-samples: 30
+    position-samples: 30,
+    /// Index of the mark the path should get shortened to, or auto
+    /// to shorten to the last mark. To apply different values per side,
+    /// set the default to `0` and to `auto` for the mark you want to
+    /// shorten the path to.
+    shorten-to: auto,
   ),
   circle: (
     radius: auto,

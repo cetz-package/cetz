@@ -28,6 +28,7 @@
     flex: auto,
     xy-up: auto,
     z-up: auto,
+    shorten-to: auto,
     position-samples: auto
   )
 
@@ -143,6 +144,7 @@
     styles = (styles,)
   }
   let distance = 0
+  let shorten-distance = 0
   let drawables = ()
   for (i, style) in styles.enumerate() {
     let is-last = i + 1 == styles.len()
@@ -161,6 +163,11 @@
       mark.at("base-offset", default: style.stroke.thickness / 2)
     } else {
       mark.at("tip-offset", default: style.stroke.thickness / 2)
+    }
+
+    // Shorten path to this mark
+    if style.shorten-to == auto or i <= style.shorten-to {
+      shorten-distance = distance + mark.length
     }
 
     let pos = if style.flex {
@@ -247,7 +254,7 @@
 
   return (
     drawables: drawables,
-    distance: distance
+    distance: shorten-distance
   )
 }
 
