@@ -83,3 +83,21 @@
   line((-1,1), (1,1), mark: (end: ((symbol: "o", offset: 0.5), "o", "o")))
   line((-1,0), (1,0), mark: (end: ((symbol: "o", offset: 1.0), "o", "o")))
 }))
+
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  set-style(mark: (fill: white, shorten-to: auto))
+  hobby((0,0), ..range(1, 20).map(t => {
+    (calc.cos(t * calc.pi/2) * t / 10, calc.sin(t * calc.pi/2) * t / 10)
+  }), mark: (end: ("straight", "stealth",) * 25))
+}))
+
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  set-style(mark: (fill: white, shorten-to: auto))
+  catmull((0,0), ..range(1, 20).map(t => {
+    (calc.cos(t * calc.pi/2) * t / 10, calc.sin(t * calc.pi/2) * t / 10)
+  }), mark: (end: ("straight", "stealth") * 25))
+}))
