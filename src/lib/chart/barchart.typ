@@ -4,7 +4,7 @@
 #import "/src/styles.typ"
 
 #let barchart-default-style = (
-  axes: (tick: (length: 0)),
+  axes: (tick: (length: 0), grid: (stroke: (dash: "dotted"))),
   bar-width: .8,
   y-inset: 1,
 )

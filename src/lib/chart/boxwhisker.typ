@@ -3,7 +3,7 @@
 #import "/src/styles.typ"
 
 #let boxwhisker-default-style = (
-  axes: (tick: (length: 0)),
+  axes: (tick: (length: 0), grid: (stroke: (dash: "dotted"))),
   box-width: 0.75,
   whisker-width: 0.5,
   mark-size: 0.15,

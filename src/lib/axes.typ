@@ -15,23 +15,25 @@
   fill: none,
   stroke: black,
   label: (
-    offset: .2cm,
-    anchor: auto,
+    offset: .2cm,       // Axis label offset
+    anchor: auto,       // Axis label anchor
   ),
   tick: (
     fill: none,
     stroke: black,
-    length: .1cm,
-    minor-length: .08cm,
+    length: .1cm,       // Tick length: Number
+    minor-length: 80%,  // Minor tick length: Number, Ratio
     label: (
-      offset: .2cm,
-      angle: 0deg,
-      anchor: auto,
+      offset: .2cm,     // Tick label offset
+      angle: 0deg,      // Tick label angle
+      anchor: auto,     // Tick label anchor
     )
   ),
   grid: (
-    stroke: (paint: gray, dash: "dotted"),
-    fill: none
+    stroke: (paint: gray.lighten(50%), thickness: 1pt),
+  ),
+  minor-grid: (
+    stroke: (paint: gray.lighten(50%), thickness: .5pt),
   ),
 )
 
@@ -42,6 +44,9 @@
   style.label.offset = n(style.label.offset)
   style.tick.length = n(style.tick.length)
   style.tick.minor-length = n(style.tick.minor-length)
+  if type(style.tick.minor-length) == ratio {
+    style.tick.minor-length = style.tick.minor-length * style.tick.length / 100%
+  }
   style.tick.label.offset = n(style.tick.label.offset)
 
   if "padding" in style {
@@ -409,14 +414,20 @@
                         angle: style.tick.label.angle)
               }
 
-              if grid-mode.major and major or grid-mode.minor and not major {
+              let show-major-grid = grid-mode.major and major
+              if show-major-grid or grid-mode.minor and not major {
                 let (grid-begin, grid-end) = if name in ("top", "bottom") {
                   ((x, 0), (x, h))
                 } else {
                   ((0, y), (w, y))
                 }
 
-                line(grid-begin, grid-end, ..style.grid)
+                let grid-style = if show-major-grid {
+                  style.grid
+                } else {
+                  style.minor-grid
+                }
+                line(grid-begin, grid-end, ..grid-style)
               }
             }
             
