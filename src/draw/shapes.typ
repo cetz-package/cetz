@@ -1244,7 +1244,7 @@
         path.segments = segments
         path = (path,) + marks
       }
-
+      // panic(drawables)
       return (
         ctx: ctx, 
         name: name,

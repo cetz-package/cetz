@@ -115,14 +115,15 @@
     style.stroke = util.resolve-stroke(style.stroke)
     style.stroke.thickness = util.resolve-number(ctx, style.stroke.thickness)
 
-    if "angle" in style and style.angle != none {
-      if type(style.angle) == angle {
-        style.width = calc.tan(style.angle / 2) * style.length * 2
-      } else {
-        // (angle, number)
-        style.length = calc.cos(style.angle.first()) * style.angle.last()
-        style.width = calc.sin(style.angle.first() / 2) * 2 * style.angle.last()
-      }
+    if "angle" in style and type(style.angle) == angle {
+      // if type(style.angle) == angle {
+      style.width = calc.tan(style.angle / 2) * style.length * 2
+      // } else {
+      //   // (angle, number)
+      // Tikz gives an example of (90deg, 10pt) but this causes the length to be 0 but does not show that.
+      //   style.length = calc.cos(style.angle.first()) * style.angle.last()
+      //   style.width = calc.sin(style.angle.first() / 2) * 2 * style.angle.last()
+      // }
     }
 
     for (k, v) in style {
@@ -180,21 +181,6 @@
 /// -> A dictionary with the keys:
 ///   - drawables (drawables): The transformed drawables of the mark.
 ///   - distance: The distance between the tip of the mark and the end.
-#let place-mark(style, pos, angle) = {
-  let (drawables, distance, tip-offset) = (marks.at(style.symbol))(style)
-
-  return (
-    drawables: drawable.apply-transform(
-      matrix.mul-mat(
-        matrix.transform-translate(..pos),
-        matrix.transform-rotate-z(angle),
-        matrix.transform-translate(tip-offset, 0, 0)
-      ),
-      drawables
-    ),
-    distance: distance + tip-offset
-  )
-}
 
 #let place-mark-on-path(ctx, styles, segments, is-end: false) = {
   if type(styles) != array {
@@ -285,9 +271,13 @@
     distance.last() = end-distance
   }
   if distance != (0, 0) {
-    segments = path-util.shorten-path(segments, ..distance, mode: if style.flex { "CURVED" } else { "LINEAR" }, samples: style.position-samples)
+    segments = path-util.shorten-path(
+      segments,
+      ..distance,
+      mode: if style.flex { "CURVED" } else { "LINEAR" },
+      samples: style.position-samples
+    )
   }
 
   return (drawables, segments)
-
 }

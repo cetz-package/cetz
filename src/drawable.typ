@@ -11,6 +11,7 @@
     return ()
   }
   for drawable in drawables {
+    assert(type(drawable) != array, message: repr(drawables))
     if drawable.type == "path" {
       drawable.segments = drawable.segments.map(s => {
         return (s.at(0),) + util.apply-transform(transform, ..s.slice(1))
