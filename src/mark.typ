@@ -112,37 +112,22 @@
   return mark
 }
 
-/// Places a mark with the given style at a position pointing towards in the direction of the given angle.
-/// - style (dictionary): A dictionary of keys in order to style the mark. The following are the required keys.
+/// Places one or more marks with the given styles on path segments.
+/// - ctx (context):
+/// - styles (dictionary): A dictionary of keys in order to style the mark. The following are the required keys.
 ///   - stroke
 ///   - fill
 ///   - width
 ///   - length
 ///   - symbol
 ///   - inset
-/// - pos (vector): The position to place the mark at.
-/// - angle (angle): The direction to point the mark towards.
+/// - segments (array): List of path segments
+/// - is-end (bool): If false, marks get placed in the direction from the first segment to the last
+///   segment; in reverse order if true.
 /// -> A dictionary with the keys:
 ///   - drawables (drawables): The transformed drawables of the mark.
-///   - distance: The distance between the tip of the mark and the end.
-#let place-mark(ctx, style, pos, angle) = {
-  let (mark-fn, reverse) = get-mark(ctx, style.symbol)
-  style.reverse = (style.reverse or reverse) and not (style.reverse and reverse)
-  let (drawables, distance, tip-offset) = mark-fn(style)
-
-  return (
-    drawables: drawable.apply-transform(
-      matrix.mul-mat(
-        matrix.transform-translate(..pos),
-        matrix.transform-rotate-z(angle),
-        matrix.transform-translate(tip-offset, 0, 0)
-      ),
-      drawables
-    ),
-    distance: distance + tip-offset
-  )
-}
-
+///   - distance (float): The distance between the tip of the mark and the end.
+///   - pos (vector): The position the path segments must get shortened to.
 #let place-mark-on-path(ctx, styles, segments, is-end: false) = {
   if type(styles) != array {
     styles = (styles,)
@@ -292,7 +277,12 @@
     snap-to.last() = pt
   }
   if distance != (0, 0) {
-    segments = path-util.shorten-path(segments, ..distance, mode: if style.flex { "CURVED" } else { "LINEAR" }, samples: style.position-samples, snap-to: snap-to)
+    segments = path-util.shorten-path(
+      segments,
+      ..distance,
+      mode: if style.flex { "CURVED" } else { "LINEAR" },
+      samples: style.position-samples,
+      snap-to: snap-to)
   }
 
   return (drawables, segments)
