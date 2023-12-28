@@ -40,8 +40,8 @@ CeTZ 0.2.0 requires Typst 0.10.0
 - Added `piechart` for drawing pie- and donut charts
 - Added `boxwhisker` for drawing boxwhisker charts
 
-### Spring
-- New spring library for drawing springs
+### Decorations
+- New path decorations `zigzag`, `wave` and `coil`
 
 # 0.1.2
 CeTZ requires Typst 0.8.0.
