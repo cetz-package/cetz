@@ -58,6 +58,10 @@
     style.stroke = util.resolve-stroke(style.stroke)
     style.stroke.thickness = util.resolve-number(ctx, style.stroke.thickness)
 
+    if "angle" in style and type(style.angle) == angle {
+      style.width = calc.tan(style.angle / 2) * style.length * 2
+    }
+
     for (k, v) in style {
       if k in ("length", "width", "inset", "sep", "offset") {
         style.insert(k, if type(v) == ratio {
