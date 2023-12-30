@@ -10,7 +10,7 @@
 
 #let check-mark(style) = (style.start, style.end, style.symbol).any(v => v != none)
 
-#let process-style(ctx, style, root) = {
+#let process-style(ctx, style, root, path-length) = {
   let base-style = (
     symbol: auto,
     fill: auto,
@@ -62,8 +62,9 @@
       style.width = calc.tan(style.angle / 2) * style.length * 2
     }
 
+    // Stroke thickness relative attributes
     for (k, v) in style {
-      if k in ("length", "width", "inset", "sep", "offset") {
+      if k in ("length", "width", "inset", "sep") {
         style.insert(k, if type(v) == ratio {
           style.stroke.thickness * v
         } else {
@@ -71,6 +72,14 @@
         } * style.scale)
       }
     }
+
+    // Path length relative attributes
+    style.offset = if type(style.offset) == ratio {
+      style.offset * path-length / 100%
+    } else {
+      util.resolve-number(ctx, style.offset)
+    }
+
     out.push(style)
   }
   return out
@@ -258,7 +267,7 @@
   if style.start != none or style.symbol != none {
     let (drawables: start-drawables, distance: start-distance, pos: pt) = place-mark-on-path(
       ctx,
-      process-style(ctx, style, "start"),
+      process-style(ctx, style, "start", path-util.length(segments)),
       segments
     )
     drawables += start-drawables
@@ -268,7 +277,7 @@
   if style.end != none or style.symbol != none {
     let (drawables: end-drawables, distance: end-distance, pos: pt) = place-mark-on-path(
       ctx,
-      process-style(ctx, style, "end"),
+      process-style(ctx, style, "end", path-util.length(segments)),
       segments,
       is-end: true
     )
