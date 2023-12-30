@@ -21,7 +21,8 @@
     width: 0.15cm,    // The size of the mark along the normal of its direction
     inset: .05cm,     // The inner length of some mark shapes, like triangles and brackets
     sep: .1cm,        // The distance between multiple marks along their path
-    offset: 0cm,
+    pos: none,        // Position override on the path (none, number or path-length ratio)
+    offset: 0,        // Mark extra offset (number or path-length ratio)
     start: none,      // Mark start symbol(s)
     end: none,        // Mark end symbol(s)
     symbol: none,     // Mark symbol

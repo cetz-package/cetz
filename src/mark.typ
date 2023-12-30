@@ -24,6 +24,7 @@
     scale: auto,
     length: auto,
     sep: auto,
+    pos: auto,
     offset: auto,
     flex: auto,
     xy-up: auto,
@@ -74,10 +75,15 @@
     }
 
     // Path length relative attributes
-    style.offset = if type(style.offset) == ratio {
-      style.offset * path-length / 100%
-    } else {
-      util.resolve-number(ctx, style.offset)
+    for k in ("offset", "pos",) {
+      let v = style.at(k)
+      if v != none and v != auto {
+        style.insert(k, if type(v) == ratio {
+          v * path-length / 100%
+        } else {
+          util.resolve-number(ctx, v)
+        })
+      }
     }
 
     out.push(style)
@@ -149,6 +155,11 @@
     let is-last = i + 1 == styles.len()
     if style.symbol == none {
       continue
+    }
+
+    // Override position, if set
+    if style.pos != none {
+      distance = style.pos
     }
 
     // Apply mark offset
