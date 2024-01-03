@@ -6,6 +6,7 @@
 #import "/src/process.typ"
 #import "/src/path-util.typ"
 #import "/src/util.typ"
+#import "/src/bezier.typ"
 
 #let default-style = (
   /// Number of windings
@@ -108,6 +109,34 @@
                      path-util.point-on-path(segments, stop)) < 1e-8
 }
 
+// Add optional line elements from segments start to mid-path start
+// and mid-path end to sgements end
+#let _add-rest(ctx, segments, style, mid-path, close: false) = {
+  let add = style.rest == "LINE" and not close
+
+  let (ctx, drawables, ..) = process.many(ctx, mid-path)
+  let mid-first = drawables.first().segments.first()
+  let mid-last = drawables.last().segments.last()
+
+  if add {
+    let start = path-util.segment-start(segments.first())
+    start = util.revert-transform(ctx.transform, start)
+
+    let mid-start = path-util.segment-start(mid-first)
+    mid-start = util.revert-transform(ctx.transform, mid-start)
+    draw.line(start, mid-start)
+  }
+  mid-path;
+  if add {
+    let end = path-util.segment-end(segments.last())
+    end = util.revert-transform(ctx.transform, end)
+
+    let mid-end = path-util.segment-end(mid-last)
+    mid-end = util.revert-transform(ctx.transform, mid-end)
+    draw.line(mid-end, end)
+  }
+}
+
 #let _path-effect(ctx, segments, fn, close: false, style) = {
   let n = style.N
   assert(n > 0,
@@ -116,9 +145,12 @@
   let (start, stop) = (style.start, style.stop)
   let inc = (stop - start) / n
   let pts = ()
+  let len = path-util.length(segments)
   for i in range(0, n) {
-    let p0 = path-util.point-on-path(segments, start + inc * i)
-    let p1 = path-util.point-on-path(segments, start + inc * (i + 1))
+    let p0 = path-util.point-on-path(segments, calc.max(0,
+      start + inc * i))
+    let p1 = path-util.point-on-path(segments, calc.min(
+      start + inc * (i + 1), len))
     if p0 == p1 { continue }
 
     (p0, p1) = util.revert-transform(ctx.transform, p0, p1)
@@ -137,7 +169,8 @@
 /// and the width via `width`.
 ///
 /// ```example
-/// cetz.decorations.zigzag(line((0,0), (2,1)), width: .25)
+/// line((0,0), (2,1), stroke: gray)
+/// cetz.decorations.zigzag(line((0,0), (2,1)), width: .25, start: 10%, stop: 90%)
 /// ```
 ///
 /// - target (drawable): Target path
@@ -180,7 +213,12 @@
   }
 
   let pts = _path-effect(ctx, segments, fn, close: close, style)
-  draw.line(..pts, name: name, close: close, ..style)
+  return draw.merge-path(
+    _add-rest(ctx, segments, style,
+      draw.line(..pts, name: name, ..style),
+      close: close),
+    close: close,
+    ..style)
 })
 
 /// Draw a stretched coil/loop spring along a path
@@ -189,7 +227,8 @@
 /// and the width via `width`.
 ///
 /// ```example
-/// cetz.decorations.coil(line((0,0), (2,1)), width: .25)
+/// line((0,0), (2,1), stroke: gray)
+/// cetz.decorations.coil(line((0,0), (2,1)), width: .25, start: 10%, stop: 90%)
 /// ```
 ///
 /// - target (drawable): Target path
@@ -208,34 +247,65 @@
     close
   }
 
-  let N = style.N
-  let sin150x2 = calc.sin(150deg) * 2
-  let overshoot = calc.max(0, style.factor)
+  let N = calc.max(style.N, 1)
+  let length = path-util.length(segments)
+  let phase-length = length / N
+  let overshoot = calc.max(0, (style.factor - 1) * phase-length)
+
+  // Offset both control points so the curve approximates
+  // an elliptic arc
+  let ellipsize-cubic(s, e, c1, c2) = {
+    let m = vector.scale(vector.add(c1, c2), .5)
+    let d = vector.sub(e, s)
+
+    c1 = vector.sub(m, vector.scale(d, .5))
+    c2 = vector.add(m, vector.scale(d, .5))
+
+    return (s, e, c1, c2)
+  }
 
   let fn(i, a, b) = {
     let ab = vector.sub(b, a)
     let up = vector.scale(
-      vector.norm((-ab.at(1), ab.at(0), ab.at(2))), style.width)
-
-    let angle = vector.angle2(a, b)
+      vector.norm((-ab.at(1), ab.at(0), ab.at(2))), style.width / 2)
     let dist = vector.dist(a, b)
 
-    let m = vector.scale(vector.add(a, b), .5)
-    if not close and i == N - 1 {
-      return draw.bezier-through(a, vector.add(m, vector.scale(up, 1/3)), b)
+    let d = vector.norm(ab)
+    let overshoot-at(i) = if N <= 1 {
+      0
+    } else if close {
+      overshoot / 2
+    } else {
+      i / (N - 1) * overshoot
     }
 
-    let e = vector.add(a, vector.scale(ab, (i + overshoot) / N))
-    return draw.group({
-      draw.translate(vector.scale(a, 1))
-      draw.rotate(z: angle)
-      draw.arc((0,0,0), start: 150deg, delta: -120deg, radius: (dist * overshoot / 1.732, style.width / sin150x2))
-      draw.arc((dist,0,0), start: 30deg, delta: -240deg, radius: (dist * (overshoot - 1) / 1.732, style.width / sin150x2 / 3), anchor: "end")
-    })
+    let next-a = vector.sub(b, vector.scale(d, overshoot-at(i + 1)))
+    let a = vector.sub(a, vector.scale(d, overshoot-at(i)))
+    let b = vector.add(b, vector.scale(d, overshoot-at(N - i)))
+    let m = vector.scale(vector.add(a, b), .5)
+    let m-up = vector.add(m, up)
+    let m-down = vector.sub(vector.scale(vector.add(next-a, b), .5), up)
+
+    let upper = bezier.cubic-through-3points(a, m-up, b)
+    upper = ellipsize-cubic(..upper)
+
+    let lower = bezier.cubic-through-3points(b, m-down, next-a)
+    lower = ellipsize-cubic(..lower)
+
+    if i < N - 1 or close {
+      return (
+        draw.bezier(..upper),
+        draw.bezier(..lower),
+      )
+    } else {
+      return (draw.bezier(..upper),)
+    }
   }
 
   return draw.merge-path(
-    _path-effect(ctx, segments, fn, close: close, style).flatten(),
+    _add-rest(ctx, segments, style,
+      _path-effect(ctx, segments, fn, close: close, style).flatten(),
+      close: close),
     ..style,
     name: name,
     close: close)
@@ -247,7 +317,8 @@
 /// and the width via `width`.
 ///
 /// ```example
-/// cetz.decorations.wave(line((0,0), (2,1)), width: .25)
+/// line((0,0), (2,1), stroke: gray)
+/// cetz.decorations.wave(line((0,0), (2,1)), width: .25, start: 10%, stop: 90%)
 /// ```
 ///
 /// - target (drawable): Target path
@@ -290,9 +361,11 @@
     return (vector.add(ma, up), vector.add(mb, down),)
   }
 
-  return draw.catmull(
-    .._path-effect(ctx, segments, fn, close: close, style),
-    ..style,
+  return draw.merge-path(
+    _add-rest(ctx, segments, style, draw.catmull(
+      .._path-effect(ctx, segments, fn, close: close, style),
+      close: close), close: close) ,
     name: name,
-    close: close)
+    close: close,
+    ..style)
 })
