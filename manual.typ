@@ -787,7 +787,8 @@ The `angle` function of the angle module allows drawing angles with an optional 
 
 Various pre-made shapes and lines.
 
-#doc-style.parse-show-module("/src/lib/decorations.typ")
+#doc-style.parse-show-module("/src/lib/decorations/brace.typ")
+#doc-style.parse-show-module("/src/lib/decorations/path.typ")
 
 ==== Styling
 

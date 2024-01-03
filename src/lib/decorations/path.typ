@@ -10,6 +10,7 @@
 #let default-style = (
   /// Number of windings
   N: 10,
+  /// Wavelength
   length: none,
 
   /// width of the spring in the direction of the springs normal
@@ -27,6 +28,7 @@
   fill: none,
 )
 
+/// Zig-Zag default style
 #let zigzag-default-style = (
   ..default-style,
   /// Midpoint factor
@@ -36,12 +38,14 @@
   factor: 50%,
 )
 
+/// Wave default style
 #let wave-default-style = (
   ..default-style,
   /// Wave (catmull-rom) tension
   tension: .5,
 )
 
+/// Coil default style
 #let coil-default-style = (
   ..default-style,
   /// Coil "overshoot" factor
@@ -98,7 +102,7 @@
   return drawables.first().segments
 }
 
-/// Detect if path segments are closed
+// Detect if path segments are closed
 #let resolve-auto-close(segments, start, stop) = {
   return vector.dist(path-util.point-on-path(segments, start),
                      path-util.point-on-path(segments, stop)) < 1e-8
@@ -127,13 +131,19 @@
   return pts
 }
 
-/// Draw a zig-zag spring between two points
+/// Draw a zig-zag or saw-tooth wave along a path
 ///
-/// The number of windings can be controlled via the `N` style key,
+/// The number of tooths can be controlled via the `N` or `length` style key,
 /// and the width via `width`.
 ///
+/// ```example
+/// cetz.decorations.zigzag(line((0,0), (2,1)), width: .25)
+/// ```
+///
 /// - target (drawable): Target path
-/// - ..style: (style): Style
+/// - close (auto,bool): Close the path
+/// - name (none,string): Element name
+/// - ..style (style): Style
 #let zigzag(target, name: none, close: auto, ..style) = draw.get-ctx(ctx => {
   let style = styles.resolve(ctx, merge: style.named(),
     base: zigzag-default-style, root: "zigzag")
@@ -173,15 +183,19 @@
   draw.line(..pts, name: name, close: close, ..style)
 })
 
-/// Draw a stretched coil/loop spring
+/// Draw a stretched coil/loop spring along a path
 ///
 /// The number of windings can be controlled via the `N` or `length` style key,
 /// and the width via `width`.
 ///
-/// - start (coordinate): Start point
-/// - end (coordinate): End point
-/// - name: (none,string): Element name
-/// - ..style: (style): Style
+/// ```example
+/// cetz.decorations.coil(line((0,0), (2,1)), width: .25)
+/// ```
+///
+/// - target (drawable): Target path
+/// - close (auto,bool): Close the path
+/// - name (none,string): Element name
+/// - ..style (style): Style
 #let coil(target, close: auto, name: none, ..style) = draw.get-ctx(ctx => {
   let style = styles.resolve(ctx, merge: style.named(),
     base: coil-default-style, root: "coil")
@@ -227,15 +241,19 @@
     close: close)
 })
 
-/// Draw a stretched wave/sine spring
+/// Draw a sine-wave along a path
 ///
-/// The number of windings can be controlled via the `N` or `length` style key,
+/// The number of phases can be controlled via the `N` or `length` style key,
 /// and the width via `width`.
 ///
-/// - start (coordinate): Start point
-/// - end (coordinate): End point
-/// - name: (none,string): Element name
-/// - ..style: (style): Style
+/// ```example
+/// cetz.decorations.wave(line((0,0), (2,1)), width: .25)
+/// ```
+///
+/// - target (drawable): Target path
+/// - close (auto,bool): Close the path
+/// - name (none,string): Element name
+/// - ..style (style): Style
 #let wave(target, close: auto, name: none, ..style) = draw.get-ctx(ctx => {
   let style = styles.resolve(ctx, merge: style.named(),
     base: wave-default-style, root: "wave")
