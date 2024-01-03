@@ -55,7 +55,7 @@
 #let coil-default-style = (
   ..default-style,
   /// Coil "overshoot" factor
-  factor: 1.5,
+  factor: 150%,
 )
 
 #let resolve-style(ctx, segments, style) = {
@@ -182,6 +182,13 @@
 /// cetz.decorations.zigzag(line((0,0), (2,1)), width: .25, start: 10%, stop: 90%)
 /// ```
 ///
+/// = Styling
+/// *Root* `zigzag`
+/// == Keys
+///   #show-parameter-block("factor", ("ratio",), default: 100%, [
+///     Triangle mid between its start and end. Setting this to 0% leads to
+///     a falling sawtooth shape, while 100% results in a raising sawtooth])
+///
 /// - target (drawable): Target path
 /// - close (auto,bool): Close the path
 /// - name (none,string): Element name
@@ -239,6 +246,12 @@
 /// cetz.decorations.coil(line((0,0), (2,1)), width: .25, start: 10%, stop: 90%)
 /// ```
 ///
+/// = Styling
+/// *Root* `coil`
+/// == Keys
+///   #show-parameter-block("factor", ("ratio",), default: 150%, [
+///     Factor of how much the coil overextends its width to form a curl.])
+///
 /// - target (drawable): Target path
 /// - close (auto,bool): Close the path
 /// - name (none,string): Element name
@@ -258,7 +271,7 @@
   let N = calc.max(style.N, 1)
   let length = path-util.length(segments)
   let phase-length = length / N
-  let overshoot = calc.max(0, (style.factor - 1) * phase-length)
+  let overshoot = calc.max(0, (style.factor - 100%) / 100% * phase-length)
 
   // Offset both control points so the curve approximates
   // an elliptic arc
@@ -318,7 +331,7 @@
     close: close)
 })
 
-/// Draw a sine-wave along a path
+/// Draw a wave along a path using a catmull-rom curve
 ///
 /// The number of phases can be controlled via the `N` or `length` style key,
 /// and the width via `width`.
@@ -327,6 +340,12 @@
 /// line((0,0), (2,1), stroke: gray)
 /// cetz.decorations.wave(line((0,0), (2,1)), width: .25, start: 10%, stop: 90%)
 /// ```
+///
+/// = Styling
+/// *Root* `wave`
+/// == Keys
+///   #show-parameter-block("tension", ("float",), default: .5, [
+///     Catmull-Rom curve tension, see @@catmull().])
 ///
 /// - target (drawable): Target path
 /// - close (auto,bool): Close the path
