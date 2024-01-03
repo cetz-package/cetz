@@ -32,6 +32,7 @@
 
   stroke: auto,
   fill: none,
+  mark: auto,
 )
 
 // Zig-Zag default style
@@ -119,7 +120,7 @@
 
 // Add optional line elements from segments start to mid-path start
 // and mid-path end to sgements end
-#let _add-rest(ctx, segments, style, mid-path, close: false) = {
+#let finalize-path(ctx, segments, style, mid-path, close: false) = {
   let add = style.rest == "LINE" and not close
 
   let (ctx, drawables, ..) = process.many(ctx, mid-path)
@@ -132,7 +133,7 @@
 
     let mid-start = path-util.segment-start(mid-first)
     mid-start = util.revert-transform(ctx.transform, mid-start)
-    draw.line(start, mid-start)
+    draw.line(start, mid-start, mark: none)
   }
   mid-path;
   if add {
@@ -141,8 +142,9 @@
 
     let mid-end = path-util.segment-end(mid-last)
     mid-end = util.revert-transform(ctx.transform, mid-end)
-    draw.line(mid-end, end)
+    draw.line(mid-end, end, mark: none)
   }
+  // TODO: Add marks on path.
 }
 
 #let _path-effect(ctx, segments, fn, close: false, style) = {
@@ -232,8 +234,8 @@
 
   let pts = _path-effect(ctx, segments, fn, close: close, style)
   return draw.merge-path(
-    _add-rest(ctx, segments, style,
-      draw.line(..pts, name: name, ..style),
+    finalize-path(ctx, segments, style,
+      draw.line(..pts, name: name, ..style, mark: none),
       close: close),
     close: close,
     ..style)
@@ -317,16 +319,16 @@
 
     if i < N - 1 or close {
       return (
-        draw.bezier(..upper),
-        draw.bezier(..lower),
+        draw.bezier(..upper, mark: none),
+        draw.bezier(..lower, mark: none),
       )
     } else {
-      return (draw.bezier(..upper),)
+      return (draw.bezier(..upper, mark: none),)
     }
   }
 
   return draw.merge-path(
-    _add-rest(ctx, segments, style,
+    finalize-path(ctx, segments, style,
       _path-effect(ctx, segments, fn, close: close, style).flatten(),
       close: close),
     ..style,
@@ -390,7 +392,7 @@
   }
 
   return draw.merge-path(
-    _add-rest(ctx, segments, style, draw.catmull(
+    finalize-path(ctx, segments, style, draw.catmull(
       .._path-effect(ctx, segments, fn, close: close, style),
       close: close), close: close) ,
     name: name,
