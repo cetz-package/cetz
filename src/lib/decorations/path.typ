@@ -34,7 +34,7 @@
   fill: none,
 )
 
-/// Zig-Zag default style
+// Zig-Zag default style
 #let zigzag-default-style = (
   ..default-style,
   /// Midpoint factor
@@ -44,14 +44,14 @@
   factor: 50%,
 )
 
-/// Wave default style
+// Wave default style
 #let wave-default-style = (
   ..default-style,
   /// Wave (catmull-rom) tension
   tension: .5,
 )
 
-/// Coil default style
+// Coil default style
 #let coil-default-style = (
   ..default-style,
   /// Coil "overshoot" factor

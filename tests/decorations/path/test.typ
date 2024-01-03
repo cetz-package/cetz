@@ -56,9 +56,9 @@
   import draw: *
 
   set-style(radius: .9)
-  coil(circle((0,0)), width: .2, N: 30, factor: 1)
-  coil(circle((0,2)), width: .2, N: 30, factor: 1.2, stroke: blue)
-  coil(circle((0,4)), width: .2, N: 30, factor: 1.5, stroke: red)
+  coil(circle((0,0)), width: .2, N: 30, factor: 100%)
+  coil(circle((0,2)), width: .2, N: 30, factor: 120%, stroke: blue)
+  coil(circle((0,4)), width: .2, N: 30, factor: 150%, stroke: red)
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {

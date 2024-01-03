@@ -785,9 +785,34 @@ The `angle` function of the angle module allows drawing angles with an optional 
 
 == Decorations <decorations>
 
-Various pre-made shapes and lines.
+Various pre-made shapes and path modifications.
 
+=== Braces
 #doc-style.parse-show-module("/src/lib/decorations/brace.typ")
+
+=== Path Decorations
+Path decorations are elements that accept a path as input and generate
+one or more shapes that follow that path.
+
+All path decoration functions support the following style keys:
+#def-arg("start", [`<ratio>` or `<length>`], default: 0%,
+  [Absolute or relative start of the decoration on the path.])
+#def-arg("stop", [`<ratio>` or `<length>`], default: 100%,
+  [Absolute or relative end of the decoration on the path.])
+#def-arg("rest", [`<string>`], default: "LINE",
+  [If set to `"LINE"`, generate lines between the paths start/end and
+   the decorations start/end if the path is _not closed_.])
+#def-arg("width", [`<number>`], default: 1,
+  [Width or thickness of the decoration.])
+#def-arg("N", [`<int>`], default: 10,
+  [Number of repetitions/phases to generate.
+   This key is ignored if `length` is set != `none`.])
+#def-arg("length", [`none` or `<number>`], default: none,
+  [Length of one repetition/phase of the decoration.])
+#def-arg("align", [`<string>`], default: "START",
+  [Alignment of the decoration on the path _if `length` is set_ and
+   the decoration does not fill up the full range between start and stop.])
+
 #doc-style.parse-show-module("/src/lib/decorations/path.typ")
 
 ==== Styling
