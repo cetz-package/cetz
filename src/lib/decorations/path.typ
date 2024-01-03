@@ -25,6 +25,11 @@
   /// Draw remaining space as line ("LINE") or none
   rest: "LINE",
 
+  /// Up-vector for 3D lines
+  z-up: (0, 1, 0),
+  /// Up-vector for 2D lines
+  xy-up: (0, 0, -1),
+
   stroke: auto,
   fill: none,
 )
@@ -154,11 +159,15 @@
     if p0 == p1 { continue }
 
     (p0, p1) = util.revert-transform(ctx.transform, p0, p1)
-    let dir = vector.sub(p1, p0)
-    let up = vector.scale(vector.norm((-dir.at(1), dir.at(0), dir.at(2))), style.width / 2)
-    let down = vector.scale(up, -1)
 
-    pts += fn(i, p0, p1)
+    let dir = vector.sub(p1, p0)
+    let norm = vector.norm(vector.cross(dir, if p0.at(2) != p1.at(2) {
+      style.z-up
+    } else {
+      style.xy-up
+    }))
+
+    pts += fn(i, p0, p1, norm)
   }
   return pts
 }
@@ -191,9 +200,8 @@
 
   let N = style.N
 
-  let fn(i, a, b) = {
+  let fn(i, a, b, norm) = {
     let ab = vector.sub(b, a)
-    let norm = vector.norm((-ab.at(1), ab.at(0), ab.at(2)))
 
     let f = .25 - (50% - style.factor) / 50% * .25
     let q-dir = vector.scale(ab, f)
@@ -264,10 +272,9 @@
     return (s, e, c1, c2)
   }
 
-  let fn(i, a, b) = {
+  let fn(i, a, b, norm) = {
     let ab = vector.sub(b, a)
-    let up = vector.scale(
-      vector.norm((-ab.at(1), ab.at(0), ab.at(2))), style.width / 2)
+    let up = vector.scale(norm, style.width / 2)
     let dist = vector.dist(a, b)
 
     let d = vector.norm(ab)
@@ -339,10 +346,9 @@
 
   let N = style.N
 
-  let fn(i, a, b) = {
+  let fn(i, a, b, norm) = {
     let ab = vector.sub(b, a)
-    let up = vector.scale(
-      vector.norm((-ab.at(1), ab.at(0), ab.at(2))), style.width / 2)
+    let up = vector.scale(norm, style.width / 2)
     let down = vector.scale(
       up, -1)
 

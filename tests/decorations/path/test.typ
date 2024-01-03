@@ -91,3 +91,9 @@
   wave(line((0,0), (3,0)), start: 10%, stop: 90%)
   wave(line((0,2), (3,2)), start: 1, stop: 2)
 })
+
+#test-case({
+  import draw: *
+
+  wave(line((0,0,-1), (0,0,1)), start: 10%, stop: 90%)
+})
