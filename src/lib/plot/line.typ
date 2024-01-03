@@ -281,11 +281,15 @@
 /// })
 /// ```)
 ///
-/// - ..y (number): Y axis value(s) to add a line at
+/// - ..y (float): Y axis value(s) to add a line at
+/// - min (auto,float): X axis minimum value or auto to take the axis minimum
+/// - max (auto,float): X axis maximum value or auto to take the axis maximum
 /// - axes (array): Name of the axes to use for plotting
 /// - style (style): Style to use, can be used with a palette function
 /// - label (none,content): Legend label to show for this plot.
 #let add-hline(..y,
+               min: auto,
+               max: auto,
                axes: ("x", "y"),
                style: (:),
                label: none,
@@ -297,6 +301,9 @@
   let prepare(self, ctx) = {
     let (x-min, x-max) = (ctx.x.min, ctx.x.max)
     let (y-min, y-max) = (ctx.y.min, ctx.y.max)
+    let x-min = if min == auto { x-min } else { min }
+    let x-max = if max == auto { x-max } else { max }
+
     self.lines = self.y.filter(y => y >= y-min and y <= y-max)
       .map(y => ((x-min, y), (x-max, y)))
     return self
@@ -308,10 +315,14 @@
     }
   }
 
+  let x-min = if min == auto { none } else { min }
+  let x-max = if max == auto { none } else { max }
+
   ((
     type: "hline",
     label: label,
     y: y.pos(),
+    x-domain: (x-min, x-max),
     y-domain: (calc.min(..y.pos()), calc.max(..y.pos())),
     axes: axes,
     style: style,
@@ -331,12 +342,16 @@
 /// })
 /// ```)
 ///
-/// - ..x (number): X axis values to add a line at
+/// - ..x (float): X axis values to add a line at
+/// - min (auto,float): Y axis minimum value or auto to take the axis minimum
+/// - max (auto,float): Y axis maximum value or auto to take the axis maximum
 /// - axes (array): Name of the axes to use for plotting, note that not all
 ///                 plot styles are able to display a custom axis!
 /// - style (style): Style to use, can be used with a palette function
 /// - label (none,content): Legend label to show for this plot.
 #let add-vline(..x,
+               min: auto,
+               max: auto,
                axes: ("x", "y"),
                style: (:),
                label: none,
@@ -348,6 +363,9 @@
   let prepare(self, ctx) = {
     let (x-min, x-max) = (ctx.x.min, ctx.x.max)
     let (y-min, y-max) = (ctx.y.min, ctx.y.max)
+    let y-min = if min == auto { y-min } else { min }
+    let y-max = if max == auto { y-max } else { max }
+
     self.lines = self.x.filter(x => x >= x-min and x <= x-max)
       .map(x => ((x, y-min), (x, y-max)))
     return self
@@ -359,11 +377,15 @@
     }
   }
 
+  let y-min = if min == auto { none } else { min }
+  let y-max = if max == auto { none } else { max }
+
   ((
     type: "vline",
     label: label,
     x: x.pos(),
     x-domain: (calc.min(..x.pos()), calc.max(..x.pos())),
+    y-domain: (y-min, y-max),
     axes: axes,
     style: style,
     plot-prepare: prepare,

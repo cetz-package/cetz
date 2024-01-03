@@ -264,8 +264,10 @@
       } else {
         d.at("y-domain", default: (0, 0))
       }
-      axis.min = util.min(axis.min, ..domain)
-      axis.max = util.max(axis.max, ..domain)
+      if domain != (none, none) {
+        axis.min = util.min(axis.min, ..domain)
+        axis.max = util.max(axis.max, ..domain)
+      }
 
       axis-dict.at(name) = axis
     }
