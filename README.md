@@ -16,14 +16,14 @@ CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https:
     </a>
   </td>
   <td>
-    <a href="gallery/3d-chart.typ">
-      <img src="gallery/3d-chart.png" width="250px">
+    <a href="gallery/waves.typ">
+      <img src="gallery/waves.png" width="250px">
     </a>
   </td>
 </tr><tr>
   <td>Karl's Picture</td>
   <td>Tree Layout</td>
-  <td>3D Chart</td>
+  <td>Waves</td>
 </tr><tr>
   <td>
     <a href="gallery/pie-chart.typ">
