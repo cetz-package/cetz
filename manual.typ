@@ -194,9 +194,7 @@ set-style(
   ),
 )
 rect((0,0), (1,1))
-
 line((0, -1.5), (0.5, -0.5), (1, -1.5), close: true)
-
 circle((0.5, -2.5), radius: 0.5, fill: green)
 ```
 
