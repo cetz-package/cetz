@@ -220,7 +220,6 @@ $ M_"world" = M_"world" dot M_"local" $
 = Coordinate Systems <coordinate-systems>
 A _coordinate_ is a position on the canvas on which the picture is drawn. They take the form of dictionaries and the following sub-sections define the key value pairs for each system. Some systems have a more implicit form as an array of values and `CeTZ` attempts to infer the system based on the element types.
 
-
 == XYZ <coordinate-xyz>
 Defines a point `x` units right, `y` units upward, and `z` units away.
 
@@ -266,7 +265,7 @@ circle((rel: (0, -1)), stroke: red)
 ```
 
 == Polar
-Defines a point a `radius` distance away from the origin at the given `angle`.
+Defines a point that is `radius` distance away from the origin at the given `angle`.
 
 #def-arg("angle", `<angle>`, [The angle of the coordinate. An angle of `0deg` is to the right, a degree of `90deg` is upward. See https://typst.app/docs/reference/layout/angle/ for details.])
 #def-arg("radius", `<number> or <length> or <array of length or number>`, [The distance from the origin. An array can be given, in the form `(x, y)` to define the `x` and `y` radii of an ellipse instead of a circle.])
@@ -405,7 +404,8 @@ An angle can also be given for the general meaning: "First consider the line fro
 #def-arg("number", [`<number>` or `<ratio>`], [
   The factor to interpolate by or the distance away from `a` towards `b`.
 ])
-#def-arg("angle", `<angle>`, default: 0deg, "")
+#def-arg("angle", `<angle>`, [Angle between $arrow("AB")$ and $arrow("AP")$, where $P$ is the resulting coordinate. This
+  can be used to get the _normal_ for a tangent between two points.], default: 0deg)
 
 Can be used implicitly as an array in the form `(a, number, b)` or `(a, number, angle, b)`.
 
@@ -470,6 +470,15 @@ line((1,0), (3,2))
 for (l, c) in ((0cm, "0cm"), (1cm, "1cm"), (15mm, "15mm")) {
   content(((1,0), l, (3,2)), box(fill: white, $ #c $))
 }
+```
+
+Interpolation coordinates can be used to get the _normal_ on a tangent:
+```example
+let (a, b) = ((0,0), (3,2))
+line(a, b)
+// Get normal for tangent from a to () with distance .5, at a
+circle(a, radius: .1, fill: black)
+line((a, .7, b), (a: (), b: a, number: .5, angle: 90deg), stroke: red)
 ```
 
 == Function
