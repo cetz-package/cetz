@@ -4,7 +4,8 @@
 
 #import "src/lib.typ": *
 #import "src/styles.typ"
-#import "@preview/tidy:0.1.0"
+#import "src/anchor.typ" as anchor_
+#import "@preview/tidy:0.2.0"
 
 
 // Usage:
@@ -105,14 +106,16 @@ Elements like `rect`, `circle`, `arc` and `group` support the following
       rect((-1, -1), (1, 1))
     }, name: "group")
     for-each-anchor("group", n => {
-      if n != "center" {
-        content(
-          (rel: ("group.center", 75%, "group." + n),
-           to: "group." + n), n)
-      } else {
-        content((rel: (0, .5), to: "group.center"), n)
+      if n in anchor_.compass-directions-with-center {
+        if n != "center" {
+          content(
+            (rel: ("group.center", 75%, "group." + n),
+            to: "group." + n), n)
+        } else {
+          content((rel: (0, .5), to: "group.center"), n)
+        }
+        circle("group." + n, radius: .1, fill: black)
       }
-      circle("group." + n, radius: .1, fill: black)
     })
   })
 })
