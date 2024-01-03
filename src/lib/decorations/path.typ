@@ -69,24 +69,27 @@
   if type(style.start) == ratio {
     style.start = len * style.start / 100%
   }
+  style.start = calc.max(0, calc.min(style.start, len))
   if type(style.stop) == ratio {
     style.stop = len * style.stop / 100%
   }
+  style.stop = calc.max(0, calc.min(style.stop, len))
 
   if style.length != none {
     // Calculate number of divisions
-    let n = calc.min(style.stop - style.start, len) / style.length
+    let n = (style.stop - style.start) / style.length
     style.N = calc.floor(n)
 
     // Divides the rest between start, stop or both
-    let r = n - calc.floor(n)
+    let r = (n - calc.floor(n)) * style.length
     if style.align == "MID" {
-      style.start += r / 2
-      style.stop += r / 2
+      let m = (style.start + style.stop) / 2
+      style.start = m - n * style.length / 2
+      style.stop = m + n * style.length / 2
     } else if style.align == "STOP" {
-      style.start = r
+      style.start = style.stop - n * style.length
     } else if style.align == "START" {
-      style.stop = len - r
+      style.stop = style.start + n * style.length
     }
   }
 
@@ -152,10 +155,10 @@
   let pts = ()
   let len = path-util.length(segments)
   for i in range(0, n) {
-    let p0 = path-util.point-on-path(segments, calc.max(0,
+    let p0 = path-util.point-on-path(segments, calc.max(start,
       start + inc * i))
-    let p1 = path-util.point-on-path(segments, calc.min(
-      start + inc * (i + 1), len))
+    let p1 = path-util.point-on-path(segments, calc.min(stop,
+      start + inc * (i + 1)))
     if p0 == p1 { continue }
 
     (p0, p1) = util.revert-transform(ctx.transform, p0, p1)

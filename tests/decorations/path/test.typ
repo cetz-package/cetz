@@ -97,3 +97,13 @@
 
   wave(line((0,0,-1), (0,0,1)), start: 10%, stop: 90%)
 })
+
+#test-case({
+  import draw: *
+
+  // Keep the fixed width
+  for i in range(0, 6) {
+    wave(line((0,i), (3,i)), start: 10%, stop: 1 + i / 5,
+      length: .22, width: .8)
+  }
+})
