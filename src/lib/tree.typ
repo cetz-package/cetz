@@ -111,7 +111,7 @@
   spread: 1,
   name: none
   ) = {
-  assert(parent-position in ("begin", "center"))
+  assert(parent-position in ("begin", "center","end", "after-end"))
   assert(grow > 0)
   assert(spread > 0)
 
@@ -158,7 +158,7 @@
   // Layout node recursive
   //
   // return:
-  //   (node, left-x, right-x, shift-x)
+  //   (node, left-x, right-x)
   let layout-node(node, shift-x) = {
     if node.children.len() == 0 {
       node.x = shift-x
@@ -181,16 +181,18 @@
         min-x = util.min(min-x, child-min-x)
         max-x = util.max(max-x, child-max-x)
 
-        if child-max-x > right {
-          shift-x = child-max-x
-        }
-        shift-x += spread
+        shift-x = child-max-x + spread
       }
 
       if parent-position == "begin" {
         node.x = left
-      } else {
-        node.x = left + (right - left) / 2
+      } else if parent-position == "center" {
+          node.x = left + (right - left) / 2
+      } else if parent-position == "end" {
+          node.x = right
+      } else { //after-end
+          node.x = right+spread
+          max-x = max-x + spread
       }
 
       node.direct-min-x = left
