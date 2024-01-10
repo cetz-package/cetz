@@ -397,7 +397,7 @@ An angle can also be given for the general meaning: "First consider the line fro
 
 #def-arg("a", `<coordinate>`, [The coordinate to interpolate from.])
 #def-arg("b", `<coordinate>`, [The coordinate to interpolate to.])
-#def-arg("number", [`<number>` or `<length>`], [
+#def-arg("number", [`<number>` or `<length>` or `<ratio>`], [
   The factor to interpolate by or the distance away from `a` towards `b`.
 ])
 #def-arg("angle", `<angle>`, default: 0deg, "")
@@ -405,13 +405,13 @@ An angle can also be given for the general meaning: "First consider the line fro
   Interpret `number` as absolute distance, instead of a factor.
 ])
 
-Can be used implicitly as an array in the form `(a, number, b)` or `(a, number, angle, b)`.
+Can be used implicitly as an array in the form `(a, ratio, b)` or `(a, ratio, angle, b)`.
 
 ```example
 grid((0,0), (3,3), help-lines: true)
 
 line((0,0), (2,2))
-for i in (0, 0.2, 0.5, 0.8, 1, 1.5) { /* Relative distance */
+for i in (0%, 20%, 50%, 80%, 100%, 150%) { /* Relative distance */
   content(((0,0), i, (2,2)),
           box(fill: white, inset: 1pt, [#i]))
 }

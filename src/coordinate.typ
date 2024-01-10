@@ -185,7 +185,7 @@
 }
 
 #let resolve-lerp(resolve, ctx, c) = {
-  // (a: <coordinate>, number: <number>,
+  // (a: <coordinate>, number: <number,ratio>,
   //  abs?: <bool>, angle?: <angle>, b: <coordinate>)
   // (a, number, b)
   // (a, number, angle, b)
@@ -228,6 +228,7 @@
     )
   }
 
+  // Future change: Default abs to true for int, float or length distances!
   if type(number) == length {
     let dist = vector.dist(a, b)
     number = if dist != 0 {
@@ -235,6 +236,10 @@
     } else {
       0
     }
+  } else if type(number) == ratio {
+    assert.eq(abs, false,
+      message: "If abs is set to true, the distance must be of type length or float, got " + str(type(number)))
+    number /= 100%
   }
 
   if abs {
@@ -301,7 +306,7 @@
       "polar"
     } else if len == 3 and c.at(1) in ("-|", "|-") {
       "perpendicular"
-    } else if len in (3, 4) and types.at(1) in ("integer", "float", "length") and (len == 3 or (len == 4 and types.at(2) == "angle")) {
+    } else if len in (3, 4) and types.at(1) in ("integer", "float", "length", "ratio") and (len == 3 or (len == 4 and types.at(2) == "angle")) {
       "lerp"
     } else if len >= 2 and types.first() == "function" {
       "function"
