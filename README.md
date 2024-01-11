@@ -105,4 +105,5 @@ Otherwise download and install a matching package from the [ImageMagick](https:/
 - [circuitypst](https://github.com/fenjalien/circuitypst) A port of [circuitikz](https://github.com/circuitikz/circuitikz) to Typst.
 - [conchord](https://github.com/sitandr/conchord) Package for writing lyrics with chords that generates fretboard diagrams using CeTZ.
 - [finite](https://github.com/jneug/typst-finite) Finite is a Typst package for rendering finite automata.
+- [fletcher](https://github.com/Jollywatt/typst-fletcher) Package for drawing commutative diagrams and figures with arrows.
 - [riemann](https://github.com/ThatOneCalculator/riemann-sum-typst-cetz) Package for drawing Riemann sums.
