@@ -1399,8 +1399,8 @@
 /// *Root* `hobby`
 /// == Keys
 ///   Supports marks.
-///   #show-parameter-block("omega", "idk", [The curve's curlyness])
-///   #show-parameter-block("rho", "idk", [])
+///   #show-parameter-block("omega", "float", [The curve's curlyness])
+///   #show-parameter-block("rho", "auto,function", [The $rho$ function of the form `(a, b) => float`])
 ///
 /// = Anchors
 ///   Supports distance anchors.
