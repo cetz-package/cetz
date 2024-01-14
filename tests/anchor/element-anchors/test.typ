@@ -31,6 +31,11 @@
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
+  display(line, (0,0), (2,1), (4,0))
+}))
+
+#box(stroke: 2pt + red, canvas(length: 1cm, {
+  import draw: *
   display(circle, ())
 }))
 

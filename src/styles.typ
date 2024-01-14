@@ -16,22 +16,35 @@
   //   - Dictionary: (top:, right:, bottom:, left:)
   padding: none,
   mark: (
-    scale: 1,     // A factor that is applied to length, width, and inset.
-    length: .2,   // The size of the mark along its direction
-    width: 0.15,  // The size of the mark along the normal of its direction
-    inset: .05,   // The inner length of triangular shaped marks
-    sep: .1,      // The distance between multiple marks along their path
-    z-up: (0,1,0),// If a mark is pointing to +ve or -ve z, the mark will be drawn with width on the axis perpendicular to its direction and this vector.
-    start: none,  // Mark start symbol(s)
-    end: none,    // Mark end symbol(s)
+    scale: 1,         // A factor that is applied to length, width, and inset.
+    length: .2cm,     // The size of the mark along its direction
+    width: 0.15cm,    // The size of the mark along the normal of its direction
+    inset: .05cm,     // The inner length of some mark shapes, like triangles and brackets
+    sep: .1cm,        // The distance between multiple marks along their path
+    pos: none,        // Position override on the path (none, number or path-length ratio)
+    offset: 0,        // Mark extra offset (number or path-length ratio)
+    start: none,      // Mark start symbol(s)
+    end: none,        // Mark end symbol(s)
+    symbol: none,     // Mark symbol
+    xy-up: (0, 0, 1), // Up vector for 2D marks
+    z-up: (0, 1, 0),  // Up vector for 3D marks
     stroke: auto,
     fill: auto,
-    /// If true, the mark points in the direction of the secant from
-    /// its base to its tip. If false, the tangent at the marks tip is used.
+    slant: none,      // Slant factor - 0%: no slant, 100%: 45 degree slant
+    harpoon: false,
+    flip: false,
+    reverse: false,
+    /// If false, the mark points in the direction of the paths start/end direction.
+    /// Curved paths get shortened linearly.
     flex: true,
     /// Max. number of samples to use for calculating curve positions
     /// a higher number gives better results but may slow down compilation.
-    position-samples: 30
+    position-samples: 30,
+    /// Index of the mark the path should get shortened to, or auto
+    /// to shorten to the last mark. To apply different values per side,
+    /// set the default to `0` and to `auto` for the mark you want to
+    /// shorten the path to. Set to `none` to disable path shortening.
+    shorten-to: auto,
   ),
   circle: (
     radius: auto,

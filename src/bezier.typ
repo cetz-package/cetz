@@ -233,7 +233,7 @@
   let (left, right) = split-rec((s, c1, c2, e), t, (), ())
 
   return ((left.at(0), left.at(3), left.at(1), left.at(2)),
-          (right.at(0), right.at(3), right.at(1), right.at(2)))
+          (right.at(3), right.at(0), right.at(2), right.at(1)))
 }
 
 /// Approximate cubic curve length
@@ -364,9 +364,9 @@
   // curve by using the abc formula for finding roots of
   // the curves first derivative.
   let dim-extrema(a, b, c1, c2) = {
-    let f0 = 3*(c1 - a)
-    let f1 = 6*(c2 - 2*c1 + a)
-    let f2 = 3*(b - 3*c2 + 3*c1 - a)
+    let f0 = calc.round(3*(c1 - a), digits: 8)
+    let f1 = calc.round(6*(c2 - 2*c1 + a), digits: 8)
+    let f2 = calc.round(3*(b - 3*c2 + 3*c1 - a), digits: 8)
 
     if f1 == 0 and f2 == 0 {
       return ()

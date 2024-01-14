@@ -1,371 +1,309 @@
 #let typst-length = length
-#import "bezier.typ"
+
 #import "drawable.typ"
 #import "vector.typ"
+#import "matrix.typ"
 #import "util.typ"
 #import "path-util.typ"
+#import "styles.typ"
+#import "mark-shapes.typ": get-mark
 
-// Calculate offset for a triangular mark (triangle, harpoon, ..)
-#let _triangular-mark-offset(ctx, mark-width, mark-length, symbol, style) = {
-  let revert = symbol == "<"
-  let sign = if revert { 1 } else { -1 }
+#let check-mark(style) = (style.start, style.end, style.symbol).any(v => v != none)
 
-  let stroke = line(stroke: style.stroke).stroke
-  let (width, limit, join) = (
-    stroke.thickness, stroke.miter-limit, stroke.join)
+#let process-style(ctx, style, root, path-length) = {
+  let base-style = (
+    symbol: auto,
+    fill: auto,
+    stroke: auto,
+    slant: auto,
+    harpoon: auto,
+    flip: auto,
+    reverse: auto,
+    inset: auto,
+    width: auto,
+    scale: auto,
+    length: auto,
+    sep: auto,
+    pos: auto,
+    offset: auto,
+    flex: auto,
+    xy-up: auto,
+    z-up: auto,
+    shorten-to: auto,
+    position-samples: auto
+  )
 
-  // Fallback to Typst's defaults
-  if width == auto { width = 1pt }
-  if limit == auto { limit = 4 }
-  if join  == auto { join = "miter" }
+  if type(style.at(root)) != array {
+    style.at(root) = (style.at(root),)
+  }
+  if type(style.symbol) != array {
+    style.symbol = (style.symbol,)
+  }
 
-  if type(width) == typst-length { width /= ctx.length }
+  let out = ()
+  for i in range(calc.max(style.at(root).len(), style.symbol.len())) {
+    let style = style
+    style.symbol = style.symbol.at(i, default: auto)
+    style.at(root) = style.at(root).at(i, default: auto)
 
-  if style.length == 0 { return 0 }
-  let angle = calc.atan(mark-width / (2 * mark-length)) * 2
-  if join == "miter" {
-    let angle = calc.abs(angle)
-    let miter = if angle == 180deg {
-      width / 2
-    } else if angle == 0deg or angle == 360deg {
-      0
+    if type(style.symbol) == dictionary {
+      style = styles.resolve(style, merge: style.symbol)
+    }
+
+    if type(style.at(root)) == str {
+      style.symbol = style.at(root)
+    } else if type(style.at(root)) == dictionary {
+      style = styles.resolve(style, root: root, base: base-style)
+    }
+
+    style.stroke = util.resolve-stroke(style.stroke)
+    style.stroke.thickness = util.resolve-number(ctx, style.stroke.thickness)
+
+    if "angle" in style and type(style.angle) == angle {
+      style.width = calc.tan(style.angle / 2) * style.length * 2
+    }
+
+    // Stroke thickness relative attributes
+    for (k, v) in style {
+      if k in ("length", "width", "inset", "sep") {
+        style.insert(k, if type(v) == ratio {
+          style.stroke.thickness * v
+        } else {
+          util.resolve-number(ctx, v)
+        } * style.scale)
+      }
+    }
+
+    // Path length relative attributes
+    for k in ("offset", "pos",) {
+      let v = style.at(k)
+      if v != none and v != auto {
+        style.insert(k, if type(v) == ratio {
+          v * path-length / 100%
+        } else {
+          util.resolve-number(ctx, v)
+        })
+      }
+    }
+
+    out.push(style)
+  }
+  return out
+}
+
+#let transform-mark(style, mark, pos, dir, flip: false, reverse: false, slant: none, harpoon: false) = {
+  let up = style.xy-up
+  if dir.at(2) != 0 {
+    up = style.z-up
+  }
+
+  mark.drawables = drawable.apply-transform(
+    matrix.mul-mat(
+      ..(
+        matrix.transform-translate(..pos),
+        matrix.transform-rotate-dir(dir, up),
+        matrix.transform-rotate-z(90deg),
+        matrix.transform-translate(if reverse { mark.length } else { mark.tip-offset }, 0, 0),
+        if slant not in (none, 0%) {
+          if type(slant) == ratio {
+            slant /= 100%
+          }
+          matrix.transform-shear-x(slant)
+        },
+        if flip or reverse {
+          matrix.transform-scale({
+            if flip {
+              (y: -1)
+            }
+            if reverse {
+              (x: -1)
+            }
+          })
+        }
+      ).filter(e => e != none)
+    ),
+    mark.drawables
+  )
+  return mark
+}
+
+/// Places one or more marks with the given styles on path segments.
+/// - ctx (context):
+/// - styles (dictionary): A dictionary of keys in order to style the mark. The following are the required keys.
+///   - stroke
+///   - fill
+///   - width
+///   - length
+///   - symbol
+///   - inset
+/// - segments (array): List of path segments
+/// - is-end (bool): If false, marks get placed in the direction from the first segment to the last
+///   segment; in reverse order if true.
+/// -> A dictionary with the keys:
+///   - drawables (drawables): The transformed drawables of the mark.
+///   - distance (float): The distance between the tip of the mark and the end.
+///   - pos (vector): The position the path segments must get shortened to.
+#let place-mark-on-path(ctx, styles, segments, is-end: false) = {
+  if type(styles) != array {
+    styles = (styles,)
+  }
+  let distance = 0
+  let shorten-distance = 0
+  let shorten-pos = none
+  let drawables = ()
+  for (i, style) in styles.enumerate() {
+    let is-last = i + 1 == styles.len()
+    if style.symbol == none {
+      continue
+    }
+
+    // Override position, if set
+    if style.pos != none {
+      distance = style.pos
+    }
+
+    // Apply mark offset
+    distance += style.offset
+
+    let (mark-fn, reverse) = get-mark(ctx, style.symbol)
+    style.reverse = (style.reverse or reverse) and not (style.reverse and reverse)
+
+    let mark = mark-fn(style)
+    mark.length = mark.distance + if style.reverse {
+      mark.at("base-offset", default: style.stroke.thickness / 2)
     } else {
-      (1 / calc.sin(angle / 2) * width / 2)
+      mark.at("tip-offset", default: style.stroke.thickness / 2)
     }
 
-    if calc.abs(2 * miter / width) <= limit {
-      return miter * sign
+    let pos = if style.flex {
+      path-util.point-on-path(
+        segments,
+        if distance != 0 {
+          distance * if is-end { -1 } else { 1 }
+        } else {
+          if is-end {
+            100%
+          } else {
+            0%
+          }
+        }, extrapolate: true)
     } else {
-      // If the miter limit kicks in, use bevel calculation
-      join = "bevel"
+      let (_, dir) = path-util.direction(
+        segments,
+        if is-end {
+          100%
+        } else {
+          0%
+        },
+        clamp: true)
+      let pt = if is-end {
+        path-util.segment-end(segments.last())
+      } else {
+        path-util.segment-start(segments.first())
+      }
+      vector.sub(pt, vector.scale(vector.norm(dir), distance * if is-end { 1 } else { -1 }))
     }
+    assert.ne(pos, none,
+      message: "Could not determine mark position")
+
+    let dir = if style.flex {
+      let a = pos
+      let b = path-util.point-on-path(
+        segments,
+        (mark.length + distance) * if is-end { -1 } else { 1 },
+        samples: style.position-samples,
+        extrapolate: true)
+      if b != none and a != b {
+        vector.sub(b, a)
+      } else {
+        let (_, dir) = path-util.direction(
+          segments,
+          distance,
+          clamp: true)
+        vector.scale(dir, if is-end { -1 } else { 1 })
+      }
+    } else {
+      let (_, dir) = path-util.direction(
+        segments,
+        if is-end {
+          100%
+        } else {
+          0%
+        },
+        clamp: true)
+      if dir != none {
+        vector.scale(dir, if is-end { -1 } else { 1 })
+      }
+    }
+    assert.ne(pos, none,
+      message: "Could not determine mark direction")
+
+    mark = transform-mark(
+      style,
+      mark,
+      pos,
+      dir,
+      reverse: style.reverse,
+      slant: style.slant,
+      flip: style.flip,
+      harpoon: style.harpoon,
+    )
+
+    // Shorten path to this mark
+    let inset = mark.at("inset", default: 0)
+    if style.shorten-to != none and (style.shorten-to == auto or i <= style.shorten-to) {
+      shorten-distance = distance + mark.length - inset
+      shorten-pos = vector.add(pos,
+        vector.scale(vector.norm(dir), mark.length - inset))
+    }
+
+    drawables += mark.drawables
+    distance += mark.length
+
+    // Add separator
+    distance += style.sep
   }
 
-  if join == "bevel" {
-    return calc.sin(angle / 2) * width / 2 * sign
-  } else {
-    return width / 2 * sign
-  }
+  return (
+    drawables: drawables,
+    distance: shorten-distance,
+    pos: shorten-pos
+  )
 }
 
-// Calculate the offset of a mark symbol.
-// For triangular marks, this is the half
-// of the miter length or halt of the stroke
-// thickness, depending on the joint style.
-#let calc-mark-offset(ctx, symbol, style) = {
-  if symbol in ("<", ">") {
-    return _triangular-mark-offset(ctx, style.width, style.length, symbol, style)
-  } else if symbol in ("left-harpoon", "right-harpoon") {
-    return _triangular-mark-offset(ctx, style.width / 2, style.length, symbol, style)
-  } else if symbol == "<>" {
-    return _triangular-mark-offset(ctx, style.width, style.length / 2, symbol, style)
-  } else {
-    // Offset by half the strok width to have the stroke edge touch
-    // the target position.
-    let width = line(stroke: style.stroke).stroke.thickness
-    if width == auto { width = 1pt }
-    if type(width) == length { width /= ctx.length }
-
-    return -width / 2
-  }
-}
-
-// Get mark symbol mid length, that is the length from the tip to the mid-point
-// of its base. For triangular shaped marks, that is the distance between tip and
-// inset.
-#let mark-mid-length(symbol, style) = {
-  let scale = style.scale
-  let length = style.length * scale
-
-  if symbol in ("<", ">", "left-harpoon", "right-harpoon") {
-    return length - style.inset * scale
-  }
-
-  return length
-}
-
-/// Place marks along line of points
-///
-/// - ctx (context): Context
-/// - pts (array): Array of vectors
-/// - style (style): Mark style dictionary
-/// -> (drawables, pts) Tuple of drawables and adjusted line points
-#let place-marks-along-line(ctx, pts, style) = {
-  let start = if type(style.start) == str {
-    (style.start,)
-  } else {
-    style.start
-  }
-
-  // Offset start
-  if start != none and start.len() > 0 {
-    let off = calc-mark-offset(ctx, start.at(0), style)
-    let dir = vector.norm(vector.sub(pts.at(1), pts.at(0)))
-
-    pts.at(0) = vector.sub(pts.at(0), vector.scale(dir, off))
-  }
-
-  let end = if type(style.end) == str {
-    (style.end,)
-  } else {
-    style.end
-  }
-
-  // Offset end
-  if end != none and end.len() > 0 {
-    let off = calc-mark-offset(ctx, end.at(0), style)
-    let dir = vector.norm(vector.sub(pts.at(-2), pts.at(-1)))
-
-    pts.at(-1) = vector.sub(pts.at(-1), vector.scale(dir, off))
-  }
-
+#let place-marks-along-path(ctx, style, segments) = {
+  let distance = (0, 0)
+  let snap-to = (none, none)
   let drawables = ()
-
-  // Draw start marks
-  if start != none {
-    let dir = vector.norm(vector.sub(pts.at(1), pts.at(0)))
-    let pt = pts.at(0)
-    for m in start {
-      drawables.push(drawable.mark(
-        vector.add(pt, dir), pt, m, style))
-      pt = vector.add(pt, vector.scale(dir, mark-mid-length(m, style) + style.sep))
-    }
+  if style.start != none or style.symbol != none {
+    let (drawables: start-drawables, distance: start-distance, pos: pt) = place-mark-on-path(
+      ctx,
+      process-style(ctx, style, "start", path-util.length(segments)),
+      segments
+    )
+    drawables += start-drawables
+    distance.first() = start-distance
+    snap-to.first() = pt
+  }
+  if style.end != none or style.symbol != none {
+    let (drawables: end-drawables, distance: end-distance, pos: pt) = place-mark-on-path(
+      ctx,
+      process-style(ctx, style, "end", path-util.length(segments)),
+      segments,
+      is-end: true
+    )
+    drawables += end-drawables
+    distance.last() = end-distance
+    snap-to.last() = pt
+  }
+  if distance != (0, 0) {
+    segments = path-util.shorten-path(
+      segments,
+      ..distance,
+      mode: if style.flex { "CURVED" } else { "LINEAR" },
+      samples: style.position-samples,
+      snap-to: snap-to)
   }
 
-  // Draw end marks
-  if end != none {
-    let dir = vector.norm(vector.sub(pts.at(-1), pts.at(-2)))
-    let pt = pts.at(-1)
-    for m in end {
-      drawables.push(drawable.mark(
-        vector.sub(pt, dir), pt, m, style))
-      pt = vector.sub(pt, vector.scale(dir, mark-mid-length(m, style) + style.sep))
-    }
-  }
-
-  return (drawables, pts)
-}
-
-// Shorten curve by distance
-#let _shorten-curve(curve, distance, style) = {
-  assert(style.shorten in ("LINEAR", "CURVED"),
-    message: "Invalid cubic shorten style")
-  let quick = style.shorten == "LINEAR"
-  if quick {
-    return bezier.cubic-shorten-linear(..curve, distance)
-  } else {
-    return bezier.cubic-shorten(..curve, distance)
-  }
-}
-
-/// Place marks along a cubic bezier curve
-///
-/// - ctx (context): Context
-/// - curve (array): Array of curve points (start, end, ctrl-1, ctrl-2)
-/// - style (style): Curve style
-/// - mark-style (style): Mark style
-/// -> (drawables, curve) Tuple of drawables and adjusted curve points
-#let place-marks-along-bezier(ctx, curve, style, mark-style) = {
-  let samples = calc.max(2, calc.min(mark-style.position-samples, 1000))
-
-  let start = if type(mark-style.start) == str {
-    (mark-style.start,)
-  } else {
-    mark-style.start
-  }
-
-  // Offset start
-  if start != none and start.len() > 0 {
-    let off = calc-mark-offset(ctx, start.at(0), mark-style)
-    curve = _shorten-curve(curve, calc.max(0, -off), style)
-  }
-
-  let end = if type(mark-style.end) == str {
-    (mark-style.end,)
-  } else {
-    mark-style.end
-  }
-
-  // Offset end
-  if end != none and end.len() > 0 {
-    let off = calc-mark-offset(ctx, end.at(0), mark-style)
-    curve = _shorten-curve(curve, calc.min(0, off), style)
-  }
-
-  let drawables = ()
-  let flex = mark-style.flex
-
-  // Draw start mark-style
-  if start != none {
-    let dist = 0
-    for m in start {
-      let t = if dist > 0 {
-        bezier.cubic-t-for-distance(..curve, dist, samples: samples)
-      } else {
-        0
-      }
-
-      let pt = bezier.cubic-point(..curve, t)
-      let dir = if flex {
-        let t-base = bezier.cubic-t-for-distance(..curve, dist + mark-mid-length(m, mark-style),
-          samples: samples)
-        vector.sub(bezier.cubic-point(..curve, t-base), pt)
-      } else {
-        bezier.cubic-derivative(..curve, t)
-      }
-      if vector.len(dir) == 0 {break} // TODO: Emit warning
-
-      drawables.push(drawable.mark(
-        vector.add(pt, dir), pt, m, mark-style))
-
-      dist += mark-mid-length(m, mark-style) + mark-style.sep
-    }
-  }
-
-  // Draw end mark-style
-  if end != none {
-    let dist = 0
-    for m in end {
-      let t = if dist > 0 {
-        bezier.cubic-t-for-distance(..curve, -dist, samples: samples)
-      } else {
-        1
-      }
-
-      let pt = bezier.cubic-point(..curve, t)
-      let dir = if flex {
-        let t-base = bezier.cubic-t-for-distance(..curve, -dist - mark-mid-length(m, mark-style),
-          samples: samples)
-        vector.sub(pt, bezier.cubic-point(..curve, t-base))
-      } else {
-        bezier.cubic-derivative(..curve, t)
-      }
-      if vector.len(dir) == 0 {break} // TODO: Emit warning
-
-      drawables.push(drawable.mark(
-        vector.sub(pt, dir), pt, m, mark-style))
-
-      dist += mark-mid-length(m, mark-style) + mark-style.sep
-    }
-  }
-
-  return (drawables, curve)
-}
-
-/// Place marks along a list of cubic bezier curves
-///
-/// - ctx (context): Context
-/// - curves (array): Array of curves
-/// - style (style): Curve style
-/// - mark-style (style): Mark style
-/// -> (drawables, curves) Tuple of drawables and adjusted curves
-#let place-marks-along-beziers(ctx, curves, style, mark-style) = {
-  if curves.len() == 1 {
-    let (marks, curve) = place-marks-along-bezier(
-      ctx, curves.at(0), style, mark-style)
-    return (marks, (curve,))
-  } else {
-    // TODO: This has the limitation that only the first curve of
-    //       the catmull-rom is used for placing marks.
-    let start-mark-style = mark-style
-    start-mark-style.end = none
-    let (start-marks, start-curve) = place-marks-along-bezier(
-      ctx, curves.at(0), style, start-mark-style)
-
-    let end-mark-style = mark-style
-    end-mark-style.start = none
-    let (end-marks, end-curve) = place-marks-along-bezier(
-      ctx, curves.at(-1), style, end-mark-style)
-    curves.at(0) = start-curve
-    curves.at(-1) = end-curve
-    return (start-marks + end-marks, curves)
-  }
-}
-
-#let place-marks-along-arc(ctx, start-angle, stop-angle, arc-start,
-                           rx, ry, style, mark-style) = {
-  let adjust = style.at("mode", default: "OPEN") == "OPEN"
-
-  let r-at(angle) = calc.sqrt(calc.pow(calc.cos(angle) * ry, 2) +
-                              calc.pow(calc.sin(angle) * rx, 2))
-
-  let start = if type(mark-style.start) == str {
-    (mark-style.start,)
-  } else {
-    mark-style.start
-  }
-
-  // Offset start
-  if start != none and start.len() > 0 {
-    let off = calc-mark-offset(ctx, start.at(0), mark-style)
-
-    // Remember original start
-    let orig-start = start-angle
-
-    // Calc an optimized start angle
-    let r = r-at(start-angle)
-    start-angle -= (off * 360deg) / (2 * calc.pi * r)
-
-    // Reposition the arc
-    let diff = vector.sub((calc.cos(start-angle) * rx, calc.sin(start-angle) * ry),
-                          (calc.cos(orig-start) * rx, calc.sin(orig-start) * ry))
-    arc-start = vector.add(arc-start, diff)
-  }
-
-  let end = if type(mark-style.end) == str {
-    (mark-style.end,)
-  } else {
-    mark-style.end
-  }
-
-  // Offset end
-  if end != none and end.len() > 0 {
-    let off = calc-mark-offset(ctx, end.at(0), mark-style)
-
-    let r = r-at(stop-angle)
-    stop-angle += (off * 360deg) / (2 * calc.pi * r)
-  }
-
-  let arc-center = vector.sub(arc-start, (calc.cos(start-angle) * rx,
-                                          calc.sin(start-angle) * ry))
-  let pt-at(angle) = vector.add(arc-center,
-    (calc.cos(angle) * rx, calc.sin(angle) * ry, 0))
-
-  let drawables = ()
-
-  // Draw start marks
-  if start != none {
-    let angle = start-angle
-    for m in start {
-      let length = mark-mid-length(m, mark-style)
-      let r = r-at(angle)
-      let angle-offset = (length * 360deg) / (2 * calc.pi * r)
-
-      let pt = pt-at(angle)
-      drawables.push(drawable.mark(
-        pt-at(angle + angle-offset), pt, m, mark-style))
-
-      let angle-offset = ((length + mark-style.sep) * 360deg) / (2 * calc.pi * r)
-      angle += angle-offset
-    }
-  }
-
-  // Draw end marks
-  if end != none {
-    let angle = stop-angle
-    for m in end {
-      let length = mark-mid-length(m, mark-style)
-      let r = r-at(angle)
-      let angle-offset = (length * 360deg) / (2 * calc.pi * r)
-
-      let pt = pt-at(angle)
-      drawables.push(drawable.mark(
-        pt-at(angle - angle-offset), pt, m, mark-style))
-
-      let angle-offset = ((length + mark-style.sep) * 360deg) / (2 * calc.pi * r)
-      angle -= angle-offset
-    }
-  }
-
-  return (drawables, arc-start, start-angle, stop-angle)
+  return (drawables, segments)
 }

@@ -11,6 +11,8 @@
     return ()
   }
   for drawable in drawables {
+    assert(type(drawable) != array,
+      message: "Expected drawable, got array: " + repr(drawable))
     if drawable.type == "path" {
       drawable.segments = drawable.segments.map(s => {
         return (s.at(0),) + util.apply-transform(transform, ..s.slice(1))
@@ -147,118 +149,4 @@
     close: mode != "OPEN",
     segments
   )
-}
-
-#let mark(from, to, symbol, style) = {
-  let scaling  = style.at("scale", default: 1)
-  let width    = calc.abs(style.at("width", default: .1) * scaling)
-  let length   = calc.abs(style.at("length", default: .15) * scaling)
-  let inset    = calc.min(style.at("inset", default: 0) * scaling, length)
-  let stroke   = style.stroke
-  let fill     = style.fill
-
-  let reverse  = symbol == "<"
-  let dir      = vector.norm(if reverse {
-    vector.sub(from, to)
-  } else {
-    vector.sub(to, from)
-  })
-  let norm-dir = (-dir.at(1), dir.at(0), dir.at(2))
-
-  // Marks in 3D are rotated on the z axis depending on the style
-  if dir.at(2) != 0 {
-    norm-dir = vector.cross(dir, style.z-up)
-  }
-
-  // Generic positions
-  //
-  //    t      t - tip
-  //   /|\
-  //  / | \    base - root
-  // '--m--'   m - base + inset
-  //
-  // ^--|--^   w - half width
-  let t    = to
-  let base = vector.sub(t, vector.scale(dir, length))
-  let m    = vector.add(base, vector.scale(dir, inset))
-  let w    = vector.scale(norm-dir, width / 2)
-
-  let triangle() = {
-    let a = vector.sub(base, w)
-    let b = vector.add(base, w)
-
-    if fill != none {
-      // Draw a filled triangle
-      path(
-        path-util.line-segment((a, t, b, m)),
-        close: true,
-        fill: fill,
-        stroke: stroke
-      )
-    } else {
-      // Draw open arrow
-      path(
-        path-util.line-segment((a, t, b)),
-        fill: fill,
-        stroke: stroke
-      )
-    }
-  }
-
-  let harpoon(side: "left") = {
-    let s = if side == "left" {
-      vector.sub(base, w)
-    } else {
-      vector.add(base, w)
-    }
-
-    path(path-util.line-segment((t, s, m)),
-      fill: fill,
-      stroke: stroke,
-      close: true)
-  }
-
-  let bar() = {
-    let n = vector.scale(norm-dir, width / 2)
-    path(
-      path-util.line-segment((vector.add(t, n), vector.sub(t, n))),
-      stroke: stroke
-    )
-  }
-
-  let diamond() = {
-    let mid = vector.add(t, vector.scale(vector.sub(base, t), .5))
-    let a = vector.sub(mid, w)
-    let b = vector.add(mid, w)
-
-    path(
-      path-util.line-segment((base, a, t, b)),
-      close: true,
-      fill: fill,
-      stroke: stroke
-    )
-  }
-
-  let circle() = {
-    let (x, y, z) = vector.add(t, vector.scale(vector.sub(base, t), .5))
-    ellipse(x, y, z, length / 2, length / 2, fill: fill, stroke: stroke)
-  }
-
-  if symbol == ">" {
-    triangle()
-  } else if symbol == "<" {
-    triangle()
-  } else if symbol == "|" {
-    bar()
-  } else if symbol == "<>" {
-    diamond()
-  } else if symbol == "left-harpoon" {
-    harpoon(side: "left")
-  } else if symbol == "right-harpoon" {
-    harpoon(side: "right")
-  } else if symbol == "o" {
-    circle()
-  } else {
-    panic("Invalid arrow head: " + symbol)
-  }
 }
