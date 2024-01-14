@@ -8,21 +8,21 @@
   import draw: *
 
   zigzag(line((0,0), (4,0)))
-  zigzag(line((0,1), (4,1)), width: .5)
+  zigzag(line((0,1), (4,1)), amplitude: .5)
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
 
   wave(line((0,0), (4,0)))
-  wave(line((0,1), (4,1)), width: .5)
+  wave(line((0,1), (4,1)), amplitude: .5)
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
 
   coil(line((0,0), (4,0)))
-  coil(line((0,1), (4,1)), width: .5)
+  coil(line((0,1), (4,1)), amplitude: .5)
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
@@ -47,27 +47,27 @@
   import draw: *
 
   set-style(radius: .9)
-  zigzag(circle((0,0)), width: .2, N: 20, factor: 0%)
-  zigzag(circle((0,2)), width: .2, N: 20, factor: 50%, stroke: blue)
-  zigzag(circle((0,4)), width: .2, N: 20, factor: 100%, stroke: red)
+  zigzag(circle((0,0)), amplitude: .2, segments: 20, factor: 0%)
+  zigzag(circle((0,2)), amplitude: .2, segments: 20, factor: 50%, stroke: blue)
+  zigzag(circle((0,4)), amplitude: .2, segments: 20, factor: 100%, stroke: red)
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
 
   set-style(radius: .9)
-  coil(circle((0,0)), width: .2, N: 30, factor: 100%)
-  coil(circle((0,2)), width: .2, N: 30, factor: 120%, stroke: blue)
-  coil(circle((0,4)), width: .2, N: 30, factor: 150%, stroke: red)
+  coil(circle((0,0)), amplitude: .2, segments: 30, factor: 100%)
+  coil(circle((0,2)), amplitude: .2, segments: 30, factor: 120%, stroke: blue)
+  coil(circle((0,4)), amplitude: .2, segments: 30, factor: 150%, stroke: red)
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
 
   set-style(radius: .9)
-  wave(circle((0,0)), width: .2, N: 20, tension: .3)
-  wave(circle((0,2)), width: .2, N: 20, tension: .5, stroke: blue)
-  wave(circle((0,4)), width: .2, N: 20, tension: 1, stroke: red)
+  wave(circle((0,0)), amplitude: .2, segments: 20, tension: .3)
+  wave(circle((0,2)), amplitude: .2, segments: 20, tension: .5, stroke: blue)
+  wave(circle((0,4)), amplitude: .2, segments: 20, tension: 1, stroke: red)
 }))
 
 
@@ -101,9 +101,9 @@
 #test-case({
   import draw: *
 
-  // Keep the fixed width
+  // Keep the fixed amplitude
   for i in range(0, 6) {
     wave(line((0,i), (3,i)), start: 10%, stop: 1 + i / 5,
-      length: .22, width: .8)
+      segment-length: .22, amplitude: .8)
   }
 })

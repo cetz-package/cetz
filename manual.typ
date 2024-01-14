@@ -804,13 +804,13 @@ All path decoration functions support the following style keys:
    the decorations start/end if the path is _not closed_.])
 #def-arg("width", [`<number>`], default: 1,
   [Width or thickness of the decoration.])
-#def-arg("N", [`<int>`], default: 10,
+#def-arg("segments", [`<int>`], default: 10,
   [Number of repetitions/phases to generate.
-   This key is ignored if `length` is set != `none`.])
-#def-arg("length", [`none` or `<number>`], default: none,
+   This key is ignored if `segment-length` is set != `none`.])
+#def-arg("segment-length", [`none` or `<number>`], default: none,
   [Length of one repetition/phase of the decoration.])
-#def-arg("align", [`<string>`], default: "START",
-  [Alignment of the decoration on the path _if `length` is set_ and
+#def-arg("align", [`"START"`, `"MID"`, `"END"`], default: "START",
+  [Alignment of the decoration on the path _if `segment-length` is set_ and
    the decoration does not fill up the full range between start and stop.])
 
 #doc-style.parse-show-module("/src/lib/decorations/path.typ")

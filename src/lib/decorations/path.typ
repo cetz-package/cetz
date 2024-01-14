@@ -9,13 +9,13 @@
 #import "/src/bezier.typ"
 
 #let default-style = (
-  /// Number of windings
-  N: 10,
-  /// Wavelength
-  length: none,
+  /// Number of segments
+  segments: 10,
+  /// Length of a single segments
+  segment-length: none,
 
-  /// width of the spring in the direction of the springs normal
-  width: 1,
+  /// Amplitude of a segment in the direction of the segments normal
+  amplitude: 1,
   /// Decoration start
   start: 0%,
   /// Decoration stop
@@ -60,10 +60,10 @@
 )
 
 #let resolve-style(ctx, segments, style) = {
-  assert(not (style.N == none and style.length == none),
-    message: "Only one of N or length must be set, while the other must be auto")
-  assert(style.N != none or style.length != none,
-    message: "Either N or length must be not equal to none")
+  assert(not (style.segments == none and style.segment-length == none),
+    message: "Only one of segments or segment-length must be set, while the other must be auto")
+  assert(style.segments != none or style.segment-length != none,
+    message: "Either segments or segment-length must be not equal to none")
 
   // Calculate absolute start/stop distances
   let len = path-util.length(segments)
@@ -76,21 +76,21 @@
   }
   style.stop = calc.max(0, calc.min(style.stop, len))
 
-  if style.length != none {
+  if style.segment-length != none {
     // Calculate number of divisions
-    let n = (style.stop - style.start) / style.length
-    style.N = calc.floor(n)
+    let n = (style.stop - style.start) / style.segment-length
+    style.segments = calc.floor(n)
 
     // Divides the rest between start, stop or both
-    let r = (n - calc.floor(n)) * style.length
+    let r = (n - calc.floor(n)) * style.segment-length
     if style.align == "MID" {
       let m = (style.start + style.stop) / 2
-      style.start = m - n * style.length / 2
-      style.stop = m + n * style.length / 2
+      style.start = m - n * style.segment-length / 2
+      style.stop = m + n * style.segment-length / 2
     } else if style.align == "STOP" {
-      style.start = style.stop - n * style.length
+      style.start = style.stop - n * style.segment-length
     } else if style.align == "START" {
-      style.stop = style.start + n * style.length
+      style.stop = style.start + n * style.segment-length
     }
   }
 
@@ -109,13 +109,8 @@
     return ()
   }
 
-  return drawables.first().segments
-}
-
-// Detect if path segments are closed
-#let resolve-auto-close(segments, start, stop) = {
-  return vector.dist(path-util.point-on-path(segments, start),
-                     path-util.point-on-path(segments, stop)) < 1e-8
+  let first = drawables.first()
+  return (segments: first.segments, close: first.close)
 }
 
 // Add optional line elements from segments start to mid-path start
@@ -147,8 +142,17 @@
   // TODO: Add marks on path.
 }
 
+// Call callback `fn` for each decoration segment
+// on path `segments`.
+//
+// The callback gets called with the following arguments:
+//   - i Segment index
+//   - start Segment start point
+//   - end Segment end point
+//   - norm Normal vector (length 1)
+// Result values get returned as an array
 #let _path-effect(ctx, segments, fn, close: false, style) = {
-  let n = style.N
+  let n = style.segments
   assert(n > 0,
     message: "Number of segments must be greater than 0")
 
@@ -179,12 +183,12 @@
 
 /// Draw a zig-zag or saw-tooth wave along a path
 ///
-/// The number of tooths can be controlled via the `N` or `length` style key,
-/// and the width via `width`.
+/// The number of tooths can be controlled via the `segments` or `segment-length` style key,
+/// and the width via `amplitude`.
 ///
 /// ```example
 /// line((0,0), (2,1), stroke: gray)
-/// cetz.decorations.zigzag(line((0,0), (2,1)), width: .25, start: 10%, stop: 90%)
+/// cetz.decorations.zigzag(line((0,0), (2,1)), amplitude: .25, start: 10%, stop: 90%)
 /// ```
 ///
 /// = Styling
@@ -202,31 +206,38 @@
   let style = styles.resolve(ctx, merge: style.named(),
     base: zigzag-default-style, root: "zigzag")
 
-  let segments = get-segments(ctx, target)
+  let (segments, close) = get-segments(ctx, target)
   let style = resolve-style(ctx, segments, style)
-  let close = if close == auto {
-    resolve-auto-close(segments, style.start, style.stop)
-  } else {
-    close
-  }
+  let num-segments = style.segments
 
-  let N = style.N
-
+  // Return points for a zigzag line
+  //
+  //     m1         ▲
+  //    /  \        | up
+  // ..a....\...b.. '
+  //         \ /
+  //          m2
+  //   |--|
+  //    q-dir (quarter length between a and b)
+  //
+  // For the first/last segment, a/b get added. For all
+  // other segments we only have to add m1 and m2 to the
+  // list of points for the line-strip.
   let fn(i, a, b, norm) = {
     let ab = vector.sub(b, a)
 
     let f = .25 - (50% - style.factor) / 50% * .25
     let q-dir = vector.scale(ab, f)
-    let up = vector.scale(norm, style.width / 2)
+    let up = vector.scale(norm, style.amplitude / 2)
     let down = vector.scale(up, -1)
 
     let m1 = vector.add(vector.add(a, q-dir), up)
     let m2 = vector.add(vector.sub(b, q-dir), down)
 
     return if not close and i == 0 {
-      (a, m1, m2)
-    } else if not close and i == N - 1 {
-      (m1, m2, b)
+      (a, m1, m2) // First segment: add a
+    } else if not close and i == num-segments - 1 {
+      (m1, m2, b) // Last segment: add b
     } else {
       (m1, m2)
     }
@@ -243,19 +254,19 @@
 
 /// Draw a stretched coil/loop spring along a path
 ///
-/// The number of windings can be controlled via the `N` or `length` style key,
-/// and the width via `width`.
+/// The number of windings can be controlled via the `segments` or `segment-length` style key,
+/// and the width via `amplitude`.
 ///
 /// ```example
 /// line((0,0), (2,1), stroke: gray)
-/// cetz.decorations.coil(line((0,0), (2,1)), width: .25, start: 10%, stop: 90%)
+/// cetz.decorations.coil(line((0,0), (2,1)), amplitude: .25, start: 10%, stop: 90%)
 /// ```
 ///
 /// = Styling
 /// *Root* `coil`
 /// == Keys
 ///   #show-parameter-block("factor", ("ratio",), default: 150%, [
-///     Factor of how much the coil overextends its width to form a curl.])
+///     Factor of how much the coil overextends its length to form a curl.])
 ///
 /// - target (drawable): Target path
 /// - close (auto,bool): Close the path
@@ -265,17 +276,12 @@
   let style = styles.resolve(ctx, merge: style.named(),
     base: coil-default-style, root: "coil")
 
-  let segments = get-segments(ctx, target)
+  let (segments, close) = get-segments(ctx, target)
   let style = resolve-style(ctx, segments, style)
-  let close = if close == auto {
-    resolve-auto-close(segments, style.start, style.stop)
-  } else {
-    close
-  }
 
-  let N = calc.max(style.N, 1)
+  let num-segments = calc.max(style.segments, 1)
   let length = path-util.length(segments)
-  let phase-length = length / N
+  let phase-length = length / num-segments
   let overshoot = calc.max(0, (style.factor - 100%) / 100% * phase-length)
 
   // Offset both control points so the curve approximates
@@ -290,23 +296,34 @@
     return (s, e, c1, c2)
   }
 
+  // Return a list of drawables to form a coil-like loop
+  //
+  //     ____     ┐
+  //    /    \    │ Upper curve
+  //   |      |   ┘
+  // ..a...b..|.. ┐ Lower curve
+  //        \_/   ┘
+  //
+  //       └──┘
+  //         Overshoot
+  //
   let fn(i, a, b, norm) = {
     let ab = vector.sub(b, a)
-    let up = vector.scale(norm, style.width / 2)
+    let up = vector.scale(norm, style.amplitude / 2)
     let dist = vector.dist(a, b)
 
     let d = vector.norm(ab)
-    let overshoot-at(i) = if N <= 1 {
+    let overshoot-at(i) = if num-segments <= 1 {
       0
     } else if close {
       overshoot / 2
     } else {
-      i / (N - 1) * overshoot
+      i / (num-segments - 1) * overshoot
     }
 
     let next-a = vector.sub(b, vector.scale(d, overshoot-at(i + 1)))
     let a = vector.sub(a, vector.scale(d, overshoot-at(i)))
-    let b = vector.add(b, vector.scale(d, overshoot-at(N - i)))
+    let b = vector.add(b, vector.scale(d, overshoot-at(num-segments - i)))
     let m = vector.scale(vector.add(a, b), .5)
     let m-up = vector.add(m, up)
     let m-down = vector.sub(vector.scale(vector.add(next-a, b), .5), up)
@@ -317,7 +334,7 @@
     let lower = bezier.cubic-through-3points(b, m-down, next-a)
     lower = ellipsize-cubic(..lower)
 
-    if i < N - 1 or close {
+    if i < num-segments - 1 or close {
       return (
         draw.bezier(..upper, mark: none),
         draw.bezier(..lower, mark: none),
@@ -338,12 +355,12 @@
 
 /// Draw a wave along a path using a catmull-rom curve
 ///
-/// The number of phases can be controlled via the `N` or `length` style key,
-/// and the width via `width`.
+/// The number of phases can be controlled via the `segments` or `segment-length` style key,
+/// and the width via `amplitude`.
 ///
 /// ```example
 /// line((0,0), (2,1), stroke: gray)
-/// cetz.decorations.wave(line((0,0), (2,1)), width: .25, start: 10%, stop: 90%)
+/// cetz.decorations.wave(line((0,0), (2,1)), amplitude: .25, start: 10%, stop: 90%)
 /// ```
 ///
 /// = Styling
@@ -360,19 +377,21 @@
   let style = styles.resolve(ctx, merge: style.named(),
     base: wave-default-style, root: "wave")
 
-  let segments = get-segments(ctx, target)
+  let (segments, close) = get-segments(ctx, target)
   let style = resolve-style(ctx, segments, style)
-  let close = if close == auto {
-    resolve-auto-close(segments, style.start, style.stop)
-  } else {
-    close
-  }
+  let num-segments = style.segments
 
-  let N = style.N
-
+  // Return a list of points for the catmull-rom curve
+  //
+  //   ╭ m1 ╮        ┐
+  //   │    │        │ Up
+  // ..a....m....b.. ┘
+  //        │    │
+  //        ╰ m2 ╯
+  //
   let fn(i, a, b, norm) = {
     let ab = vector.sub(b, a)
-    let up = vector.scale(norm, style.width / 2)
+    let up = vector.scale(norm, style.amplitude / 2)
     let down = vector.scale(
       up, -1)
 
@@ -383,7 +402,7 @@
     if not close {
       if i == 0 {
         return (a, vector.add(ma, up), vector.add(mb, down),)
-      } else if i == N - 1 {
+      } else if i == num-segments - 1 {
         return (vector.add(ma, up), vector.add(mb, down), b,)
       }
     }

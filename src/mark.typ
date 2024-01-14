@@ -8,7 +8,7 @@
 #import "styles.typ"
 #import "mark-shapes.typ": get-mark
 
-#let check-mark(style) = (style.start, style.end, style.symbol).any(v => v != none)
+#let check-mark(style) = style != none and (style.start, style.end, style.symbol).any(v => v != none)
 
 #let process-style(ctx, style, root, path-length) = {
   let base-style = (
