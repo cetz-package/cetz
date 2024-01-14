@@ -1399,8 +1399,8 @@
 /// *Root* `hobby`
 /// == Keys
 ///   Supports marks.
-///   #show-parameter-block("omega", "float", [The curve's curlyness])
-///   #show-parameter-block("rho", "auto,function", [The $rho$ function of the form `(a, b) => float`])
+///   #show-parameter-block("omega", ("float",), [
+///     The curve's curlyness.])
 ///
 /// = Anchors
 ///   Supports distance anchors.
@@ -1430,7 +1430,6 @@
       ta: ta,
       tb: tb,
       omega: style.omega,
-      rho: style.rho,
       close: close)
 
     let segments = curves.map(c => path-util.cubic-segment(..c))

@@ -25,9 +25,3 @@
   import draw: *
   hobby((0,-1), (1,1), (2,0), (3,1), (4,0), (5,2), close: true, fill: blue)
 }))
-
-#box(stroke: 2pt + red, canvas({
-  import draw: *
-  hobby((0,-1), (1,1), (2,0), (3,1), (4,0), (5,2),
-    rho: (a, b) => 0)
-}))

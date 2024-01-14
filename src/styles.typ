@@ -77,8 +77,6 @@
   hobby: (
     /// Curve start and end omega (curlyness)
     omega: (1,1),
-    /// Rho function, see /src/hobby.typ for details
-    rho: auto,
     mark: auto,
     shorten: auto,
     stroke: auto,

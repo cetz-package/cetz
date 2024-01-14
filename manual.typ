@@ -900,7 +900,7 @@ The state of the canvas is encoded in its context dictionary. Elements or other
 draw calls may return a modified context to the canvas to change its
 state, e.g. modifying the transformating matrix, adding a group or setting a style.
 
-The context can be manually retreived and modified using the `get-ctx` and `set-ctx`
+The context can be manually retrieved and modified using the `get-ctx` and `set-ctx`
 functions.
 
 == Elements
