@@ -17,5 +17,5 @@
   })
 
   fill(red); 
-  circle(("i.north-west", 0.75, "i.north-east"))
+  circle(("i.north-west", 75%, "i.north-east"))
 }))

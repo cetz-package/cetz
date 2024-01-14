@@ -47,9 +47,9 @@
   set-style(stroke: (thickness: 1.2pt))
 
   line((30deg, 1), ((), "|-", (0,0)), stroke: (paint: red), name: "sin")
-  content(("sin.start", .5, "sin.end"), text(red)[$ sin alpha $])
+  content(("sin.start", 50%, "sin.end"), text(red)[$ sin alpha $])
   line("sin.end", (0,0), stroke: (paint: blue), name: "cos")
-  content(("cos.start", .5, "cos.end"), text(blue)[$ cos alpha $], anchor: "north")
+  content(("cos.start", 50%, "cos.end"), text(blue)[$ cos alpha $], anchor: "north")
   line((1, 0), (1, calc.tan(30deg)), name: "tan", stroke: (paint: orange))
   content("tan.end", $ text(#orange, tan alpha) = text(#red, sin alpha) / text(#blue, cos alpha) $, anchor: "west")
 })
