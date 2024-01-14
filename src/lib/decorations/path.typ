@@ -212,10 +212,10 @@
 
   // Return points for a zigzag line
   //
-  //     m1         ▲
-  //    /  \        | up
-  // ..a....\...b.. '
-  //         \ /
+  //     m1          ▲
+  //    /  \         │ Up
+  // ..a....\....b.. '
+  //         \  /
   //          m2
   //   |--|
   //    q-dir (quarter length between a and b)
@@ -383,11 +383,11 @@
 
   // Return a list of points for the catmull-rom curve
   //
-  //   ╭ m1 ╮        ┐
+  //   ╭ ma ╮        ▲
   //   │    │        │ Up
-  // ..a....m....b.. ┘
+  // ..a....m....b.. '
   //        │    │
-  //        ╰ m2 ╯
+  //        ╰ mb ╯
   //
   let fn(i, a, b, norm) = {
     let ab = vector.sub(b, a)
@@ -395,19 +395,19 @@
     let down = vector.scale(
       up, -1)
 
-    let ma = vector.add(a, vector.scale(ab, .25))
+    let ma = vector.add(vector.add(a, vector.scale(ab, .25)), up)
     let m  = vector.add(a, vector.scale(ab, .50))
-    let mb = vector.sub(b, vector.scale(ab, .25))
+    let mb = vector.add(vector.sub(b, vector.scale(ab, .25)), down)
 
     if not close {
       if i == 0 {
-        return (a, vector.add(ma, up), vector.add(mb, down),)
+        return (a, ma, mb)
       } else if i == num-segments - 1 {
-        return (vector.add(ma, up), vector.add(mb, down), b,)
+        return (ma, mb, b,)
       }
     }
 
-    return (vector.add(ma, up), vector.add(mb, down),)
+    return (ma, mb)
   }
 
   return draw.merge-path(
