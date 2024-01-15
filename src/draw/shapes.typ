@@ -649,8 +649,16 @@
 ///
 /// = Styling
 /// *Root:* `grid`
-///   / step: TODO
-///   / help-lines: TODO
+/// == Keys
+///   #show-parameter-block("step", ("number", "tuple", "dictionary"), [
+///     Distance between grid lines. A distance of $1$ means to draw a
+///     grid line every $1$ length units in x- and y-direction.
+///     If given a dictionary with `x` and `y` keys or a tuple,
+///     the step is set per axis.
+///   ], default: 1)
+///   #show-parameter-block("help-lines", ("bool",), [
+///     If true, force the stroke style to `gray + 0.2pt`
+///   ], default: 1)
 ///
 /// = Anchors
 ///   Supports compass anchors.
