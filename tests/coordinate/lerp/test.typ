@@ -47,3 +47,39 @@
     content(pt, repr(i), anchor: "north", padding: (top: .5))
   }
 })
+
+#test-case({
+  import draw: *
+  grid((0,-3), (5,4), stroke: gray)
+
+  let a = (1,0)
+  let b = (4,0)
+
+  set-style(circle: (radius: .1))
+  circle(a, fill: red)
+  circle(b, fill: green)
+
+  for i in (-50%, 0%, 50%, 100%) {
+    let pt = (a, i, 90deg, b)
+    circle(pt)
+    content(pt, repr(i), anchor: "north", padding: (top: .5))
+  }
+})
+
+#test-case({
+  import draw: *
+  grid((0,-3), (3,4), stroke: gray)
+
+  let a = (1,0)
+  let b = (2,0)
+
+  set-style(circle: (radius: .1))
+  circle(a, fill: red)
+  circle(b, fill: green)
+
+  for i in (-2, 0, 1.5, 3) {
+    let pt = (a, i, 90deg, b)
+    circle(pt)
+    content(pt, repr(i), anchor: "north", padding: (top: .5))
+  }
+})
