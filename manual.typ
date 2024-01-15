@@ -41,7 +41,7 @@
 
 = Introduction
 
-This package provides a way to draw stuff using a similar API to #link("https://processing.org/")[Processing] but with relative coordinates and anchors from #link("https://tikz.dev/")[Ti#[_k_]Z]. You also won't have to worry about accidentally drawing over other content as the canvas will automatically resize. And remember: up is positive!
+This package provides a way to draw onto a canvas using a similar API to #link("https://processing.org/")[Processing] but with relative coordinates and anchors from #link("https://tikz.dev/")[Ti#[_k_]Z]. You also won't have to worry about accidentally drawing over other content as the canvas will automatically resize. And remember: up is positive!
 
 The name CeTZ is a recursive acronym for "CeTZ, ein Typst Zeichenpaket" (german for "CeTZ, a Typst drawing package").
 
@@ -55,7 +55,7 @@ This is the minimal starting point:
   ...
 })
 ```]
-Note that draw functions are imported inside the scope of the `canvas` block. This is recommended as draw functions override Typst's functions such as `line`.
+Note that draw functions are imported inside the scope of the `canvas` block. This is recommended as some draw functions override Typst's function's such as `line`.
 
 #show raw.where(block: false): it => if it.text.starts-with("<") and it.text.ends-with(">") {
     set text(1.2em)
@@ -69,10 +69,10 @@ Many CeTZ functions expect data in certain formats which we will call types. Not
   / `<coordinate>`: Any coordinate system. See coordinate-systems.
   / `<number>`: Any of `<float>`, `<integer>` or `<length>`. 
   / `<style>`: Named arguments (or a dictionary if used for a single argument) of style key-values.
-  / `<context>`: An CeTZ context object that holds internal state.
+  / `<context>`: A CeTZ context object that holds internal state.
 
 == Anchors <anchors>
-Anchors positions relative to named elements. To use an anchor of an element, you must give the element a name using the `name` argument. All elements with the `name` argument allow anchors.
+Anchors are positions relative to named elements. To use an anchor of an element, you must give the element a name using the `name` argument. All elements with the `name` argument allow anchors.
 ```example
 // Name the circle
 circle((0,0), name: "circle")
@@ -83,8 +83,7 @@ stroke(none)
 circle("circle.east", radius: 0.3)
 ```
 
-Elements can be placed relative to their own anchors if they have an
-argument called `anchor`:
+Elements can be placed relative to their own anchors if they have an argument called `anchor`:
 ```example
 // An element does not have to be named 
 // in order to use its own anchors.
@@ -97,8 +96,7 @@ circle((0,0), radius: 0.3)
 ```
 
 === Compass Anchors
-Elements like `rect`, `circle`, `arc` and `group` support the following
-"compass direction" anchors:
+Compass anchors are positioned on the border of elements in the direction of a compass.
 #align(center, {
   canvas({
     import draw:*
@@ -139,7 +137,7 @@ circle((0, 0), fill: red, stroke: blue)
 line((0, 0), (1, 1), stroke: green)
 ```
 
-Instead of having to specify the same styling for each time you want to draw an element, you can use the `set-style` function to change the style for all elements after it. You can still pass styling to a draw function to override what has been set with `set-style`. You can also use the `fill()` and `stroke()` functions as a shorthand to set the fill and stroke respectively.
+Instead of having to specify the same styling for each time you want to draw an element, you can use the `set-style()` function to change the style for all elements after it. You can still pass styling to a draw function to override what has been set with `set-style()`. You can also use the `fill()` and `stroke()` functions as a shorthand to set the fill and stroke respectively.
 
 ```example
 // Draws an empty square with a black border

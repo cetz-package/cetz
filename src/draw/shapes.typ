@@ -86,7 +86,7 @@
   },)
 }
 
-/// Draws a circle through three coordinates
+/// Draws a circle through three coordinates.
 ///
 /// #example(
 /// ```
@@ -358,29 +358,29 @@
   },)
 }
 
-/// Draw an arc that passes through three points a, b and c.
+/// Draws an arc that passes through three points a, b and c.
 ///
-/// Note that all three points must not lay on a straight line, otherwise
+/// Note that all three points must not lie on a straight line, otherwise
 /// the function fails.
 ///
 /// #example(```
 /// arc-through((0,1), (1,1), (1,0))
 /// ```)
+/// == parameters
 ///
-/// *Style Root* `arc` \
-/// *Style Keys* \
+/// = Styling 
+/// *Root*: `arc`
+/// == Keys
 ///   Uses the same style keys as @@arc()
 ///
-/// *Anchors* \
-///   For anchors see `arc`.
+/// = Anchors
+///   For anchors see @@arc().
 ///
 /// - a (coordinate): Start position of the arc
 /// - b (coordinate): Position the arc passes through
 /// - c (coordinate): End position of the arc
-/// - name (none,string): The arc elements node name that, if set can be used to query anchors
-/// - ..style (style): Style key value pairs. The function `arc-through` uses
-///   all keys that `arc` uses, but `radius`, as this is determined by the
-///   three input points.
+/// - name (none, string):
+/// - ..style (style):
 #let arc-through(
   a,
   b,
@@ -466,13 +466,16 @@
 ///     ([#raw(short)], [#item.at(0) #if item.at(1) {[ (reverse) ]}],)
 ///   })
 /// )
-///
+////// *Note*: The size of the mark depends on its style values, not
+/// the distance between `from` and `to`, which only determine its
+/// orientation.
 /// = parameters
 ///
 /// = Styling <mark-styling>
 /// *Root:* `mark`
+/// 
 /// == Keys
-///   #show-parameter-block("symbol", "string", [The type of mark to draw when using the `mark` function.], default: ">")
+///   #show-parameter-block("symbol", ("string", "none", "array", "dict"), [The type of mark to draw for the `mark` function. Or extra styling to apply to the ])
 ///   #show-parameter-block("start", ("string", "none", "array"), [The type of mark to draw at the start of a path.])
 ///   #show-parameter-block("end", ("string", "none", "array"), [The type of mark to draw at the end of a path.])
 ///   #show-parameter-block("length", "number", [The length of the mark along its direction it is pointing.], default: 0.2)
@@ -483,9 +486,6 @@
 ///   #show-parameter-block("flex", "boolean", [Only applicable when marks are used on curves such as bezier and hobby. If true, the mark will point along the secant of the curve. If false, the tangent at the marks tip is used.], default: true)
 ///   #show-parameter-block("position-samples", "integer", [Only applicable when marks are used on curves such as bezier and hobby. The maximum number of samples to use for calculating curve positions. A higher number gives better results but may slow down compilation.], default: 30)
 /// 
-/// *Note*: The size of the mark depends on its style values, not
-/// the distance between `from` and `to`, which only determine its
-/// orientation.
 ///
 /// - from (coordinate): The position to place the mark.
 /// - to (coordinate): The position the mark should point towards.
