@@ -39,7 +39,7 @@
 ///
 /// - position (coordinate): The position to place the circle on.
 /// - name (none,string):
-/// - anchor (none,string):
+/// - anchor (none, string): See @anchors.
 /// - ..style (style):
 #let circle(position, name: none, anchor: none, ..style) = {  
   // No extra positional arguments from the style sink
@@ -109,11 +109,11 @@
 ///   / b: Coordinate b
 ///   / c: Coordinate c
 ///
-/// - a (coordinate): Coordinate a
-/// - b (coordinate): Coordinate b
-/// - c (coordinate): Coordinate c
+/// - a (coordinate): Coordinate a.
+/// - b (coordinate): Coordinate b.
+/// - c (coordinate): Coordinate c.
 /// - name (none,string):
-/// - anchor (none,string):
+/// - anchor (none,string): See @anchors.
 /// - ..style (style):
 #let circle-through(a, b, c, name: none, anchor: none, ..style) = {
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
@@ -198,7 +198,7 @@
 /// - stop (auto,angle): The angle at which the arc should stop.
 /// - delta (auto,angle): The change in angle away start or stop.
 /// - name (none,string):
-/// - anchor (none, string):
+/// - anchor (none, string): See @anchors.
 /// - ..style (style):
 #let arc(
   position,
@@ -798,7 +798,7 @@
 ///   
 /// - ..args-style (coordinate, content, style): When one coordinate is given as a positional argument, the content will be placed at that position. When two coordinates are given as positional arguments, the content will be placed inside a rectangle between the two positions. All named arguments are styling and any additional positional arguments will panic.
 /// - angle (angle,coordinate): Rotates the content by the given angle. A coordinate can be given to rotate the content by the angle between it and the first coordinate given in `args`. This effectively points the right hand side of the content towards the coordinate. This currently exists because Typst's rotate function does not change the width and height of content.
-/// - anchor (none, string):
+/// - anchor (none, string): See @anchors.
 /// - name (none, string):
 #let content(
     ..args-style,
@@ -1018,7 +1018,7 @@
 /// - a (coordinate): Coordinate of the bottom left corner of the rectangle.
 /// - b (coordinate): Coordinate of the top right corner of the rectangle. You can draw a rectangle with a specified width and height by using relative coordinates for this parameter `(rel: (width, height))`.
 /// - name (none,string):
-/// - anchor (none,string):
+/// - anchor (none, string): See @anchors.
 /// - ..style (style):
 #let rect(a, b, name: none, anchor: none, ..style) = {
   // Coordinate check
