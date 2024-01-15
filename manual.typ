@@ -105,7 +105,7 @@ Some elements support compass anchors. TODO
     for-each-anchor("group", n => {
       if n != "center" {
         content(
-          (rel: ("group.center", .75, "group." + n),
+          (rel: ("group.center", 75%, "group." + n),
            to: "group." + n), n)
       } else {
         content((rel: (0, .5), to: "group.center"), n)
@@ -397,28 +397,25 @@ An angle can also be given for the general meaning: "First consider the line fro
 
 #def-arg("a", `<coordinate>`, [The coordinate to interpolate from.])
 #def-arg("b", `<coordinate>`, [The coordinate to interpolate to.])
-#def-arg("number", [`<number>` or `<length>`], [
+#def-arg("number", [`<number>` or `<ratio>`], [
   The factor to interpolate by or the distance away from `a` towards `b`.
 ])
 #def-arg("angle", `<angle>`, default: 0deg, "")
-#def-arg("abs", `<bool>`, default: false, [
-  Interpret `number` as absolute distance, instead of a factor.
-])
 
 Can be used implicitly as an array in the form `(a, number, b)` or `(a, number, angle, b)`.
 
 ```example
 grid((0,0), (3,3), help-lines: true)
 
-line((0,0), (2,2))
-for i in (0, 0.2, 0.5, 0.8, 1, 1.5) { /* Relative distance */
-  content(((0,0), i, (2,2)),
+line((0,0), (2,2), name: "a")
+for i in (0%, 20%, 50%, 80%, 100%, 125%) { /* Relative distance */
+  content(("a.start", i, "a.end"),
           box(fill: white, inset: 1pt, [#i]))
 }
 
-line((1,0), (3,2))
+line((1,0), (3,2), name: "b")
 for i in (0, 0.5, 1, 2) { /* Absolute distance */
-  content((a: (1,0), number: i, abs: true, b: (3,2)),
+  content(("b.start", i, "b.end"),
           box(fill: white, inset: 1pt, text(red, [#i])))
 }
 ```
@@ -429,7 +426,7 @@ line((1,0), (3,2))
 line((1,0), ((1, 0), 1, 10deg, (3,2)))
 fill(red)
 stroke(none)
-circle(((1, 0), 0.5, 10deg, (3, 2)), radius: 2pt)
+circle(((1, 0), 50%, 10deg, (3, 2)), radius: 2pt)
 ```
 
 ```example
@@ -454,7 +451,7 @@ fill(red)
 stroke(none)
 circle(
   ( // a
-    (((0, 0), 0.3, (3, 2))),
+    (((0, 0), .3, (3, 2))),
     0.7,
     (3,0)
   ),

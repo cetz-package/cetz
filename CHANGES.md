@@ -9,6 +9,7 @@ CeTZ 0.2.0 requires Typst 0.10.0
 - **BREAKING** Removed the `shadow` function
 - **BREAKING** Changed the behaviour of `mark`
 - **BREAKING** Changed the behaviour of `translate` by changing the transformation order, changed arguments of `scale` and `translate`
+- **BREAKING** LERP coordinates now use ratio instead of float for relative interpolation.
 - Content padding has been improved to be configurable per side
 - Groups support same padding options as content
 - Fixed mark offsetting

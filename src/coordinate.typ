@@ -185,32 +185,27 @@
 }
 
 #let resolve-lerp(resolve, ctx, c) = {
-  // (a: <coordinate>, number: <number>,
-  //  abs?: <bool>, angle?: <angle>, b: <coordinate>)
-  // (a, number, b)
-  // (a, number, angle, b)
+  // (a: <coordinate>, number: <number,ratio>,
+  //  angle?: <angle>, b: <coordinate>)
+  // (a, <number, ratio>, b)
+  // (a, <number, ratio>, angle, b)
 
-  let (a, number, angle, b, abs) = if type(c) == array {
+  let (a, number, angle, b) = if type(c) == array {
     if c.len() == 3 {
       (
         ..c.slice(0, 2),
         none, // angle
         c.last(),
-        false,
       )
     } else {
-      (
-        ..c,
-        false
-      )
+      c
     }
   } else {
     (
       c.a,
       c.number,
       c.at("angle", default: 0deg),
-      c.b,
-      c.at("abs", default: false),
+      c.b
     )
   }
 
@@ -228,34 +223,21 @@
     )
   }
 
-  if type(number) == length {
-    let dist = vector.dist(a, b)
-    number = if dist != 0 {
+  let ab = vector.sub(b, a)
+
+  let is-absolute = type(number) != ratio
+  let distance = if is-absolute {
+    let dist = vector.len(ab)
+    if dist != 0 {
       util.resolve-number(ctx, number) / dist
     } else {
       0
     }
+  } else {
+    number / 100%
   }
 
-  if abs {
-    let dist = vector.dist(a, b)
-    number = if dist != 0 {
-      number / dist
-    } else {
-      0
-    }
-  }
-
-  return vector.add(
-    vector.scale(
-      a,
-      (1 - number)
-    ),
-    vector.scale(
-      b,
-      number
-    )
-  )
+  return vector.add(a, vector.scale(ab, distance))
 }
 
 #let resolve-function(resolve, ctx, c) = {
@@ -301,7 +283,7 @@
       "polar"
     } else if len == 3 and c.at(1) in ("-|", "|-") {
       "perpendicular"
-    } else if len in (3, 4) and types.at(1) in ("integer", "float", "length") and (len == 3 or (len == 4 and types.at(2) == "angle")) {
+    } else if len in (3, 4) and types.at(1) in ("integer", "float", "length", "ratio") and (len == 3 or (len == 4 and types.at(2) == "angle")) {
       "lerp"
     } else if len >= 2 and types.first() == "function" {
       "function"

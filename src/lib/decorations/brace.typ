@@ -139,8 +139,8 @@
     }
 
     // 'ef' is the perpendicular line in the center of that rectangle, with length 'amplitude'
-    let e = (a, .5, b)
-    let f = (c, .5, d)
+    let e = (a, 50%, b)
+    let f = (c, 50%, d)
     if debug {
       line(e, f, stroke: eastern)
     }
@@ -180,7 +180,7 @@
     anchor("content", k)
     anchor("start", a)
     anchor("end", b)
-    anchor("center", (e, .5, f))
+    anchor("center", (e, 50%, f))
     // define anchors for all points
     for (name, point) in points {
       anchor(name, point)
@@ -376,7 +376,7 @@
     anchor("content", h)
     anchor("start", a)
     anchor("end", b)
-    anchor("center", (d, .5, g))
+    anchor("center", (d, 50%, g))
     // define anchors for all points
     for (name, point) in points {
       anchor(name, point)
