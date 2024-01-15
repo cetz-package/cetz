@@ -148,7 +148,7 @@
           // Draw mark preview
           let mark = item.at("mark", default: none)
           if mark != none {
-            draw-mark-shape((preview-a, .5, preview-b),
+            draw-mark-shape((preview-a, 50%, preview-b),
               calc.min(style.item.preview.width / 2, item.mark-size),
               mark,
               item.mark-style)

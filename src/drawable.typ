@@ -94,6 +94,7 @@
     ),
     stroke: stroke,
     fill: fill,
+    close: true,
   )
 }
 

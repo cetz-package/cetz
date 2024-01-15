@@ -50,8 +50,8 @@
 /// - transform (matrix): Transformation matrix
 /// - vec (vector): Vector to get transformed
 /// -> vector
-#let revert-transform(transform, vec) = {
-  apply-transform(matrix.inverse(transform), vec)
+#let revert-transform(transform, ..vecs) = {
+  apply-transform(matrix.inverse(transform), ..vecs)
 }
 
 // Get point on line

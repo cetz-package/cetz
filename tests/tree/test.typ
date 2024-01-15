@@ -24,7 +24,7 @@
 
   // Draw a "custom" connection between two nodes
   let (a, b) = ("tree.0-0-1", "tree.0-1-0",)
-  line((a: a, number: .6, abs: true, b: b), (a: b, number: .6, abs: true, b: a), mark: (end: ">", start: ">"))
+  line((a, .6, b), (b, .6, a), mark: (end: ">", start: ">"))
 })
 
 #for position in ("begin", "center", "end") {

@@ -105,7 +105,7 @@ Some elements support compass anchors. TODO
     for-each-anchor("group", n => {
       if n != "center" {
         content(
-          (rel: ("group.center", .75, "group." + n),
+          (rel: ("group.center", 75%, "group." + n),
            to: "group." + n), n)
       } else {
         content((rel: (0, .5), to: "group.center"), n)
@@ -397,28 +397,25 @@ An angle can also be given for the general meaning: "First consider the line fro
 
 #def-arg("a", `<coordinate>`, [The coordinate to interpolate from.])
 #def-arg("b", `<coordinate>`, [The coordinate to interpolate to.])
-#def-arg("number", [`<number>` or `<length>`], [
+#def-arg("number", [`<number>` or `<ratio>`], [
   The factor to interpolate by or the distance away from `a` towards `b`.
 ])
 #def-arg("angle", `<angle>`, default: 0deg, "")
-#def-arg("abs", `<bool>`, default: false, [
-  Interpret `number` as absolute distance, instead of a factor.
-])
 
 Can be used implicitly as an array in the form `(a, number, b)` or `(a, number, angle, b)`.
 
 ```example
 grid((0,0), (3,3), help-lines: true)
 
-line((0,0), (2,2))
-for i in (0, 0.2, 0.5, 0.8, 1, 1.5) { /* Relative distance */
-  content(((0,0), i, (2,2)),
+line((0,0), (2,2), name: "a")
+for i in (0%, 20%, 50%, 80%, 100%, 125%) { /* Relative distance */
+  content(("a.start", i, "a.end"),
           box(fill: white, inset: 1pt, [#i]))
 }
 
-line((1,0), (3,2))
+line((1,0), (3,2), name: "b")
 for i in (0, 0.5, 1, 2) { /* Absolute distance */
-  content((a: (1,0), number: i, abs: true, b: (3,2)),
+  content(("b.start", i, "b.end"),
           box(fill: white, inset: 1pt, text(red, [#i])))
 }
 ```
@@ -429,7 +426,7 @@ line((1,0), (3,2))
 line((1,0), ((1, 0), 1, 10deg, (3,2)))
 fill(red)
 stroke(none)
-circle(((1, 0), 0.5, 10deg, (3, 2)), radius: 2pt)
+circle(((1, 0), 50%, 10deg, (3, 2)), radius: 2pt)
 ```
 
 ```example
@@ -454,7 +451,7 @@ fill(red)
 stroke(none)
 circle(
   ( // a
-    (((0, 0), 0.3, (3, 2))),
+    (((0, 0), .3, (3, 2))),
     0.7,
     (3,0)
   ),
@@ -785,9 +782,35 @@ The `angle` function of the angle module allows drawing angles with an optional 
 
 == Decorations <decorations>
 
-Various pre-made shapes and lines.
+Various pre-made shapes and path modifications.
 
-#doc-style.parse-show-module("/src/lib/decorations.typ")
+=== Braces
+#doc-style.parse-show-module("/src/lib/decorations/brace.typ")
+
+=== Path Decorations
+Path decorations are elements that accept a path as input and generate
+one or more shapes that follow that path.
+
+All path decoration functions support the following style keys:
+#def-arg("start", [`<ratio>` or `<length>`], default: 0%,
+  [Absolute or relative start of the decoration on the path.])
+#def-arg("stop", [`<ratio>` or `<length>`], default: 100%,
+  [Absolute or relative end of the decoration on the path.])
+#def-arg("rest", [`<string>`], default: "LINE",
+  [If set to `"LINE"`, generate lines between the paths start/end and
+   the decorations start/end if the path is _not closed_.])
+#def-arg("width", [`<number>`], default: 1,
+  [Width or thickness of the decoration.])
+#def-arg("segments", [`<int>`], default: 10,
+  [Number of repetitions/phases to generate.
+   This key is ignored if `segment-length` is set != `none`.])
+#def-arg("segment-length", [`none` or `<number>`], default: none,
+  [Length of one repetition/phase of the decoration.])
+#def-arg("align", [`"START"`, `"MID"`, `"END"`], default: "START",
+  [Alignment of the decoration on the path _if `segment-length` is set_ and
+   the decoration does not fill up the full range between start and stop.])
+
+#doc-style.parse-show-module("/src/lib/decorations/path.typ")
 
 ==== Styling
 
