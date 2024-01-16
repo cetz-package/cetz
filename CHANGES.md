@@ -10,11 +10,11 @@ CeTZ 0.2.0 requires Typst 0.10.0
 - **BREAKING** Changed the behaviour of `mark`
 - **BREAKING** Changed the behaviour of `translate` by changing the transformation order, changed arguments of `scale` and `translate`
 - **BREAKING** LERP coordinates now use ratio instead of float for relative interpolation.
+- **BREAKING** Removed `place-marks` and `place-anchors` functions, use the new mark `pos:` attribute and path anchors `(name: <element>, anchor: <number, ratio>)` instead.
 - Content padding has been improved to be configurable per side
 - Groups support same padding options as content
-- Fixed mark offsetting
+- Overhauled marks, see manual for the new mark symbols, placement- and styling options
 - Fixed and improved intersection calculation
-- Fixed marks pointing to +/- z
 - Fixed and improved the styling algorithm
 - Catmull-Rom curves, Hobby curves and arcs now can have marks
 - Line elements now use border intersection coordinates if first and/or last coordinate is an element name with a "default" anchor
