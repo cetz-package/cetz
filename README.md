@@ -52,7 +52,7 @@ CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https:
 
 ## Usage
 
-For information, see the [manual](manual.pdf?raw=true).
+For information, see the [manual (stable)](https://github.com/johannes-wolf/cetz/blob/stable/manual.pdf?raw=true).
 
 To use this package, simply add the following code to your document:
 ```
@@ -104,4 +104,6 @@ Otherwise download and install a matching package from the [ImageMagick](https:/
 ## Projects using CeTZ
 - [circuitypst](https://github.com/fenjalien/circuitypst) A port of [circuitikz](https://github.com/circuitikz/circuitikz) to Typst.
 - [conchord](https://github.com/sitandr/conchord) Package for writing lyrics with chords that generates fretboard diagrams using CeTZ.
-- [finite](https://github.com/jneug/typst-finite) Finite is a Typst package for rendering finite automata
+- [finite](https://github.com/jneug/typst-finite) Finite is a Typst package for rendering finite automata.
+- [fletcher](https://github.com/Jollywatt/typst-fletcher) Package for drawing commutative diagrams and figures with arrows.
+- [riemann](https://github.com/ThatOneCalculator/riemann-sum-typst-cetz) Package for drawing Riemann sums.
