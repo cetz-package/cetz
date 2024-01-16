@@ -70,7 +70,20 @@ Many CeTZ functions expect data in certain formats which we will call types. Not
   / `<vector>`: A three element array of `<float>`s
 
 == Anchors <anchors>
-Anchors are positions relative to named elements. To use an anchor of an element, you must give the element a name using the `name` argument. All elements with the `name` argument allow anchors.
+You can refer to a position relative to an element by using its anchors. Anchors come in several different variations but can all be used in two different ways.
+
+The first is by using the `anchor` argument on an element. When given, the element will be translated such that the given anchor will be where the given position is. This is supported by all elements that have the `anchor` argument.
+```example
+// Draw a circle and place its "west" anchor at the origin.
+circle((0,0), anchor: "west")
+
+// Draw a smaller red circle at the origin.
+fill(red)
+stroke(none)
+circle((0,0), radius: 0.3)
+```
+The second is by using anchor coordinates. You must first give the element a name by passing a string to its `name` argument, you can then use its anchors to place other elements, see @coordinate-anchor for more usage. Note this is only available for elements that have a `name` argument.
+
 ```example
 // Name the circle
 circle((0,0), name: "circle")
@@ -80,41 +93,46 @@ fill(red)
 stroke(none)
 circle("circle.east", radius: 0.3)
 ```
+Note that all anchors are transformed along with the element.
 
-Elements can be placed relative to their own anchors if they have an argument called `anchor`:
-```example
-// An element does not have to be named 
-// in order to use its own anchors.
-circle((0,0), anchor: "west")
+=== Named
+Named anchors are normally unique to the type of element, such as a bezier curve's control points. Other anchor variants specify their own named anchors that are available to all elements that support the anchor variant.
 
-// Draw a smaller red circle at the origin
-fill(red)
-stroke(none)
-circle((0,0), radius: 0.3)
+All elements also have a "default" named anchor, it always refers to another anchor on the element. 
+
+=== Border
+A border anchor refers to a point on the element's border where a ray is cast from the element's center at a given angle and hits the border.
+
+They are given as angles where `0deg` is towards the right and `90deg` is up.
+
+Border anchors also specify named compass directions such as "north", "north-east", etc. Border anchors also spefcify a "center" named anchor which is where the ray cast originates from.
+
+```example-vertical
+circle((0, 0), name: "circle", radius: 1)
+
+content((name: "circle", anchor: 0deg), box(fill: white)[0deg], anchor: "west")
+content((name: "circle", anchor: 160deg), box(fill: white)[160deg], anchor: "south-east")
+content("circle.north", box(fill: white)[North], anchor: "south")
+content("circle.south-east", box(fill: white)[South East], anchor: "north-west")
+content("circle.south-west", box(fill: white)[South West], anchor: "north-east")
 ```
 
-=== Compass Anchors
-Compass anchors are positioned on the border of elements in the direction of a compass.
-#align(center, {
-  canvas({
-    import draw:*
-    group({
-      rect((-1, -1), (1, 1))
-    }, name: "group")
-    for-each-anchor("group", n => {
-      if n in anchor_.compass-directions-with-center {
-        if n != "center" {
-          content(
-            (rel: ("group.center", 75%, "group." + n),
-            to: "group." + n), n)
-        } else {
-          content((rel: (0, .5), to: "group.center"), n)
-        }
-        circle("group." + n, radius: .1, fill: black)
-      }
-    })
-  })
-})
+=== Path 
+A path anchor refers to a point along the path of an element. They can be given as either a `<number>` for an absolute distance along the path, or a `<ratio>` for a relative distance along the path.
+
+Path anchors also specify three anchors "start", "mid" and "end".
+
+```example-vertical
+line((0,0), (10, 1), name: "line")
+
+content("line.start", box(fill: white)[0%, 0, "start"], anchor: "east")
+content("line.mid", box(fill: white)[50%, "mid"], anchor: "east")
+content("line.end", box(fill: white)[100%, "end"], anchor: "west")
+
+content((name: "line", anchor: 75%), box(fill: white)[75%])
+content((name: "line", anchor: 50pt), box(fill: white)[50pt])
+```
+
 
 = Draw Function Reference
 
@@ -372,7 +390,7 @@ for (c, s, f, cont) in (
 }
 ```
 
-== Anchor
+== Anchor <coordinate-anchor>
 Defines a point relative to a named element using anchors, see @anchors.
 
 #doc-style.show-parameter-block("name", "string", [The name of the element that you wish to use to specify a coordinate.], show-default: false)
