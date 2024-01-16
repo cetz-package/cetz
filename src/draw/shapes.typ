@@ -39,7 +39,7 @@
 ///
 /// - position (coordinate): The position to place the circle on.
 /// - name (none,string):
-/// - anchor (none,string):
+/// - anchor (none, string):
 /// - ..style (style):
 #let circle(position, name: none, anchor: none, ..style) = {  
   // No extra positional arguments from the style sink
@@ -86,7 +86,7 @@
   },)
 }
 
-/// Draws a circle through three coordinates
+/// Draws a circle through three coordinates.
 ///
 /// #example(
 /// ```
@@ -100,8 +100,8 @@
 ///
 /// = Styling
 /// *Root:* `circle`
-/// == Keys
-///   `circle-through` has the same styling keys as @@circle() except for `radius` as the circle's radius is calculated by the given coordinates.
+///
+///   `circle-through` has the same styling as @@circle() except for `radius` as the circle's radius is calculated by the given coordinates.
 ///
 /// = Anchors
 ///   Supports the same anchors as `circle` as well as:
@@ -109,9 +109,9 @@
 ///   / b: Coordinate b
 ///   / c: Coordinate c
 ///
-/// - a (coordinate): Coordinate a
-/// - b (coordinate): Coordinate b
-/// - c (coordinate): Coordinate c
+/// - a (coordinate): Coordinate a.
+/// - b (coordinate): Coordinate b.
+/// - c (coordinate): Coordinate c.
 /// - name (none,string):
 /// - anchor (none,string):
 /// - ..style (style):
@@ -185,7 +185,7 @@
 ///     This overrides the default of `true`, that allows chaining of (arc) elements.], default: true)
 ///
 /// = Anchors
-///   Supports compass, distance anchors, plus angle anchors if mode is "PIE"
+///   Supports compass, distance anchors and angle anchors if mode is "PIE"
 ///   / center: The center of the arc, this is the default anchor.
 ///   / arc-center: The midpoint of the arc's curve.
 ///   / chord-center: Center of chord of the arc drawn between the start and end point.
@@ -358,29 +358,29 @@
   },)
 }
 
-/// Draw an arc that passes through three points a, b and c.
+/// Draws an arc that passes through three points a, b and c.
 ///
-/// Note that all three points must not lay on a straight line, otherwise
+/// Note that all three points must not lie on a straight line, otherwise
 /// the function fails.
 ///
 /// #example(```
 /// arc-through((0,1), (1,1), (1,0))
 /// ```)
+/// == parameters
 ///
-/// *Style Root* `arc` \
-/// *Style Keys* \
-///   Uses the same style keys as @@arc()
+/// = Styling 
+/// *Root*: `arc`
+/// 
+/// Uses the same styling as @@arc()
 ///
-/// *Anchors* \
-///   For anchors see `arc`.
+/// = Anchors
+///   For anchors see @@arc().
 ///
 /// - a (coordinate): Start position of the arc
 /// - b (coordinate): Position the arc passes through
 /// - c (coordinate): End position of the arc
-/// - name (none,string): The arc elements node name that, if set can be used to query anchors
-/// - ..style (style): Style key value pairs. The function `arc-through` uses
-///   all keys that `arc` uses, but `radius`, as this is determined by the
-///   three input points.
+/// - name (none, string):
+/// - ..style (style):
 #let arc-through(
   a,
   b,
@@ -442,50 +442,18 @@
     anchor: "arc-start", name: name, ..style)
 })
 
-/// Draws a single mark pointing at a target coordinate
+/// Draws a single mark pointing towards a target coordinate.
 ///
 /// #example(```
 /// mark((0,0), (1,0), symbol: ">", fill: black)
 /// mark((0,0), (1,1), symbol: "stealth", scale: 3, fill: black)
 /// ```)
 ///
-/// Or as part of a path based element that supports the `mark` style key:
-///
-/// #example(vertical: true, ```
-/// set-style(mark: (scale: 1.5, stroke: red))
-/// for (i, name) in cetz.mark-shapes.names.enumerate() {
-///   line((0, 0), (0, 1), mark: (end: name))
-///   content((0, 0), angle: 45deg, name, anchor: "north-east", padding: .1)
-///   set-origin((.75, 0))
-/// }
-/// ```)
-///
-/// The following short names are available:
-/// #table(columns: 2*6, stroke: gray,
-///   ..(for (short, item) in cetz.mark-shapes.mnemonics {
-///     ([#raw(short)], [#item.at(0) #if item.at(1) {[ (reverse) ]}],)
-///   })
-/// )
-///
 /// = parameters
 ///
-/// = Styling <mark-styling>
-/// *Root:* `mark`
-/// == Keys
-///   #show-parameter-block("symbol", "string", [The type of mark to draw when using the `mark` function.], default: ">")
-///   #show-parameter-block("start", ("string", "none", "array"), [The type of mark to draw at the start of a path.])
-///   #show-parameter-block("end", ("string", "none", "array"), [The type of mark to draw at the end of a path.])
-///   #show-parameter-block("length", "number", [The length of the mark along its direction it is pointing.], default: 0.2)
-///   #show-parameter-block("width", "number", [The width of the mark along the normal of its direction.], default: 0.15)
-///   #show-parameter-block("inset", "number", [The distance by which something inside the arrow tip is set inwards.], default: 0.05)
-///   #show-parameter-block("scale", "float", [A factor that is applied to the mark's length, width and inset.], default: 1)
-///   #show-parameter-block("sep", "number", [The distance between multiple marks along their path.], default: 1)
-///   #show-parameter-block("flex", "boolean", [Only applicable when marks are used on curves such as bezier and hobby. If true, the mark will point along the secant of the curve. If false, the tangent at the marks tip is used.], default: true)
-///   #show-parameter-block("position-samples", "integer", [Only applicable when marks are used on curves such as bezier and hobby. The maximum number of samples to use for calculating curve positions. A higher number gives better results but may slow down compilation.], default: 30)
-/// 
-/// *Note*: The size of the mark depends on its style values, not
-/// the distance between `from` and `to`, which only determine its
-/// orientation.
+/// = Styling
+/// *Root:* `mark`\
+/// You can directly use the styling from @styling-mark.
 ///
 /// - from (coordinate): The position to place the mark.
 /// - to (coordinate): The position the mark should point towards.
@@ -540,8 +508,7 @@
 /// = Styling 
 /// *Root:* `line`
 ///
-/// == Keys
-///   Supports mark styling.
+/// Supports mark styling.
 /// 
 /// = Anchors
 ///   Supports distance anchors.
@@ -649,8 +616,16 @@
 ///
 /// = Styling
 /// *Root:* `grid`
-///   / step: TODO
-///   / help-lines: TODO
+/// == Keys
+///   #show-parameter-block("step", ("number", "tuple", "dictionary"), [
+///     Distance between grid lines. A distance of $1$ means to draw a
+///     grid line every $1$ length units in x- and y-direction.
+///     If given a dictionary with `x` and `y` keys or a tuple,
+///     the step is set per axis.
+///   ], default: 1)
+///   #show-parameter-block("help-lines", ("bool",), [
+///     If true, force the stroke style to `gray + 0.2pt`
+///   ], default: 1)
 ///
 /// = Anchors
 ///   Supports compass anchors.
@@ -960,8 +935,7 @@
       anchors.keys(),
       default: if auto-size { "center" } else { "north-west" },
       offset-anchor: anchor,
-      transform: none, // Content does not get transformed, see the calculation
-                       // of anchors.
+      transform: none, // Content does not get transformed, see the calculation of anchors.
       name: name,
     )
 
@@ -1018,7 +992,7 @@
 /// - a (coordinate): Coordinate of the bottom left corner of the rectangle.
 /// - b (coordinate): Coordinate of the top right corner of the rectangle. You can draw a rectangle with a specified width and height by using relative coordinates for this parameter `(rel: (width, height))`.
 /// - name (none,string):
-/// - anchor (none,string):
+/// - anchor (none, string):
 /// - ..style (style):
 #let rect(a, b, name: none, anchor: none, ..style) = {
   // Coordinate check
@@ -1192,8 +1166,8 @@
 /// 
 /// = Styling 
 /// *Root* `bezier`
-/// == Keys
-///   Supports marks.
+/// 
+/// Supports marks.
 ///   
 /// = Anchors
 ///   Supports distance anchors.
@@ -1271,7 +1245,7 @@
   )
 }
 
-/// Draw a cubic bezier curve through a set of three points. See `bezier` for style and anchor details.
+/// Draws a cubic bezier curve through a set of three points. See `bezier` for style and anchor details.
 ///
 /// #example(```
 /// let (a, b, c) = ((0, 0), (1, 1), (2, -1))
@@ -1282,9 +1256,9 @@
 /// line(a, "b.ctrl-0", "b.ctrl-1", c, stroke: gray)
 /// ```)
 ///
-/// - start (coordinate): Start position
-/// - pass-through (coordinate): Curve mid-point
-/// - end (coordinate): End coordinate
+/// - start (coordinate): The position to start the curve.
+/// - pass-through (coordinate): The position to pass the curve through.
+/// - end (coordinate): The position to end the curve.
 /// - name (none,string):
 /// - ..style (style):
 #let bezier-through(start, pass-through, end, name: none, ..style) = {
@@ -1300,7 +1274,7 @@
   },)
 }
 
-/// Draw a Catmull-Rom curve through a set of points.
+/// Draws a Catmull-Rom curve through a set of points.
 ///
 /// #example(```
 /// catmull((0,0), (1,1), (2,-1), (3,0), tension: .4, stroke: blue)
@@ -1311,9 +1285,9 @@
 ///
 /// = Styling 
 /// *Root* `catmull`\
-/// == Keys
-///   #show-parameter-block("tension", "float", [I need a description], default: 0.5)
 ///   Supports marks.
+/// == Keys
+///   #show-parameter-block("tension", "float", [How tight the curve should fit to the points. The higher the tension the less curvy the curve.], default: 0.5)
 ///
 /// = Anchors
 ///   Supports distance anchors.
@@ -1396,11 +1370,10 @@
 /// = parameters
 /// 
 /// = Styling
-/// *Root* `hobby`
+/// *Root* `hobby`\
+/// Supports marks. 
 /// == Keys
-///   Supports marks.
-///   #show-parameter-block("omega", "idk", [The curve's curlyness])
-///   #show-parameter-block("rho", "idk", [])
+///   #show-parameter-block("omega", ("tuple of float",), [How curly the curve should be at each endpoint. When the curl is close to zero, the spline approaches a straight line near the endpoints. When the curl is close to one, it approaches a circular arc.], default: (1, 1))
 ///
 /// = Anchors
 ///   Supports distance anchors.
@@ -1430,7 +1403,6 @@
       ta: ta,
       tb: tb,
       omega: style.omega,
-      rho: style.rho,
       close: close)
 
     let segments = curves.map(c => path-util.cubic-segment(..c))
@@ -1487,7 +1459,7 @@
 /// })
 /// ```)
 ///
-/// Elements hidden via `hide()` are ignored.
+/// Elements hidden via @@hide() are ignored.
 ///
 /// = parameters
 ///

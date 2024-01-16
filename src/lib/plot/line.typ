@@ -157,7 +157,7 @@
 ///   / `"spline"`: Calculate a Catmull-Rom through all points
 ///   / `"vh"`: Move vertical and then horizontal
 ///   / `"hv"`: Move horizontal and then vertical
-///   / `"vhv"`: Add a vertical step in the middle
+///   / `"hvh"`: Add a vertical step in the middle
 ///   / `"raw"`: Like linear, but without linearization taking place. This is
 ///     meant as a "fallback" for either bad performance or bugs.
 ///
@@ -166,7 +166,7 @@
 ///   attributes are supported:
 ///   / `"samples" <int>`: Samples of splines
 ///   / `"tension" <float>`: Tension of splines
-///   / `"mid" <float>`: Mid-Point of vhv lines (0 to 1)
+///   / `"mid" <float>`: Mid-Point of hvh lines (0 to 1)
 ///   / `"epsilon" <float>`: Linearization slope epsilon for
 ///      use with `"linear"`, defaults to 0.
 ///

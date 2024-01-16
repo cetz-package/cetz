@@ -15,8 +15,7 @@
 
 /// Hides an element.
 ///
-/// Hidden elements are not drawn to the canvas,
-/// are ignored when calculating bounding boxes and discarded by `merge-path`. All
+/// Hidden elements are not drawn to the canvas, are ignored when calculating bounding boxes and discarded by `merge-path`. All
 /// other behaviours remain the same as a non-hidden element.
 ///
 /// #example(```
@@ -337,63 +336,6 @@
   },)
 }
 
-/// Place multiple anchors along a path.
-///
-/// *DEPRECATED*
-///
-/// #example(```
-/// place-anchors(circle(()), "circle", ("a", 0), ("b", .5), ("c", .75))
-/// for-each-anchor("circle", n => {
-///   circle("circle." + n, radius: .1, fill: blue, stroke: none)
-/// })
-/// ```)
-///
-/// - path (drawable): Single drawable
-/// - name: (string): The grouping elements name
-/// - ..anchors (array): List of anchor tuples `(name, pos)` or dictionaries of the
-///   form `(name: <string>, pos: <float, ratio>)`, where `pos` is a relative position
-///   on the path from `0` to `1` or 0% to 100%.
-#let place-anchors(path, name, ..anchors) = {
-  assert(type(name) == str,
-    message: "Name must be of type string, got: " + type(name))
-  
-  return (ctx => {
-    let (ctx, drawables) = process.many(ctx, path)
-    
-    assert(drawables.first().type == "path")
-    let s = drawables.first().segments
-    
-    let out = (:)
-    for a in anchors.pos() {
-      assert(type(a) in (dictionary, array),
-        message: "Expected anchor tuple or dictionary, got: " + repr(a))
-      let (name, pos) = if type(a) == dictionary {
-        (a.name, a.pos)
-      } else {
-        a
-      }
-      if type(pos) != ratio {
-        pos *= 100%
-      }
-      out.insert(name, path-util.point-on-path(s, pos))
-    }
-
-    return (
-      ctx: ctx,
-      name: name,
-      anchors: anchor_.setup(
-        anchor => {
-          out.at(anchor)
-        },
-        out.keys(),
-        name: name,
-        transform: none
-      ).last(),
-      drawables: drawables
-    )
-  },)
-}
-
 /// An advanced element that allows you to modify the current canvas context. 
 ///
 /// A context object holds the canvas' state, such as the element dictionary,
@@ -515,53 +457,12 @@
   },)
 }
 
-/// TODO: Not writing the docs for this as it should be removed in place of better anchors before 0.2
-/// Place one or more marks along a path
-///
-/// Mark items must get passed as positional arguments. A `mark-item` is an dictionary
-/// of the format: `(mark: "<symbol>", pos: <float>)`, where the position `pos` is a
-/// relative position from `0` to `1` along the path.
-///
-/// - name (none,string): Element name
-/// - path (drawable): A single drawable
-/// - ..marks-style (mark-item,style): Positional `mark-item`s and style key-value pairs
+// DEPRECATED TODO: Remove
+#let place-anchors(path, name, ..anchors) = {
+  panic("place-anchors got removed. Use path anchors `(name: <element>, anchor: <number, ratio>)` instead.")
+}
+
+// DEPRECATED TODO: Remove
 #let place-marks(path, ..marks-style, name: none) = {
-  let (marks, style) = (marks-style.pos(), marks-style.named())
-  assert(type(path) == array and path.len() == 1 and type(path.first()) == function)
-  path = path.first()
-  return (ctx => {
-    let (ctx, drawables) = process.element(ctx, path)
-    let paths = drawables.filter(d => d.type == "path")
-    assert(paths.len() > 0, message: "Cannot place marks on an element with no path.")
-
-    let path = paths.first()
-    let anchors = (
-      start: path-util.point-on-path(path.segments, 0%),
-      end: path-util.point-on-path(path.segments, 100%)
-    )
-
-    let style = styles.resolve(ctx.style, merge: style, root: "mark")
-
-    for mark in marks {
-      let (pos, dir) = path-util.direction(path.segments, mark.pos)
-      drawables.push(
-        drawable.mark(
-          vector.add(pos, dir),
-          pos,
-          mark.mark,
-          style,
-        )
-      )
-      if "name" in mark {
-        anchors.insert(m.name, path-util.point-on-path(path, mark.pos * 100%))
-      }
-    }
-
-    return (
-      ctx: ctx,
-      name: name,
-      drawables: drawables,
-      anchors: anchors,
-    )
-  },)
+  panic("place-marks got removed. Use the `pos:` key of marks for manual mark positioning.")
 }

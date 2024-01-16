@@ -10,10 +10,9 @@
 #import "styles.typ"
 #import "process.typ"
 
-/// Set up a Canvas for drawing
+/// Sets up a canvas for drawing on. 
 ///
-/// - length (length,ratio): Used to specify what 1 coordinate unit is. If given a ratio, that ratio is
-///   relative to the containing elements width!
+/// - length (length,ratio): Used to specify what 1 coordinate unit is. If given a ratio, that ratio is relative to the containing elements width!
 /// - body (none,array,element): A code block in which functions from `draw.typ` have been called.
 /// - background (none,color): A color to be used for the background of the canvas.
 /// - debug (bool): Shows the bounding boxes of each element when `true`.

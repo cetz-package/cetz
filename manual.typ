@@ -4,19 +4,17 @@
 
 #import "src/lib.typ": *
 #import "src/styles.typ"
-#import "@preview/tidy:0.1.0"
+#import "src/anchor.typ" as anchor_
+#import "@preview/tidy:0.2.0"
 
 
 // Usage:
 //   ```example
 //   /* canvas drawing code */
 //   ```
-#show raw.where(lang: "example"): text => {
-  example(text.text)
-}
-#show raw.where(lang: "example-vertical"): text => {
-  example(text.text, vertical: true)
-}
+#show raw.where(lang: "example"): example
+#show raw.where(lang: "example-vertical"): example.with(vertical: true)
+
 
 
 
@@ -40,7 +38,7 @@
 
 = Introduction
 
-This package provides a way to draw stuff using a similar API to #link("https://processing.org/")[Processing] but with relative coordinates and anchors from #link("https://tikz.dev/")[Ti#[_k_]Z]. You also won't have to worry about accidentally drawing over other content as the canvas will automatically resize. And remember: up is positive!
+This package provides a way to draw onto a canvas using a similar API to #link("https://processing.org/")[Processing] but with relative coordinates and anchors from #link("https://tikz.dev/")[Ti#[_k_]Z]. You also won't have to worry about accidentally drawing over other content as the canvas will automatically resize. And remember: up is positive!
 
 The name CeTZ is a recursive acronym for "CeTZ, ein Typst Zeichenpaket" (german for "CeTZ, a Typst drawing package").
 
@@ -54,7 +52,7 @@ This is the minimal starting point:
   ...
 })
 ```]
-Note that draw functions are imported inside the scope of the `canvas` block. This is recommended as draw functions override Typst's functions such as `line`.
+Note that draw functions are imported inside the scope of the `canvas` block. This is recommended as some draw functions override Typst's function's such as `line`.
 
 #show raw.where(block: false): it => if it.text.starts-with("<") and it.text.ends-with(">") {
     set text(1.2em)
@@ -67,10 +65,12 @@ Note that draw functions are imported inside the scope of the `canvas` block. Th
 Many CeTZ functions expect data in certain formats which we will call types. Note that these are actually made up of Typst primitives.
   / `<coordinate>`: Any coordinate system. See coordinate-systems.
   / `<number>`: Any of `<float>`, `<integer>` or `<length>`. 
-  / `<style>`: Named arguments (or a dictionary if used for a single argument) of style key-values
+  / `<style>`: Named arguments (or a dictionary if used for a single argument) of style key-values.
+  / `<context>`: A CeTZ context object that holds internal state.
+  / `<vector>`: A three element array of `<float>`s
 
 == Anchors <anchors>
-Anchors positions relative to named elements. To use an anchor of an element, you must give the element a name using the `name` argument. All elements with the `name` argument allow anchors.
+Anchors are positions relative to named elements. To use an anchor of an element, you must give the element a name using the `name` argument. All elements with the `name` argument allow anchors.
 ```example
 // Name the circle
 circle((0,0), name: "circle")
@@ -81,8 +81,7 @@ stroke(none)
 circle("circle.east", radius: 0.3)
 ```
 
-Elements can be placed relative to their own anchors if they have an
-argument called `anchor`:
+Elements can be placed relative to their own anchors if they have an argument called `anchor`:
 ```example
 // An element does not have to be named 
 // in order to use its own anchors.
@@ -95,7 +94,7 @@ circle((0,0), radius: 0.3)
 ```
 
 === Compass Anchors
-Some elements support compass anchors. TODO
+Compass anchors are positioned on the border of elements in the direction of a compass.
 #align(center, {
   canvas({
     import draw:*
@@ -103,14 +102,16 @@ Some elements support compass anchors. TODO
       rect((-1, -1), (1, 1))
     }, name: "group")
     for-each-anchor("group", n => {
-      if n != "center" {
-        content(
-          (rel: ("group.center", 75%, "group." + n),
-           to: "group." + n), n)
-      } else {
-        content((rel: (0, .5), to: "group.center"), n)
+      if n in anchor_.compass-directions-with-center {
+        if n != "center" {
+          content(
+            (rel: ("group.center", 75%, "group." + n),
+            to: "group." + n), n)
+        } else {
+          content((rel: (0, .5), to: "group.center"), n)
+        }
+        circle("group." + n, radius: .1, fill: black)
       }
-      circle("group." + n, radius: .1, fill: black)
     })
   })
 })
@@ -134,7 +135,7 @@ circle((0, 0), fill: red, stroke: blue)
 line((0, 0), (1, 1), stroke: green)
 ```
 
-Instead of having to specify the same styling for each time you want to draw an element, you can use the `set-style` function to change the style for all elements after it. You can still pass styling to a draw function to override what has been set with `set-style`. You can also use the `fill()` and `stroke()` functions as a shorthand to set the fill and stroke respectively.
+Instead of having to specify the same styling for each time you want to draw an element, you can use the `set-style()` function to change the style for all elements after it. You can still pass styling to a draw function to override what has been set with `set-style()`. You can also use the `fill()` and `stroke()` functions as a shorthand to set the fill and stroke respectively.
 
 ```example
 // Draws an empty square with a black border
@@ -189,11 +190,69 @@ set-style(
   ),
 )
 rect((0,0), (1,1))
-
 line((0, -1.5), (0.5, -0.5), (1, -1.5), close: true)
-
 circle((0.5, -2.5), radius: 0.5, fill: green)
 ```
+
+=== Marks <styling-mark>
+Marks are arrow tips that can be added to the end of path based elements that support the `mark` style key, or can be directly drawn by using the `mark` draw function. Marks are specified by giving there names as strings and have several options to customise them. You can give an array of names to have multiple marks in a row, dictionaries can also be used in the array for per mark styling.
+
+#table(
+  columns: 3,
+  [Name], [Shorthand], [Shape],
+  ..(for (shorthand, item) in cetz.mark-shapes.mnemonics {
+    (
+      item.at(0) + if item.at(1) { " (reversed)" },
+      raw(shorthand),
+      cetz.canvas(cetz.draw.line((), (1, 0), mark: (end: shorthand)))
+    )
+  })
+)
+
+```example
+let c = ((rel: (0, -1)), (rel: (2, 0), update: false)) // Coordinates to draw the line, it is not necessary to understand this for this example.
+// No marks
+line((), (rel: (1, 0), update: false))
+// Draws a triangle mark at both ends of the line.
+set-style(mark: (symbol: ">"))
+line(..c)
+// Overrides the end mark to be a diamond but the start is still a triangle.
+set-style(mark: (end: "<>"))
+line(..c)
+// Draws two triangle marks at both ends but the first mark of end is still a diamond.
+set-style(mark: (symbol: (">", ">")))
+line(..c)
+// Sets the stroke of first mark in the sequence to red but the end mark overrides it to be blue.
+set-style(mark: (symbol: ((symbol: ">", stroke: red), ">"), end: (stroke: blue)))
+line(..c)
+```
+
+#doc-style.show-parameter-block("symbol", ("none", "string", "array", "dictionary"), [This option sets the mark to draw when using the `mark` draw function, or applies styling to both mark ends of path based elements. The mark's name or shorthand can be given, multiple marks can be drawn by passing an array of names or shorthands. When `none` no marks will be drawn. A style `dictionary` can be given instead of a `string` to override styling for that particular mark, just make sure to still give the mark name using the `symbol` key otherwise nothing will be drawn!. ])
+#doc-style.show-parameter-block("start", ("none", "string", "array", "dictionary"), [This option sets the mark to draw at the start of a path based element. It will override all options of the `symbol` key and will not effect marks drawn using the `mark` draw function.])
+#doc-style.show-parameter-block("end", ("none", "string", "array", "dictionary"), [This option sets the mark to draw at the end of a path based element. It will override all options of the `symbol` key and will not effect marks drawn using the `mark` draw function.])
+
+#doc-style.show-parameter-block("length", "number", [The size of the mark in the direction it is pointing.], default: 0.2cm)
+#doc-style.show-parameter-block("width", "number", [The size of the mark along the normal of its direction.], default: 0.15cm)
+#doc-style.show-parameter-block("inset", "number", [It specifies a distance by which something inside the arrow tip is set inwards; for the Stealth arrow tip it is the distance by which the back angle is moved inwards.], default: 0.05cm)
+#doc-style.show-parameter-block("scale", "float", [A factor that is applied to the mark's length, width and inset.], default: 1)
+#doc-style.show-parameter-block("sep", "number", [The distance between multiple marks along their path.], default: 0.1cm)
+#doc-style.show-parameter-block("flex", "boolean", [Only applicable when marks are used on curves such as bezier and hobby. If true, the mark will point along the secant of the curve. If false, the tangent at the marks tip is used.], default: true)
+#doc-style.show-parameter-block("position-samples", "integer", [Only applicable when marks are used on curves such as bezier and hobby. The maximum number of samples to use for calculating curve positions. A higher number gives better results but may slow down compilation.], default: 30)
+
+#doc-style.show-parameter-block("pos", ("number", "ratio"), [Overrides the mark's position along a path. A number will move it an absolute distance, while a ratio will be a distance relative to the length of the path. Note that this may be removed in the future in preference of a different method.])
+
+#doc-style.show-parameter-block("offset", ("number", "ratio"), [Like `pos` but it moves the position of the mark instead of overriding it.])
+
+#doc-style.show-parameter-block("slant", "ratio", [How much to slant the mark relative to the axis of the arrow. 0% means no slant 100% slants at 45 degrees], default: 0%)
+#doc-style.show-parameter-block("harpoon", "boolean", [When true only the top half of the mark is drawn.], default: false)
+#doc-style.show-parameter-block("flip", "boolean", [When true the mark is flipped along its axis.], default: false)
+#doc-style.show-parameter-block("reverse", "boolean", [Reverses the direction of the mark.], default: false)
+#doc-style.show-parameter-block("xy-up", "vector", [The direction which is "up" for use when drawing 2D marks.], default: (0, 0, 1))
+#doc-style.show-parameter-block("z-up", "vector", [The direction which is "up" for use when drawing 3D marks.], default: (0, 1, 0))
+
+#doc-style.show-parameter-block("shorten-to", ("integer", "auto", "none"), [Which mark to shorten the path to when multiple marks are given. `auto` will shorten to the last mark, `none` will shorten to the first mark (effectively disabling path shortening). An integer can be given to select the mark's index.])
+
+
 
 #pagebreak()
 == Shapes
@@ -215,15 +274,13 @@ $ M_"world" = M_"world" dot M_"local" $
 = Coordinate Systems <coordinate-systems>
 A _coordinate_ is a position on the canvas on which the picture is drawn. They take the form of dictionaries and the following sub-sections define the key value pairs for each system. Some systems have a more implicit form as an array of values and `CeTZ` attempts to infer the system based on the element types.
 
-
 == XYZ <coordinate-xyz>
 Defines a point `x` units right, `y` units upward, and `z` units away.
+#doc-style.show-parameter-block("x", "number", default: 0, [The number of units in the `x` direction.])
+#doc-style.show-parameter-block("y", "number", default: 0, [The number of units in the `y` direction.])
+#doc-style.show-parameter-block("z", "number", default: 0, [The number of units in the `z` direction.])
 
-#def-arg("x", [`<number>` or `<length>`], default: 0, [The number of units in the `x` direction.])
-#def-arg("y", [`<number>` or `<length>`], default: 0, [The number of units in the `y` direction.])
-#def-arg("z", [`<number>` or `<length>`], default: 0, [The number of units in the `z` direction.])
-
-The implicit form can be given as an array of two or three `<number>` or `<length>`, as in `(x,y)` and `(x,y,z)`.
+The implicit form can be given as an array of two or three `<number>`s, as in `(x,y)` and `(x,y,z)`.
 
 ```example
 line((0,0), (x: 1))
@@ -249,9 +306,9 @@ circle(())
 == Relative <coordinate-relative>
 Places the given coordinate relative to the previous coordinate. Or in other words, for the given coordinate, the previous coordinate will be used as the origin. Another coordinate can be given to act as the previous coordinate instead.
 
-#def-arg("rel", `<coordinate>`, "The coordinate to be place relative to the previous coordinate.")
-#def-arg("update", `<bool>`, default: true, "When false the previous position will not be updated.")
-#def-arg("to", `<coordinate>`, default: (), "The coordinate to treat as the previous coordinate.")
+#doc-style.show-parameter-block("rel", "coordinate", "The coordinate to be place relative to the previous coordinate.", show-default: false)
+#doc-style.show-parameter-block("update", "boolean", default: true, "When false the previous position will not be updated.")
+#doc-style.show-parameter-block("to", "coordinate", default: (), "The coordinate to treat as the previous coordinate.")
 
 In the example below, the red circle is placed one unit below the blue circle. If the blue circle was to be moved to a different position, the red circle will move with the blue circle to stay one unit below.
 
@@ -261,10 +318,10 @@ circle((rel: (0, -1)), stroke: red)
 ```
 
 == Polar
-Defines a point a `radius` distance away from the origin at the given `angle`.
+Defines a point that is `radius` distance away from the origin at the given `angle`.
 
-#def-arg("angle", `<angle>`, [The angle of the coordinate. An angle of `0deg` is to the right, a degree of `90deg` is upward. See https://typst.app/docs/reference/layout/angle/ for details.])
-#def-arg("radius", `<number> or <length> or <array of length or number>`, [The distance from the origin. An array can be given, in the form `(x, y)` to define the `x` and `y` radii of an ellipse instead of a circle.])
+#doc-style.show-parameter-block("angle", "angle", [The angle of the coordinate. An angle of `0deg` is to the right, a degree of `90deg` is upward. See https://typst.app/docs/reference/layout/angle/ for details.], show-default: false)
+#doc-style.show-parameter-block("radius", ("number", "tuple<number>"), [The distance from the origin. An array can be given, in the form `(x, y)` to define the `x` and `y` radii of an ellipse instead of a circle.], show-default: false)
 
 ```example
 line((0,0), (angle: 30deg, radius: 1cm))
@@ -280,7 +337,7 @@ line((0,0), (30deg, 1), (60deg, 1),
 == Barycentric
 In the barycentric coordinate system a point is expressed as the linear combination of multiple vectors. The idea is that you specify vectors $v_1$, $v_2$ ..., $v_n$ and numbers $alpha_1$, $alpha_2$, ..., $alpha_n$. Then the barycentric coordinate specified by these vectors and numbers is $ (alpha_1 v_1 + alpha_2 v_1 + dots.c + alpha_n v_n)/(alpha_1 + alpha_2 + dots.c + alpha_n) $
 
-#def-arg("bary", `<dictionary>`, [A dictionary where the key is a named element and the value is a `<float>`. The `center` anchor of the named element is used as $v$ and the value is used as $a$.])
+#doc-style.show-parameter-block("bary", "dictionary", [A dictionary where the key is a named element and the value is a `<float>`. The `center` anchor of the named element is used as $v$ and the value is used as $a$.], show-default: false)
 
 ```example
 circle((90deg, 3), radius: 0, name: "content")
@@ -318,8 +375,8 @@ for (c, s, f, cont) in (
 == Anchor
 Defines a point relative to a named element using anchors, see @anchors.
 
-#def-arg("name", `<string>`, [The name of the element that you wish to use to specify a coordinate.])
-#def-arg("anchor", `<number, angle, string>`, [An anchor of the element. If one is not given a default anchor will be used. On most elements this is `center` but it can be different.])
+#doc-style.show-parameter-block("name", "string", [The name of the element that you wish to use to specify a coordinate.], show-default: false)
+#doc-style.show-parameter-block("anchor", ("number", "angle", "string"), [An anchor of the element. If one is not given a default anchor will be used. On most elements this is `center` but it can be different.])
 
 You can also use implicit syntax of a dot separated string in the form `"name.anchor"`
 for named anchors.
@@ -348,9 +405,9 @@ Note, that not all elements provide angle or distance based anchors!
 == Tangent
 This system allows you to compute the point that lies tangent to a shape. In detail, consider an element and a point. Now draw a straight line from the point so that it "touches" the element (more formally, so that it is _tangent_ to this element). The point where the line touches the shape is the point referred to by this coordinate system.
 
-#def-arg("element", `<string>`, [The name of the element on whose border the tangent should lie.])
-#def-arg("point", `<coordinate>`, [The point through which the tangent should go.])
-#def-arg("solution", `<integer>`, [Which solution should be used if there are more than one.])
+#doc-style.show-parameter-block("element", "string", [The name of the element on whose border the tangent should lie.], show-default: false)
+#doc-style.show-parameter-block(show-default: false, "point", "coordinate", [The point through which the tangent should go.])
+#doc-style.show-parameter-block(show-default: false, "solution", "integer", [Which solution should be used if there are more than one.])
 
 A special algorithm is needed in order to compute the tangent for a given shape. Currently it does this by assuming the distance between the center and top anchor (See @anchors) is the radius of a circle. 
 
@@ -370,8 +427,8 @@ line("a", (element: "c", point: "a", solution: 1),
 == Perpendicular
 Can be used to find the intersection of a vertical line going through a point $p$ and a horizontal line going through some other point $q$.
 
-#def-arg("horizontal", `<coordinate>`, [The coordinate through which the horizontal line passes.])
-#def-arg("vertical", `<coordinate>`, [The coordinate through which the vertical line passes.])
+#doc-style.show-parameter-block(show-default: false, "horizontal", "coordinate", [The coordinate through which the horizontal line passes.])
+#doc-style.show-parameter-block(show-default: false, "vertical", "coordinate", [The coordinate through which the vertical line passes.])
 
 You can use the implicit syntax of `(horizontal, "-|", vertical)` or `(vertical, "|-", horizontal)`
 
@@ -392,15 +449,15 @@ line("p2.south-east", ((), "-|", "yline.end")) // Short form
 ```
 
 == Interpolation <coordinate-lerp>
-Use this to linearly interpolate between two coordinates `a` and `b` with a given factor `number`. If `number` is a `<length>` the position will be at the given distance away from `a` towards `b`. 
+Use this to linearly interpolate between two coordinates `a` and `b` with a given distance `number`. If `number` is a `<number>` the position will be at the absolute distance away from `a` towards `b`, a `<ratio>` can be given instead to be the relative distance between `a` and `b`. 
 An angle can also be given for the general meaning: "First consider the line from `a` to `b`. Then rotate this line by `angle` around point `a`. Then the two endpoints of this line will be `a` and some point `c`. Use this point `c` for the subsequent computation."
 
-#def-arg("a", `<coordinate>`, [The coordinate to interpolate from.])
-#def-arg("b", `<coordinate>`, [The coordinate to interpolate to.])
-#def-arg("number", [`<number>` or `<ratio>`], [
-  The factor to interpolate by or the distance away from `a` towards `b`.
+#doc-style.show-parameter-block(show-default: false, "a", "coordinate", [The coordinate to interpolate from.])
+#doc-style.show-parameter-block(show-default: false, "b", "coordinate", [The coordinate to interpolate to.])
+#doc-style.show-parameter-block(show-default: false, "number", ("ratio", "number"), [
+  The distance between `a` and `b`. A ratio will be the relative distance between the two points, a number will be the absolute distance between the two points.
 ])
-#def-arg("angle", `<angle>`, default: 0deg, "")
+#doc-style.show-parameter-block("angle", "angle", [Angle between $arrow("AB")$ and $arrow("AP")$, where $P$ is the resulting coordinate. This can be used to get the _normal_ for a tangent between two points.], default: 0deg)
 
 Can be used implicitly as an array in the form `(a, number, b)` or `(a, number, angle, b)`.
 
@@ -465,6 +522,15 @@ line((1,0), (3,2))
 for (l, c) in ((0cm, "0cm"), (1cm, "1cm"), (15mm, "15mm")) {
   content(((1,0), l, (3,2)), box(fill: white, $ #c $))
 }
+```
+
+Interpolation coordinates can be used to get the _normal_ on a tangent:
+```example
+let (a, b) = ((0,0), (3,2))
+line(a, b)
+// Get normal for tangent from a to () with distance .5, at a
+circle(a, radius: .1, fill: black)
+line((a, .7, b), (a: (), b: a, number: .5, angle: 90deg), stroke: red)
 ```
 
 == Function
@@ -711,8 +777,6 @@ group(name: "c", anchor: "south-west", {
 })
 ```
 
-#doc-style.parse-show-module("/src/lib/chart/boxwhisker.typ")
-
 === Styling
 
 Charts share their axis system with plots and therefore can be
@@ -726,6 +790,9 @@ styled the same way, see @plot.style.
 
 ==== Default `boxwhisker` Style
 #raw(repr(chart.boxwhisker-default-style))
+
+==== Default `piechart` Style
+#raw(repr(chart.piechart-default-style))
 
 == Palette <palette>
 
@@ -887,12 +954,8 @@ The state of the canvas is encoded in its context dictionary. Elements or other
 draw calls may return a modified context to the canvas to change its
 state, e.g. modifying the transformating matrix, adding a group or setting a style.
 
-```example
-// Show the current context
-get-ctx(ctx => {
-  content((), raw(repr(ctx), lang: "typc"))
-})
-```
+The context can be manually retrieved and modified using the `get-ctx` and `set-ctx`
+functions.
 
 == Elements
 

@@ -137,7 +137,7 @@
 /// Draw a right angle between `a` and `b` through origin `origin`
 ///
 /// #example(```
-/// line((0,0), (1,1.5), name: "a")
+/// line((0,0), (1,2), name: "a")
 /// line((0,0), (2,-1), name: "b")
 ///
 /// // Draw an angle between the two lines
