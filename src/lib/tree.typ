@@ -9,19 +9,19 @@
 
 #let typst-content = content
 
-/// Default edge draw callback
-///
-/// - from (string): Source element name
-/// - to (string): Target element name
-/// - parent (node): Parent (source) tree node
-/// - child (node): Child (target) tree node
+// Default edge draw callback
+//
+// - from (string): Source element name
+// - to (string): Target element name
+// - parent (node): Parent (source) tree node
+// - child (node): Child (target) tree node
 #let default-draw-edge(from, to, parent, child) = {
   draw.line(from, to)
 }
 
-/// Default node draw callback
-///
-/// - node (node): The node to draw
+// Default node draw callback
+//
+// - node (node): The node to draw
 #let default-draw-node(node, _) = {
   let text = if type(node) in (content, str, int, float) {
     [#node]

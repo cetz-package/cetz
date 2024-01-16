@@ -15,8 +15,7 @@
 
 /// Hides an element.
 ///
-/// Hidden elements are not drawn to the canvas,
-/// are ignored when calculating bounding boxes and discarded by `merge-path`. All
+/// Hidden elements are not drawn to the canvas, are ignored when calculating bounding boxes and discarded by `merge-path`. All
 /// other behaviours remain the same as a non-hidden element.
 ///
 /// #example(```

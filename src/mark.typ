@@ -67,7 +67,7 @@
     for (k, v) in style {
       if k in ("length", "width", "inset", "sep") {
         style.insert(k, if type(v) == ratio {
-          style.stroke.thickness * v
+          style.stroke.thickness * v / 100%
         } else {
           util.resolve-number(ctx, v)
         } * style.scale)
@@ -127,22 +127,6 @@
   return mark
 }
 
-/// Places one or more marks with the given styles on path segments.
-/// - ctx (context):
-/// - styles (dictionary): A dictionary of keys in order to style the mark. The following are the required keys.
-///   - stroke
-///   - fill
-///   - width
-///   - length
-///   - symbol
-///   - inset
-/// - segments (array): List of path segments
-/// - is-end (bool): If false, marks get placed in the direction from the first segment to the last
-///   segment; in reverse order if true.
-/// -> A dictionary with the keys:
-///   - drawables (drawables): The transformed drawables of the mark.
-///   - distance (float): The distance between the tip of the mark and the end.
-///   - pos (vector): The position the path segments must get shortened to.
 #let place-mark-on-path(ctx, styles, segments, is-end: false) = {
   if type(styles) != array {
     styles = (styles,)
