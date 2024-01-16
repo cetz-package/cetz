@@ -1,7 +1,7 @@
 #set page(width: auto, height: auto)
 #import "/src/lib.typ": *
 
-#let display(body, ..args) = {
+#let display(body, ..args, angle: false) = {
   import draw: *
 
   // Fixed distance
@@ -16,6 +16,15 @@
   for i in (0%, 25%, 50%, 75%, 100%) {
     circle((name: "elem", anchor: i), radius: .1)
   }
+
+  if angle {
+    set-origin((3,0))
+
+    (body)(..args, name: "elem");
+    for i in (0deg, 45deg, 90deg, 170deg, 180deg) {
+      circle((name: "elem", anchor: i), radius: .1)
+    }
+  }
 }
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
@@ -25,12 +34,12 @@
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
-  display(circle, (0,0))
+  display(circle, (0,0), angle: true)
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
-  display(circle-through, (-1,0), (0,1), (1,0))
+  display(circle-through, (-1,0), (0,1), (1,0), angle: true)
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
@@ -62,7 +71,7 @@
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
-  display(rect, (-1,-1), (1,1))
+  display(rect, (-1,-1), (1,1), angle: true)
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
@@ -95,7 +104,7 @@
   display(group, {
     circle((0,0), radius: .5)
     circle((1,1), radius: .7)
-  })
+  }, angle: true)
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {

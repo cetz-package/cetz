@@ -73,7 +73,7 @@
       border-anchors: true,
       path-anchors: true,
       center: (cx, cy, cz),
-      radii: (rx, ry),
+      radii: (rx*2, ry*2),
       path: drawables.first(),
     )
 
@@ -147,7 +147,7 @@
       border-anchors: true,
       path-anchors: true,
       center: center,
-      radii: (r, r),
+      radii: (r*2, r*2),
       path: drawables.first(),
     )
 
