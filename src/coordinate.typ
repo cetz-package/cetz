@@ -85,7 +85,8 @@
 
   let pos = util.revert-transform(
     ctx.transform,
-    pos)
+    pos
+  )
 
   return pos
 }

@@ -35,7 +35,7 @@
 ///   #show-parameter-block("radius", ("number", "array"), [A number that defines the size of the circle's radius. Can also be set to a tuple of two numbers to define the radii of an ellipse, the first number is the `x` radius and the second is the `y` radius.], default: 1)
 /// 
 /// = Anchors
-///   Supports compass, distance and angle anchors. The "center" anchor is the default.
+///   Supports border and path anchors. The "center" anchor is the default.
 ///
 /// - position (coordinate): The position to place the circle on.
 /// - name (none,string):
@@ -185,7 +185,7 @@
 ///     This overrides the default of `true`, that allows chaining of (arc) elements.], default: true)
 ///
 /// = Anchors
-///   Supports compass, distance anchors and angle anchors if mode is "PIE"
+///   Supports border and path anchors.
 ///   / center: The center of the arc, this is the default anchor.
 ///   / arc-center: The midpoint of the arc's curve.
 ///   / chord-center: Center of chord of the arc drawn between the start and end point.
@@ -511,10 +511,7 @@
 /// Supports mark styling.
 /// 
 /// = Anchors
-///   Supports distance anchors.
-///   / start: The line's start position
-///   / mid: The line's mid position
-///   / end: The line's end position
+///   Supports path anchors.
 ///
 /// - ..pts-style (coordinates, style): Positional two or more coordinates to draw lines between. Accepts style key-value pairs.
 /// - close (bool): If true, the line-strip gets closed to form a polygon
@@ -628,7 +625,7 @@
 ///   ], default: 1)
 ///
 /// = Anchors
-///   Supports compass anchors.
+///   Supports border anchors.
 ///
 /// - from (coordinate): The top left of the grid
 /// - to (coordinate): The bottom right of the grid
@@ -769,7 +766,7 @@
 ///   #show-parameter-block("frame", ("string", "none"), default: none, [Sets the frame style. Can be `none`, "rect" or "circle" and inherits the `stroke` and `fill` style.])
 ///   
 /// = Anchors
-///   Supports compass anchors.
+///   Supports border anchors.
 ///   
 /// - ..args-style (coordinate, content, style): When one coordinate is given as a positional argument, the content will be placed at that position. When two coordinates are given as positional arguments, the content will be placed inside a rectangle between the two positions. All named arguments are styling and any additional positional arguments will panic.
 /// - angle (angle,coordinate): Rotates the content by the given angle. A coordinate can be given to rotate the content by the angle between it and the first coordinate given in `args`. This effectively points the right hand side of the content towards the coordinate. This currently exists because Typst's rotate function does not change the width and height of content.
@@ -987,7 +984,7 @@
 ///   ])
 ///
 /// = Anchors
-///   Supports compass, distance and angle anchors.
+///   Supports border and path anchors.
 ///
 /// - a (coordinate): Coordinate of the bottom left corner of the rectangle.
 /// - b (coordinate): Coordinate of the top right corner of the rectangle. You can draw a rectangle with a specified width and height by using relative coordinates for this parameter `(rel: (width, height))`.
@@ -1170,11 +1167,8 @@
 /// Supports marks.
 ///   
 /// = Anchors
-///   Supports distance anchors.
+///   Supports path anchors.
 ///   / ctrl-n: nth control point where n is an integer starting at 0
-///   / start: The start position of the curve.
-///   / mid: The mid position of the curve
-///   / end: The end position of the curve.
 ///
 /// - start (coordinate): Start position
 /// - end (coordinate): End position (last coordinate)
@@ -1290,10 +1284,7 @@
 ///   #show-parameter-block("tension", "float", [How tight the curve should fit to the points. The higher the tension the less curvy the curve.], default: 0.5)
 ///
 /// = Anchors
-///   Supports distance anchors.
-///   / start: The position of the start of the curve.
-///   / mid: The mid position of the curve
-///   / end: The position of the end of the curve.
+///   Supports path anchors.
 ///   / pt-n: The nth given position (0 indexed so "pt-0" is equal to "start")
 ///
 /// - ..pts-style (coordinate,style): Positional arguments should be coordinates that the curve should pass through. Named arguments are for styling.
@@ -1376,10 +1367,7 @@
 ///   #show-parameter-block("omega", ("tuple of float",), [How curly the curve should be at each endpoint. When the curl is close to zero, the spline approaches a straight line near the endpoints. When the curl is close to one, it approaches a circular arc.], default: (1, 1))
 ///
 /// = Anchors
-///   Supports distance anchors.
-///   / start: The position of the start of the curve.
-///   / mid: The mid position of the curve
-///   / end: The position of the end of the curve.
+///   Supports path anchors.
 ///   / pt-n: The nth given position (0 indexed, so "pt-0" is equal to "start")
 ///
 /// - ..pts-style (coordinate,style): Positional arguments are the coordinates to use to draw the curve with, a minimum of two is required. Named arguments are for styling.
@@ -1464,10 +1452,7 @@
 /// = parameters
 ///
 /// = Anchors
-///   Supports distance anchors.
-///   / start: The start of the merged path.
-///   / mid: The mid position of the merged path.
-///   / end: The end of the merged path.
+///   Supports path anchors.
 ///
 /// - body (elements): Elements with paths to be merged together.
 /// - close (bool): Close the path with a straight line from the start of the path to its end.

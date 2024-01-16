@@ -73,6 +73,8 @@
     return pts.first()
   }
 
+  assert(pts.len() != 0, message: repr(angle))
+
   // Find the furthest intersection point from center
   return util.sort-points-by-distance(center, pts).last()
 }
