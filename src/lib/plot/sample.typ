@@ -1,13 +1,13 @@
-/// Sample the given one parameter function with `samples` values
+/// Sample the given single parameter function `samples` times, with values
 /// evenly spaced within the range given by `domain` and return each
 /// sampled `y` value in an array as `(x, y)` tuple.
 ///
 /// If the functions first return value is a tuple `(x, y)`, then all return values
 /// must be a tuple.
 ///
-/// - fn (function): Function to sample of the form `(x) => y` or `(x) => (x, y)`.
-/// - domain (array): X domain tuple (min, max), that is the minimum and maximum
-///                   x value the function gets sampled at.
+/// - fn (function): Function to sample of the form `(x) => y` or `(t) => (x, y)`, where
+///   `x` or `t` are `float` values within the domain specified by `domain`.
+/// - domain (domain): Domain of `fn` used as bounding interval for the sampling points.
 /// - samples (int): Number of samples in domain.
 /// - sample-at (array): List of x values the function gets sampled at in addition
 ///                      to the `samples` number of samples. Values outsides the
@@ -29,7 +29,7 @@
     y0 = (y0, )
   }
 
-  let pts = sample-at + range(0, samples + 1).map(t => lo + t / samples * (hi - lo))
+  let pts = sample-at + range(0, samples).map(t => lo + t / (samples - 1) * (hi - lo))
   pts = pts.sorted()
 
   return pts.map(x => {
@@ -47,10 +47,10 @@
 /// an array.
 ///
 /// - fn (function): Function of the form `(x, y) => z` with all values being numbers.
-/// - x-domain (array): X domain tuple (min, max), that is the range of
-///                     x values the function gets sampled between.
-/// - y-domain (array): Y domain tuple (min, max), that is the range of
-///                     y values the function gets sampled between.
+/// - x-domain (domain): Domain used as bounding interval for sampling point's x
+///                      values.
+/// - y-domain (domain): Domain used as bounding interval for sampling point's y
+///                      values.
 /// - x-samples (int): Number of samples in the x-domain.
 /// - y-samples (int): Number of samples in the y-domain.
 /// -> array: Array of z scalars
@@ -66,13 +66,13 @@
 
   let (x-min, x-max) = x-domain
   let (y-min, y-max) = y-domain
-  let y-pts = range(0, y-samples + 1)
-  let x-pts = range(0, x-samples + 1)
+  let y-pts = range(0, y-samples)
+  let x-pts = range(0, x-samples)
 
   return y-pts.map(y => {
-    let y = y / y-samples * (y-max - y-min) + y-min
+    let y = y / (y-samples - 1) * (y-max - y-min) + y-min
     return x-pts.map(x => {
-      let x = x / x-samples * (x-max - x-min) + x-min
+      let x = x / (x-samples - 1) * (x-max - x-min) + x-min
       return float((fn)(x, y))
     })
   })

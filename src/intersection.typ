@@ -7,8 +7,9 @@
 /// - b (vector): Line 1 point 2
 /// - c (vector): Line 2 point 1
 /// - d (vector): Line 2 point 2
+/// - ray (bool): treat both lines as infinite
 /// -> (vector,none)
-#let line-line(a, b, c, d) = {
+#let line-line(a, b, c, d, ray: false) = {
   let lli8(x1, y1, x2, y2, x3, y3, x4, y4) = {
     let nx = (x1*y2 - y1*x2)*(x3 - x4)-(x1 - x2)*(x3*y4 - y3*x4)
     let ny = (x1*y2 - y1*x2)*(y3 - y4)-(y1 - y2)*(x3*y4 - y3*x4)
@@ -30,10 +31,52 @@
       let My = calc.max(a.at(1), b.at(1)) + epsilon
       return mx <= x and Mx >= x and my <= y and My >= y
     }
-    if on-line(pt, a, b) and on-line(pt, c, d) {
+    if ray or (on-line(pt, a, b) and on-line(pt, c, d)) {
       return pt
     }
   }
+}
+
+// Check for line-cubic bezier intersection
+#let line-cubic(la, lb, s, e, c1, c2) = {
+  import "/src/bezier.typ": line-cubic-intersections as line-cubic
+  return line-cubic(la, lb, s, e, c1, c2)
+}
+
+// Check for line-linestrip intersection
+#let line-linestrip(la, lb, v) = {
+  let pts = ()
+  for i in range(0, v.len() - 1) {
+    let pt = line-line(la, lb, v.at(i), v.at(i + 1))
+    if pt != none {
+      pts.push(pt)
+    }
+  }
+  return pts
+}
+
+/// Check for line-path intersection in 2D
+///
+/// - la (vector): Line start
+/// - lb (vector): Line end
+/// - path (path): Path
+#let line-path(la, lb, path) = {
+  let segment(s) = {
+    let (k, ..v) = s
+    if k == "line" {
+      return line-linestrip(la, lb, v)
+    } else if k == "cubic" {
+      return line-cubic(la, lb, ..v)
+    } else {
+      return ()
+    }
+  }
+
+  let pts = ()
+  for s in path.at("segments", default: ()) {
+    pts += segment(s)
+  }
+  return pts
 }
 
 /// Check for path-path intersection in 2D
@@ -42,8 +85,8 @@
 /// - b (path): Path b
 /// - samples (int): Number of samples to use for bezier curves
 /// -> array List of vectors
-#let path-path(a, b, samples: 25) = {
-  import "bezier.typ"
+#let path-path(a, b, samples: 8) = {
+  import "bezier.typ": cubic-point
 
   // Convert segment to vertices by sampling curves
   let linearize-segment(s) = {
@@ -52,33 +95,16 @@
       return s.slice(1)
     } else if t == "cubic" {
       return range(samples + 1).map(
-        t => bezier.cubic-point(..s.slice(1), t/samples))
+        t => cubic-point(..s.slice(1), t/samples)
+      )
     }
-  }
-
-  // Check for segment-segment intersection and return list of points
-  let segment-segment(a, b) = {
-    let pts = ()
-    let av = linearize-segment(a)
-    let bv = linearize-segment(b)
-    if av != none and bv != none {
-      for ai in range(0, av.len() - 1) {
-        for bi in range(0, bv.len() - 1) {
-          let isect = line-line(av.at(ai), av.at(ai + 1),
-                                bv.at(bi), bv.at(bi + 1))
-          if isect != none {
-            pts.push(isect)
-          }
-        }
-      }
-    }
-    return pts
   }
 
   let pts = ()
-  for sa in a.segments {
-    for sb in b.segments {
-      pts += segment-segment(sa, sb)
+  for s in a.at("segments", default: ()) {
+    let sv = linearize-segment(s)
+    for ai in range(0, sv.len() - 1) {
+      pts += line-path(sv.at(ai), sv.at(ai + 1), b)
     }
   }
   return pts

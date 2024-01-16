@@ -1,17 +1,15 @@
 #set page(width: auto, height: auto)
-#import "../../src/lib.typ": *
+#import "/src/lib.typ": *
 
 #let test(body) = canvas(length: 1cm, {
   import draw: *
 
   group({
-    intersections(name: "i", samples: 10, {
+    intersections("i", {
       body
     })
     for-each-anchor("i", (name) => {
-      if name.match(regex("\\d+")) != none {
-        circle("i."+name, radius: .1, fill: red)
-      }
+      circle("i."+name, radius: .1, fill: red)
     })
   })
 })
@@ -59,20 +57,36 @@
   })
   test({
     rect((0,0), (2,2))
-    rotate(-45deg)
+    rotate(45deg)
     line((0,0), (calc.sqrt(2*calc.pow(2,2)),0))
+  })
+  test({
+    // The marks must not generate intersections with the line!
+    line((0,0), (2,2), mark: (start: ">", end: ">"))
   })
 })
 
 #box(stroke: 2pt + red, canvas({
   import draw: *
 
-  intersections(name: "i", {
-    content((0, 0), [Das ist\ ein Text!], frame: "circle", name: "a")
-    content((2, 1), [Hallo!], frame: "circle", name: "b")
+  intersections("i", {
+    content((0, 0), [This is\ Text!], frame: "circle", name: "a")
+    content((2, 1), [Hello!], frame: "circle", name: "b")
     // Invisible intersection line
-    line("a", "b", stroke: none)
+    line("a.default", "b.default", stroke: none)
   })
   line("i.0", "i.1", mark: (end: ">"))
 }))
 
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  circle((0,0), name: "a")
+  rect((0,0), (2,2), name: "b")
+  intersections("i", "a", "b", {
+    line((-1,-1), (1,1))
+  })
+  for-each-anchor("i", (name) => {
+    circle("i."+name, radius: .1, fill: red)
+  })
+}))

@@ -1,20 +1,76 @@
 #set page(width: auto, height: auto)
-#import "../../src/lib.typ": *
+#import "/src/lib.typ": *
 
 #box(stroke: 2pt + red, canvas({
-    import draw: *
+  import draw: *
 
-    group(name: "g", {
-      translate((-.5, .5, 0))
-      rotate(65deg)
+  group(name: "g", {
+    translate((-.5, .5, 0))
 
-      rect((0, 0), (1, 1), name: "r")
-      copy-anchors("r")
-    })
+    // CCW
+    rotate(30deg)
 
-    stroke(green)
-    circle("g.top-left", radius: .1)
-    circle("g.top-right", radius: .1)
-    circle("g.bottom-left", radius: .1)
-    circle("g.bottom-right", radius: .1)
+    rect((0, 0), (1, 1), name: "r")
+    anchor("1", "r.north-west")
+    anchor("2", "r.north-east")
+    anchor("3", "r.south-west")
+    anchor("4", "r.south-east")
+  })
+
+  stroke(green)
+  circle("g.1", radius: .1)
+  circle("g.2", radius: .1)
+  circle("g.3", radius: .1)
+  circle("g.4", radius: .1)
+}))
+
+#let draw-xyz() = {
+  import draw: *
+  line((-1,0), (1,0), stroke: red)
+  line((0,-1), (0,1), stroke: blue)
+  line((0,0,-1), (0,0,1), stroke: green)
+}
+
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  set-transform(none)
+  rotate(z: 45deg)
+  draw-xyz()
+}))
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  set-transform(none)
+  rotate(x: 45deg)
+  draw-xyz()
+}))
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  set-transform(none)
+  rotate(y: 45deg)
+  draw-xyz()
+}))
+
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  set-transform(none)
+  rotate(yaw: 45deg)
+  draw-xyz()
+}))
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  set-transform(none)
+  rotate(pitch: 45deg)
+  draw-xyz()
+}))
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  set-transform(none)
+  rotate(roll: 45deg)
+  draw-xyz()
 }))

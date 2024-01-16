@@ -194,7 +194,7 @@
   line((rel: (0, .2), to: "plot.from"),
        (rel: (0, .2), to: "plot.to"),
        mark: (start: "|", end: "|"), name: "annotation")
-  content((rel: (0, .1), to: "annotation.center"), $2 pi$, anchor: "bottom")
+  content((rel: (0, .1), to: ("annotation.start", 50%, "annotation.end")), $2 pi$, anchor: "south")
 
   line((rel: (0,  .2), to: "plot.lo"),
        (rel: (0, -.2), to: "plot.hi"),

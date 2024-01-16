@@ -1,40 +1,71 @@
 // CeTZ Library for drawing graph axes
-#import "../util.typ"
-#import "../draw.typ"
-#import "../vector.typ"
-#import "../styles.typ"
+#import "/src/util.typ"
+#import "/src/draw.typ"
+#import "/src/vector.typ"
+#import "/src/styles.typ"
 
 #let typst-content = content
 
 // Global defaults
-#let tic-limit = 100
 #let default-style = (
+  tick-limit: 100,
+  minor-tick-limit: 1000,
+  auto-tick-factors: (1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10), // Tick factor to try
+  auto-tick-count: 11, // Number of ticks the plot tries to place
   fill: none,
   stroke: black,
   label: (
-    offset: .2,
+    offset: .2cm,       // Axis label offset
+    anchor: auto,       // Axis label anchor
   ),
   tick: (
     fill: none,
     stroke: black,
-    length: .1,
-    minor-length: .08,
+    length: .1cm,       // Tick length: Number
+    minor-length: 80%,  // Minor tick length: Number, Ratio
     label: (
-      offset: .2,
-      angle: 0deg,
-      anchor: auto,
+      offset: .2cm,     // Tick label offset
+      angle: 0deg,      // Tick label angle
+      anchor: auto,     // Tick label anchor
     )
   ),
   grid: (
-    stroke: (paint: gray, dash: "dotted"),
-    fill: none
+    stroke: (paint: gray.lighten(50%), thickness: 1pt),
+  ),
+  minor-grid: (
+    stroke: (paint: gray.lighten(50%), thickness: .5pt),
   ),
 )
 
+#let _prepare-style(ctx, style) = {
+  if type(style) != dictionary { return style }
+  let n = util.resolve-number.with(ctx)
+
+  style.label.offset = n(style.label.offset)
+  style.tick.length = n(style.tick.length)
+  style.tick.minor-length = n(style.tick.minor-length)
+  if type(style.tick.minor-length) == ratio {
+    style.tick.minor-length = style.tick.minor-length * style.tick.length / 100%
+  }
+  style.tick.label.offset = n(style.tick.label.offset)
+
+  if "padding" in style {
+    style.padding = n(style.padding)
+  }
+
+  if "origin" in style {
+    style.origin.label.offset = n(style.origin.label.offset)
+  }
+
+  return style
+}
+
 #let default-style-schoolbook = util.merge-dictionary(default-style, (
-  tick: (label: (offset: .1)),
-  mark: (end: ">"),
-  padding: .4))
+  x: (stroke: auto, fill: none, mark: (end: "straight")),
+  y: (stroke: auto, fill: none, mark: (end: "straight")),
+  origin: (label: (offset: .05cm)),
+  tick: (label: (offset: .1cm)),
+  padding: .4cm))
 
 // Construct Axis Object
 //
@@ -55,6 +86,10 @@
 
 // Format a tick value
 #let format-tick-value(value, tic-options) = {
+  // Without it we get negative zero in conversion
+  // to content! Typst has negative zero floats.
+  if value == 0 { value = 0 }
+
   let round(value, digits) = {
     calc.round(value, digits: digits)
   }
@@ -119,24 +154,29 @@
 /// Compute list of linear ticks for axis
 ///
 /// - axis (axis): Axis
-#let compute-linear-ticks(axis) = {
+#let compute-linear-ticks(axis, style) = {
   let (min, max) = (axis.min, axis.max)
   let dt = max - min; if (dt == 0) { dt = 1 }
   let ticks = axis.ticks
   let ferr = util.float-epsilon
+  let tick-limit = style.tick-limit
+  let minor-tick-limit = style.minor-tick-limit
 
   let l = ()
   if ticks != none {
     let major-tick-values = ()
     if "step" in ticks and ticks.step != none {
       assert(ticks.step >= 0,
-             message: "Axis tick step must be positive")
+             message: "Axis tick step must be positive and non 0.")
+      if axis.min > axis.max { ticks.step *= -1 }
 
       let s = 1 / ticks.step
-      let n = range(int(min * s), int(max * s + 1.5))
 
-      assert(n.len() <= tic-limit,
-             message: "Number of major ticks exceeds limit.")
+      let num-ticks = int(max * s + 1.5)  - int(min * s)
+      assert(num-ticks <= tick-limit,
+             message: "Number of major ticks exceeds limit " + str(tick-limit))
+
+      let n = range(int(min * s), int(max * s + 1.5))
       for t in n {
         let v = (t / s - min) / dt
         if v >= 0 - ferr and v <= 1 + ferr {
@@ -151,11 +191,12 @@
              message: "Axis minor tick step must be positive")
 
       let s = 1 / ticks.minor-step
+
+      let num-ticks = int(max * s + 1.5) - int(min * s)
+      assert(num-ticks <= minor-tick-limit,
+             message: "Number of minor ticks exceeds limit " + str(minor-tick-limit))
+
       let n = range(int(min * s), int(max * s + 1.5))
-
-      assert(n.len() <= tic-limit * 10,
-             message: "Number of minor ticks exceeds limit.")
-
       for t in n {
         let v = (t / s - min) / dt
         if v in major-tick-values {
@@ -204,14 +245,14 @@
 ///   (rel-value: float, label: content, major: bool)
 ///
 /// - axis (axis): Axis object
-#let compute-ticks(axis) = {
+#let compute-ticks(axis, style) = {
   let find-max-n-ticks(axis, n: 11) = {
     let dt = calc.abs(axis.max - axis.min)
     let scale = calc.pow(10, calc.floor(calc.log(dt, base: 10) - 1))
     if scale > 100000 or scale < .000001 {return none}
 
     let (step, best) = (none, 0)
-    for s in (1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10) {
+    for s in style.auto-tick-factors {
       s = s * scale
 
       let divs = calc.abs(dt / s)
@@ -224,7 +265,7 @@
   }
 
   if axis.ticks.step == auto {
-    axis.ticks.step = find-max-n-ticks(axis, n: 11)
+    axis.ticks.step = find-max-n-ticks(axis, n: style.auto-tick-count)
   }
   if axis.ticks.minor-step == auto {
     axis.ticks.minor-step = if axis.ticks.step != none {
@@ -234,7 +275,7 @@
     }
   }
 
-  let ticks = compute-linear-ticks(axis)
+  let ticks = compute-linear-ticks(axis, style)
   ticks += fixed-ticks(axis)
   return ticks
 }
@@ -243,8 +284,8 @@
 ///
 /// - size (vector): Axis canvas size (relative to origin)
 /// - origin (coordinates): Axis Canvas origin
-/// - x (axis): X Axis
-/// - y (axis): Y Axis
+/// - x (axis): Horizontal axis
+/// - y (axis): Vertical axis
 /// - name (string,none): Group name
 #let axis-viewport(size, x, y, origin: (0, 0), name: none, body) = {
   size = (rel: size, to: origin)
@@ -254,7 +295,7 @@
       bounds: (x.max - x.min,
                y.max - y.min,
                0))
-    draw.translate((-x.min, y.min, 0), pre: false)
+    draw.translate((-x.min, -y.min))
     body
   })
 }
@@ -270,7 +311,7 @@
 // - padding (array): Padding (left, right, top, bottom)
 // - frame (string): Frame mode:
 //                   - true: Draw frame around all axes
-//                   - "set": Draw line for set (!= none) axes
+//                   - auto: Draw line for set (!= none) axes
 //                   - false: Draw no frame
 // - ..style (any): Style
 #let scientific(size: (1, 1),
@@ -307,21 +348,23 @@
     anchor("data-top-right",   (w, h))
 
     let style = style.named()
-    style = styles.resolve(ctx.style, style, root: "axes",
+    style = styles.resolve(ctx.style, merge: style, root: "axes",
                            base: default-style)
+    style = _prepare-style(ctx, style)
 
     let padding = (
-      l: padding.at("left", default: 0),
-      r: padding.at("right", default: 0),
-      t: padding.at("top", default: 0),
-      b: padding.at("bottom", default: 0),
+      l: padding.at("west", default: 0),
+      r: padding.at("east", default: 0),
+      t: padding.at("north", default: 0),
+      b: padding.at("south", default: 0),
     )
 
     let axis-settings = (
-      (left,   "left",   "right",  (0, auto), ( 1, 0), "left"),
-      (right,  "right",  "left",   (w, auto), (-1, 0), "right"),
-      (bottom, "bottom", "top",    (auto, 0), (0,  1), "bottom"),
-      (top,    "top",    "bottom", (auto, h), (0, -1), "top"),
+      // (axis, side, anchor, placement, tic-dir, name)
+      (left,   "west",  "east",  (0, auto), ( 1, 0), "left"),
+      (right,  "east",  "west",  (w, auto), (-1, 0), "right"),
+      (bottom, "south", "north", (auto, 0), (0,  1), "bottom"),
+      (top,    "north", "south", (auto, h), (0, -1), "top"),
     )
 
     group(name: "axes", {
@@ -333,7 +376,8 @@
       for (axis, _, anchor, placement, tic-dir, name) in axis-settings {
         let style = style
         if name in style {
-          style = util.merge-dictionary(style, style.at(name))
+          style = styles.resolve(style, merge: style.at(name))
+          style = _prepare-style(ctx, style)
         }
 
         if axis != none {
@@ -345,7 +389,7 @@
 
           let is-mirror = axis.at("is-mirror", default: false)
 
-          for (pos, label, major) in compute-ticks(axis) {
+          for (pos, label, major) in compute-ticks(axis, style) {
             let (x, y) = placement
             if x == auto { x = pos * w + padding.l }
             if y == auto { y = pos * h + padding.b }
@@ -364,20 +408,26 @@
               if label != none {
                 let label-pos = vector.add(tick-start,
                   vector.scale(tic-dir, -style.tick.label.offset))
-                content(label-pos, [#label],
+                content(label-pos, par(justify: false, [#label]),
                         anchor: if style.tick.label.anchor == auto {anchor}
                                 else {style.tick.label.anchor},
                         angle: style.tick.label.angle)
               }
 
-              if grid-mode.major and major or grid-mode.minor and not major {
+              let show-major-grid = grid-mode.major and major
+              if show-major-grid or grid-mode.minor and not major {
                 let (grid-begin, grid-end) = if name in ("top", "bottom") {
                   ((x, 0), (x, h))
                 } else {
                   ((0, y), (w, y))
                 }
 
-                line(grid-begin, grid-end, ..style.grid)
+                let grid-style = if show-major-grid {
+                  style.grid
+                } else {
+                  style.minor-grid
+                }
+                line(grid-begin, grid-end, ..grid-style)
               }
             }
             
@@ -388,11 +438,11 @@
         }
       }
 
-      assert(frame in (true, false, "set"),
-             message: "Invalid frame mode")
+      assert(frame in (true, false, auto),
+        message: "Invalid frame mode")
       if frame == true {
-        rect((0, 0), size, ..style)
-      } else if frame == "set" { 
+        rect((0, 0), size, ..style, radius: 0)
+      } else if frame == auto {
         let segments = ((),)
 
         if left != none {segments.last() += ((0,h), (0,0))}
@@ -414,9 +464,9 @@
     for (axis, side, anchor, ..) in axis-settings {
       if axis == none or not "label" in axis or axis.label == none {continue}
       if not axis.at("is-mirror", default: false) {
-        let is-left-right = side in ("left", "right")
+        let is-left-right = side in ("west", "east")
         let angle = if is-left-right {
-          -90deg
+          90deg
         } else {
           0deg
         }
@@ -425,11 +475,16 @@
         } else {
           ("axes." + side, "-|", "axes.center")
         }
-
         // Use a group to get non-rotated anchors
-        group(content(position, axis.label,
-                      angle: angle, padding: style.label.offset),
-                      anchor: anchor)
+        group(
+          content(
+            position,
+            par(justify: false, axis.label),
+            angle: angle,
+            padding: style.label.offset
+          ),
+          anchor: anchor, 
+        )
       }
     }
   })
@@ -454,8 +509,12 @@
 
   group(name: name, ctx => {
     let style = style.named()
-    style = styles.resolve(ctx.style, style, root: "axes",
-                           base: default-style-schoolbook)
+    style = styles.resolve(
+      ctx.style,
+      merge: style,
+      root: "axes",
+      base: default-style-schoolbook)
+    style = _prepare-style(ctx, style)
 
     let x-position = calc.min(calc.max(y-axis.min, x-position), y-axis.max)
     let y-position = calc.min(calc.max(x-axis.min, y-position), x-axis.max)
@@ -473,24 +532,28 @@
     let y-x = value-on-axis(x-axis, y-position) * w
 
     let axis-settings = (
-      (x-axis, "top",   (auto, x-y), (0, 1), "x"),
-      (y-axis, "right", (y-x, auto), (1, 0), "y"),
+      (x-axis, "north", (auto, x-y), (0, 1), "x"),
+      (y-axis, "east",  (y-x, auto), (1, 0), "y"),
     )
 
-    line((-padding.left, x-y), (w + padding.right, x-y),
-         ..util.merge-dictionary(style, style.at("x", default: (:))),
-         name: "x-axis")
+    line((-padding.left, x-y), (w + padding.right, x-y), ..style.x, name: "x-axis")
     if "label" in x-axis and x-axis.label != none {
-      content((rel: (0, -style.tick.label.offset), to: "x-axis.end"),
-        anchor: "top-left", x-axis.label)
+      let anchor = style.label.anchor
+      if style.label.anchor == auto {
+        anchor = "north-west"
+      }
+      content((rel: (0, -style.label.offset), to: "x-axis.end"),
+        anchor: anchor, par(justify: false, x-axis.label))
     }
 
-    line((y-x, -padding.bottom), (y-x, h + padding.top),
-         ..util.merge-dictionary(style, style.at("y", default: (:))),
-         name: "y-axis")
+    line((y-x, -padding.bottom), (y-x, h + padding.top), ..style.y, name: "y-axis")
     if "label" in y-axis and y-axis.label != none {
-      content((rel: (-style.tick.label.offset, 0), to: "y-axis.end"),
-        anchor: "bottom-right", y-axis.label)
+      let anchor = style.label.anchor
+      if style.label.anchor == auto {
+        anchor = "south-east"
+      }
+      content((rel: (-style.label.offset, 0), to: "y-axis.end"),
+        anchor: anchor, par(justify: false, y-axis.label))
     }
 
     // If both axes cross at the same value (mostly 0)
@@ -502,7 +565,8 @@
       if axis != none {
         let style = style
         if name in style {
-          style = util.merge-dictionary(style, style.at(name))
+          style = styles.resolve(style, merge: style.at(name))
+          style = _prepare-style(ctx, style)
         }
 
         let grid-mode = axis.ticks.at("grid", default: false)
@@ -511,7 +575,7 @@
           minor: grid-mode in ("minor", "both")
         )
 
-        for (pos, label, major) in compute-ticks(axis) {
+        for (pos, label, major) in compute-ticks(axis, style) {
           let (x, y) = placement
           if x == auto { x = pos * w }
           if y == auto { y = pos * h }
@@ -541,13 +605,13 @@
               if not origin-drawn {
                 origin-drawn = true
                 content(vector.add((x, y),
-                  vector.scale((1, 1), -style.tick.label.offset / 2)),
-                  [#label], anchor: "top-right")
+                  (-style.origin.label.offset, -style.origin.label.offset)),
+                  par(justify: false, [#label]), anchor: "north-east")
               }
             } else {
               content(vector.add(tick-begin,
                 vector.scale(tic-dir, -style.tick.label.offset)),
-                [#label], anchor: anchor)
+                par(justify: false, [#label]), anchor: anchor)
             }
           }
         }

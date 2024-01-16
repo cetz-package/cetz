@@ -1,13 +1,13 @@
 #import "util.typ"
 #import "sample.typ"
-#import "../../draw.typ"
+#import "/src/draw.typ"
 
 // Transform points
 //
 // - data (array): Data points
 // - line (str,dictionary): Line line
 #let transform-lines(data, line) = {
-  let vhv-data(t) = {
+  let hvh-data(t) = {
     if type(t) == ratio {
       t = t / 1%
     }
@@ -40,7 +40,7 @@
   }
 
   let line-type = line.at("type", default: "linear")
-  assert(line-type in ("raw", "linear", "spline", "vh", "hv", "vhv"))
+  assert(line-type in ("raw", "linear", "spline", "vh", "hv", "hvh"))
 
   // Transform data into line-data
   let line-data = if line-type == "linear" {
@@ -50,11 +50,11 @@
                                     line.at("tension", default: .5),
                                     line.at("samples", default: 15))
   } else if line-type == "vh" {
-    return vhv-data(0)
+    return hvh-data(0)
   } else if line-type == "hv" {
-    return vhv-data(1)
-  } else if line-type == "vhv" {
-    return vhv-data(line.at("mid", default: .5))
+    return hvh-data(1)
+  } else if line-type == "hvh" {
+    return hvh-data(line.at("mid", default: .5))
   } else {
     return data
   }
@@ -131,65 +131,80 @@
 
 /// Add data to a plot environment.
 ///
+/// Note: You can use this for scatter plots by setting
+///       the stroke style to `none`: `add(..., style: (stroke: none))`.
+///
 /// Must be called from the body of a `plot(..)` command.
 ///
-/// - domain (array): Domain tuple of the plot. If `data` is a function,
-///                   domain must be specified, as `data` is sampled
-///                   for x-values in `domain`. Values must be numbers.
+/// - domain (domain): Domain of `data`, if `data` is a function. Has no effect
+///                    if `data` is not a function.
 /// - hypograph (bool): Fill hypograph; uses the `hypograph` style key for
 ///                     drawing
 /// - epigraph (bool): Fill epigraph; uses the `epigraph` style key for
 ///                    drawing
-/// - fill (bool): Fill to y zero
+/// - fill (bool): Fill the shape of the plot
 /// - fill-type (string): Fill type:
-///                       / `"axis"`: Fill to y = 0
-///                       / `"shape"`: Fill the functions shape
+///   / `"axis"`: Fill the shape to y = 0
+///   / `"shape"`: Fill the complete shape
 /// - samples (int): Number of times the `data` function gets called for
-///                  sampling y-values. Only used if `data` is of
-///                  type function.
+///   sampling y-values. Only used if `data` is of type function. This parameter gets
+///   passed onto `sample-fn`.
 /// - sample-at (array): Array of x-values the function gets sampled at in addition
-///                      to the default sampling.
+///   to the default sampling. This parameter gets passed to `sample-fn`.
 /// - line (string, dictionary): Line type to use. The following types are
-///                              supported:
-///                              / `"linear"`: Linear line segments
-///                              / `"spline"`: A smoothed line
-///                              / `"vh"`: Move vertical and then horizontal
-///                              / `"hv"`: Move horizontal and then vertical
-///                              / `"vhv"`: Add a vertical step in the middle
-///                              / `"raw"`: Like linear, but without linearization.
-///                                `"linear"` _should_ never look different than `"raw"`.
+///   supported:
+///   / `"linear"`: Draw linear lines between points
+///   / `"spline"`: Calculate a Catmull-Rom through all points
+///   / `"vh"`: Move vertical and then horizontal
+///   / `"hv"`: Move horizontal and then vertical
+///   / `"hvh"`: Add a vertical step in the middle
+///   / `"raw"`: Like linear, but without linearization taking place. This is
+///     meant as a "fallback" for either bad performance or bugs.
 ///
-///                              If the value is a dictionary, the type must be
-///                              supplied via the `type` key. The following extra
-///                              attributes are supported:
-///                              / `"samples" <int>`: Samples of splines
-///                              / `"tension" <float>`: Tension of splines
-///                              / `"mid" <float>`: Mid-Point of vhv lines (0 to 1)
-///                              / `"epsilon" <float>`: Linearization slope epsilon for
-///                                use with `"linear"`, defaults to 0.
-/// - style (style): Style to use, can be used with a palette function
-/// - axes (array): Name of the axes to use ("x", "y"), note that not all
-///                 plot styles are able to display a custom axis!
+///   If the value is a dictionary, the type must be
+///   supplied via the `type` key. The following extra
+///   attributes are supported:
+///   / `"samples" <int>`: Samples of splines
+///   / `"tension" <float>`: Tension of splines
+///   / `"mid" <float>`: Mid-Point of hvh lines (0 to 1)
+///   / `"epsilon" <float>`: Linearization slope epsilon for
+///      use with `"linear"`, defaults to 0.
+///
+///   #example(```
+///   import cetz.plot
+///   let points(offset: 0) = ((0,0), (1,1), (2,0), (3,1), (4,0)).map(((x,y)) => {
+///     (x,y + offset * 1.5)
+///   })
+///   plot.plot(size: (12, 3), axis-style: none, {
+///     plot.add(points(offset: 5), line: (type: "hvh", mid: .1))
+///     plot.add(points(offset: 4), line: "hvh")
+///     plot.add(points(offset: 3), line: "hv")
+///     plot.add(points(offset: 2), line: "vh")
+///     plot.add(points(offset: 1), line: "spline")
+///     plot.add(points(offset: 0), line: "linear")
+///   })
+///   ```, vertical: true)
+///
+/// - style (style): Style to use, can be used with a `palette` function
+/// - axes (axes): Name of the axes to use for plotting. Reversing the axes
+///   means rotating the plot by 90 degrees.
 /// - mark (string): Mark symbol to place at each distinct value of the
-///                  graph. Uses the `mark` style key of `style` for drawing.
-///
-///                  The following marks are supported:
-///                  - `"*"` or `"x"` -- X
-///                  - `"+"` -- Cross
-///                  - `"|"` -- Bar
-///                  - `"-"` -- Dash
-///                  - `"o"` -- Circle
-///                  - `"triangle"` -- Triangle
-///                  - `"square"` -- Square
+///   graph. Uses the `mark` style key of `style` for drawing.
 /// - mark-size (float): Mark size in cavas units
 /// - data (array,function): Array of 2D data points (numeric) or a function
-///                          of the form `x => y`, where `x` is a value
-///                          insides `domain` and `y` must be numeric or
-///                          a 2D vector (for parametric functions).
-///
-///                          *Examples*
-///                          - `((0,0), (1,1), (2,-1))`
-///                          - x => calc.pow(x, 2)
+///   of the form `x => y`, where `x` is a value in `domain`
+///   and `y` must be numeric or a 2D vector (for parametric functions).
+///   #example(```
+///   import cetz.plot
+///   plot.plot(size: (2, 2), axis-style: none, {
+///     // Using an array of points:
+///     plot.add(((0,0), (calc.pi/2,1),
+///                    (1.5*calc.pi,-1), (2*calc.pi,0)))
+///     // Sampling a function:
+///     plot.add(domain: (0, 2*calc.pi), calc.sin)
+///   })
+///   ```)
+/// - label (none,content): Legend label to show for this plot.
 #let add(domain: auto,
          hypograph: false,
          epigraph: false,
@@ -203,6 +218,7 @@
          sample-at: (),
          line: "linear",
          axes: ("x", "y"),
+         label: none,
          data
          ) = {
   // If data is of type function, sample it
@@ -227,6 +243,7 @@
 
   ((
     type: "line",
+    label: label,
     data: data, /* Raw data */
     line-data: line-data, /* Transformed data */
     axes: axes,
@@ -243,26 +260,52 @@
     plot-prepare: _prepare,
     plot-stroke: _stroke,
     plot-fill: _fill,
+    plot-legend-preview: self => {
+      if self.fill or self.epigraph or self.hypograph {
+        draw.rect((0,0), (1,1), ..self.style)
+      } else {
+        draw.line((0,.5), (1,.5), ..self.style)
+      }
+    }
   ),)
 }
 
-/// Add horizontal lines at values y
+/// Add horizontal lines at one or more y-values. Every lines start and end points
+/// are at their axis bounds.
 ///
-/// - ..y (number): Y axis value(s) to add a line at
-/// - axes (array): Name of the axes to use ("x", "y"), note that not all
-///                 plot styles are able to display a custom axis!
+/// #example(```
+/// cetz.plot.plot(size: (2,2), x-tick-step: none, y-tick-step: none, {
+///   cetz.plot.add(domain: (0, 4*calc.pi), calc.sin)
+///   // Add 3 horizontal lines
+///   cetz.plot.add-hline(-.5, 0, .5)
+/// })
+/// ```)
+///
+/// - ..y (float): Y axis value(s) to add a line at
+/// - min (auto,float): X axis minimum value or auto to take the axis minimum
+/// - max (auto,float): X axis maximum value or auto to take the axis maximum
+/// - axes (array): Name of the axes to use for plotting
 /// - style (style): Style to use, can be used with a palette function
+/// - label (none,content): Legend label to show for this plot.
 #let add-hline(..y,
+               min: auto,
+               max: auto,
                axes: ("x", "y"),
                style: (:),
+               label: none,
                ) = {
   assert(y.pos().len() >= 1,
          message: "Specify at least one y value")
   assert(y.named().len() == 0)
 
   let prepare(self, ctx) = {
-    let (min, max) = (ctx.x.min, ctx.x.max)
-    self.lines = self.y.map(y => ((min, y), (max, y)))
+    let (x-min, x-max) = (ctx.x.min, ctx.x.max)
+    let (y-min, y-max) = (ctx.y.min, ctx.y.max)
+    let x-min = if min == auto { x-min } else { min }
+    let x-max = if max == auto { x-max } else { max }
+
+    self.lines = self.y.filter(y => y >= y-min and y <= y-max)
+      .map(y => ((x-min, y), (x-max, y)))
     return self
   }
 
@@ -272,9 +315,15 @@
     }
   }
 
+  let x-min = if min == auto { none } else { min }
+  let x-max = if max == auto { none } else { max }
+
   ((
     type: "hline",
+    label: label,
     y: y.pos(),
+    x-domain: (x-min, x-max),
+    y-domain: (calc.min(..y.pos()), calc.max(..y.pos())),
     axes: axes,
     style: style,
     plot-prepare: prepare,
@@ -282,23 +331,43 @@
   ),)
 }
 
-/// Add vertical lines at values x.
+/// Add vertical lines at one or more x-values. Every lines start and end points
+/// are at their axis bounds.
 ///
-/// - ..x (number): X axis values to add a line at
-/// - axes (array): Name of the axes to use ("x", "y"), note that not all
+/// #example(```
+/// cetz.plot.plot(size: (2,2), x-tick-step: none, y-tick-step: none, {
+///   cetz.plot.add(domain: (0, 2*calc.pi), calc.sin)
+///   // Add 3 vertical lines
+///   cetz.plot.add-vline(calc.pi/2, calc.pi, 3*calc.pi/2)
+/// })
+/// ```)
+///
+/// - ..x (float): X axis values to add a line at
+/// - min (auto,float): Y axis minimum value or auto to take the axis minimum
+/// - max (auto,float): Y axis maximum value or auto to take the axis maximum
+/// - axes (array): Name of the axes to use for plotting, note that not all
 ///                 plot styles are able to display a custom axis!
 /// - style (style): Style to use, can be used with a palette function
+/// - label (none,content): Legend label to show for this plot.
 #let add-vline(..x,
+               min: auto,
+               max: auto,
                axes: ("x", "y"),
                style: (:),
+               label: none,
                ) = {
   assert(x.pos().len() >= 1,
          message: "Specify at least one x value")
   assert(x.named().len() == 0)
 
   let prepare(self, ctx) = {
-    let (min, max) = (ctx.y.min, ctx.y.max)
-    self.lines = self.x.map(x => ((x, min), (x, max)))
+    let (x-min, x-max) = (ctx.x.min, ctx.x.max)
+    let (y-min, y-max) = (ctx.y.min, ctx.y.max)
+    let y-min = if min == auto { y-min } else { min }
+    let y-max = if max == auto { y-max } else { max }
+
+    self.lines = self.x.filter(x => x >= x-min and x <= x-max)
+      .map(x => ((x, y-min), (x, y-max)))
     return self
   }
 
@@ -308,12 +377,131 @@
     }
   }
 
+  let y-min = if min == auto { none } else { min }
+  let y-max = if max == auto { none } else { max }
+
   ((
     type: "vline",
+    label: label,
     x: x.pos(),
+    x-domain: (calc.min(..x.pos()), calc.max(..x.pos())),
+    y-domain: (y-min, y-max),
     axes: axes,
     style: style,
     plot-prepare: prepare,
     plot-stroke: stroke
+  ),)
+}
+
+/// Fill the area between two graphs. This behaves same as `add` but takes
+/// a pair of data instead of a single data array/function.
+/// The area between both function plots gets filled. For a more detailed
+/// explanation of the arguments, see @@add().
+///
+/// This can be used to display an error-band of a function.
+///
+/// #example(```
+/// cetz.plot.plot(size: (2,2), x-tick-step: none, y-tick-step: none, {
+///   cetz.plot.add-fill-between(domain: (0, 2*calc.pi),
+///     calc.sin, // First function/data
+///     calc.cos) // Second function/data
+/// })
+/// ```)
+///
+/// - domain (domain): Domain of both `data-a` and `data-b`. The domain is used for
+///   sampling functions only and has no effect on data arrays.
+/// - samples (int): Number of times the `data-a` and `data-b` function gets called for
+///   sampling y-values. Only used if `data-a` or `data-b` is of
+///   type function.
+/// - sample-at (array): Array of x-values the function(s) get sampled at in addition
+///   to the default sampling.
+/// - line (string, dictionary): Line type to use, see @@add().
+/// - style (style): Style to use, can be used with a palette function.
+/// - label (none,content): Legend label to show for this plot.
+/// - axes (array): Name of the axes to use for plotting.
+/// - data-a (array,function): Data of the first plot, see @@add().
+/// - data-b (array,function): Data of the second plot, see @@add().
+#let add-fill-between(data-a,
+                      data-b,
+                      domain: auto,
+                      samples: 50,
+                      sample-at: (),
+                      line: "linear",
+                      axes: ("x", "y"),
+                      label: none,
+                      style: (:)) = {
+  // If data is of type function, sample it
+  if type(data-a) == function {
+    data-a = sample.sample-fn(data-a, domain, samples, sample-at: sample-at)
+  }
+  if type(data-b) == function {
+    data-b = sample.sample-fn(data-b, domain, samples, sample-at: sample-at)
+  }
+
+  // Transform data
+  let line-a-data = transform-lines(data-a, line)
+  let line-b-data = transform-lines(data-b, line)
+
+  // Get x-domain
+  let x-domain = (
+    calc.min(..line-a-data.map(t => t.at(0)),
+             ..line-b-data.map(t => t.at(0))),
+    calc.max(..line-a-data.map(t => t.at(0)),
+             ..line-b-data.map(t => t.at(0)))
+  )
+
+  // Get y-domain
+  let y-domain = if line-a-data != none and line-b-data != none {(
+    calc.min(..line-a-data.map(t => t.at(1)),
+             ..line-b-data.map(t => t.at(1))),
+    calc.max(..line-a-data.map(t => t.at(1)),
+             ..line-b-data.map(t => t.at(1)))
+  )}
+
+  let prepare(self, ctx) = {
+    let (x, y) = (ctx.x, ctx.y)
+
+    // Generate stroke paths
+    self.stroke-paths = (
+      a: util.compute-stroke-paths(self.line-data.a,
+        (x.min, y.min), (x.max, y.max)),
+      b: util.compute-stroke-paths(self.line-data.b,
+        (x.min, y.min), (x.max, y.max))
+    )
+
+    // Generate fill paths
+    self.fill-paths = util.compute-fill-paths(self.line-data.a + self.line-data.b.rev(),
+      (x.min, y.min), (x.max, y.max))
+
+    return self
+  }
+
+  let stroke(self, ctx) = {
+    for p in self.stroke-paths.a {
+      draw.line(..p, fill: none)
+    }
+    for p in self.stroke-paths.b {
+      draw.line(..p, fill: none)
+    }
+  }
+
+  let fill(self, ctx) = {
+    fill-shape(self.fill-paths)
+  }
+
+  ((
+    type: "fill-between",
+    label: label,
+    axes: axes,
+    line-data: (a: line-a-data, b: line-b-data),
+    x-domain: x-domain,
+    y-domain: y-domain,
+    style: style,
+    plot-prepare: prepare,
+    plot-stroke: stroke,
+    plot-fill: fill,
+    plot-legend-preview: self => {
+      draw.rect((0,0), (1,1), ..self.style)
+    }
   ),)
 }

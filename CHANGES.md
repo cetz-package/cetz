@@ -1,15 +1,52 @@
-# 0.1.3
+# 0.2.0
+CeTZ 0.2.0 requires Typst 0.10.0
 
 ## Libs
+### Draw
+- **BREAKING** Default anchors are now using TikZ like compass names: north, south, east, west, north-west, north-east, south-west and south-east
+- **BREAKING** Element anchors have changed! See the documentation for details.
+- **BREAKING** Rotation direction changed to CCW
+- **BREAKING** Removed the `shadow` function
+- **BREAKING** Changed the behaviour of `mark`
+- **BREAKING** Changed the behaviour of `translate` by changing the transformation order, changed arguments of `scale` and `translate`
+- **BREAKING** LERP coordinates now use ratio instead of float for relative interpolation.
+- **BREAKING** Removed `place-marks` and `place-anchors` functions, use the new mark `pos:` attribute and path anchors `(name: <element>, anchor: <number, ratio>)` instead.
+- Content padding has been improved to be configurable per side
+- Groups support same padding options as content
+- Overhauled marks, see manual for the new mark symbols, placement- and styling options
+- Fixed and improved intersection calculation
+- Fixed and improved the styling algorithm
+- Catmull-Rom curves, Hobby curves and arcs now can have marks
+- Line elements now use border intersection coordinates if first and/or last coordinate is an element name with a "default" anchor
+- Added element `arc-through` to draw an arc through three points
+- Added Hobby curves (`hobby`) in addition to catmull (thanks to @Enivex)
+- Added `radius` style to `rect` for drawing rounded rects
+- Added `hide` function for hiding elements
+- Added distance, ratio and angle anchors to elements
+
 ### Plot
 - Added `plot.add-contour(..)` for plotting contour plots
 - Added `plot.add-hline(..)` and `plot.add-vline(..)` for plotting h/v lines
+- Added `plot.add-between(..)` for filling the area between two line plots
+- Added `plot.add-boxwhisker(..)` for displaying boxwhisker plots (thanks to @JamesxX)
 - Added `fill-type` option to `plot.add(..)` for specifying a fill type (axis or shape)
 - Changed default samples from 100 to 50!
 - Fixed plot filling in some cases
+- Axes can now be locked (equal) to keep aspect ratio
+- Axes can be reversed by setting min > max
+- Axis orientation can be changed, enabling rotation of plots
+- Plots now support legends!
+
+### Chart
+- Added `piechart` for drawing pie- and donut charts
+- Added `boxwhisker` for drawing boxwhisker charts
+
+### Decorations
+- New path decorations `zigzag`, `wave` and `coil`
 
 # 0.1.2
 CeTZ requires Typst 0.8.0.
+
 ## Draw
 - New `on-layer(layer, body)` function for drawing with a given layer/z-index
 - New `catmull(..)` function for drawing catmull-rom curves

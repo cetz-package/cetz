@@ -233,10 +233,32 @@
   let (left, right) = split-rec((s, c1, c2, e), t, (), ())
 
   return ((left.at(0), left.at(3), left.at(1), left.at(2)),
-          (right.at(0), right.at(3), right.at(1), right.at(2)))
+          (right.at(3), right.at(0), right.at(2), right.at(1)))
 }
 
-/// Shorten curve by length d. A negative length shortens from the end.
+/// Approximate cubic curve length
+/// - s  (vector): Curve start
+/// - e  (vector): Curve end
+/// - c1 (vector): Control point 1
+/// - c2 (vector): Control point 2
+/// -> float Arc length
+#let cubic-arclen(s, e, c1, c2, samples: 10) = {
+  let d = 0
+  let last = none
+  for t in range(0, samples + 1) {
+    let pt = cubic-point(s, e, c1, c2, t / samples)
+    if last != none {
+      d += vector.dist(last, pt)
+    }
+    last = pt
+  }
+  return d
+}
+
+/// Shorten the curve by offsetting s and c1 or e and c2
+/// by distance d. If d is positive the curve gets shortened
+/// by moving s and c1 closer to e, if d is negative, e and c2
+/// get moved closer to s.
 ///
 /// - s  (vector): Curve start
 /// - e  (vector): Curve end
@@ -244,47 +266,82 @@
 /// - c2 (vector): Control point 2
 /// - d  (float): Distance to shorten by
 /// -> (s, e, c1, c2) Shortened curve
-#let shorten(s, e, c1, c2, d) = {
-  if d == 0 {
-    return (s, e, c1, c2)
-  }
+#let cubic-shorten-linear(s, e, c1, c2, d) = {
+  if d == 0 { return (s, e, c1, c2) }
 
-  let num-samples = 6
-  let split-t = 0
+  let t = if d < 0 { 1 } else { 0 }
+  let sign = if d < 0 { -1 } else { 1 }
+
+  let a = cubic-point(s, e, c1, c2, t)
+  let b = cubic-point(s, e, c1, c2, t + sign * 0.01)
+  let offset = vector.scale(vector.norm(vector.sub(b, a)),
+    calc.abs(d))
   if d > 0 {
-    let travel = 0
-    let last = cubic-point(s, e, c1, c2, 0)
-
-    for t in range(0, num-samples + 1) {
-      let t = t / num-samples
-      let curr = cubic-point(s, e, c1, c2, t)
-      let dist = calc.abs(vector.dist(last, curr))
-      travel += dist
-      if travel >= d {
-        split-t = t - (travel - d) / num-samples
-        break
-      }
-      last = curr
-    }
+    s = vector.add(s, offset)
+    c1 = vector.add(c1, offset)
   } else {
-    let travel = 0
-    let last = cubic-point(s, e, c1, c2, 1)
+    e = vector.add(e, offset)
+    c2 = vector.add(c2, offset)
+  }
+  return (s, e, c1, c2)
+}
 
-    for t in range(num-samples, -1, step: -1) {
-      let t = t / num-samples
-      let curr = cubic-point(s, e, c1, c2, t)
-      let dist = calc.abs(vector.dist(last, curr))
-      travel -= dist
-      if travel <= d {
-        split-t = t - (travel - d) / num-samples
-        break
+/// Approximate bezier interval t for a given distance d.
+/// If d is positive, the functions starts from the curves
+/// start s, if d is negative, it starts form the curves end
+/// e.
+/// -> float Bezier t value from [0,1]
+#let cubic-t-for-distance(s, e, c1, c2, d, samples: 20) = {
+  let travel-forwards(s, e, c1, c2, d) = {
+    let sum = 0
+    for n in range(1, samples + 1) {
+      let t0 = (n - 1) / samples
+      let t1 = n / samples
+
+      let segment-dist = vector.dist(cubic-point(s, e, c1, c2, t0),
+                                     cubic-point(s, e, c1, c2, t1))
+      if sum <= d and d <= sum + segment-dist {
+        return t0 + (d - sum) / segment-dist / samples
       }
-      last = curr
+      sum += segment-dist
     }
+    return 1
   }
 
-  let (left, right) = split(s, e, c1, c2, split-t)
-  return if d > 0 { right } else { left }
+  if d == 0 {
+    return 0
+  }
+
+  if d > 0 {
+    return travel-forwards(s, e, c1, c2, d)
+  } else {
+    return 1 - travel-forwards(e, s, c2, c1, -d)
+  }
+}
+
+/// Shorten curve by distance d. This keeps the curvature of the
+/// curve by finding new values along the original curve.
+/// If d is positive the curve gets shortened by moving s
+/// closer to e, if d is negative, e is moved closer to s.
+/// The points s and e are moved along the curve, keeping the
+/// kurves curvature the same (the control points get recalculated).
+///
+/// - s  (vector): Curve start
+/// - e  (vector): Curve end
+/// - c1 (vector): Control point 1
+/// - c2 (vector): Control point 2
+/// - d  (float): Distance to shorten by
+/// - samples (int): Maximum of samples/steps to use
+/// -> (s, e, c1, c2) Shortened curve
+#let cubic-shorten(s, e, c1, c2, d, samples: 15) = {
+  if d == 0 { return (s, e, c1, c2) }
+
+  let (left, right) = split(s, e, c1, c2, cubic-t-for-distance(s, e, c1, c2, d, samples: samples))
+  return if d > 0 {
+    right
+  } else {
+    left
+  }
 }
 
 /// Align curve points pts to the line start-end
@@ -307,9 +364,9 @@
   // curve by using the abc formula for finding roots of
   // the curves first derivative.
   let dim-extrema(a, b, c1, c2) = {
-    let f0 = 3*(c1 - a)
-    let f1 = 6*(c2 - 2*c1 + a)
-    let f2 = 3*(b - 3*c2 + 3*c1 - a)
+    let f0 = calc.round(3*(c1 - a), digits: 8)
+    let f1 = calc.round(6*(c2 - 2*c1 + a), digits: 8)
+    let f2 = calc.round(3*(b - 3*c2 + 3*c1 - a), digits: 8)
 
     if f1 == 0 and f2 == 0 {
       return ()
@@ -337,8 +394,12 @@
   let pts = ()
   let dims = calc.max(s.len(), e.len())
   for dim in range(dims) {
-    let ts = dim-extrema(s.at(dim, default: 0), e.at(dim, default: 0),
-                         c1.at(dim, default: 0), c2.at(dim, default: 0))
+    let ts = dim-extrema(
+      s.at(dim, default: 0),
+      e.at(dim, default: 0),
+      c1.at(dim, default: 0),
+      c2.at(dim, default: 0)
+    )
     for t in ts {
       // Discard any root outside the bezier range
       if t >= 0 and t <= 1 {
@@ -426,4 +487,113 @@
     return curves
   }
   return ()
+}
+
+/// Find roots of a cubic polynomial with the coefficients a, b, c and d
+///
+/// -> array Array of roots
+#let _cubic-roots(a, b, c, d) = {
+  let epsilon = 0.000001
+  if calc.abs(a) < 1e-6 {
+    if calc.abs(b) < 1e-6 {
+      // Constant
+      if c == 0 {
+        return ()
+      }
+
+      // Linear
+      let root = -1 * d / c
+      if root < 0 - epsilon and root > 1 + epsilon {
+        return ()
+      }
+      return (root,)
+    }
+
+    // Quadratic
+    let dq = calc.pow(c, 2) - 4 * b * d
+    if dq >= 0 {
+      dq = calc.sqrt(dq)
+      let roots = (-1 * (dq + c) / (2 * b),
+                        (dq - c) / (2 * b))
+      return roots.filter(t => t >= 0 - epsilon and t <= 1 + epsilon)
+    }
+  }
+
+  let (A, B, C) = (b/a, c/a, d/a)
+  let Q = (3 * B - calc.pow(A, 2)) / 9
+  let R = (9 * A * B - 27 * C - 2 * calc.pow(A, 3)) / 54
+  let D = calc.pow(Q, 3) + calc.pow(R, 2)
+  let aa = -A / 3
+
+  let sgn = x => { if x < 0 { -1 } else { 1 } }
+  let roots = if D >= 0 {
+    let S = sgn(R + calc.sqrt(D)) * calc.pow(calc.abs(R + calc.sqrt(D)), 1/3)
+    let T = sgn(R - calc.sqrt(D)) * calc.pow(calc.abs(R - calc.sqrt(D)), 1/3)
+
+    if (S - T) != 0 {
+      // Roots 2 and 3 are complex
+      (aa + (S + T),)
+    } else {
+      (aa + (S + T), aa - (S + T) / 2)
+    }
+  } else {
+    let th = calc.acos(R / calc.sqrt(-calc.pow(Q, 3))) / 1rad
+    let qq = 2 * calc.sqrt(-Q)
+    (qq * calc.cos(th / 3) + aa,
+     qq * calc.cos((th + 2 * calc.pi) / 3) + aa,
+     qq * calc.cos((th + 4 * calc.pi) / 3) + aa)
+  }
+
+  return roots.filter(t => t >= 0 - epsilon and t <= 1 + epsilon)
+}
+
+/// Calculate 2D cubic-bezier and line intersetction points
+///
+/// - s   (vector): Bezier start point
+/// - e   (vector): Bezier end point
+/// - c1  (vector): Bezier control point 1
+/// - c2  (vector): Bezier control point 2
+/// - la  (vector): Line start point
+/// - lb  (vector): Line end point
+/// - ray (bool): If set to true, ignore line length
+#let line-cubic-intersections(la, lb, s, e, c1, c2, ray: false) = {
+  // Based on:
+  //   http://www.particleincell.com/blog/2013/cubic-line-intersection/
+  // with some rounding improvements
+  let a = lb.at(1) - la.at(1)
+  let b = la.at(0) - lb.at(0)
+  let c = la.at(0) * (la.at(1) - lb.at(1)) + la.at(1) * (lb.at(0) - la.at(0))
+
+  /// Get cubic bezier function coefficients
+  let _cubic-coeff(a, b, c, d) = (
+    -a + 3*b - 3*c + d,
+    3*a - 6*b + 3*c,
+    -3*a +3*b,
+    a)
+
+  let x-coeff = _cubic-coeff(s.at(0), c1.at(0), c2.at(0), e.at(0))
+  let y-coeff = _cubic-coeff(s.at(1), c1.at(1), c2.at(1), e.at(1))
+
+  let roots = _cubic-roots(a * x-coeff.at(0) + b * y-coeff.at(0),
+                           a * x-coeff.at(1) + b * y-coeff.at(1),
+                           a * x-coeff.at(2) + b * y-coeff.at(2),
+                           a * x-coeff.at(3) + b * y-coeff.at(3) + c)
+
+  let pts = ()
+  for t in roots {
+    let pt = cubic-point(s, e, c1, c2, t)
+    if ray {
+      pts.push(pt)
+    } else {
+      let s = if calc.abs(lb.at(0) - la.at(0)) >= 1e-6 {
+        (pt.at(0) - la.at(0)) / (lb.at(0) - la.at(0))
+      } else {
+        (pt.at(1) - la.at(1)) / (lb.at(1) - la.at(1))
+      }
+      if s >= 0 and s <= 1 {
+        pts.push(pt)
+      }
+    }
+  }
+  return pts
 }

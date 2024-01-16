@@ -1,6 +1,7 @@
-#import "./vector.typ"
-#import "./util.typ"
-
+#import "vector.typ"
+#import "util.typ"
+#import "deps.typ"
+#import deps.oxifmt: strfmt
 
 #let resolve-xyz(c) = {
   // (x: <number> or <none>, y: <number> or <none>, z: <number> or <none>)
@@ -53,10 +54,9 @@
 
 
 #let resolve-anchor(ctx, c) = {
-  // (name: <string>, anchor: <string> or <none>)
+  // (name: <string>, anchor: <number, angle, string> or <none>)
   // "name.anchor"
   // "name"
-
   let (name, anchor) = if type(c) == str {
     let parts = c.split(".")
     if parts.len() == 1 {
@@ -69,19 +69,25 @@
   }
 
   // Check if node is known
-  assert(name in ctx.nodes, message: "Unknown element '" + name + "' in elements " + repr(ctx.nodes.keys()))
-  let node = ctx.nodes.at(name)
-  // Check if anchor is known
-  assert(anchor in node.anchors, message: "Unknown anchor '" + anchor + "' in anchors " + repr(node.anchors.keys()) + " for node " + name)
+  assert(name in ctx.nodes,
+    message: "Unknown element '" + name + "' in elements " + repr(ctx.nodes.keys()))
 
-  return util.revert-transform(
+  // Resolve length anchors
+  if type(anchor) == length {
+    anchor = util.resolve-number(ctx, anchor)
+  }
+
+  // Check if anchor is known
+  let node = ctx.nodes.at(name)
+  let pos = (node.anchors)(anchor)
+  assert(pos != none,
+    message: "Unknown anchor '" + repr(anchor) + "' for element '" + name + "'")
+
+  let pos = util.revert-transform(
     ctx.transform,
-    if anchor != none {
-      node.anchors.at(anchor)
-    } else {
-      node.anchors.default
-    }
-  )
+    pos)
+
+  return pos
 }
 
 #let resolve-barycentric(ctx, c) = {
@@ -106,17 +112,17 @@
 #let resolve-relative(resolve, ctx, c) = {
   // (rel: <coordinate>, update: <bool> or <none>, to: <coordinate>)
   let update = c.at("update", default: true)
-  c = vector.add(
-    resolve(ctx, c.rel), 
-    if "to" in c {
-      resolve(ctx, c.to)
+  let (ctx, rel) = resolve(ctx, c.rel, update: false)
+  let (ctx, to) = if "to" in c {
+      resolve(ctx, c.to, update: false)
     } else {
-      ctx.prev.pt
+      (ctx, ctx.prev.pt)
     }
+  c = vector.add(
+    rel, 
+    to,
   )
-  if not update {
-    c.insert(0, false)
-  }
+  c.insert(0, update)
   return c
 }
 
@@ -124,9 +130,10 @@
   // (element: <string>, point: <coordinate>, solution: <integer>)
 
   // https://stackoverflow.com/a/69641745/7142815
-  let (C, P) = (resolve-anchor(ctx, c.element), resolve(ctx, c.point))
+  let C = resolve-anchor(ctx, c.element)
+  let (ctx, P) = resolve(ctx, c.point, update: false)
   // Radius
-  let r = vector.len(vector.sub(resolve-anchor(ctx, c.element + ".top"), C))
+  let r = vector.len(vector.sub(resolve-anchor(ctx, c.element + ".north"), C))
   // Vector between C and P
   let D = vector.sub(P, C) // C - P
   // Distance between C and P
@@ -159,7 +166,7 @@
   // (horizontal, "-|", vertical)
   // (vertical, "|-", horizontal)
 
-  let (horizontal, vertical) = if type(c) == array {
+  let (ctx, horizontal, vertical) = resolve(ctx, ..if type(c) == array {
     if c.at(1) == "|-" {
       (c.first(), c.last())
     } else {
@@ -168,7 +175,8 @@
     }
   } else {
     (c.horizontal, c.vertical)
-  }.map(resolve.with(ctx))
+  }, update: false)
+
   return (
     horizontal.at(0),
     vertical.at(1),
@@ -177,36 +185,31 @@
 }
 
 #let resolve-lerp(resolve, ctx, c) = {
-  // (a: <coordinate>, number: <number>,
-  //  abs?: <bool>, angle?: <angle>, b: <coordinate>)
-  // (a, number, b)
-  // (a, number, angle, b)
+  // (a: <coordinate>, number: <number,ratio>,
+  //  angle?: <angle>, b: <coordinate>)
+  // (a, <number, ratio>, b)
+  // (a, <number, ratio>, angle, b)
 
-  let (a, number, angle, b, abs) = if type(c) == array {
+  let (a, number, angle, b) = if type(c) == array {
     if c.len() == 3 {
       (
         ..c.slice(0, 2),
         none, // angle
         c.last(),
-        false,
       )
     } else {
-      (
-        ..c,
-        false
-      )
+      c
     }
   } else {
     (
       c.a,
       c.number,
       c.at("angle", default: 0deg),
-      c.b,
-      c.at("abs", default: false),
+      c.b
     )
   }
 
-  (a, b) = (a, b).map(resolve.with(ctx))
+  (ctx, a, b) = resolve(ctx, a, b)
 
   if angle != none {
     let (x, y, _) = vector.sub(b,a)
@@ -220,28 +223,31 @@
     )
   }
 
-  if type(number) == length {
-    number = util.resolve-number(ctx, number) / vector.len(vector.sub(b,a))
+  let ab = vector.sub(b, a)
+
+  let is-absolute = type(number) != ratio
+  let distance = if is-absolute {
+    let dist = vector.len(ab)
+    if dist != 0 {
+      util.resolve-number(ctx, number) / dist
+    } else {
+      0
+    }
+  } else {
+    number / 100%
   }
 
-  if abs {
-    number = number / vector.dist(a, b)
-  }
-
-  return vector.add(
-    vector.scale(
-      a,
-      (1 - number)
-    ),
-    vector.scale(
-      b,
-      number
-    )
-  )
+  return vector.add(a, vector.scale(ab, distance))
 }
 
 #let resolve-function(resolve, ctx, c) = {
-  (c.first())(..c.slice(1).map(resolve.with(ctx)))
+  let (func, ..c) = c
+  (ctx, ..c) = resolve(ctx, ..c)
+  func(..c)
+}
+
+#let resolve-pos(ctx, c) = {
+  // (name: str, pos: float, auto?: left|right, swap?: bool)
 }
 
 // Returns the given coordinate's system name
@@ -277,13 +283,17 @@
       "polar"
     } else if len == 3 and c.at(1) in ("-|", "|-") {
       "perpendicular"
-    } else if len in (3, 4) and types.at(1) in ("integer", "float", "length") and (len == 3 or (len == 4 and types.at(2) == "angle")) {
+    } else if len in (3, 4) and types.at(1) in ("integer", "float", "length", "ratio") and (len == 3 or (len == 4 and types.at(2) == "angle")) {
       "lerp"
     } else if len >= 2 and types.first() == "function" {
       "function"
     }
   } else if type(c) == str {
-    "anchor"
+    if c.contains(".") {
+      "anchor"
+    } else {
+      "element"
+    }
   }
 
   if t == none {
@@ -292,36 +302,57 @@
   return t
 }
 
-
-/// Resolve a coordinate to a vector
+/// Resolve a list of coordinates to absolute vectors
 ///
-/// - ctx (context): CeTZ context object (see get-ctx or group)
-/// - c (coordinate): Coordinate
-/// -> vector
-#let resolve(ctx, c) = {
-  let t = resolve-system(c)
+/// #example(```
+/// line((0,0), (1,1), name: "l")
+/// get-ctx(ctx => {
+///   // Get the vector of coordinate "l.start" and "l.end"
+///   let (ctx, a, b) = cetz.coordinate.resolve(ctx, "l.start", "l.end")
+///   content("l.start", [#a], frame: "rect", stroke: none, fill: white)
+///   content("l.end",   [#b], frame: "rect", stroke: none, fill: white)
+/// })
+/// ```)
+///
+/// - ctx (context): Canvas context object
+/// - ..coordinates (coordinate): List of coordinates
+/// - update (bool): Update the context's last position
+/// -> (ctx, vector..) Returns a list of the new context object plus the
+///    resolved coordinate vectors
+#let resolve(ctx, ..coordinates, update: true) = {
+  let result = ()
+  for c in coordinates.pos() {
+    let t = resolve-system(c)
+    let out = if t == "xyz" {
+      resolve-xyz(c)
+    } else if t == "previous" {
+      ctx.prev.pt
+    } else if t == "polar" {
+      resolve-polar(c)
+    } else if t == "barycentric" {
+      resolve-barycentric(ctx, c)
+    } else if t in ("element", "anchor") {
+      resolve-anchor(ctx, c)
+    } else if t == "tangent" {
+      resolve-tangent(resolve, ctx, c)
+    } else if t == "perpendicular" {
+      resolve-perpendicular(resolve, ctx, c)
+    } else if t == "relative" {
+      (update, ..c) = resolve-relative(resolve, ctx, c)
+      c
+    } else if t == "lerp" {
+      resolve-lerp(resolve, ctx, c)
+    } else if t == "function" {
+      resolve-function(resolve, ctx, c)
+    } else {
+      panic("Failed to resolve coordinate of format: " + repr(c))
+    }.map(util.resolve-number.with(ctx))
 
-  return if t == "xyz" {
-    resolve-xyz(c)
-  } else if t == "previous" {
-    ctx.prev.pt
-  } else if t == "polar" {
-    resolve-polar(c)
-  } else if t == "barycentric" {
-    resolve-barycentric(ctx, c)
-  } else if t == "anchor" {
-    resolve-anchor(ctx, c)
-  } else if t == "tangent" {
-    resolve-tangent(resolve, ctx, c)
-  } else if t == "perpendicular" {
-    resolve-perpendicular(resolve, ctx, c)
-  } else if t == "relative" {
-    resolve-relative(resolve, ctx, c)
-  } else if t == "lerp" {
-    resolve-lerp(resolve, ctx, c)
-  } else if t == "function" {
-    resolve-function(resolve, ctx, c)
-  } else {
-    panic("Failed to resolve coordinate of format: " + repr(c))
-  }.map((v) => if type(v) == bool { v } else { util.resolve-number(ctx, v) })
+    if update {
+      ctx.prev.pt = out
+    }
+    result.push(out)
+  }
+
+  return (ctx, ..result)
 }

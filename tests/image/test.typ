@@ -2,17 +2,20 @@
 #import "../../src/lib.typ": *
 
 #box(stroke: 2pt + red, canvas({
-    import draw: *
+  import draw: *
 
-    content((0,0), image("image.png", width: 2cm),
-            anchor: "top-left", name: "i")
+  content(
+    (0,0),
+    image("image.png", width: 2cm),
+    anchor: "north-west",
+    name: "i"
+  )
 
-    set-style(radius: .1)
-    for k in ("top-left", "top", "top-right", "left", "center", "right",
-              "bottom-left", "bottom", "bottom-right") {
-        fill(blue); circle("i." + k)
-    }
+  set-style(radius: .1, fill: blue)
+  for-each-anchor("i", anchor => {
+    circle("i." + anchor)
+  })
 
-    fill(red); 
-    circle(("i.top-left", 0.75, "i.top-right"))
+  fill(red); 
+  circle(("i.north-west", 75%, "i.north-east"))
 }))

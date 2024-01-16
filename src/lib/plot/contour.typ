@@ -1,18 +1,25 @@
 #import "util.typ"
 #import "sample.typ"
-#import "../../draw.typ"
+#import "/src/draw.typ"
 
 // Find contours of a 2D array by using marching squares algorithm
 //
-// - data (array): 2D float array (rows => columns)
-// - offset (float): Value (offset) a cell must be greater or equal to to count as true
+// - data (array): A 2D array of floats where the first index is the row and the second index is the column
+// - offset (float): Z value threshold of a cell compare with `op` to, to count as true
+// - op (auto,string,function): Z value comparison oparator:
+//     / `">", ">=", "<", "<=", "!=", "=="`: Use the passed operator to compare z.
+//     / `auto`: Use ">=" for positive z values, "<=" for negative z values.
+//     / `<function>`: If set to a function, that function gets called
+//       with two arguments, the z value `z1` to compare against and
+//       the z value `z2` of the data and must return a boolean: `(z1, z2) => boolean`.
 // - interpolate (bool): Enable cell interpolation for smoother lines
 // - contour-limit (int): Contour limit after which the algorithm panics
 // -> array: Array of contour point arrays
-#let find-contours(data, offset, interpolate: true, contour-limit: 50) = {
-  assert(data != none)
-  assert(type(data) == array)
-  assert(type(offset) in (int, float))
+#let find-contours(data, offset, op: auto, interpolate: true, contour-limit: 50) = {
+  assert(data != none and type(data) == array,
+    message: "Data must be of type array")
+  assert(type(offset) in (int, float),
+    message: "Offset must be numeric")
 
   let n-rows = data.len()
   let n-cols = data.at(0).len()
@@ -20,13 +27,31 @@
     return ()
   }
 
+  assert(op == auto or type(op) in (str, function),
+    message: "Operator must be of type auto, string or function")
+  if op == auto {
+    op = if offset < 0 { "<=" } else { ">=" }
+  }
+  if type(op) == str {
+    assert(op in ("<", "<=", ">", ">=", "==", "!="),
+      message: "Operator must be one of: <, <=, >, >=, != or ==")
+  }
+
   // Return if data is set
-  let is-set(v) = {
-    return if offset < 0 {
-      v <= offset
-    } else {
-      v >= offset
-    }
+  let is-set = if type(op) == function {
+    v => op(offset, v)
+  } else if op == "==" {
+    v => v == offset
+  } else if op == "!=" {
+    v => v != offset
+  } else if op == "<" {
+    v => v < offset
+  } else if op == "<=" {
+    v => v <= offset
+  } else if op == ">" {
+    v => v > offset
+  } else if op == ">=" {
+    v => v >= offset
   }
 
   // Build a binary map that has 0 for unset and 1 for set cells
@@ -45,32 +70,18 @@
     if x >= 0 and x < n-cols and y >= 0 and y < n-rows {
       return float(data.at(y).at(x))
     }
-    return 0
+    return none
   }
 
   // Get case (0 to 15)
   let get-case(tl, tr, bl, br) = {
-    let case = int(tl) * 1000 + int(tr) * 100 + int(bl) * 10 + int(br)
-    return if case == 0000 {  0 }
-      else if case == 0010 {  1 }
-      else if case == 0001 {  2 }
-      else if case == 0011 {  3 }
-      else if case == 0100 {  4 }
-      else if case == 0110 {  5 }
-      else if case == 0101 {  6 }
-      else if case == 0111 {  7 }
-      else if case == 1000 {  8 }
-      else if case == 1010 {  9 }
-      else if case == 1001 { 10 }
-      else if case == 1011 { 11 }
-      else if case == 1100 { 12 }
-      else if case == 1110 { 13 }
-      else if case == 1101 { 14 }
-      else if case == 1111 { 15 }
+    int(tl) * 8 + int(tr) * 4 + int(br) * 2 + int(bl)
   }
 
   let lerp(a, b) = {
     if a == b { return a }
+    else if a == none { return 1 }
+    else if b == none { return 0 }
     return (offset - a) / (b - a)
   }
 
@@ -214,7 +225,7 @@
 #let _stroke(self, ctx) = {
   for c in self.contours {
     for p in c.stroke-paths {
-      draw.line(..p, fill: none)
+      draw.line(..p, fill: none, close: p.first() == p.last())
     }
   }
 }
@@ -224,38 +235,63 @@
   if not self.fill { return }
   for c in self.contours {
     for p in c.fill-paths {
-      draw.line(..p, stroke: none)
+      draw.line(..p, stroke: none, close: p.first() == p.last())
     }
   }
 }
 
 /// Add a contour plot of a sampled function or a matrix.
 ///
-/// - data (array, function): Matrix or `(x, y) => z` function
+/// #example(```
+/// cetz.plot.plot(size: (2,2), x-tick-step: none, y-tick-step: none, {
+///   cetz.plot.add-contour(x-domain: (-3, 3), y-domain: (-3, 3),
+///     style: (fill: rgb(50,50,250,50)),
+///     fill: true,
+///     op: "<",        // Find contours where data < z
+///     z: (2.5, 2, 1), // Z values to find contours for
+///     (x, y) => calc.sqrt(x * x + y * y))
+/// })
+/// ```)
 ///
-///                           *Examples:*
-///                           - `(x, y) => x > 0`
-///                           - `(x, y) => 30 - (calc.pow(1 - x, 2)+calc.pow(1 - y, 2))`
+/// - data (array, function): A function of the signature `(x, y) => z`
+///   or an array of arrays of floats (a matrix) where the first
+///   index is the row and the second index is the column.
 /// - z (float, array): Z values to plot. Contours containing values
-///                     above z (z >= 0) or below z (z < 0) get plotted.
-///                     If you specify multiple z values, they get plotted in order.
-/// - x-domain (array): X axis domain tuple (min, max)
-/// - y-domain (array): Y axis domain tuple (min, max)
-/// - x-samples (int): X axis domain samples (2 < n)
+///   above z (z >= 0) or below z (z < 0) get plotted.
+///   If you specify multiple z values, they get plotted in the order of specification.
+/// - x-domain (domain): X axis domain used if `data` is a function, that is the
+///   domain inside the function gets sampled.
+/// - y-domain (domain): Y axis domain used if `data` is a function, see `x-domain`.
+/// - x-samples (int): X axis domain samples (2 < n). Note that contour finding
+///   can be quite slow. Using a big sample count can improve accuracy but can
+///   also lead to bad compilation performance.
 /// - y-samples (int): Y axis domain samples (2 < n)
-/// - interpolate (bool): Use linear interpolation between sample values
+/// - interpolate (bool): Use linear interpolation between sample values which can
+///   improve the resulting plot, especially if the contours are curved.
+/// - op (auto,string,function): Z value comparison oparator:
+///   / `">", ">=", "<", "<=", "!=", "=="`: Use the operator for comparison of `z` to
+///     the values from `data`.
+///   / `auto`: Use ">=" for positive z values, "<=" for negative z values.
+///   / `<function>`: Call comparison function of the format `(plot-z, data-z) => boolean`,
+///     where `plot-z` is the z-value from the plots `z` argument and `data-z`
+///     is the z-value of the data getting plotted. The function must return true
+///     if at the combinations of arguments a contour is detected.
 /// - fill (bool): Fill each contour
-/// - style (style): Style to use, can be used with a palette function
-/// - axes (array): Name of the axes to use ("x", "y"), note that not all
-///                 plot styles are able to display a custom axis!
+/// - style (style): Style to use for plotting, can be used with a palette function. Note
+///   that all z-levels use the same style!
+/// - axes (axes): Name of the axes to use for plotting.
 /// - limit (int): Limit of contours to create per z value before the function panics
+/// - label (none,content): Plot legend label to show. The legend preview for
+///   contour plots is a little rectangle drawn with the contours style.
 #let add-contour(data,
+                 label: none,
                  z: (1,),
                  x-domain: (0, 1),
                  y-domain: (0, 1),
                  x-samples: 25,
                  y-samples: 25,
                  interpolate: true,
+                 op: auto,
                  axes: ("x", "y"),
                  style: (:),
                  fill: false,
@@ -278,7 +314,7 @@
   let contours = ()
   let z = if type(z) == array { z } else { (z,) }
   for z in z {
-    for contour in find-contours(data, z, interpolate: interpolate) {
+    for contour in find-contours(data, z, op: op, interpolate: interpolate, contour-limit: limit) {
       let line-data = contour.map(pt => {
         (pt.at(0) * dx + x-min,
          pt.at(1) * dy + y-min)
@@ -293,6 +329,7 @@
 
   return ((
     type: "contour",
+    label: label,
     contours: contours,
     axes: axes,
     x-domain: x-domain,
@@ -304,5 +341,9 @@
     plot-prepare: _prepare,
     plot-stroke: _stroke,
     plot-fill: _fill,
+    plot-legend-preview: self => {
+      if not self.fill { self.style.fill = none }
+      draw.rect((0,0), (1,1), ..self.style)
+    }
   ),)
 }

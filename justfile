@@ -4,17 +4,17 @@
 gallery_dir := "./gallery"
 test_dir := "./tests"
 
-package target:
+package target *options:
+  ./scripts/package "{{target}}" {{options}}
+
+install target="@local":
   ./scripts/package "{{target}}"
 
-install:
-  ./scripts/package "@local"
+test *filter:
+  ./scripts/test test {{filter}}
 
-test:
-  ./scripts/test test
-
-update-test:
-  ./scripts/test update
+update-test *filter:
+  ./scripts/test update {{filter}}
 
 manual:
   typst c manual.typ manual.pdf

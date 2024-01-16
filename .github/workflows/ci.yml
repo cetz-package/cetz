@@ -13,18 +13,19 @@ jobs:
           packages: imagemagick cargo parallel
           version: 1.0
       - name: Install typos-cli from crates.io
-        uses: baptiste0928/cargo-install@v2
+        uses: baptiste0928/cargo-install@v2.2.0
         with:
           crate: typos-cli
       - name: Install just from crates.io
-        uses: baptiste0928/cargo-install@v2
+        uses: baptiste0928/cargo-install@v2.2.0
         with:
           crate: just
       - uses: yusancky/setup-typst@v2
         id: setup-typst
         with:
-          version: 'v0.8.0'
+          version: 'v0.10.0'
       - run: |
-          just install
-          just test
+          just install @local
+          just install @preview
           just manual
+          just test
