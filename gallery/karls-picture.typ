@@ -8,7 +8,7 @@
   import cetz.draw: *
 
   set-style(
-    mark: (fill: black),
+    mark: (fill: black, scale: 2),
     stroke: (thickness: 0.4pt, cap: "round"),
     angle: (
       radius: 0.3,
@@ -23,9 +23,9 @@
 
   circle((0,0), radius: 1)
 
-  line((-1.5, 0), (1.5, 0), mark: (end: ">"))
+  line((-1.5, 0), (1.5, 0), mark: (end: "stealth"))
   content((), $ x $, anchor: "west")
-  line((0, -1.5), (0, 1.5), mark: (end: ">"))
+  line((0, -1.5), (0, 1.5), mark: (end: "stealth"))
   content((), $ y $, anchor: "south")
 
   for (x, ct) in ((-1, $ -1 $), (-0.5, $ -1/2 $), (1, $ 1 $)) {
