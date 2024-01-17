@@ -1,5 +1,5 @@
 #set page(width: auto, height: auto)
-#import "../../src/lib.typ": *
+#import "/src/lib.typ": *
 
 #block(stroke: 2pt + red, canvas(length: .5cm, {
   import draw: *
