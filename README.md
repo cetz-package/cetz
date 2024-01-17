@@ -93,13 +93,8 @@ To install `just` on your system, use your systems package manager. On Windows, 
 ## Testing
 
 This package comes with some unit tests under the `tests` directory.
-To run all tests you can run the `just test` target.
-
-You need to have ImageMagick installed on your system, which is needed for image comparison.
-
-### Windows
-If you are using the [Chocolatey](https://chocolatey.org/) package manager, you can install imagemagick using `choco install imagemagick`.
-Otherwise download and install a matching package from the [ImageMagick](https://imagemagick.org/script/download.php) website.
+To run all tests you can run the `just test` target. You need to have
+[`typst-test`](https://github.com/tingerrr/typst-test/) in your `PATH`: `cargo install typst-test --git https://github.com/tingerrr/typst-test`.
 
 ## Projects using CeTZ
 - [circuitypst](https://github.com/fenjalien/circuitypst) A port of [circuitikz](https://github.com/circuitikz/circuitikz) to Typst.
