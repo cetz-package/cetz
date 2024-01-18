@@ -1,26 +1,12 @@
-#import "@preview/cetz:0.2.0": canvas, draw, vector
+#import "@preview/cetz:0.2.0": canvas, draw, vector, matrix
 
 #set page(width: auto, height: auto, margin: .5cm)
-
-#let transform-rotate-dir(dir, up) = {
-  dir = vector.norm(dir)
-  up = vector.norm(up)
-
-  let (dx, dy, dz) = dir
-  let (ux, uy, uz) = up
-  let (rx, ry, rz) = vector.norm(vector.cross(dir, up))
-
-  ((rx, dx, ux, 0),
-   (ry, dy, uy, 0),
-   (rz, dz, uz, 0),
-   (0,   0,  0, 1))
-}
 
 #canvas({
   import draw: *
 
   // Set up the transformation matrix
-  set-transform(transform-rotate-dir((1, 1, -1.3), (0, 1, .3)))
+  set-transform(matrix.transform-rotate-dir((1, 1, -1.3), (0, 1, .3)))
   scale(x: 1.5, z: -1)
 
   grid((0,-2), (8,2), stroke: gray + .5pt)
