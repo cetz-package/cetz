@@ -480,7 +480,10 @@
 
     let segments = (path-util.line-segment(pts),)
     let (drawables, _) = mark_.place-marks-along-path(ctx, style, segments)
-    return (ctx: ctx, drawables: drawables)
+    return (
+      ctx: ctx,
+      drawables: drawable.apply-transform(ctx.transform, drawables)
+    )
   },)
 }
 
