@@ -271,7 +271,7 @@
   assert(omega.all(x => x >= 0),
     message: "Omega must contain positive values only")
 
-  if points.len() == 2 {
+  if not close and points.len() == 2 {
     let (a, b) = points
     return ((a, b, a, b),)
   }
