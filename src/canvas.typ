@@ -86,7 +86,7 @@
         (0, 0, 0)
       }
 
-      place(if drawable.type == "path" {
+      place(top + left, if drawable.type == "path" {
         let vertices = ()
         for s in drawable.segments {
           let type = s.at(0)
