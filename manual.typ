@@ -215,17 +215,23 @@ circle((0.5, -2.5), radius: 0.5, fill: green)
 === Marks <styling-mark>
 Marks are arrow tips that can be added to the end of path based elements that support the `mark` style key, or can be directly drawn by using the `mark` draw function. Marks are specified by giving there names as strings and have several options to customise them. You can give an array of names to have multiple marks in a row, dictionaries can also be used in the array for per mark styling.
 
-#table(
+#figure(table(
   columns: 3,
-  [Name], [Shorthand], [Shape],
-  ..(for (shorthand, item) in cetz.mark-shapes.mnemonics {
+  [*Name*], [*Shorthand*], [*Shape*],
+  ..(for (name, item) in cetz.mark-shapes.marks {
+    let name-to-mnemonic = (:)
+    for (name, item) in cetz.mark-shapes.mnemonics {
+      let list = name-to-mnemonic.at(item.at(0), default: ())
+      list += (raw(name) + if item.at(1) { " (reversed)" },)
+      name-to-mnemonic.insert(item.at(0), list)
+    }
     (
-      item.at(0) + if item.at(1) { " (reversed)" },
-      raw(shorthand),
-      cetz.canvas(cetz.draw.line((), (1, 0), mark: (end: shorthand)))
+      raw(name),
+      name-to-mnemonic.at(name, default: ([],)).join([, ]),
+      cetz.canvas(cetz.draw.line((), (1, 0), mark: (end: name)))
     )
   })
-)
+), caption: [Mark symbols])
 
 ```example
 let c = ((rel: (0, -1)), (rel: (2, 0), update: false)) // Coordinates to draw the line, it is not necessary to understand this for this example.
