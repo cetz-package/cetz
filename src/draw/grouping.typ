@@ -383,7 +383,7 @@
   },)
 }
 
-/// Iterates through all anchors of an element and calls a callback for each one.
+/// Iterates through all named anchors of an element and calls a callback for each one.
 ///
 /// #example(```
 /// // Label nodes anchors
@@ -395,6 +395,7 @@
 ///
 /// - name (string): The name of the element with the anchors to loop through.
 /// - callback (function): A function that takes the anchor name and can return elements.
+/// - exclude (array): An array of anchor names to not include in the loop.
 #let for-each-anchor(name, callback, exclude: ()) = {
   get-ctx(ctx => {
     assert(
