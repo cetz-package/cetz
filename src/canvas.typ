@@ -1,7 +1,3 @@
-// Aliases for typst types/functions
-// because we override them.
-#let typst-length = length
-
 #import "matrix.typ"
 #import "vector.typ"
 #import "util.typ"
@@ -9,6 +5,8 @@
 #import "aabb.typ"
 #import "styles.typ"
 #import "process.typ"
+
+#import util: typst-length
 
 /// Sets up a canvas for drawing on. 
 ///

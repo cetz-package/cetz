@@ -247,7 +247,7 @@
       draw.anchor(node.name, node-position(node))
       draw.group(name: node.group-name, {
         draw.move-to(node-position(node))
-        draw.anchor("center", ())
+        draw.anchor("default", ())
         draw-node(node, parent-name)
       })
     }

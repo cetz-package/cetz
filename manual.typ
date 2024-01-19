@@ -760,13 +760,13 @@ group(name: "a", {
 // Center - Clustered
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
 group(name: "b", anchor: "south-west", {
-  anchor("center", "a.south-east")
+  anchor("default", "a.south-east")
   chart.barchart(size: (4, 3), mode: "clustered", value-key: (1,2,3), data)
 })
 // Right - Stacked
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
 group(name: "c", anchor: "south-west", {
-  anchor("center", "b.south-east")
+  anchor("default", "b.south-east")
   chart.barchart(size: (4, 3), mode: "stacked", value-key: (1,2,3), data)
 })
 ```
@@ -784,13 +784,13 @@ group(name: "a", {
 // Center - Clustered
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
 group(name: "b", anchor: "south-west", {
-  anchor("center", "a.south-east")
+  anchor("default", "a.south-east")
   chart.columnchart(size: (4, 3), mode: "clustered", value-key: (1,2,3), data)
 })
 // Right - Stacked
 let data = (("A", 10, 12, 22), ("B", 20, 1, 7), ("C", 13, 8, 9))
 group(name: "c", anchor: "south-west", {
-  anchor("center", "b.south-east")
+  anchor("default", "b.south-east")
   chart.columnchart(size: (4, 3), mode: "stacked", value-key: (1,2,3), data)
 })
 ```

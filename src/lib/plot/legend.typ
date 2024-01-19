@@ -119,7 +119,7 @@
       import draw: *
 
       set-origin(position)
-      anchor("center", (0,0))
+      anchor("default", (0,0))
 
       let pt = (0, 0)
       for (i, item) in items.enumerate() {
@@ -129,7 +129,7 @@
         } else { item.label }
 
         group({
-          anchor("center", (0,0))
+          anchor("default", (0,0))
 
           let row-height = style.item.preview.height
           let preview-width = style.item.preview.width

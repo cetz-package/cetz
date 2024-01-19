@@ -184,7 +184,7 @@
   }
 
   group(name: name, ctx => {
-    anchor("center", (0,0))
+    anchor("default", (0,0))
 
     let style = styles.resolve(ctx,
       merge: style.named(), root: "piechart", base: default-style)

@@ -55,26 +55,26 @@
     let style = styles.resolve(ctx.style, merge: style, root: "circle")
     let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
     let (cx, cy, cz) = pos
-    let (ox, oy) = (calc.cos(45deg) * rx, calc.sin(45deg) * ry)
 
-    let drawables = (drawable.ellipse(
+    let drawables = drawable.ellipse(
       cx, cy, cz,
       rx, ry,
       fill: style.fill,
-      stroke: style.stroke),)
+      stroke: style.stroke
+    )
 
     let (transform, anchors) = anchor_.setup(
-      auto,
-      (),
+      (_) => pos,
+      ("center",),
       default: "center",
       name: name,
       offset-anchor: anchor,
       transform: ctx.transform,
       border-anchors: true,
       path-anchors: true,
-      center: (cx, cy, cz),
+      ctx: ctx,
       radii: (rx*2, ry*2),
-      path: drawables.first(),
+      path: drawables,
     )
 
     return (
@@ -129,26 +129,31 @@
     let style = styles.resolve(ctx.style, merge: style, root: "circle")
     let (cx, cy, cz) = center
     let r = vector.dist(a, (cx, cy))
-    let (ox, oy) = (calc.cos(45deg) * r, calc.sin(45deg) * r)
 
-    let drawables = (drawable.ellipse(
+    let drawables = drawable.ellipse(
       cx, cy, 0,
       r, r,
       fill: style.fill,
-      stroke: style.stroke),)
+      stroke: style.stroke
+    )
 
     let (transform, anchors) = anchor_.setup(
-      auto,
-      (),
+      (anchor) => (
+        center: center,
+        a: a,
+        b: b,
+        c: c
+      ).at(anchor),
+      ("center", "a", "b", "c"),
       default: "center",
       name: name,
       offset-anchor: anchor,
       transform: ctx.transform,
       border-anchors: true,
       path-anchors: true,
-      center: center,
+      ctx: ctx,
       radii: (r*2, r*2),
-      path: drawables.first(),
+      path: drawables,
     )
 
     return (
@@ -239,7 +244,7 @@
     let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
 
     let (x, y, z) = arc-start
-    let drawables = (drawable.arc(
+    let drawables = drawable.arc(
       ..arc-start,
       start-angle,
       stop-angle,
@@ -247,7 +252,8 @@
       ry,
       stroke: style.stroke,
       fill: style.fill,
-      mode: style.mode),)
+      mode: style.mode
+    )
 
     let sector-center = (
       x - rx * calc.cos(start-angle),
@@ -288,62 +294,36 @@
       )
     }
 
-    // compass anchors are placed on the shapes border in tikz so prototype version is setup for use here
-    let border = anchor_.border.with(
-      center, 
-      2*rx, 2*ry, 
-      drawables + if style.mode == "OPEN" {
-        (drawable.path((
-          path-util.line-segment((arc-start, sector-center, arc-end)),
-        )),)
-      }
-    )
-
     let (transform, anchors) = anchor_.setup(
-      anchor => {
-        let pt = if type(anchor) == str {(
-          arc-start: arc-start,
-          origin: sector-center,
-          arc-end: arc-end,
-          arc-center: arc-center,
-          chord-center: chord-center,
-          center: center,
-        ).at(anchor, default: none)}
-        if pt != none { return pt }
-        if style.mode == "OPEN" {
-          if type(anchor) == str and anchor in anchor_.compass-directions {
-            // Compass anchors are placed on the shapes border in
-            // TikZ so prototype version is setup for use here
-            let drawables = drawables.first()
-            drawables.segments.push(path-util.line-segment(
-              (path-util.segment-start(drawables.segments.first()),
-               sector-center,
-               path-util.segment-end(drawables.segments.last()))))
-            return anchor_.calculate-border-anchor(
-              anchor, center, 2 * rx, 2 * ry, drawables)
-          } else {
-            return anchor_.calculate-path-anchor(
-              anchor, drawables.first())
-          }
-        } else {
-          let pt = anchor_.calculate-border-anchor(
-            anchor, center, 2 * rx, 2 * ry, drawables.first())
-          if pt != none { return pt }
-          return anchor_.calculate-path-anchor(
-            anchor, drawables.first())
-        }
-      },
-      ("arc-center", "chord-center", "origin", "arc-start", "arc-end") + anchor_.closed-shape-names,
+      anchor => (
+        arc-start: arc-start,
+        origin: sector-center,
+        arc-end: arc-end,
+        arc-center: arc-center,
+        chord-center: chord-center,
+        center: center,
+      ).at(anchor),
+      ("arc-center", "chord-center", "origin", "arc-start", "arc-end", "center"),
       default: "arc-start",
       name: name,
       offset-anchor: anchor,
       transform: ctx.transform,
+      border-anchors: true,
+      path-anchors: true,
+      radii: (rx, ry), // Don't multiply as its not from the arc's center
+      ctx: ctx,
+      path: drawables
+      // path: if style.mode == "OPEN" {
+      //   drawable.arc(..arc-start, start-angle, stop-angle, rx, ry, mode: "PIE")
+      // } else {
+      //   drawables
+      // }
     )
 
     if mark_.check-mark(style.mark) {
-      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.first().segments)
-      drawables.first().segments = segments
-      drawables += marks
+      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.segments)
+      drawables.segments = segments
+      drawables = (drawables,) +  marks
     }
 
     return (
@@ -438,8 +418,15 @@
     delta *= -1
   }
 
-  return arc(a, start: start, delta: delta, radius: radius,
-    anchor: "arc-start", name: name, ..style)
+  return arc(
+    a,
+    start: start,
+    delta: delta,
+    radius: radius,
+    anchor: "arc-start",
+    name: name,
+    ..style
+  )
 })
 
 /// Draws a single mark pointing towards a target coordinate.
@@ -574,7 +561,8 @@
       (path-util.line-segment(pts),),
       fill: style.fill,
       stroke: style.stroke,
-      close: close)
+      close: close
+    )
 
     // Get bounds
     let (transform, anchors) = anchor_.setup(
@@ -582,6 +570,7 @@
       (),
       name: name,
       transform: ctx.transform,
+      ctx: ctx,
       path-anchors: true,
       path: drawables
     )
@@ -643,10 +632,13 @@
   return (ctx => {
     let (ctx, from, to) = coordinate.resolve(ctx, from, to)
 
-    (from, to) = (
-      (calc.min(from.at(0), to.at(0)), calc.min(from.at(1), to.at(1))),
-      (calc.max(from.at(0), to.at(0)), calc.max(from.at(1), to.at(1)))
-    )
+    (from, to) = {
+      let pairs = ((from.at(0), to.at(0)), (from.at(1), to.at(1)), (from.at(2), from.at(2)))
+      (
+        pairs.map(e => calc.min(..e)),
+        pairs.map(e => calc.max(..e))
+      )
+    }
 
     let style = styles.resolve(ctx.style, merge: style, root: "grid", base: (
       step: 1,
@@ -692,37 +684,23 @@
       }
     }
 
-    let center = ((from.first() + to.first()) / 2, (from.last() + to.last()) / 2)
+    let center = vector.lerp(from, to, .5)
     let (transform, anchors) = anchor_.setup(
-      anchor => {
-        if type(anchor) == str {
-          (
-            north: (center.first(), to.last()),
-            north-east: to,
-            east: (to.first(), center.last()),
-            south-east: (to.first(), from.last()),
-            south: (center.first(), from.last()),
-            south-west: from,
-            west: (from.first(), center.last()),
-            north-west: (from.first(), to.last()),
-            center: center,
-          ).at(anchor)
-          (0,)
-        }
-      },
-      (
-        "north",
-        "north-east",
-        "east",
-        "south-east",
-        "south",
-        "south-west",
-        "west",
-        "north-west",
-        "center"
-      ),
+      _ => center,
+      ("center",),
       name: name,
-      transform: ctx.transform
+      transform: ctx.transform,
+      border-anchors: true,
+      radii: (vector.dist(center, from) * 2,) * 2,
+      path: drawable.path(
+        path-util.line-segment((
+          from,
+          (from.first(), to.at(1), 0),
+          to,
+          (to.first(), from.at(1), 0)
+        )),
+        close: true
+      )
     )
 
     return (
@@ -1124,18 +1102,18 @@
       }
 
       // Calculate border anchors
-      let center = vector.scale(vector.add(a, b), .5)
+      let center = vector.lerp(a, b, .5)
       let (width, height, ..) = size
       let (transform, anchors) = anchor_.setup(
-        auto,
-        (),
+        _ => center,
+        ("center",),
         default: "center",
         name: name,
         offset-anchor: anchor,
         transform: ctx.transform,
         border-anchors: true,
         path-anchors: true,
-        center: center,
+        ctx: ctx,
         radii: (width, height),
         path: drawables,
       )
@@ -1208,18 +1186,16 @@
       )
 
       let (transform, anchors) = anchor_.setup(
-        anchor => {
-          if anchor == "ctrl-0" {
-            return ctrl.at(0)
-          } else if anchor == "ctrl-1" {
-            return ctrl.at(1)
-          }
-        },
+        anchor => (
+          ctrl-0: ctrl.at(0),
+          ctrl-1: ctrl.at(1),
+        ).at(anchor),
         ("ctrl-0", "ctrl-1"),
         default: "start",
         name: name,
         transform: ctx.transform,
         path-anchors: true,
+        ctx: ctx,
         path: drawables,
       )
 
@@ -1317,21 +1293,18 @@
       close: close)
 
     let (transform, anchors) = {
-      let a = (:)
-      for (i, pt) in pts.enumerate() {
-        a.insert("pt-" + str(i), pt)
+      // let a = (:)
+      let a = for (i, pt) in pts.enumerate() {
+        (("pt-" + str(i)): pt)
       }
       anchor_.setup(
-        anchor => {
-          if type(anchor) == str and anchor in a {
-            return a.at(anchor)
-          }
-        },
+        anchor => a.at(anchor), // Would like to return just `a.at` but Typst is mean :<
         a.keys(),
         name: name,
         default: "start",
         transform: ctx.transform,
         path-anchors: true,
+        ctx: ctx,
         path: drawables,
       )
     }
@@ -1419,6 +1392,7 @@
         default: "start",
         transform: ctx.transform,
         path-anchors: true,
+        ctx: ctx,
         path: drawables,
       )
     }
@@ -1503,6 +1477,7 @@
         name: name,
         transform: ctx.transform,
         path-anchors: true,
+        ctx: ctx,
         path: drawables,
       )
 

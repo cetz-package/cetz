@@ -235,20 +235,17 @@
       (center, width, height, path)
     } else { (none, none, none, none) }
 
+    let anchors = group-ctx.groups.last().anchors
+
     let (transform, anchors) = anchor_.setup(
-      anchor => {
-        let anchors = group-ctx.groups.last().anchors
-        if type(anchor) == str and anchor in anchors {
-          return anchors.at(anchor)
-        }
-      },
-      group-ctx.groups.last().anchors.keys(),
+      anchor => ((center: center, default: center) + anchors).at(anchor),
+      (anchors.keys() + ("center",)).dedup(),
       name: name,
-      default: if bounds != none { "center" } else { none },
+      default: if bounds != none { "default" },
       offset-anchor: anchor,
       path-anchors: bounds != none,
       border-anchors: bounds != none,
-      center: center,
+      ctx: ctx,
       radii: (width, height),
       path: path,
     )
@@ -400,14 +397,14 @@
 ///
 /// - name (string): The name of the element with the anchors to loop through.
 /// - callback (function): A function that takes the anchor name and can return elements.
-#let for-each-anchor(name, callback) = {
+#let for-each-anchor(name, callback, exclude: ()) = {
   get-ctx(ctx => {
     assert(
       name in ctx.nodes,
       message: strfmt("Unknown element {} in elements {}", name, repr(ctx.nodes.keys()))
     )
     for anchor in (ctx.nodes.at(name).anchors)(()) {
-      if anchor == none { continue }
+      if anchor == none or (anchor in exclude) { continue }
       move-to(name + "." + anchor)
       callback(anchor)
     }
