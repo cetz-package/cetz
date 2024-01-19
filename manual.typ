@@ -394,7 +394,7 @@ for (c, s, f, cont) in (
 Defines a point relative to a named element using anchors, see @anchors.
 
 #doc-style.show-parameter-block("name", "string", [The name of the element that you wish to use to specify a coordinate.], show-default: false)
-#doc-style.show-parameter-block("anchor", ("number", "angle", "string"), [An anchor of the element. If one is not given a default anchor will be used. On most elements this is `center` but it can be different.])
+#doc-style.show-parameter-block("anchor", ("number", "angle", "string", "ratio", "none"), [The anchor of the element. Strings are named anchors, angles are border anchors and numbers and ratios are path anchors. If not given the default anchor will be used, on most elements this is `center` but it can be different.])
 
 You can also use implicit syntax of a dot separated string in the form `"name.anchor"`
 for named anchors.
@@ -405,8 +405,8 @@ circle("line.end", name: "circle")
 rect("line.start", "circle.east")
 ```
 
-Using the dictionary anchor syntax, you can not only use named anchors, but also
-query the element for distance or angle anchors on it's path:
+Note, that not all elements provide border or path anchors!
+
 
 ```example
 circle((0,0), name: "circle")
@@ -418,7 +418,6 @@ content((name: "circle", anchor: 30%), box(fill: white, $ 30 % $))
 content((name: "circle", anchor: 3.14), box(fill: white, $ p = 3.14 $))
 ```
 
-Note, that not all elements provide angle or distance based anchors!
 
 == Tangent
 This system allows you to compute the point that lies tangent to a shape. In detail, consider an element and a point. Now draw a straight line from the point so that it "touches" the element (more formally, so that it is _tangent_ to this element). The point where the line touches the shape is the point referred to by this coordinate system.

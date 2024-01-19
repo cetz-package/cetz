@@ -72,7 +72,6 @@
       transform: ctx.transform,
       border-anchors: true,
       path-anchors: true,
-      ctx: ctx,
       radii: (rx*2, ry*2),
       path: drawables,
     )
@@ -151,7 +150,6 @@
       transform: ctx.transform,
       border-anchors: true,
       path-anchors: true,
-      ctx: ctx,
       radii: (r*2, r*2),
       path: drawables,
     )
@@ -191,12 +189,12 @@
 ///
 /// = Anchors
 ///   Supports border and path anchors.
-///   / center: The center of the arc, this is the default anchor.
+///   / arc-start: The position at which the arc's curve starts, this is the default.
+///   / arc-end: The position of the arc's curve end.
 ///   / arc-center: The midpoint of the arc's curve.
+///   / center: The center of the arc, this position changes depending on if the arc is closed or not.
 ///   / chord-center: Center of chord of the arc drawn between the start and end point.
 ///   / origin: The origin of the arc's circle.
-///   / arc-start: The position at which the arc's curve starts.
-///   / arc-end: The position of the arc's curve end.
 ///
 /// - position (coordinate): Position to place the arc at.
 /// - start (auto,angle): The angle at which the arc should start. Remember that `0deg` points directly towards the right and `90deg` points up.
@@ -311,13 +309,7 @@
       border-anchors: true,
       path-anchors: true,
       radii: (rx, ry), // Don't multiply as its not from the arc's center
-      ctx: ctx,
       path: drawables
-      // path: if style.mode == "OPEN" {
-      //   drawable.arc(..arc-start, start-angle, stop-angle, rx, ry, mode: "PIE")
-      // } else {
-      //   drawables
-      // }
     )
 
     if mark_.check-mark(style.mark) {
@@ -570,7 +562,6 @@
       (),
       name: name,
       transform: ctx.transform,
-      ctx: ctx,
       path-anchors: true,
       path: drawables
     )
@@ -1113,7 +1104,6 @@
         transform: ctx.transform,
         border-anchors: true,
         path-anchors: true,
-        ctx: ctx,
         radii: (width, height),
         path: drawables,
       )
@@ -1195,7 +1185,6 @@
         name: name,
         transform: ctx.transform,
         path-anchors: true,
-        ctx: ctx,
         path: drawables,
       )
 
@@ -1293,7 +1282,6 @@
       close: close)
 
     let (transform, anchors) = {
-      // let a = (:)
       let a = for (i, pt) in pts.enumerate() {
         (("pt-" + str(i)): pt)
       }
@@ -1304,7 +1292,6 @@
         default: "start",
         transform: ctx.transform,
         path-anchors: true,
-        ctx: ctx,
         path: drawables,
       )
     }
@@ -1377,9 +1364,8 @@
       close: close)
 
     let (transform, anchors) = {
-      let a = (:)
-      for (i, pt) in pts.enumerate() {
-        a.insert("pt-" + str(i), pt)
+      let a = for (i, pt) in pts.enumerate() {
+        (("pt-" + str(i)): pt)
       }
       anchor_.setup(
         anchor => {
@@ -1392,7 +1378,6 @@
         default: "start",
         transform: ctx.transform,
         path-anchors: true,
-        ctx: ctx,
         path: drawables,
       )
     }
@@ -1477,7 +1462,6 @@
         name: name,
         transform: ctx.transform,
         path-anchors: true,
-        ctx: ctx,
         path: drawables,
       )
 

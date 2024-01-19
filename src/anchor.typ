@@ -103,8 +103,7 @@
     border-anchors: false,
     path-anchors: false,
     radii: none,
-    path: none,
-    ctx: none
+    path: none
   ) = {
   // Passing no callback is valid!
   if callback == auto {
@@ -118,9 +117,8 @@
     // anchor-names += compass-directions-with-center
   }
   if path-anchors {
-    assert(path != none and ctx != none,
-      message: "Path anchors need the path set and have access to ctx.length and ctx.em-width!")
-    // anchor-names += path-distance-names
+    assert(path != none,
+      message: "Path anchors need the path set!")
   }
 
   // Anchor callback
@@ -154,11 +152,8 @@
       }
     }
     if out == none {
-      if type(anchor) in (ratio, float, typst-length, int) {
+      if type(anchor) in (ratio, float, int) {
         assert(path-anchors, message: strfmt("Element '{}' does not support path anchors.", name))
-        if type(anchor) == typst-length {
-          anchor = util.resolve-number(ctx, anchor)
-        }
         out = path-util.point-on-path(path.segments, anchor)
       } else if type(anchor) == angle {
         assert(border-anchors, message: strfmt("Element '{}' does not support border anchors.", name))
