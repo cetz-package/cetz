@@ -114,7 +114,6 @@
   if border-anchors {
     assert("center" in anchor-names and radii != none and path != none,
       message: "Border anchors need a center anchor, radii and the path set!")
-    // anchor-names += compass-directions-with-center
   }
   if path-anchors {
     assert(path != none,
