@@ -1,5 +1,3 @@
-#let typst-length = length
-
 #import "drawable.typ"
 #import "vector.typ"
 #import "matrix.typ"
@@ -7,6 +5,8 @@
 #import "path-util.typ"
 #import "styles.typ"
 #import "mark-shapes.typ": get-mark
+
+#import util: typst-length
 
 #let check-mark(style) = style != none and (style.start, style.end, style.symbol).any(v => v != none)
 

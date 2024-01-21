@@ -11,7 +11,7 @@
 #let test(a, b, c) = {
   import draw: *
   group({
-    anchor("center", (0,0,0))
+    anchor("default", (0,0,0))
     show-points(a, b, c)
     arc-through(a, b, c)
   }, name: "g", anchor: "west", padding: .1)

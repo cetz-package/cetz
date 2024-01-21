@@ -343,7 +343,7 @@
       let plot-ctx = make-ctx(x, y, size)
 
       data-viewport(a, x, y, size, {
-        draw.anchor("center", (0, 0))
+        draw.anchor("default", (0, 0))
         a.body
       })
     }
@@ -355,7 +355,7 @@
         let plot-ctx = make-ctx(x, y, size)
 
         data-viewport(d, x, y, size, {
-          draw.anchor("center", (0, 0))
+          draw.anchor("default", (0, 0))
           draw.set-style(..d.style)
 
           if "plot-fill" in d {
@@ -405,7 +405,7 @@
       let plot-ctx = make-ctx(x, y, size)
 
       data-viewport(d, x, y, size, {
-        draw.anchor("center", (0, 0))
+        draw.anchor("default", (0, 0))
         draw.set-style(..d.style)
 
         if not fill-below and "plot-fill" in d {
@@ -427,7 +427,7 @@
       let plot-ctx = make-ctx(x, y, size)
 
       data-viewport(a, x, y, size, {
-        draw.anchor("center", (0, 0))
+        draw.anchor("default", (0, 0))
         a.body
       })
     }

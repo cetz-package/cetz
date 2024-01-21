@@ -181,15 +181,14 @@
 ///   #show-parameter-block("padding", ("none", "number", "array", "dictionary"), default: none, [How much padding to add around the group's bounding box. `none` applies no padding. A number applies padding to all sides equally. A dictionary applies padding following Typst's `pad` function: https://typst.app/docs/reference/layout/pad/. An array follows CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`.])
 ///
 /// = Anchors
-///   Supports compass, distance and angle anchors. However they are created based on the axis aligned bounding box of all the child elements of the group.
+///   Supports border and path anchors. However they are created based on the axis aligned bounding box of all the child elements of the group.
 ///
 /// You can add custom anchors to the group by using the `anchor` element while in the scope of said group, see `anchor` for more details. You can also copy over anchors from named child element by using the `copy-anchors` element as they are not accessible from outside the group.
 ///
 /// The default anchor is "center" but this can be overridden by using `anchor` to place a new anchor called "default".
 ///
 /// - body (elements, function): Elements to group together. A least one is required. A function that accepts `ctx` and returns elements is also accepted.
-/// - anchor (none, string): Anchor to position the group and it's children relative to. For translation the difference between the groups `"center"` anchor
-///   and the passed anchor is used.
+/// - anchor (none, string): Anchor to position the group and it's children relative to. For translation the difference between the groups `"default"` anchor and the passed anchor is used.
 /// - name (none, string):
 /// - ..style (style):
 #let group(body, name: none, anchor: none, ..style) = {
@@ -235,20 +234,16 @@
       (center, width, height, path)
     } else { (none, none, none, none) }
 
+    let anchors = group-ctx.groups.last().anchors
+
     let (transform, anchors) = anchor_.setup(
-      anchor => {
-        let anchors = group-ctx.groups.last().anchors
-        if type(anchor) == str and anchor in anchors {
-          return anchors.at(anchor)
-        }
-      },
-      group-ctx.groups.last().anchors.keys(),
+      anchor => ((center: center, default: center) + anchors).at(anchor),
+      (anchors.keys() + ("center",)).dedup(),
       name: name,
-      default: if bounds != none { "center" } else { none },
+      default: if bounds != none { "default" },
       offset-anchor: anchor,
       path-anchors: bounds != none,
       border-anchors: bounds != none,
-      center: center,
       radii: (width, height),
       path: path,
     )
@@ -388,7 +383,7 @@
   },)
 }
 
-/// Iterates through all anchors of an element and calls a callback for each one.
+/// Iterates through all named anchors of an element and calls a callback for each one.
 ///
 /// #example(```
 /// // Label nodes anchors
@@ -400,14 +395,15 @@
 ///
 /// - name (string): The name of the element with the anchors to loop through.
 /// - callback (function): A function that takes the anchor name and can return elements.
-#let for-each-anchor(name, callback) = {
+/// - exclude (array): An array of anchor names to not include in the loop.
+#let for-each-anchor(name, callback, exclude: ()) = {
   get-ctx(ctx => {
     assert(
       name in ctx.nodes,
       message: strfmt("Unknown element {} in elements {}", name, repr(ctx.nodes.keys()))
     )
     for anchor in (ctx.nodes.at(name).anchors)(()) {
-      if anchor == none { continue }
+      if anchor == none or (anchor in exclude) { continue }
       move-to(name + "." + anchor)
       callback(anchor)
     }

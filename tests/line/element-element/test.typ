@@ -59,6 +59,6 @@
   test(rect((0,0), (rel: (1,1)), name: "a"),
        group({
          line((2,2), (3,1), (rel: (0,2)), (rel: (-.1, -1.6)), close: true)
-         anchor("center", (5,3))
+         anchor("default", (5,3))
        }, name: "b"))
 }))

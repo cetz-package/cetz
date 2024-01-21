@@ -180,7 +180,7 @@
     anchor("content", k)
     anchor("start", a)
     anchor("end", b)
-    anchor("center", (e, 50%, f))
+    anchor("default", (e, 50%, f))
     // define anchors for all points
     for (name, point) in points {
       anchor(name, point)
@@ -376,7 +376,7 @@
     anchor("content", h)
     anchor("start", a)
     anchor("end", b)
-    anchor("center", (d, 50%, g))
+    anchor("default", (d, 50%, g))
     // define anchors for all points
     for (name, point) in points {
       anchor(name, point)

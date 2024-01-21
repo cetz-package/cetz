@@ -10,6 +10,7 @@
 #let float-epsilon = 0.000001
 
 #let typst-measure = measure
+#let typst-length = length
 
 
 /// Multiplies vectors by the transform matrix

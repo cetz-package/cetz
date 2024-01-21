@@ -1,3 +1,13 @@
+# 0.2.1
+
+## Anchors
+- Changing a group's "center" anchor now effects how border anchors are calculated.
+- Allowed changing of the default anchor for groups.
+- Re-added "a", "b", and "c" anchors for `circle-through`
+- Open arcs are no longer modified for anchors, invalid border anchors will panic.
+- Grids now actually support border anchors.
+- 
+
 # 0.2.0
 CeTZ 0.2.0 requires Typst 0.10.0
 

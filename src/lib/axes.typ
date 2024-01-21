@@ -371,7 +371,7 @@
       let (w, h) = (w - padding.l - padding.r,
                     h - padding.t - padding.b)
       anchor("origin", (0, 0))
-      anchor("center", (w / 2, h / 2))
+      anchor("default", (w / 2, h / 2))
 
       for (axis, _, anchor, placement, tic-dir, name) in axis-settings {
         let style = style
@@ -471,9 +471,9 @@
           0deg
         }
         let position = if is-left-right {
-          ("axes." + side, "|-", "axes.center")
+          ("axes." + side, "|-", "axes")
         } else {
-          ("axes." + side, "-|", "axes.center")
+          ("axes." + side, "-|", "axes")
         }
         // Use a group to get non-rotated anchors
         group(

@@ -21,7 +21,12 @@
     set-origin((3,0))
 
     (body)(..args, name: "elem");
-    for i in (0deg, 45deg, 90deg, 170deg, 180deg) {
+    let angles = if args.named().at("mode", default: "") == "OPEN" {
+      (170deg, 180deg)
+    } else {
+      (0deg, 45deg, 90deg, 170deg, 180deg)
+    }
+    for i in angles {
       circle((name: "elem", anchor: i), radius: .1)
     }
   }
@@ -44,17 +49,17 @@
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
-  display(arc, (0,0), start: 225deg, stop: 135deg, radius: 2, mode: "OPEN")
+  display(arc, (0,0), start: 225deg, stop: 135deg, radius: 2, mode: "OPEN", angle: true)
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
-  display(arc, (0,0), start: 225deg, stop: 135deg, radius: 2, mode: "PIE")
+  display(arc, (0,0), start: 225deg, stop: 135deg, radius: 2, mode: "PIE", angle: true)
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
-  display(arc, (0,0), start: 225deg, stop: 135deg, radius: 2, mode: "CLOSE")
+  display(arc, (0,0), start: 225deg, stop: 135deg, radius: 2, mode: "CLOSE", angle: true)
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
