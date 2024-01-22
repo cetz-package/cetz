@@ -388,7 +388,7 @@
 /// #example(```
 /// // Label nodes anchors
 /// rect((0, 0), (2,2), name: "my-rect")
-/// for-each-anchor("my-rect", (name) => {
+/// for-each-anchor("my-rect", exclude: ("start", "mid", "end"), (name) => {
 ///    content((), box(inset: 1pt, fill: white, text(8pt, [#name])), angle: -30deg)
 /// })
 /// ```)
