@@ -14,7 +14,7 @@
   tick-limit: 100,
   minor-tick-limit: 1000,
   auto-tick-factors: (1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10), // Tick factor to try
-  auto-tick-count: 11, // Number of ticks the plot tries to place
+  auto-tick-count: 11,  // Number of ticks the plot tries to place
   fill: none,
   stroke: auto,
   label: (
@@ -25,6 +25,7 @@
   axis-layer: 0,
   grid-layer: 0,
   background-layer: 0,
+  padding: 0,
   tick: (
     fill: none,
     stroke: black + 1pt,
@@ -32,10 +33,10 @@
     offset: 0,
     minor-offset: 0,
     length: .1cm,       // Tick length: Number
-    minor-length: 80%,  // Minor tick length: Number, Ratio
+    minor-length: 70%,  // Minor tick length: Number, Ratio
     label: (
-      offset: .2cm,     // Tick label offset
-      angle: 0deg,      // Tick label angle
+      offset: .15cm,    // Tick label offset
+      angle:   0deg,    // Tick label angle
       anchor: auto,     // Tick label anchor
     )
   ),
@@ -48,30 +49,55 @@
 )
 
 // Scientific Style
-#let default-style-scientific = (
-  ..default-style,
+#let default-style-scientific = util.merge-dictionary(default-style, (
+  left: (tick: (label: (anchor: "east"))),
+  bottom: (tick: (label: (anchor: "north"))),
+  right: (tick: (label: (anchor: "west"))),
+  top: (tick: (label: (anchor: "south"))),
   stroke: (cap: "square"),
-  outset: 0,
-)
+  padding: 0,
+))
+
+#let default-style-schoolbook = util.merge-dictionary(default-style, (
+  x: (stroke: auto, fill: none, mark: (start: none, end: "straight"),
+    tick: (label: (anchor: "north"))),
+  y: (stroke: auto, fill: none, mark: (start: none, end: "straight"),
+    tick: (label: (anchor: "east"))),
+  label: (offset: .1cm),
+  origin: (label: (offset: .05cm)),
+  padding: .1cm,
+  overshoot: .5cm,
+  tick: (
+    offset: -50%,
+    minor-offset: -50%,
+    length: .2cm,
+    minor-length: 70%,
+  ),
+))
 
 #let _prepare-style(ctx, style) = {
   if type(style) != dictionary { return style }
-  let n = util.resolve-number.with(ctx)
 
-  style.label.offset = n(style.label.offset)
-  style.tick.length = n(style.tick.length)
-  style.tick.minor-length = n(style.tick.minor-length)
-  if type(style.tick.minor-length) == ratio {
-    style.tick.minor-length = style.tick.minor-length * style.tick.length / 100%
-  }
-  style.tick.label.offset = n(style.tick.label.offset)
-
-  if "padding" in style {
-    style.padding = n(style.padding)
+  let res = util.resolve-number.with(ctx)
+  let rel-to(v, to) = {
+    if type(v) == ratio {
+      return v * to / 100%
+    } else {
+      return res(v)
+    }
   }
 
-  if "origin" in style {
-    style.origin.label.offset = n(style.origin.label.offset)
+  style.tick.length = res(style.tick.length)
+  style.tick.offset = rel-to(style.tick.offset, style.tick.length)
+  style.tick.minor-length = rel-to(style.tick.minor-length, style.tick.length)
+  style.tick.minor-offset = rel-to(style.tick.minor-offset, style.tick.minor-length)
+  style.tick.label.offset = res(style.tick.label.offset)
+
+  // Padding
+  style.padding = res(style.padding)
+
+  if "overshoot" in style {
+    style.overshoot = res(style.overshoot)
   }
 
   return style
@@ -93,13 +119,6 @@
   if grid == "both" { return 3 }
   return 0
 }
-
-#let default-style-schoolbook = util.merge-dictionary(default-style, (
-  x: (stroke: auto, fill: none, mark: (end: "straight")),
-  y: (stroke: auto, fill: none, mark: (end: "straight")),
-  origin: (label: (offset: .05cm)),
-  tick: (label: (offset: .1cm)),
-  padding: .4cm))
 
 // Construct Axis Object
 //
@@ -282,12 +301,12 @@
 #let compute-ticks(axis, style) = {
   let find-max-n-ticks(axis, n: 11) = {
     let dt = calc.abs(axis.max - axis.min)
-    let scale = calc.pow(10, calc.floor(calc.log(dt, base: 10) - 1))
-    if scale > 100000 or scale < .000001 {return none}
+    let scale = calc.floor(calc.log(dt, base: 10) - 1)
+    if scale > 5 or scale < -5 {return none}
 
     let (step, best) = (none, 0)
     for s in style.auto-tick-factors {
-      s = s * scale
+      s = s * calc.pow(10, scale)
 
       let divs = calc.abs(dt / s)
       if divs >= best and divs <= n {
@@ -364,98 +383,44 @@
 }
 
 // Place a list of tick marks and labels along a path
-#let place-ticks-on-path(ticks, path, style, flip: false, start: 0%, stop: 100%) = {
-  return (ctx => {
-    let (ctx, bounds, drawables) = process.many(ctx, path)
-    let path = drawables.first().segments
+#let place-ticks-on-line(ticks, start, stop, style, flip: false) = {
+  let dir = vector.sub(stop, start)
+  let norm = vector.norm((-dir.at(1), dir.at(0), dir.at(2, default: 0)))
 
-    let len = path-util.length(path)
-    let start = if type(start) == ratio {
-      len * start / 100%
-    } else { start }
-    let stop = if type(stop) == ratio {
-      len * (100% - stop) / 100%
-    } else { stop }
+  let def(v, d) = {
+    return if v == none or v == auto {d} else {v}
+  }
 
-    let drawables = ()
-
-    let tick-range = len - start - stop
-    for (distance, label, is-major) in ticks {
-      let absolute-distance = start + distance * tick-range
-
-      let (tick-pos, tick-dir) = path-util.direction(path, absolute-distance)
-      let tick-dir = vector.scale((-tick-dir.at(1), tick-dir.at(0), tick-dir.at(2)), if flip { -1 } else { 1 })
-      let (tick-pos, tick-dir) = util.apply-transform(ctx.transform, tick-pos, tick-dir)
-
-      let length = if is-major {
-        style.tick.length
-      } else {
-        style.tick.minor-length
-      }
-
-      let p0 = vector.add(tick-pos,
-        vector.scale(tick-dir, if is-major {
-          style.tick.offset
-        } else {
-          style.tick.minor-offset
-        }))
-
-      let p1 = vector.add(p0,
-        vector.scale(tick-dir, length))
-
-      drawables.push(
-        drawable.path(path-util.line-segment((p0, p1)),
-          stroke: if is-major { style.tick.stroke } else { style.tick.minor-stroke }))
-
-      // Draw label
-      if label != none {
-        let label-pos = vector.add(if length >= 0 {
-          p0
-        } else {
-          p1
-        }, vector.scale(tick-dir, style.tick.label.offset))
-        label-pos = util.revert-transform(ctx.transform, label-pos)
-
-        let label-anchor = if style.tick.label.anchor in (none, auto) {
-          let dir = tick-dir
-          if dir == (0,+1,0) {
-            "north"
-          } else if dir == (0,-1,0) {
-            "south"
-          } else if dir == (+1,0,0) {
-            "west"
-          } else if dir == (-1,0,0) {
-            "east"
-          } else {
-            "center"
-          }
-        } else {
-          style.tick.label.anchor
-        }
-
-        let label-angle = if style.tick.label.angle in (none, auto) {
-          0deg
-        } else {
-          style.tick.label.angle
-        }
-
-        let (drawables: label, ..) = process.many(ctx,
-          draw.content(label-pos, label,
-            anchor: label-anchor,
-            angle: label-angle))
-
-        drawables += label
-      }
+  for (distance, label, is-major) in ticks {
+    let offset = style.tick.offset
+    let length = if is-major { style.tick.length } else { style.tick.minor-length }
+    if flip {
+      offset *= -1
+      length *= -1
     }
 
-    return (
-      ctx: ctx,
-      drawables: drawable.apply-transform(
-        ctx.transform,
-        drawables
-      ),
-    )
-  },)
+    let pt = vector.lerp(start, stop, distance)
+    let a = vector.add(pt, vector.scale(norm, offset))
+    let b = vector.add(a, vector.scale(norm, length))
+
+    draw.line(a, b, stroke: style.tick.stroke)
+
+    if label != none {
+      let offset = style.tick.label.offset
+      if flip {
+        offset *= -1
+        length *= -1
+      }
+
+      let c = vector.sub(if length <= 0 { b } else { a },
+        vector.scale(norm, offset))
+
+      let angle = def(style.tick.label.angle, 0deg)
+      let anchor = def(style.tick.label.anchor, "center")
+
+      draw.content(c, label, angle: angle, anchor: anchor)
+    }
+  }
 }
 
 // Draw up to four axes in an "scientific" style at origin (0, 0)
@@ -541,10 +506,10 @@
     // Draw axes
     group(name: "axes", {
       let axes = (
-        ("bottom", (0, 0), (w, 0), (0, -1), x-ticks,  false, bottom,),
-        ("top",    (0, h), (w, h), (0, +1), x2-ticks, true,  top,),
-        ("left",   (0, 0), (0, h), (-1, 0), y-ticks,  true,  left,),
-        ("right",  (w, 0), (w, h), (+1, 0), y2-ticks, false, right,)
+        ("bottom", (0, 0), (w, 0), (0, -1), false, x-ticks,  bottom,),
+        ("top",    (0, h), (w, h), (0, +1), true,  x2-ticks, top,),
+        ("left",   (0, 0), (0, h), (-1, 0), true,  y-ticks,  left,),
+        ("right",  (w, 0), (w, h), (+1, 0), false, y2-ticks, right,)
       )
       let label-placement = (
         bottom: ("south", "north", 0deg),
@@ -553,14 +518,14 @@
         right:  ("east", "north", 90deg),
       )
 
-      for (name, start, end, outsides, ticks, flip, axis) in axes {
+      for (name, start, end, outsides, flip, ticks, axis) in axes {
         let style = _get-axis-style(ctx, style, name)
         let is-mirror = axis == none or axis.at("is-mirror", default: false)
 
-        if style.outset != 0 {
-          let outset = vector.scale(outsides, style.outset)
-          start = vector.add(start, outset)
-          end = vector.add(end, outset)
+        if style.padding != 0 {
+          let padding = vector.scale(outsides, style.padding)
+          start = vector.add(start, padding)
+          end = vector.add(end, padding)
         }
 
         let path = draw.line(start, end, ..style)
@@ -569,12 +534,12 @@
             if draw-unset or axis != none {
               path;
               if not is-mirror {
-                place-ticks-on-path(ticks, path, style, flip: flip)
+                place-ticks-on-line(ticks, start, end, style, flip: flip)
               }
             }
           })
 
-          if axis != none and axis.label != none {
+          if axis != none and axis.label != none and not is-mirror {
             let offset = vector.scale(outsides, style.label.offset)
             let (group-anchor, content-anchor, angle) = label-placement.at(name)
 
@@ -614,6 +579,9 @@
   import draw: *
 
   group(name: name, ctx => {
+    let (w, h) = size
+    anchor("origin", (0, 0))
+
     let style = style.named()
     style = styles.resolve(
       ctx.style,
@@ -624,104 +592,72 @@
 
     let x-position = calc.min(calc.max(y-axis.min, x-position), y-axis.max)
     let y-position = calc.min(calc.max(x-axis.min, y-position), x-axis.max)
-
-    let padding = (
-      left: if y-position > x-axis.min {style.padding} else {style.tick.length},
-      right: style.padding,
-      top: style.padding,
-      bottom: if x-position > y-axis.min {style.padding} else {style.tick.length}
-    ) 
-
-    let (w, h) = size
-
     let x-y = value-on-axis(y-axis, x-position) * h
     let y-x = value-on-axis(x-axis, y-position) * w
 
-    let axis-settings = (
-      (x-axis, "north", (auto, x-y), (0, 1), "x"),
-      (y-axis, "east",  (y-x, auto), (1, 0), "y"),
-    )
+    let x-ticks = compute-ticks(x-axis, style)
+    let y-ticks = compute-ticks(y-axis, style)
 
-    line((-padding.left, x-y), (w + padding.right, x-y), ..style.x, name: "x-axis")
-    if "label" in x-axis and x-axis.label != none {
-      let anchor = style.label.anchor
-      if style.label.anchor == auto {
-        anchor = "north-west"
+    // Draw grid
+    group(name: "grid", ctx => {
+      let axes = (
+        ("x", (0,0), (0,h), (+w,0), x-ticks, x-axis),
+        ("y", (0,0), (w,0), (0,+h), y-ticks, y-axis),
+      )
+
+      for (name, start, end, direction, ticks, axis) in axes {
+        if axis == none { continue }
+
+        let style = _get-axis-style(ctx, style, name)
+        on-layer(style.grid-layer, {
+          draw-grid-lines(axis, ticks, start, end, direction, style)
+        })
       }
-      content((rel: (0, -style.label.offset), to: "x-axis.end"),
-        anchor: anchor, par(justify: false, x-axis.label))
-    }
+    })
 
-    line((y-x, -padding.bottom), (y-x, h + padding.top), ..style.y, name: "y-axis")
-    if "label" in y-axis and y-axis.label != none {
-      let anchor = style.label.anchor
-      if style.label.anchor == auto {
-        anchor = "south-east"
-      }
-      content((rel: (-style.label.offset, 0), to: "y-axis.end"),
-        anchor: anchor, par(justify: false, y-axis.label))
-    }
+    // Draw axes
+    group(name: "axes", {
+      let axes = (
+        ("x", (0, x-y), (w, x-y), (1, 0), false, x-ticks, x-axis),
+        ("y", (y-x, 0), (y-x, h), (0, 1), true, y-ticks, y-axis),
+      )
+      let label-pos = (
+        x: ("north", (0,-1)),
+        y: ("east", (-1,0)),
+      )
 
-    // If both axes cross at the same value (mostly 0)
-    // draw the tick label for both axes together.
-    let origin-drawn = false
-    let shared-origin = x-position == y-position
+      on-layer(style.axis-layer, {
+        for (name, start, end, dir, flip, ticks, axis) in axes {
+          let style = _get-axis-style(ctx, style, name)
 
-    for (axis, anchor, placement, tic-dir, name) in axis-settings {
-      if axis != none {
-        let style = style
-        if name in style {
-          style = styles.resolve(style, merge: style.at(name))
-          style = _prepare-style(ctx, style)
-        }
+          let pad = style.padding
+          let overshoot = style.overshoot
+          let vstart = vector.sub(start, vector.scale(dir, pad))
+          let vend = vector.add(end, vector.scale(dir, pad + overshoot))
 
-        let grid-mode = axis.ticks.at("grid", default: false)
-        grid-mode = (
-          major: grid-mode == true or grid-mode in ("major", "both"),
-          minor: grid-mode in ("minor", "both")
-        )
+          group(name: "axis", {
+            line(vstart, vend, stroke: style.stroke, mark: style.mark)
+            place-ticks-on-line(ticks, start, end, style, flip: flip)
+          })
 
-        for (pos, label, major) in compute-ticks(axis, style) {
-          let (x, y) = placement
-          if x == auto { x = pos * w }
-          if y == auto { y = pos * h }
+          if axis.label != none {
+            let (content-anchor, offset-dir) = label-pos.at(name)
 
-          let dir = vector.scale(tic-dir,
-            if major {style.tick.length} else {style.tick.minor-length})
-          let tick-begin = vector.sub((x, y), dir)
-          let tick-end = vector.add((x, y), dir)
-
-          let is-origin = x == y-x and y == x-y
-
-          if not is-origin {
-            if grid-mode.major and major or grid-mode.minor and not major {
-              let (grid-begin, grid-end) = if name == "x" {
-                ((x, 0), (x, h))
-              } else {
-                ((0, y), (w, y))
-              }
-              line(grid-begin, grid-end, ..style.grid)
+            let angle = if style.label.angle not in (none, auto) {
+              style.label.angle
+            } else { 0deg }
+            if style.label.anchor not in (none, auto) {
+              content-anchor = style.label.anchor
             }
 
-            line(tick-begin, tick-end, ..style.tick)
-          }
-
-          if label != none {
-            if is-origin and shared-origin {
-              if not origin-drawn {
-                origin-drawn = true
-                content(vector.add((x, y),
-                  (-style.origin.label.offset, -style.origin.label.offset)),
-                  par(justify: false, [#label]), anchor: "north-east")
-              }
-            } else {
-              content(vector.add(tick-begin,
-                vector.scale(tic-dir, -style.tick.label.offset)),
-                par(justify: false, [#label]), anchor: anchor)
-            }
+            let offset = vector.scale(offset-dir, style.label.offset)
+            content((rel: offset, to: vend),
+              [#axis.label],
+              angle: angle,
+              anchor: content-anchor)
           }
         }
-      }
-    }
+      })
+    })
   })
 }

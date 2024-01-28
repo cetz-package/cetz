@@ -187,7 +187,6 @@
 ///   opposite anchor to `legend` gets used.
 /// - legend-style (style): Style key-value overwrites for the legend style with style root `legend`.
 /// - ..options (any): Axis options, see _options_ below.
-///
 #let plot(body,
           size: (1, 1),
           axis-style: "scientific",
