@@ -65,14 +65,15 @@
     tick: (label: (anchor: "east"))),
   label: (offset: .1cm),
   origin: (label: (offset: .05cm)),
-  padding: .1cm,
-  overshoot: .5cm,
+  padding: .1cm,   // Axis padding on both sides outsides the plotting area
+  overshoot: .5cm, // Axis end "overshoot" out of the plotting area
   tick: (
     offset: -50%,
     minor-offset: -50%,
     length: .2cm,
     minor-length: 70%,
   ),
+  shared-zero: true, // Show zero tick label at (0, 0)
 ))
 
 #let _prepare-style(ctx, style) = {
@@ -207,7 +208,7 @@
 /// Compute list of linear ticks for axis
 ///
 /// - axis (axis): Axis
-#let compute-linear-ticks(axis, style) = {
+#let compute-linear-ticks(axis, style, add-zero: true) = {
   let (min, max) = (axis.min, axis.max)
   let dt = max - min; if (dt == 0) { dt = 1 }
   let ticks = axis.ticks
@@ -232,6 +233,8 @@
       let n = range(int(min * s), int(max * s + 1.5))
       for t in n {
         let v = (t / s - min) / dt
+        if t / s == 0 and not add-zero { continue }
+
         if v >= 0 - ferr and v <= 1 + ferr {
           l.push((v, format-tick-value(t / s, ticks), true))
           major-tick-values.push(v)
@@ -298,7 +301,7 @@
 ///   (rel-value: float, label: content, major: bool)
 ///
 /// - axis (axis): Axis object
-#let compute-ticks(axis, style) = {
+#let compute-ticks(axis, style, add-zero: true) = {
   let find-max-n-ticks(axis, n: 11) = {
     let dt = calc.abs(axis.max - axis.min)
     let scale = calc.floor(calc.log(dt, base: 10) - 1)
@@ -329,7 +332,7 @@
     }
   }
 
-  let ticks = compute-linear-ticks(axis, style)
+  let ticks = compute-linear-ticks(axis, style, add-zero: add-zero)
   ticks += fixed-ticks(axis)
   return ticks
 }
@@ -595,8 +598,10 @@
     let x-y = value-on-axis(y-axis, x-position) * h
     let y-x = value-on-axis(x-axis, y-position) * w
 
-    let x-ticks = compute-ticks(x-axis, style)
-    let y-ticks = compute-ticks(y-axis, style)
+    let shared-zero = style.shared-zero and x-position == 0 and y-position == 0
+
+    let x-ticks = compute-ticks(x-axis, style, add-zero: not shared-zero)
+    let y-ticks = compute-ticks(y-axis, style, add-zero: not shared-zero)
 
     // Draw grid
     group(name: "grid", ctx => {
@@ -656,6 +661,12 @@
               angle: angle,
               anchor: content-anchor)
           }
+        }
+
+        if shared-zero {
+          let pt = (rel: (-style.tick.label.offset, -style.tick.label.offset),
+                     to: (y-x, x-y))
+          content(pt, $0$, anchor: "north-east")
         }
       })
     })

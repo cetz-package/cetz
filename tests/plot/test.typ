@@ -1,6 +1,8 @@
 #set page(width: auto, height: auto)
 #import "/src/lib.typ": *
 
+#let line-data = ((-1,-1), (1,1),)
+
 #let data = (..(for x in range(-360, 360 + 1) {
   ((x, calc.sin(x * 1deg)),)
 }))
@@ -231,8 +233,8 @@
     y2-ticks: (-1, 0, 1),
     y2-format: x => $y_(2,#x)$,
     {
-      plot.add(domain: (-1, 1), x => -x, axes: ("x", "y"))
-      plot.add(domain: (-1, 1), x => x, axes: ("x2", "y2"))
+      plot.add(samples: 2, domain: (-1, 1), x => -x, axes: ("x", "y"))
+      plot.add(samples: 2, domain: (-1, 1), x => x, axes: ("x2", "y2"))
     })
 }))
 
@@ -253,4 +255,52 @@
   import draw: *
 
   plot.plot(size: (1, 1), {})
+}))
+
+// Some axis styling
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  set-style(axes: (
+    padding: .1,
+    tick: (
+      length: -.1,
+    ),
+    left: (
+      stroke: (paint: red),
+      tick: (
+        stroke: auto,
+      )
+    ),
+    bottom: (
+      stroke: (paint: blue, thickness: 2pt),
+      tick: (
+        stroke: auto,
+      )
+    ),
+  ))
+
+  plot.plot(size: (6, 4), axis-style: "scientific-auto", {
+    plot.add(line-data)
+  })
+
+  set-origin((7, 0))
+
+  set-style(axes: (
+    overshoot: .5,
+    x: (
+      padding: 1,
+      overshoot: -.5,
+      stroke: blue,
+    ),
+    y: (
+      stroke: red,
+    )
+  ))
+  plot.plot(size: (6, 4), axis-style: "school-book",
+    x-tick-step: none,
+    y-tick-step: none,
+  {
+    plot.add(line-data)
+  })
 }))
