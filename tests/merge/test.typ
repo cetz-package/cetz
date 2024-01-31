@@ -31,3 +31,21 @@
     bezier("arc.arc-end", (0,0), (0, -1), (2, -2))
   })
 }))
+
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+
+  get-ctx(ctx => {
+    let (ctx, bounds, drawables) = process.element(ctx,
+      merge-path({
+        line((0,0), (1,0))
+        line((1,1), (0,1))
+      }).first())
+
+    let path = drawables.first()
+    assert.eq(path.segments.len(), 1,
+      message: "Expected a single line segment")
+    assert.eq(path.segments.first().len(), 1+4,
+      message: "Expected 4 points")
+  })
+}))
