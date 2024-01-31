@@ -259,41 +259,6 @@
   )
 }
 
-/// Normalize segments by connecting gaps via straight line segments
-/// and merging multiple line segments into a single one.
-///
-/// - segments (array): Path segments
-/// -> array Normalized path segments
-#let normalize(segments) = {
-  let new = ()
-  for s in segments {
-    if new == () {
-      new.push(s)
-    } else {
-      let head = new.last()
-      let (kind, ..pts) = s
-
-      if kind == "line" and head.at(0) == kind {
-        // Merge consecutive line segments
-        new.last() += pts.slice(1)
-      } else if segment-start(s) != segment-end(head) {
-        // Push a new line or line point if the current segment
-        // does not start where the previous segment ended
-        if head.at(0) == "line" {
-          new.last().push(segment-start(s))
-        } else {
-          new.push(("line", segment-end(head), segment-start(s)))
-        }
-        // Push the segment
-        new.push(s)
-      } else {
-        new.push(s)
-      }
-    }
-  }
-  return new
-}
-
 /// Create a line segment with points
 ///
 /// - points (array): List of points
@@ -311,6 +276,45 @@
 /// -> array Segment
 #let cubic-segment(a, b, ctrl-a, ctrl-b) = {
   ("cubic", a, b, ctrl-a, ctrl-b)
+}
+
+/// Normalize segments by connecting gaps via straight line segments
+/// and merging multiple line segments into a single one.
+///
+/// - segments (array): Path segments
+/// -> array Normalized path segments
+#let normalize(segments) = {
+  let new = ()
+  for s in segments {
+    if new == () {
+      new.push(s)
+    } else {
+      let head = new.last()
+      let (kind, ..pts) = s
+
+      if kind == "line" and head.at(0) == kind {
+        // Merge consecutive line segments
+        if new.last().len() > 0 and new.last().last() == pts.first() {
+          new.last() += pts.slice(1)
+        } else {
+          new.last() += pts
+        }
+      } else if segment-start(s) != segment-end(head) {
+        // Push a new line or line point if the current segment
+        // does not start where the previous segment ended
+        if head.at(0) == "line" {
+          new.last().push(pts.first())
+        } else {
+          new.push(line-segment((segment-end(head), segment-start(s))))
+        }
+        // Push the segment
+        new.push(s)
+      } else {
+        new.push(s)
+      }
+    }
+  }
+  return new
 }
 
 /// Shortens a segment by a given distance.
