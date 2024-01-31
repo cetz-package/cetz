@@ -9,7 +9,33 @@
 
 #let typst-content = content
 
-// Global defaults
+/// Default axis style
+///
+/// #show-parameter-block("tick-limit", "int", default: 100, [Upper major tick limit.])
+/// #show-parameter-block("minor-tick-limit", "int", default: 1000, [Upper minor tick limit.])
+/// #show-parameter-block("auto-tick-factors", "array", [List of tick factors used for automatic tick step determination.])
+/// #show-parameter-block("auto-tick-count", "int", [Number of ticks to generate by default.])
+/// #show-parameter-block("stroke", "stroke", [Axis stroke style.])
+/// #show-parameter-block("label.offset", "number", [Distance to move axis labels away from the axis.])
+/// #show-parameter-block("label.anchor", "anchor", [Anchor of the axis label to use for it's placement.])
+/// #show-parameter-block("label.angle", "angle", [Angle of the axis label.])
+/// #show-parameter-block("axis-layer", "float", [Layer to draw axes on (see @@on-layer() )])
+/// #show-parameter-block("grid-layer", "float", [Layer to draw the grid on (see @@on-layer() )])
+/// #show-parameter-block("background-layer", "float", [Layer to draw the background on (see @@on-layer() )])
+/// #show-parameter-block("padding", "number", [Extra distance between axes and plotting area. For schoolbook axes, this is the length of how much axes grow out of the plotting area.])
+/// #show-parameter-block("overshoot", "number", [School-book style axes only: Extra length to add to the end (right, top) of axes.])
+/// #show-parameter-block("tick.stroke", "stroke", [Major tick stroke style.])
+/// #show-parameter-block("tick.minor-stroke", "stroke", [Minor tick stroke style.])
+/// #show-parameter-block("tick.offset", ("number", "ratio"), [Major tick offset along the tick's direction, can be relative to the length.])
+/// #show-parameter-block("tick.minor-offset", ("number", "ratio"), [Minor tick offset along the tick's direction, can be relative to the length.])
+/// #show-parameter-block("tick.length", ("number"), [Major tick length.])
+/// #show-parameter-block("tick.minor-length", ("number", "ratio"), [Minor tick length, can be relative to the major tick length.])
+/// #show-parameter-block("tick.label.offset", ("number"), [Major tick label offset away from the tick.])
+/// #show-parameter-block("tick.label.angle", ("angle"), [Major tick label angle.])
+/// #show-parameter-block("tick.label.anchor", ("anchor"), [Anchor of major tick labels used for positioning.])
+/// #show-parameter-block("grid.stroke", "stroke", [Major grid line stroke style.])
+/// #show-parameter-block("minor-grid.stroke", "stroke", [Minor grid line stroke style.])
+/// #show-parameter-block("shared-zero", ("bool", "content"), default: "$0$", [School-book style axes only: Content to display at the plots origin (0,0). If set to `false`, nothing is shown. Having this set, suppresses auto-generated ticks for $0$!])
 #let default-style = (
   tick-limit: 100,
   minor-tick-limit: 1000,
@@ -48,12 +74,12 @@
   ),
 )
 
-// Scientific Style
+// Default Scientific Style
 #let default-style-scientific = util.merge-dictionary(default-style, (
-  left: (tick: (label: (anchor: "east"))),
+  left:   (tick: (label: (anchor: "east"))),
   bottom: (tick: (label: (anchor: "north"))),
-  right: (tick: (label: (anchor: "west"))),
-  top: (tick: (label: (anchor: "south"))),
+  right:  (tick: (label: (anchor: "west"))),
+  top:    (tick: (label: (anchor: "south"))),
   stroke: (cap: "square"),
   padding: 0,
 ))
@@ -73,7 +99,7 @@
     length: .2cm,
     minor-length: 70%,
   ),
-  shared-zero: true, // Show zero tick label at (0, 0)
+  shared-zero: $0$, // Show zero tick label at (0, 0)
 ))
 
 #let _prepare-style(ctx, style) = {
@@ -205,9 +231,9 @@
   return (v - min) / dt
 }
 
-/// Compute list of linear ticks for axis
-///
-/// - axis (axis): Axis
+// Compute list of linear ticks for axis
+//
+// - axis (axis): Axis
 #let compute-linear-ticks(axis, style, add-zero: true) = {
   let (min, max) = (axis.min, axis.max)
   let dt = max - min; if (dt == 0) { dt = 1 }
@@ -271,9 +297,9 @@
   return l
 }
 
-/// Get list of fixed axis ticks
-///
-/// - axis (axis): Axis object
+// Get list of fixed axis ticks
+//
+// - axis (axis): Axis object
 #let fixed-ticks(axis) = {
   let l = ()
   if "list" in axis.ticks {
@@ -295,12 +321,12 @@
   return l
 }
 
-/// Compute list of axis ticks
-///
-/// A tick triple has the format:
-///   (rel-value: float, label: content, major: bool)
-///
-/// - axis (axis): Axis object
+// Compute list of axis ticks
+//
+// A tick triple has the format:
+//   (rel-value: float, label: content, major: bool)
+//
+// - axis (axis): Axis object
 #let compute-ticks(axis, style, add-zero: true) = {
   let find-max-n-ticks(axis, n: 11) = {
     let dt = calc.abs(axis.max - axis.min)
@@ -337,13 +363,13 @@
   return ticks
 }
 
-/// Draw inside viewport coordinates of two axes
-///
-/// - size (vector): Axis canvas size (relative to origin)
-/// - origin (coordinates): Axis Canvas origin
-/// - x (axis): Horizontal axis
-/// - y (axis): Vertical axis
-/// - name (string,none): Group name
+// Draw inside viewport coordinates of two axes
+//
+// - size (vector): Axis canvas size (relative to origin)
+// - origin (coordinates): Axis Canvas origin
+// - x (axis): Horizontal axis
+// - y (axis): Vertical axis
+// - name (string,none): Group name
 #let axis-viewport(size, x, y, origin: (0, 0), name: none, body) = {
   size = (rel: size, to: origin)
 
@@ -421,7 +447,7 @@
       let angle = def(style.tick.label.angle, 0deg)
       let anchor = def(style.tick.label.anchor, "center")
 
-      draw.content(c, label, angle: angle, anchor: anchor)
+      draw.content(c, [#label], angle: angle, anchor: anchor)
     }
   }
 }
@@ -598,7 +624,7 @@
     let x-y = value-on-axis(y-axis, x-position) * h
     let y-x = value-on-axis(x-axis, y-position) * w
 
-    let shared-zero = style.shared-zero and x-position == 0 and y-position == 0
+    let shared-zero = style.shared-zero != false and x-position == 0 and y-position == 0
 
     let x-ticks = compute-ticks(x-axis, style, add-zero: not shared-zero)
     let y-ticks = compute-ticks(y-axis, style, add-zero: not shared-zero)
@@ -666,7 +692,12 @@
         if shared-zero {
           let pt = (rel: (-style.tick.label.offset, -style.tick.label.offset),
                      to: (y-x, x-y))
-          content(pt, $0$, anchor: "north-east")
+          let zero = if type(style.shared-zero) == typst-content {
+            style.shared-zero
+          } else {
+            $0$
+          }
+          content(pt, zero, anchor: "north-east")
         }
       })
     })
