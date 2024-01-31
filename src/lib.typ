@@ -8,6 +8,7 @@
 #import "matrix.typ"
 #import "styles.typ"
 #import "coordinate.typ"
+#import "intersection.typ"
 #import "drawable.typ"
 #import "process.typ"
 #import "util.typ"
