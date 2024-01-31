@@ -1460,7 +1460,7 @@
         auto,
         (),
         name: name,
-        transform: ctx.transform,
+        transform: none,
         path-anchors: true,
         path: drawables,
       )
