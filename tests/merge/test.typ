@@ -1,7 +1,8 @@
 #set page(width: auto, height: auto)
 #import "/src/lib.typ": *
+#import "/tests/helper.typ": *
 
-#box(stroke: 2pt + red, canvas({
+#test-case({
   import draw: *
 
   // Merge lines
@@ -30,9 +31,24 @@
     arc((), start: 0deg, stop: -130deg, name: "arc")
     bezier("arc.arc-end", (0,0), (0, -1), (2, -2))
   })
-}))
+})
 
-#box(stroke: 2pt + red, canvas({
+#test-case({
+  import draw: *
+
+  rotate(45deg)
+  merge-path({
+    line((0,0), (1,0), (2,-1))
+    arc((), start: 0deg, stop: -130deg, name: "arc")
+    bezier("arc.arc-end", (0,0), (0, -1), (2, -2))
+  }, name: "p", fill: yellow)
+
+  for i in range(0, 110, step: 10) {
+    circle((name: "p", anchor: 1% * i), radius: .1, fill: white)
+  }
+})
+
+#test-case({
   import draw: *
 
   get-ctx(ctx => {
@@ -48,4 +64,4 @@
     assert.eq(path.segments.first().len(), 1+4,
       message: "Expected 4 points")
   })
-}))
+})
