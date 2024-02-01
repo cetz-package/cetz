@@ -460,7 +460,7 @@
 // - right (axis): Right axis
 // - top (axis): Top axis
 // - name (string): Object name
-// - draw-unset (bool): Draw unset axes
+// - draw-unset (bool): Draw axes that are set to `none`
 // - ..style (any): Style
 #let scientific(size: (1, 1),
                 left: none,
