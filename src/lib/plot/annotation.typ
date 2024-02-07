@@ -3,6 +3,7 @@
 #import "/src/draw.typ"
 #import "/src/process.typ"
 #import "/src/util.typ"
+#import "/src/matrix.typ"
 
 /// Add an annotation to the plot
 ///
@@ -51,15 +52,14 @@
     return (x, y)
   }
 
+  ctx.transform = matrix.ident()
   let (ctx: ctx, bounds: bounds, drawables: _) = process.many(ctx, annotation.body)
   if bounds == none {
     return (x, y)
   }
 
-  let (x-min, y-max, ..) = bounds.low
-  y-max *= -1
-  let (x-max, y-min, ..) = bounds.high
-  y-min *= -1
+  let (x-min, y-min, ..) = bounds.low
+  let (x-max, y-max, ..) = bounds.high
 
   x-min -= annotation.padding.left
   x-max += annotation.padding.right
