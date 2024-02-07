@@ -110,11 +110,12 @@ Border anchors also specify named compass directions such as "north", "north-eas
 ```example-vertical
 circle((0, 0), name: "circle", radius: 1)
 
-content((name: "circle", anchor: 0deg), box(fill: white)[0deg], anchor: "west")
-content((name: "circle", anchor: 160deg), box(fill: white)[160deg], anchor: "south-east")
-content("circle.north", box(fill: white)[North], anchor: "south")
-content("circle.south-east", box(fill: white)[South East], anchor: "north-west")
-content("circle.south-west", box(fill: white)[South West], anchor: "north-east")
+set-style(content: (frame: "rect", stroke: none, fill: white, padding: .1))
+content((name: "circle", anchor: 0deg), [0deg], anchor: "west")
+content((name: "circle", anchor: 160deg), [160deg], anchor: "south-east")
+content("circle.north", [North], anchor: "south")
+content("circle.south-east", [South East], anchor: "north-west")
+content("circle.south-west", [South West], anchor: "north-east")
 ```
 
 === Path 
@@ -125,12 +126,13 @@ Path anchors also specify three anchors "start", "mid" and "end".
 ```example-vertical
 line((0,0), (10, 1), name: "line")
 
-content("line.start", box(fill: white)[0%, 0, "start"], anchor: "east")
-content("line.mid", box(fill: white)[50%, "mid"], anchor: "east")
-content("line.end", box(fill: white)[100%, "end"], anchor: "west")
+set-style(content: (frame: "rect", stroke: none, fill: white, padding: .1))
+content("line.start", [0%, 0, "start"], anchor: "east")
+content("line.mid", [50%, "mid"])
+content("line.end", [100%, "end"], anchor: "west")
 
-content((name: "line", anchor: 75%), box(fill: white)[75%])
-content((name: "line", anchor: 50pt), box(fill: white)[50pt])
+content((name: "line", anchor: 75%), [75%])
+content((name: "line", anchor: 50pt), [50pt])
 ```
 
 
@@ -215,17 +217,23 @@ circle((0.5, -2.5), radius: 0.5, fill: green)
 === Marks <styling-mark>
 Marks are arrow tips that can be added to the end of path based elements that support the `mark` style key, or can be directly drawn by using the `mark` draw function. Marks are specified by giving there names as strings and have several options to customise them. You can give an array of names to have multiple marks in a row, dictionaries can also be used in the array for per mark styling.
 
-#table(
+#figure(table(
   columns: 3,
-  [Name], [Shorthand], [Shape],
-  ..(for (shorthand, item) in cetz.mark-shapes.mnemonics {
+  [*Name*], [*Shorthand*], [*Shape*],
+  ..(for (name, item) in cetz.mark-shapes.marks {
+    let name-to-mnemonic = (:)
+    for (name, item) in cetz.mark-shapes.mnemonics {
+      let list = name-to-mnemonic.at(item.at(0), default: ())
+      list += (raw(name) + if item.at(1) { " (reversed)" },)
+      name-to-mnemonic.insert(item.at(0), list)
+    }
     (
-      item.at(0) + if item.at(1) { " (reversed)" },
-      raw(shorthand),
-      cetz.canvas(cetz.draw.line((), (1, 0), mark: (end: shorthand)))
+      raw(name),
+      name-to-mnemonic.at(name, default: ([],)).join([, ]),
+      cetz.canvas(cetz.draw.line((), (1, 0), mark: (end: name)))
     )
   })
-)
+), caption: [Mark symbols])
 
 ```example
 let c = ((rel: (0, -1)), (rel: (2, 0), update: false)) // Coordinates to draw the line, it is not necessary to understand this for this example.

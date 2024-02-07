@@ -75,7 +75,6 @@
 ///
 /// #example(```
 /// import cetz.tree
-/// set-style(content: (padding: .1))
 /// let data = ([\*], ([A], [A.A], [A.B]), ([B], [B.A]))
 /// tree.tree(
 ///   data,
@@ -86,8 +85,7 @@
 ///   },
 ///   draw-edge: (from, to, ..) => {
 ///     let (a, b) = (from + ".center", to + ".center")
-///     line((a: a, b: b, abs: true, number: .40),
-///          (a: b, b: a, abs: true, number: .40))
+///     line((a, .4, b), (b, .4, a))
 ///   }
 /// )
 /// ```)
