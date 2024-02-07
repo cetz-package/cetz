@@ -881,8 +881,8 @@
         border.segments,
         typst-rotate(angle,
           block(
-            width: width * ctx.length,
-            height: height * ctx.length,
+            width: calc.round(width, digits: 4) * ctx.length,
+            height: calc.round(height, digits: 4) * ctx.length,
             inset: (
               top: padding.at("top", default: 0) * ctx.length,
               left: padding.at("left", default: 0) * ctx.length,
