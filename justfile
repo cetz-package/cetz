@@ -2,7 +2,6 @@
 # mode: makefile
 # End:
 gallery_dir := "./gallery"
-test_dir := "./tests"
 
 package target *options:
   ./scripts/package "{{target}}" {{options}}
@@ -11,10 +10,10 @@ install target="@local":
   ./scripts/package "{{target}}"
 
 test *filter:
-  ./scripts/test test {{filter}}
+  typst-test run {{filter}}
 
 update-test *filter:
-  ./scripts/test update {{filter}}
+  typst-test update {{filter}}
 
 manual:
   typst c manual.typ manual.pdf

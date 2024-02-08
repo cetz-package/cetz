@@ -1,5 +1,12 @@
 name: Tests
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
   ci:
@@ -20,6 +27,12 @@ jobs:
         uses: baptiste0928/cargo-install@v2.2.0
         with:
           crate: just
+      - name: Install typst-test from github
+        uses: baptiste0928/cargo-install@v2.2.0
+        with:
+          crate: typst-test
+          git: https://github.com/tingerrr/typst-test.git
+          tag: ci-semi-stable
       - uses: yusancky/setup-typst@v2
         id: setup-typst
         with:
