@@ -97,7 +97,7 @@ To run all tests you can run the `just test` target. You need to have
 [`typst-test`](https://github.com/tingerrr/typst-test/) in your `PATH`: `cargo install typst-test --git https://github.com/tingerrr/typst-test`.
 
 ## Projects using CeTZ
-- [circuitypst](https://github.com/fenjalien/circuitypst) A port of [circuitikz](https://github.com/circuitikz/circuitikz) to Typst.
+- [cirCeTZ](https://github.com/fenjalien/cirCeTZ) A port of [circuitikz](https://github.com/circuitikz/circuitikz) to Typst.
 - [conchord](https://github.com/sitandr/conchord) Package for writing lyrics with chords that generates fretboard diagrams using CeTZ.
 - [finite](https://github.com/jneug/typst-finite) Finite is a Typst package for rendering finite automata.
 - [fletcher](https://github.com/Jollywatt/typst-fletcher) Package for drawing commutative diagrams and figures with arrows.
