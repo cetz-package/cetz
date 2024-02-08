@@ -873,6 +873,14 @@
     if style.frame != none {
       drawables.push(border)
     }
+
+    // Because of precision problems with some fonts (e.g. "Source Sans 3")
+    // we need to round the block sizes up. Otherwise, unwanted hyphenation
+    // gets introduced.
+    let round-up(v, digits: 8) = {
+      calc.ceil(v * calc.pow(10, digits)) / calc.pow(10, digits)
+    }
+
     drawables.push(
       drawable.content(
         anchors.center,
@@ -881,8 +889,8 @@
         border.segments,
         typst-rotate(angle,
           block(
-            width: width * ctx.length,
-            height: height * ctx.length,
+            width: round-up(width) * ctx.length,
+            height: round-up(height) * ctx.length,
             inset: (
               top: padding.at("top", default: 0) * ctx.length,
               left: padding.at("left", default: 0) * ctx.length,
