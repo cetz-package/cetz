@@ -13,6 +13,29 @@
 
 #import "transformations.typ": move-to
 
+// Returns body if of type array, an
+// empty array if body is none or
+// the result of body called with ctx if of type
+// function. A function result of none will return
+// an empty array.
+#let resolve-body(ctx, body) = {
+  assert(body == none or type(body) in (array, function),
+    message: "Body must be of type array, function or none")
+
+  let body = if type(body) == function {
+    body(ctx)
+  } else {
+    body
+  }
+
+  return if body == none {
+    ()
+  } else {
+    assert(type(body) == array)
+    body
+  }
+}
+
 /// Hides an element.
 ///
 /// Hidden elements are not drawn to the canvas, are ignored when calculating bounding boxes and discarded by `merge-path`. All
@@ -112,7 +135,7 @@
           message: "No such element '" + elem + "' in elements " + repr(ctx.nodes.keys()))
         named-drawables.push(ctx.nodes.at(elem).drawables)
       } else {
-        for sub in elem {
+        for sub in resolve-body(ctx, elem) {
           let sub-drawables = ()
           (ctx: ctx, drawables: sub-drawables, ..) = process.element(ctx, sub)
           if sub-drawables != none and sub-drawables != () {
