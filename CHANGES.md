@@ -7,14 +7,19 @@
 - Open arcs are no longer modified for anchors, invalid border anchors will panic.
 - Grids now actually support border anchors.
 
+## Marks
+- Marks can now be placed on a path after that path got transformed. See the new `shape-transform` style key.
+
+## Misc
+- The `hide` function now support an additional `bounds:` parameter to enable canvas bounds adjustment for hidden elements
+
 ## Libs
 ### Plot
 - The default style of plots changed
 - New style keys for enabling/disabling the shared zero tick for "school-book" style plots
 - New style keys for specifying the layer of different plot elements (`grid-layer`, `axis-layer`, `background-layer`)
-
-## Misc
-- The `hide` function now support an additional `bounds:` parameter to enable canvas bounds adjustment for hidden elements
+- Fixed annotation bounds calculation
+- Marks insides annotations are now unaffected by the plots canvas scaling by default (see marks new post-transform style key)
 
 # 0.2.0
 CeTZ 0.2.0 requires Typst 0.10.0

@@ -312,20 +312,27 @@
       path: drawables
     )
 
+    let transformed = false
     if mark_.check-mark(style.mark) {
+      if style.mark.post-transform {
+        drawables = drawable.apply-transform(transform, drawables).first()
+        transformed = true
+      }
+
       let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.segments)
       drawables.segments = segments
       drawables = (drawables,) +  marks
+    }
+
+    if not transformed {
+      drawables = drawable.apply-transform(transform, drawables)
     }
 
     return (
       ctx: ctx,
       name: name,
       anchors: anchors,
-      drawables: drawable.apply-transform(
-        transform,
-        drawables,
-      )
+      drawables: drawables,
     )
   },)
 }
@@ -567,17 +574,27 @@
     )
 
     // Place marks and adjust segments
+    let transformed = false
     if mark_.check-mark(style.mark) {
+      if style.mark.post-transform {
+        drawables = drawable.apply-transform(transform, drawables).first()
+        transformed = true
+      }
+
       let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.segments)
       drawables.segments = segments
       drawables = (drawables,) + marks
+    }
+
+    if not transformed {
+      drawables = drawable.apply-transform(transform, drawables)
     }
 
     return (
       ctx: ctx,
       name: name,
       anchors: anchors,
-      drawables: drawable.apply-transform(transform, drawables)
+      drawables: drawables,
     )
   },)
 }
@@ -1196,20 +1213,27 @@
         path: drawables,
       )
 
+      let transformed = false
       if mark_.check-mark(style.mark) {
+        if style.mark.post-transform {
+          drawables = drawable.apply-transform(transform, drawables).first()
+          transformed = true
+        }
+
         let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.segments)
         drawables.segments = segments
         drawables = (drawables,) + marks
+      }
+
+      if not transformed {
+        drawables = drawable.apply-transform(transform, drawables)
       }
 
       return (
         ctx: ctx, 
         name: name,
         anchors: anchors,
-        drawables: drawable.apply-transform(
-          transform,
-          drawables
-        )
+        drawables: drawables,
       )
     },
   )
@@ -1304,20 +1328,27 @@
       )
     }
 
+    let transformed = false
     if mark_.check-mark(style.mark) {
+      if style.mark.post-transform {
+        drawables = drawable.apply-transform(transform, drawables).first()
+        transformed = true
+      }
+
       let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.segments)
       drawables.segments = segments
       drawables = (drawables,) + marks
+    }
+
+    if not transformed {
+      drawables = drawable.apply-transform(transform, drawables)
     }
 
     return (
       ctx: ctx,
       name: name,
       anchors: anchors,
-      drawables: drawable.apply-transform(
-        transform,
-        drawables
-      )
+      drawables: drawables,
     )
   },)
 }
@@ -1390,20 +1421,27 @@
       )
     }
 
+    let transformed = false
     if mark_.check-mark(style.mark) {
+      if style.mark.post-transform {
+        drawables = drawable.apply-transform(transform, drawables).first()
+        transformed = true
+      }
+
       let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.segments)
       drawables.segments = segments
       drawables = (drawables,) + marks
+    }
+
+    if not transformed {
+      drawables = drawable.apply-transform(transform, drawables)
     }
 
     return (
       ctx: ctx,
       name: name,
       anchors: anchors,
-      drawables: drawable.apply-transform(
-        transform,
-        drawables
-      )
+      drawables: drawables,
     )
   },)
 }
