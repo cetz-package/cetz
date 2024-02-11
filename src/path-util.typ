@@ -107,6 +107,11 @@
   let pts = segment.slice(1)
 
   let (start, end, distance, length) = _points-between-distance(pts, distance)
+  // length can be zero if start and end are at the same position
+  // this can occur for several reasons, user input, group has zero width or height (not both)
+  if length == 0 {
+    length = 1
+  }
   return vector.lerp(pts.at(start), pts.at(end), distance / length)
 }
 
