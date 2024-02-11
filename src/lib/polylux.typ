@@ -3,7 +3,7 @@
 // Function returning the context polylux library object
 #let _polylux(ctx) = {
   assert(ctx.at("polylux-lib", default: none) != none,
-    message: "Polylux library not registered: set `polylux: import \"...\"` at your canvas to enable it")
+    message: "Polylux library not registered: set `polylux: ...` at your canvas to enable it")
   return ctx.polylux-lib
 }
 

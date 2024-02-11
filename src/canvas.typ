@@ -72,7 +72,7 @@
       // with the canvas block
       utility-content: (),
 
-      // Additions bindings
+      // Additional bindings
       polylux-lib: polylux,
     )
 
