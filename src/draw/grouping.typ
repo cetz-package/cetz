@@ -4,6 +4,7 @@
 #import "/src/styles.typ"
 #import "/src/drawable.typ"
 #import "/src/vector.typ"
+#import "/src/matrix.typ"
 #import "/src/util.typ"
 #import "/src/coordinate.typ"
 #import "/src/aabb.typ"
@@ -206,6 +207,7 @@
     let drawables = ()
     let group-ctx = ctx
     group-ctx.groups.push((anchors: (:)))
+    group-ctx.transform = matrix.ident()
     (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, if type(body) == function {body(ctx)} else {body})
 
     // Apply bounds padding
@@ -221,7 +223,6 @@
     // Calculate a bounding box path used for border
     // anchor calculation.
     let (center, width, height, path) = if bounds != none {
-      (bounds.low.at(1), bounds.high.at(1)) = (bounds.high.at(1), bounds.low.at(1))
       let center = aabb.mid(bounds)
       let (width, height, _) = aabb.size(bounds)
       let path = drawable.path(
@@ -246,6 +247,7 @@
       border-anchors: bounds != none,
       radii: (width, height),
       path: path,
+      transform: ctx.transform,
     )
     return (
       ctx: ctx,
