@@ -8,15 +8,6 @@
 
 #import util: typst-length
 
-// Optionally wrap the canvas in a locate call
-#let _opt-locate(enable, body) = {
-  return if enable {
-    locate(body)
-  } else {
-    body(none)
-  }
-}
-
 /// Sets up a canvas for drawing on.
 ///
 /// - length (length,ratio): Used to specify what 1 coordinate unit is. If given a ratio, that ratio is relative to the containing elements width!
@@ -31,8 +22,7 @@
 ///   ```
 /// -> content
 #let canvas(length: 1cm, polylux: none, debug: false, background: none, body) = {
-  let locate = polylux != none
-  _opt-locate(locate, loc => layout(ly => style(st => {
+  locate(loc => layout(ly => style(st => {
     if body == none {
       return []
     }
@@ -71,9 +61,6 @@
       // Additional content callbacks to call and return
       // with the canvas block
       utility-content: (),
-
-      // Additional bindings
-      polylux-lib: polylux,
     )
 
     let (ctx, bounds, drawables) = process.many(ctx, body)

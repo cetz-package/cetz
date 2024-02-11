@@ -2,9 +2,9 @@
 
 // Function returning the context polylux library object
 #let _polylux(ctx) = {
-  assert(ctx.at("polylux-lib", default: none) != none,
-    message: "Polylux library not registered: set `polylux: ...` at your canvas to enable it")
-  return ctx.polylux-lib
+  assert(ctx.at("polylux-module", default: none) != none,
+    message: "Polylux library not registered: call `init-polylux(...)` to enable it")
+  return ctx.polylux-module
 }
 
 // Modified copy of Polylux _conditional-display function
@@ -29,6 +29,14 @@
     }
   })
 }
+
+/// Initialize CeTZ Polylux bindings
+///
+/// - module (module): The Polylux module object
+#let init-polylux(module) = set-ctx(ctx => {
+  ctx.polylux-module = module
+  return ctx
+})
 
 /// Polylux uncover binding
 ///

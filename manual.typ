@@ -906,12 +906,13 @@ All path decoration functions support the following style keys:
 
 === Polylux integration
 To enable #link("https://github.com/andreasKroepelin/polylux")[Polylux] integration with `canvas`, you must pass the
-polylux module object to the canvas:
+polylux module object to the canvas via `init-polylux(...)`:
 ```typst
 #import "@preview/polylux:0.3.1" as pl
 ...
-#cetz.canvas(polylux: pl, {
+#cetz.canvas({
   import cetz.polylux: * // Import polylux bindings
+  init-polylux(pl)       // Initialize CeTZ polylux integration
   ...
 })
 ```

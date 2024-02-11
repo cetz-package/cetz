@@ -6,9 +6,9 @@
 
 #polylux-slide[
   Heading
-  #canvas(polylux: pl, {
+  #canvas({
     import draw: *
-    import polylux: *
+    import polylux: *; init-polylux(pl)
 
     rect((-1,-1), (1,1), fill: red)
     only(2, circle((.5,.3), fill: blue))
