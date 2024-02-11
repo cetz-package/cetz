@@ -192,13 +192,11 @@
 /// - name (none, string):
 /// - ..style (style):
 #let group(body, name: none, anchor: none, ..style) = {
-  assert(type(body) in (array, function), message: "Incorrect type for body, expected an array or function. Instead got: " + repr(body))
   // No extra positional arguments from the style sink
-  assert.eq(
-    style.pos(),
-    (),
-    message: "Unexpected positional arguments: " + repr(style.pos()),
-  )
+  assert.eq(style.pos(), (),
+    message: "Unexpected positional arguments: " + repr(style.pos()),)
+  util.assert-body(body)
+
   (ctx => {
     let style = styles.resolve(ctx.style, merge: style.named(), root: "group")
 
@@ -206,7 +204,8 @@
     let drawables = ()
     let group-ctx = ctx
     group-ctx.groups.push((anchors: (:)))
-    (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, if type(body) == function {body(ctx)} else {body})
+
+    (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, util.resolve-body(group-ctx, body))
 
     // Apply bounds padding
     let bounds = if bounds != none {
@@ -432,13 +431,14 @@
 /// ```)
 ///
 /// - layer (float, integer): The layer to place the elements on. Elements placed without `on-layer` are always placed on layer 0.
-/// - body (elements): Elements to draw on the layer specified.
+/// - body (elements, function): Elements to draw on the layer specified. A function that accepts `ctx` and returns elements is also accepted.
 #let on-layer(layer, body) = {
-  assert(type(layer) in (int, float), message: "Layer must be a float or integer, 0 being the default layer. Got: " + repr(layer))
-  assert(type(body) in (function, array))
-  return (ctx => {
-    let (ctx, drawables, ..) = process.many(ctx, if type(body) == function { body(ctx) } else { body })
+  util.assert-body(body)
+  assert(type(layer) in (int, float),
+    message: "Layer must be a float or integer, 0 being the default layer. Got: " + repr(layer))
 
+  return (ctx => {
+    let (ctx, drawables, ..) = process.many(ctx, util.resolve-body(ctx, body))
     drawables = drawables.map(d => {
       if d.at("z-index", default: none) == none {
         d.z-index = layer
