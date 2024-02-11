@@ -2,6 +2,7 @@
 
 #import "canvas.typ": canvas
 #import "draw.typ"
+#import "plugin.typ"
 
 // Expose utilities
 #import "vector.typ"

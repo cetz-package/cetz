@@ -5,24 +5,22 @@
 #import "aabb.typ"
 #import "styles.typ"
 #import "process.typ"
+#import "plugin.typ": plugins
 
 #import util: typst-length
 
-/// Sets up a canvas for drawing on. 
+/// Sets up a canvas for drawing on.
 ///
 /// - length (length,ratio): Used to specify what 1 coordinate unit is. If given a ratio, that ratio is relative to the containing elements width!
 /// - body (none,array,element): A code block in which functions from `draw.typ` have been called.
 /// - background (none,color): A color to be used for the background of the canvas.
 /// - debug (bool): Shows the bounding boxes of each element when `true`.
 /// -> content
-#let canvas(length: 1cm, debug: false, background: none, body) = layout(ly => style(st => {
-  if body == none {
-    return []
-  }
-  assert(
-    type(body) == array,
-    message: "Incorrect type for body: " + repr(type(body)),
-  )
+#let canvas(length: 1cm, debug: false, background: none, body) = plugins.display(plugins => locate(loc => layout(ly => style(st => {
+  let body = body
+  if body == none { body = () }
+  assert(type(body) == array,
+    message: "Incorrect type for body: " + repr(type(body)))
 
   assert(type(length) in (typst-length, ratio), message: "Expected `length` to be of type length or ratio, got " + repr(length))
   let length = if type(length) == ratio {
@@ -35,6 +33,7 @@
 
   let ctx = (
     typst-style: st,
+    typst-location: loc,
     length: length,
     debug: debug,
     // Previous element position & bbox
@@ -52,7 +51,18 @@
     groups: (),
   )
 
-  let (ctx, bounds, drawables) = process.many(ctx, body)
+  // Initialize plug-ins
+  let prefix = ()
+  for plugin in plugins {
+    if "init" in plugin {
+      ctx = (plugin.init)(ctx)
+    }
+    if "draw" in plugin {
+      prefix += (plugin.draw)(ctx)
+    }
+  }
+
+  let (ctx, bounds, drawables) = process.many(ctx, prefix + body)
   if bounds == none {
     return []
   }
@@ -130,4 +140,4 @@
       }, dx: x * length, dy: y * length)
     }
   }))
-}))
+}))))

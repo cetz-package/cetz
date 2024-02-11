@@ -904,6 +904,33 @@ All path decoration functions support the following style keys:
 
 #doc-style.parse-show-module("/src/lib/decorations/path.typ")
 
+=== Plug-Ins
+CeTZ supports plug-ins that get automatically called for each canvas.
+A plug-in can modify the initial state of a canvas by providing any of the
+callbacks `init` or `draw`.
+
+#doc-style.parse-show-module("/src/plugin.typ")
+
+==== Example
+```typsc
+plugin.register((
+  init: ctx => {
+    ctx.my-plugin-data = [Demo]
+    return ctx
+  },
+  draw: ctx => {
+    cetz.draw.set-style(stroke: blue)
+    cetz.draw.content((0,0), ctx.my-plugin-data)
+  }
+))
+...
+canvas({
+  // All plug-in's draw functions get automatically injected here
+  import draw: *
+  line((0,0), (1,1))
+})
+```
+
 ==== Styling
 
 ===== Default `brace` Style
