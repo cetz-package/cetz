@@ -13,29 +13,6 @@
 
 #import "transformations.typ": move-to
 
-// Returns body if of type array, an
-// empty array if body is none or
-// the result of body called with ctx if of type
-// function. A function result of none will return
-// an empty array.
-#let resolve-body(ctx, body) = {
-  assert(body == none or type(body) in (array, function),
-    message: "Body must be of type array, function or none")
-
-  let body = if type(body) == function {
-    body(ctx)
-  } else {
-    body
-  }
-
-  return if body == none {
-    ()
-  } else {
-    assert(type(body) == array)
-    body
-  }
-}
-
 /// Hides an element.
 ///
 /// Hidden elements are not drawn to the canvas, are ignored when calculating bounding boxes and discarded by `merge-path`. All
@@ -132,7 +109,7 @@
           message: "No such element '" + elem + "' in elements " + repr(ctx.nodes.keys()))
         named-drawables.push(ctx.nodes.at(elem).drawables)
       } else {
-        for sub in resolve-body(ctx, elem) {
+        for sub in elem {
           let sub-drawables = ()
           (ctx: ctx, drawables: sub-drawables, ..) = process.element(ctx, sub)
           if sub-drawables != none and sub-drawables != () {
@@ -218,6 +195,7 @@
   // No extra positional arguments from the style sink
   assert.eq(style.pos(), (),
     message: "Unexpected positional arguments: " + repr(style.pos()),)
+  util.assert-body(body)
 
   (ctx => {
     let style = styles.resolve(ctx.style, merge: style.named(), root: "group")
@@ -227,7 +205,7 @@
     let group-ctx = ctx
     group-ctx.groups.push((anchors: (:)))
 
-    (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, resolve-body(ctx, body))
+    (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, util.resolve-body(group-ctx, body))
 
     // Apply bounds padding
     let bounds = if bounds != none {
@@ -455,12 +433,12 @@
 /// - layer (float, integer): The layer to place the elements on. Elements placed without `on-layer` are always placed on layer 0.
 /// - body (elements, function): Elements to draw on the layer specified. A function that accepts `ctx` and returns elements is also accepted.
 #let on-layer(layer, body) = {
-  if body == none { body = () }
+  util.assert-body(body)
   assert(type(layer) in (int, float),
     message: "Layer must be a float or integer, 0 being the default layer. Got: " + repr(layer))
 
   return (ctx => {
-    let (ctx, drawables, ..) = process.many(ctx, resolve-body(ctx, body))
+    let (ctx, drawables, ..) = process.many(ctx, util.resolve-body(ctx, body))
     drawables = drawables.map(d => {
       if d.at("z-index", default: none) == none {
         d.z-index = layer

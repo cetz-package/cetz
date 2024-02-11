@@ -363,3 +363,25 @@
   }
   return stroke
 }
+
+// Function for early checking the type of
+// a body (element) argument.
+#let assert-body(body) = {
+  assert(body == none or type(body) in (array, function),
+    message: "Body must be of type none, array or function")
+}
+
+// Returns body if of type array, an
+// empty array if body is none or
+// the result of body called with ctx if of type
+// function. A function result of none will return
+// an empty array.
+#let resolve-body(ctx, body) = {
+  if type(body) == function {
+    body = body(ctx)
+  }
+  if body == none {
+    body = ()
+  }
+  return body
+}
