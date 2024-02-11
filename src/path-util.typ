@@ -107,12 +107,13 @@
   let pts = segment.slice(1)
 
   let (start, end, distance, length) = _points-between-distance(pts, distance)
-  // length can be zero if start and end are at the same position
-  // this can occur for several reasons, user input, group has zero width or height (not both)
-  if length == 0 {
-    length = 1
+  return if length == 0 {
+    // length can be zero if start and end are at the same position
+    // this can occur for several reasons, user input, group has zero width or height (not both)
+    pts.at(end)
+  } else {
+    vector.lerp(pts.at(start), pts.at(end), distance / length)
   }
-  return vector.lerp(pts.at(start), pts.at(end), distance / length)
 }
 
 /// Finds the point at a given distance from the start of a path segment. Distances greater than the length of the segment return the end of the path segment. Distances less than zero return the start of the segment.
