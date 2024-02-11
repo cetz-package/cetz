@@ -904,6 +904,23 @@ All path decoration functions support the following style keys:
 
 #doc-style.parse-show-module("/src/lib/decorations/path.typ")
 
+=== Polylux integration
+To enable #link("https://github.com/andreasKroepelin/polylux")[Polylux] integration with `canvas`, you must pass the
+polylux module object to the canvas:
+```typst
+#import "@preview/polylux:0.3.1" as pl
+...
+#cetz.canvas(polylux: pl, {
+  import cetz.polylux: * // Import polylux bindings
+  ...
+})
+```
+
+Note that you can only use the wrapper functions provided by `cetz.polylux` to
+show/hide CeTZ elements on Polylux slides!
+
+#doc-style.parse-show-module("/src/lib/polylux.typ")
+
 ==== Styling
 
 ===== Default `brace` Style
