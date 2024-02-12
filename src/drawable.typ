@@ -47,7 +47,8 @@
     segments: segments,
     fill: fill,
     stroke: stroke,
-    hidden: false
+    hidden: false,
+    bounds: true,
   )
 }
 
@@ -60,6 +61,7 @@
     segments: border,
     body: body,
     hidden: false,
+    bounds: true,
   )
 }
 

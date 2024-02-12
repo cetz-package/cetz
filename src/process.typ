@@ -15,7 +15,7 @@
       element.drawables = (element.drawables,)
     }
     for drawable in element.drawables {
-      if not drawable.hidden {
+      if drawable.bounds {
         bounds = aabb.aabb(
           if drawable.type == "path" {
             path-util.bounds(drawable.segments)

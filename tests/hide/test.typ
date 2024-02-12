@@ -1,7 +1,8 @@
 #set page(width: auto, height: auto)
 #import "/src/lib.typ": *
+#import "/tests/helper.typ": *
 
-#box(stroke: 2pt + red, canvas({
+#test-case({
   import draw: *
   rect((0,0), (5,5))
 
@@ -21,9 +22,9 @@
   // Use hidden anchor
   hide(line((0,0), (2.5, 2.5), name: "line"))
   content("line.end", [Hidden anchor])
-}))
+})
 
-#box(stroke: 2pt + red, canvas({
+#test-case({
   import draw: *
 
   merge-path({
@@ -34,4 +35,10 @@
     })
     line((), (rel: (1, -1)))
   }, close: true)
-}))
+})
+
+#test-case({
+  import draw: *
+
+  hide(line((-1,-1), (1,1)), bounds: true)
+})
