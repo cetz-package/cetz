@@ -66,7 +66,7 @@ To use this package, simply add the following code to your document:
 
 ## Installing
 
-To install the CeTZ package under your local typst package dir you can use the `install` script from the repository.
+To install the CeTZ package under [your local typst package dir](https://github.com/typst/packages?tab=readme-ov-file#local-packages) you can use the `install` script from the repository.
 
 ```bash
 just install
