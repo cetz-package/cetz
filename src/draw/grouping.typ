@@ -30,7 +30,9 @@
 /// ```)
 ///
 /// - body (element): One or more elements to hide
-#let hide(body) = {
+/// - bounds (bool): If true, respect the bounding box of the hidden elements
+///   for resizing the canvas
+#let hide(body, bounds: false) = {
   if type(body) == array {
     return body.map(f => {
       (ctx) => {
@@ -38,6 +40,7 @@
         if "drawables" in element {
           element.drawables = element.drawables.map(d => {
             d.hidden = true
+            d.bounds = bounds
             return d
           })
         }
