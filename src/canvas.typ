@@ -9,6 +9,9 @@
 
 #import util: typst-length
 
+/// CeTZ Library version
+#let version = version((0,2,0))
+
 /// Sets up a canvas for drawing on.
 ///
 /// - length (length,ratio): Used to specify what 1 coordinate unit is. If given a ratio, that ratio is relative to the containing elements width!
@@ -32,6 +35,7 @@
     message: "Canvas length must be != 0!")
 
   let ctx = (
+    version: version,
     typst-style: st,
     typst-location: loc,
     length: length,

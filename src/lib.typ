@@ -1,6 +1,4 @@
-#let version = version((0,2,0))
-
-#import "canvas.typ": canvas
+#import "canvas.typ": canvas, version
 #import "draw.typ"
 #import "plugin.typ"
 
