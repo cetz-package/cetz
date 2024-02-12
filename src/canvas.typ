@@ -19,7 +19,7 @@
 /// - background (none,color): A color to be used for the background of the canvas.
 /// - debug (bool): Shows the bounding boxes of each element when `true`.
 /// -> content
-#let canvas(length: 1cm, debug: false, background: none, body) = plugins.display(plugins => locate(loc => layout(ly => style(st => {
+#let canvas(length: 1cm, debug: false, background: none, body) = locate(loc => layout(ly => style(st => {
   let body = body
   if body == none { body = () }
   assert(type(body) == array,
@@ -56,17 +56,14 @@
   )
 
   // Initialize plug-ins
-  let prefix = ()
-  for plugin in plugins {
+  let plugin-body = ()
+  for plugin in plugins.at(loc) {
     if "init" in plugin {
-      ctx = (plugin.init)(ctx)
-    }
-    if "draw" in plugin {
-      prefix += (plugin.draw)(ctx)
+      plugin-body += (plugin.init)()
     }
   }
 
-  let (ctx, bounds, drawables) = process.many(ctx, prefix + body)
+  let (ctx, bounds, drawables) = process.many(ctx, plugin-body + body)
   if bounds == none {
     return []
   }
@@ -144,4 +141,4 @@
       }, dx: x * length, dy: y * length)
     }
   }))
-}))))
+})))

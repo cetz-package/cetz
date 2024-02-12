@@ -906,21 +906,22 @@ All path decoration functions support the following style keys:
 
 === Plug-Ins
 CeTZ supports plug-ins that get automatically called for each canvas.
-A plug-in can modify the initial state of a canvas by providing any of the
-callbacks `init` or `draw`.
+A plug-in can modify the initial state of a canvas by providing the
+`init` callbacks.
+
+Note that canvas uses Typst state for plug-in registration. If you set
+custom context data, take into account that the plugin might not have
+been registered yet! Custom elements requireing custom context data
+must not fail if the data is not there yet.
 
 #doc-style.parse-show-module("/src/plugin.typ")
 
 ==== Example
 ```typsc
 plugin.register((
-  init: ctx => {
-    ctx.my-plugin-data = [Demo]
-    return ctx
-  },
-  draw: ctx => {
+  init: () => {
     cetz.draw.set-style(stroke: blue)
-    cetz.draw.content((0,0), ctx.my-plugin-data)
+    cetz.draw.content((0,0), [I am a plug-in])
   }
 ))
 ...
