@@ -4,6 +4,7 @@ CeTZ 0.3.0 requires Typst 0.11.0
 
 ## Canvas
 - Transformation matrices are now rounded
+- The default coordinate system is now right-handed
 
 ## Plot
 - Added support for automatically adding axis breaks (sawtooth lines) by setting the `break`
@@ -38,6 +39,8 @@ CeTZ 0.3.0 requires Typst 0.11.0
 - Added matrix rounding to fix rounding errors when using lots of transforms
 
 # 0.2.1
+- The default coordinate system changed to a right-hand side system.
+  Use `scale(z: -1)` if you want to change back to a left-hand system.
 
 ## Anchors
 - Changing a group's "center" anchor now effects how border anchors are calculated.

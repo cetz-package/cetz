@@ -11,10 +11,10 @@
 /// Sets up a canvas for drawing on.
 ///
 /// The default transformation matrix of the canvas is set to:
-/// $mat(1,0,0.5,0;
-///      0,-1,-0.5,0;
-///      0,0,0,0;
-///      0,0,0,1)$
+/// $mat(1, 0,-0.5, 0;
+///      0,-1, 0.5, 0;
+///      0, 0, 0,   0;
+///      0, 0, 0,   1)$
 ///
 /// - length (length,ratio): Used to specify what 1 coordinate unit is. If given a ratio, that ratio is relative to the containing elements width!
 /// - body (none,array,element): A code block in which functions from `draw.typ` have been called.
@@ -45,12 +45,12 @@
     // Previous element position & bbox
     prev: (pt: (0, 0, 0)),
     style: styles.default,
-    // Current transformation matrix, a lhs coordinate system
+    // Current transformation matrix, a rhs coordinate system
     // where z is sheared by a half x and y.
-    //   +x = right, +y = up, +z = 1/2 (right + up)
+    //   +x = right, +y = up, +z = 1/2 (left + down)
     transform:
-      ((1, 0,+.5, 0),
-       (0,-1,-.5, 0),
+      ((1, 0,-.5, 0),
+       (0,-1,+.5, 0),
        (0, 0, .0, 0),
        (0, 0, .0, 1)),
     // Nodes, stores anchors and paths
