@@ -239,10 +239,14 @@
     let anchors = group-ctx.groups.last().anchors
 
     let (transform, anchors) = anchor_.setup(
-      anchor => ((center: center, default: center) + anchors).at(anchor),
-      (anchors.keys() + ("center",)).dedup(),
+      anchor => (
+        if bounds != none {
+          (center: center, default: center)
+        } + anchors
+      ).at(anchor),
+      (anchors.keys() + if bounds != none { ("center",) }).dedup(),
       name: name,
-      default: if bounds != none { "default" },
+      default: if bounds != none or "default" in anchors { "default" },
       offset-anchor: anchor,
       path-anchors: bounds != none,
       border-anchors: bounds != none,
