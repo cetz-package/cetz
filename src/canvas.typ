@@ -42,10 +42,11 @@
     em-size: measure(box(width: 1em, height: 1em), st),
     style: styles.default,
     // Current transform
-    transform: matrix.mul-mat(
-      matrix.transform-shear-z(.5),
-      matrix.transform-scale((x: 1, y: -1, z: 1)),
-    ),
+    transform:
+      ((1, 0,+.5, 0),
+       (0,-1,-.5, 0),
+       (0, 0, .0, 0),
+       (0, 0, .0, 1)),
     // Nodes, stores anchors and paths
     nodes: (:),
     // group stack
