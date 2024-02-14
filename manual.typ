@@ -741,8 +741,10 @@ Axis names to be used for styling:
   - `bottom`: X-Axis
   - `top`: X2-Axis
 
+#doc-style.parse-show-module("/src/lib/axes.typ")
+
 ==== Default `scientific` Style
-#raw(repr(axes.default-style))
+#raw(repr(axes.default-style-scientific))
 
 ==== Default `school-book` Style
 #raw(repr(axes.default-style-schoolbook))

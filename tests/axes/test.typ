@@ -7,7 +7,7 @@
 
   set-style(axes: (
     stroke: blue,
-    padding: .75,
+    padding: .25,
     x: (stroke: red),
     y: (stroke: green, tick: (stroke: blue, length: .3))
   ))
@@ -31,7 +31,7 @@
                                           angle: -45deg,
                                           anchor: "north-west"), length: -.1))))
   axes.scientific(size: (6, 6),
-    frame: auto,
+    draw-unset: false,
     top: none,
     bottom: axes.axis(min: -1, max: 1, ticks: (step: 1, minor-step: auto,
       grid: "both", unit: [ units])),

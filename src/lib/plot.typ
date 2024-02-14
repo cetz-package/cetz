@@ -187,7 +187,6 @@
 ///   opposite anchor to `legend` gets used.
 /// - legend-style (style): Style key-value overwrites for the legend style with style root `legend`.
 /// - ..options (any): Axis options, see _options_ below.
-///
 #let plot(body,
           size: (1, 1),
           axis-style: "scientific",
@@ -366,10 +365,10 @@
     }
 
     if axis-style in ("scientific", "scientific-auto") {
-      let frame = if axis-style == "scientific" {
+      let draw-unset = if axis-style == "scientific" {
         true
       } else {
-        auto
+        false
       }
 
       let mirror = if axis-style == "scientific" {
@@ -380,7 +379,7 @@
 
       axes.scientific(
         size: size,
-        frame: frame,
+        draw-unset: draw-unset,
         bottom: axis-dict.at("x", default: none),
         top: axis-dict.at("x2", default: mirror),
         left: axis-dict.at("y", default: none),
