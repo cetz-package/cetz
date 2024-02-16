@@ -3,6 +3,19 @@
 #import "util.typ"
 #import "path-util.typ"
 
+#let apply-transform-segments(transform, segments) = {
+  if transform == none {
+    return segments
+  }
+
+  assert(type(segments) == array,
+    message: "Expected segment array, got " + repr(segments))
+  return segments.map(segment => {
+    let (kind, ..pts) = segment
+    return (kind,) + util.apply-transform(transform, ..pts)
+  })
+}
+
 #let apply-transform(transform, drawables) = {
   if type(drawables) == dictionary {
     drawables = (drawables,)
@@ -14,9 +27,7 @@
     assert(type(drawable) != array,
       message: "Expected drawable, got array: " + repr(drawable))
     if drawable.type == "path" {
-      drawable.segments = drawable.segments.map(s => {
-        return (s.at(0),) + util.apply-transform(transform, ..s.slice(1))
-      })
+      drawable.segments = apply-transform-segments(transform, drawable.segments)
     } else if drawable.type == "content" {
       drawable.pos = util.apply-transform(transform, drawable.pos)
     } else {

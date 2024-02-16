@@ -278,7 +278,7 @@ line(..c)
 
 #doc-style.show-parameter-block("shorten-to", ("integer", "auto", "none"), [Which mark to shorten the path to when multiple marks are given. `auto` will shorten to the last mark, `none` will shorten to the first mark (effectively disabling path shortening). An integer can be given to select the mark's index.])
 
-#doc-style.show-parameter-block("post-transform", "bool", [If true, place marks post path transformation, which results in marks not affected by the current transformation.], default: false)
+#doc-style.show-parameter-block("shape-transform", "bool", [If false, place marks post path transformation, which results in marks not affected by the current transformation.], default: true)
 
 
 #pagebreak()

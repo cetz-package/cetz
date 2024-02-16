@@ -312,19 +312,11 @@
       path: drawables
     )
 
-    let transformed = false
     if mark_.check-mark(style.mark) {
-      if style.mark.post-transform {
-        drawables = drawable.apply-transform(transform, drawables).first()
-        transformed = true
-      }
-
-      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.segments)
+      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
       drawables.segments = segments
       drawables = (drawables,) +  marks
-    }
-
-    if not transformed {
+    } else {
       drawables = drawable.apply-transform(transform, drawables)
     }
 
@@ -464,8 +456,8 @@
     style.start = none
     style.symbol = none
 
-    let segments = (path-util.line-segment(pts),)
-    let (drawables, _) = mark_.place-marks-along-path(ctx, style, segments)
+    let drawables = drawable.path((path-util.line-segment(pts),))
+    let (drawables, _) = mark_.place-marks-along-path(ctx, style, none, drawables)
     return (
       ctx: ctx,
       drawables: drawable.apply-transform(ctx.transform, drawables)
@@ -574,19 +566,11 @@
     )
 
     // Place marks and adjust segments
-    let transformed = false
     if mark_.check-mark(style.mark) {
-      if style.mark.post-transform {
-        drawables = drawable.apply-transform(transform, drawables).first()
-        transformed = true
-      }
-
-      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.segments)
+      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
       drawables.segments = segments
       drawables = (drawables,) + marks
-    }
-
-    if not transformed {
+    } else {
       drawables = drawable.apply-transform(transform, drawables)
     }
 
@@ -1213,19 +1197,11 @@
         path: drawables,
       )
 
-      let transformed = false
       if mark_.check-mark(style.mark) {
-        if style.mark.post-transform {
-          drawables = drawable.apply-transform(transform, drawables).first()
-          transformed = true
-        }
-
-        let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.segments)
+        let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
         drawables.segments = segments
         drawables = (drawables,) + marks
-      }
-
-      if not transformed {
+      } else {
         drawables = drawable.apply-transform(transform, drawables)
       }
 
@@ -1328,19 +1304,11 @@
       )
     }
 
-    let transformed = false
     if mark_.check-mark(style.mark) {
-      if style.mark.post-transform {
-        drawables = drawable.apply-transform(transform, drawables).first()
-        transformed = true
-      }
-
-      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.segments)
+      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
       drawables.segments = segments
       drawables = (drawables,) + marks
-    }
-
-    if not transformed {
+    } else {
       drawables = drawable.apply-transform(transform, drawables)
     }
 
@@ -1421,19 +1389,11 @@
       )
     }
 
-    let transformed = false
     if mark_.check-mark(style.mark) {
-      if style.mark.post-transform {
-        drawables = drawable.apply-transform(transform, drawables).first()
-        transformed = true
-      }
-
-      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.segments)
+      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
       drawables.segments = segments
       drawables = (drawables,) + marks
-    }
-
-    if not transformed {
+    } else {
       drawables = drawable.apply-transform(transform, drawables)
     }
 

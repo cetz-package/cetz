@@ -255,10 +255,17 @@
   )
 }
 
-#let place-marks-along-path(ctx, style, segments) = {
+#let place-marks-along-path(ctx, style, transform, path) = {
   let distance = (0, 0)
   let snap-to = (none, none)
   let drawables = ()
+
+  let (segments, is-transformed) = if not style.shape-transform and transform != none {
+    (drawable.apply-transform-segments(transform, path.segments), true)
+  } else {
+    (path.segments, false)
+  }
+
   if style.start != none or style.symbol != none {
     let (drawables: start-drawables, distance: start-distance, pos: pt) = place-mark-on-path(
       ctx,
@@ -287,6 +294,13 @@
       mode: if style.flex { "CURVED" } else { "LINEAR" },
       samples: style.position-samples,
       snap-to: snap-to)
+  }
+
+  // If not transformed pre mark placement,
+  // transform everything after mark placement.
+  if not is-transformed {
+    segments = drawable.apply-transform-segments(transform, segments)
+    drawables = drawable.apply-transform(transform, drawables)
   }
 
   return (drawables, segments)

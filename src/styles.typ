@@ -45,9 +45,10 @@
     /// set the default to `0` and to `auto` for the mark you want to
     /// shorten the path to. Set to `none` to disable path shortening.
     shorten-to: auto,
-    /// Place marks post path transformation. This is not honored per mark, but
-    /// for all marks on a path.
-    post-transform: false,
+    /// Apply shape transforms for marks. This is not honored per mark, but
+    /// for all marks on a path. If set to false, marks get placed after the
+    /// shape they are placed on got transformed.
+    shape-transform: true,
   ),
   circle: (
     radius: auto,
