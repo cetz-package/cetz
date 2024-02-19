@@ -10,18 +10,24 @@
                                 (0, 0, 0, 0),
                                 (0, 0, 0, 1))
 
+// Get an orthographic view matrix for 3 angles
 #let ortho-matrix(x, y, z) = matrix.mul-mat(
-  matrix.mul-mat(
-    matrix.mul-mat(
-      matrix.ident(),
-      matrix.transform-rotate-x(x)
-    ),
-    matrix.transform-rotate-y(y)
-  ),
-  matrix.transform-rotate-z(z)
+  matrix.ident(),
+  matrix.transform-rotate-x(x),
+  matrix.transform-rotate-y(y),
+  matrix.transform-rotate-z(z),
 )
 
-
+// Pushes a view- and projection-matrix to transform
+// all `body` elements. The current context transform is
+// not modified.
+//
+// - body (element): Elements
+// - view-matrix (matrix): View matrix
+// - projection-matrix (matrix): Projection matrix
+// - reset-transform (bool): If true, override (and thus ignore)
+//   the current transformation with the new matrices instead
+//   of multiplying them.
 #let _projection(body, view-matrix, projection-matrix, reset-transform: false) = {
   (ctx => {
     let transform = ctx.transform
@@ -29,7 +35,7 @@
     if not reset-transform {
       ctx.transform = matrix.mul-mat(transform, ctx.transform)
     }
-    let (ctx, drawables, bounds) = process.many(ctx, body)
+    let (ctx, drawables, bounds) = process.many(ctx, util.resolve-body(ctx, body))
     ctx.transform = transform
 
     return (
@@ -40,11 +46,17 @@
   },)
 }
 
+// Apply function `fn` to all vertices of all
+// elements in `body`.
+//
+// - body (element): Elements
+// - fn (function): Callback of the form `vector => vector` that gets
+//   applied to all vertices
 #let apply-transform-function(body, fn) = {
   (ctx => {
     let transform = ctx.transform
     ctx.transform = matrix.ident()
-    let (ctx, drawables, bounds) = process.many(ctx, body)
+    let (ctx, drawables, bounds) = process.many(ctx, util.resolve-body(ctx, body))
     ctx.transform = transform
 
     drawables = drawables.map(d => {
