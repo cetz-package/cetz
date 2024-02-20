@@ -10,12 +10,16 @@
   if drawables.len() == 0 {
     return ()
   }
+  if transform == none {
+    return drawables
+  }
   for drawable in drawables {
     assert(type(drawable) != array,
       message: "Expected drawable, got array: " + repr(drawable))
     if drawable.type == "path" {
-      drawable.segments = drawable.segments.map(s => {
-        return (s.at(0),) + util.apply-transform(transform, ..s.slice(1))
+      drawable.segments = drawable.segments.map(segment => {
+        let (kind, ..pts) = segment
+        return (kind,) + util.apply-transform(transform, ..pts)
       })
     } else if drawable.type == "content" {
       drawable.pos = util.apply-transform(transform, drawable.pos)

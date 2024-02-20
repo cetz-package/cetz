@@ -313,19 +313,16 @@
     )
 
     if mark_.check-mark(style.mark) {
-      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.segments)
-      drawables.segments = segments
-      drawables = (drawables,) +  marks
+      drawables = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
+    } else {
+      drawables = drawable.apply-transform(transform, drawables)
     }
 
     return (
       ctx: ctx,
       name: name,
       anchors: anchors,
-      drawables: drawable.apply-transform(
-        transform,
-        drawables,
-      )
+      drawables: drawables,
     )
   },)
 }
@@ -457,8 +454,8 @@
     style.start = none
     style.symbol = none
 
-    let segments = (path-util.line-segment(pts),)
-    let (drawables, _) = mark_.place-marks-along-path(ctx, style, segments)
+    let drawables = drawable.path((path-util.line-segment(pts),))
+    drawables = mark_.place-marks-along-path(ctx, style, none, drawables, add-path: false)
     return (
       ctx: ctx,
       drawables: drawable.apply-transform(ctx.transform, drawables)
@@ -568,16 +565,16 @@
 
     // Place marks and adjust segments
     if mark_.check-mark(style.mark) {
-      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.segments)
-      drawables.segments = segments
-      drawables = (drawables,) + marks
+      drawables = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
+    } else {
+      drawables = drawable.apply-transform(transform, drawables)
     }
 
     return (
       ctx: ctx,
       name: name,
       anchors: anchors,
-      drawables: drawable.apply-transform(transform, drawables)
+      drawables: drawables,
     )
   },)
 }
@@ -1197,19 +1194,16 @@
       )
 
       if mark_.check-mark(style.mark) {
-        let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.segments)
-        drawables.segments = segments
-        drawables = (drawables,) + marks
+        drawables = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
+      } else {
+        drawables = drawable.apply-transform(transform, drawables)
       }
 
       return (
         ctx: ctx, 
         name: name,
         anchors: anchors,
-        drawables: drawable.apply-transform(
-          transform,
-          drawables
-        )
+        drawables: drawables,
       )
     },
   )
@@ -1305,19 +1299,16 @@
     }
 
     if mark_.check-mark(style.mark) {
-      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.segments)
-      drawables.segments = segments
-      drawables = (drawables,) + marks
+      drawables = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
+    } else {
+      drawables = drawable.apply-transform(transform, drawables)
     }
 
     return (
       ctx: ctx,
       name: name,
       anchors: anchors,
-      drawables: drawable.apply-transform(
-        transform,
-        drawables
-      )
+      drawables: drawables,
     )
   },)
 }
@@ -1391,19 +1382,16 @@
     }
 
     if mark_.check-mark(style.mark) {
-      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, drawables.segments)
-      drawables.segments = segments
-      drawables = (drawables,) + marks
+      drawables = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
+    } else {
+      drawables = drawable.apply-transform(transform, drawables)
     }
 
     return (
       ctx: ctx,
       name: name,
       anchors: anchors,
-      drawables: drawable.apply-transform(
-        transform,
-        drawables
-      )
+      drawables: drawables,
     )
   },)
 }

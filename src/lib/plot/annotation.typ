@@ -36,7 +36,10 @@
 #let annotate(body, axes: ("x", "y"), resize: true, padding: none, background: false) = {
   ((
     type: "annotation",
-    body: body,
+    body: {
+      draw.set-style(mark: (transform-shape: false))
+      body;
+    },
     axes: axes,
     resize: resize,
     background: background,

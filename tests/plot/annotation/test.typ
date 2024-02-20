@@ -16,5 +16,8 @@
       line((calc.pi / 2, 1.1), (rel: (0, .2)), (rel: (2*calc.pi, 0)), (rel: (0, -.2)))
       content((calc.pi * 1.5, 1.5), $ lambda $)
     })
+    plot.annotate(padding: .1, {
+      line((calc.pi / 2,-.1), (calc.pi / 2, .8), mark: (end: "stealth"))
+    })
   })
 }))
