@@ -60,12 +60,7 @@
     ctx.transform = transform
 
     drawables = drawables.map(d => {
-      d.segments = d.segments.map(s => {
-        let (kind, ..pts) = s
-        return (kind, ..pts.map(pt => {
-          fn(pt)
-        }))
-      })
+      d.segments = d.segments.map(s => (s.at(0), ..s.slice(1).map(fn)))
       if d.type == "content" {
         d.pos = fn(d.pos)
       }
@@ -79,9 +74,20 @@
   },)
 }
 
-/// Set-up an orthographic projection matrix.
+/// Set-up an orthographic projection environment.
 ///
-/// By default an isometric projection is set.
+/// This is a transformation matrix that rotates elements around
+/// the x, the y and the z axis by the parameters given.
+///
+/// By default an isometric projection (x ≈ 35.264°, y = 45°) is set.
+///
+/// #example(```
+/// ortho({
+///   on-xz({
+///     rect((-1,-1), (1,1))
+///   })
+/// })
+/// ```)
 ///
 /// - x (angle): X-axis rotation angle
 /// - y (angle): Y-axis rotation angle
@@ -95,6 +101,16 @@
 
 /// Draw elements on the xy-plane with optional z value.
 ///
+/// All vertices of all elements will be changed in the
+/// following way: $vec(x, y, z_"argument")$, where $z_"argument"$
+/// is the z-value given as argument.
+///
+/// #example(```
+/// on-xy({
+///   rect((-1, -1), (1, 1))
+/// })
+/// ```)
+///
 /// - z (number): Z coordinate for all coordinates
 /// - body (element): Elements to draw
 #let on-xy(z: 0, body) = get-ctx(ctx => {
@@ -106,6 +122,16 @@
 
 /// Draw elements on the xz-plane with optional y value.
 ///
+/// All vertices of all elements will be changed in the
+/// following way: $vec(x, y_"argument", y)$, where $y_"argument"$
+/// is the y-value given as argument.
+///
+/// #example(```
+/// on-xz({
+///   rect((-1, -1), (1, 1))
+/// })
+/// ```)
+///
 /// - y (number): Y coordinate for all coordinates
 /// - body (element): Elements to draw
 #let on-xz(y: 0, body) = get-ctx(ctx => {
@@ -116,6 +142,16 @@
 })
 
 /// Draw elements on the yz-plane with optional y value.
+///
+/// All vertices of all elements will be changed in the
+/// following way: $vec(x_"argument", x, y)$, where $x_"argument"$
+/// is the x-value given as argument.
+///
+/// #example(```
+/// on-yz({
+///   rect((-1, -1), (1, 1))
+/// })
+/// ```)
 ///
 /// - x (number): X coordinate for all coordinates
 /// - body (element): Elements to draw
