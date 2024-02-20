@@ -37,7 +37,7 @@
   ((
     type: "annotation",
     body: {
-      draw.set-style(mark: (shape-transform: false))
+      draw.set-style(mark: (transform-shape: false))
       body;
     },
     axes: axes,

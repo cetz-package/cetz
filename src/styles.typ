@@ -48,7 +48,7 @@
     /// Apply shape transforms for marks. This is not honored per mark, but
     /// for all marks on a path. If set to false, marks get placed after the
     /// shape they are placed on got transformed.
-    shape-transform: true,
+    transform-shape: true,
   ),
   circle: (
     radius: auto,

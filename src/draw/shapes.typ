@@ -313,9 +313,7 @@
     )
 
     if mark_.check-mark(style.mark) {
-      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
-      drawables.segments = segments
-      drawables = (drawables,) +  marks
+      drawables = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
     } else {
       drawables = drawable.apply-transform(transform, drawables)
     }
@@ -457,7 +455,7 @@
     style.symbol = none
 
     let drawables = drawable.path((path-util.line-segment(pts),))
-    let (drawables, _) = mark_.place-marks-along-path(ctx, style, none, drawables)
+    drawables = mark_.place-marks-along-path(ctx, style, none, drawables, add-path: false)
     return (
       ctx: ctx,
       drawables: drawable.apply-transform(ctx.transform, drawables)
@@ -567,9 +565,7 @@
 
     // Place marks and adjust segments
     if mark_.check-mark(style.mark) {
-      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
-      drawables.segments = segments
-      drawables = (drawables,) + marks
+      drawables = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
     } else {
       drawables = drawable.apply-transform(transform, drawables)
     }
@@ -1198,9 +1194,7 @@
       )
 
       if mark_.check-mark(style.mark) {
-        let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
-        drawables.segments = segments
-        drawables = (drawables,) + marks
+        drawables = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
       } else {
         drawables = drawable.apply-transform(transform, drawables)
       }
@@ -1305,9 +1299,7 @@
     }
 
     if mark_.check-mark(style.mark) {
-      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
-      drawables.segments = segments
-      drawables = (drawables,) + marks
+      drawables = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
     } else {
       drawables = drawable.apply-transform(transform, drawables)
     }
@@ -1390,9 +1382,7 @@
     }
 
     if mark_.check-mark(style.mark) {
-      let (marks, segments) = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
-      drawables.segments = segments
-      drawables = (drawables,) + marks
+      drawables = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
     } else {
       drawables = drawable.apply-transform(transform, drawables)
     }

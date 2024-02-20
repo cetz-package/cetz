@@ -8,7 +8,7 @@
 - Grids now actually support border anchors.
 
 ## Marks
-- Marks can now be placed on a path after that path got transformed. See the new `shape-transform` style key.
+- Marks can now be placed on a path after that path got transformed. See the new `transform-shape` style key.
 
 ## Misc
 - The `hide` function now support an additional `bounds:` parameter to enable canvas bounds adjustment for hidden elements
