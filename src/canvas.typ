@@ -8,7 +8,13 @@
 
 #import util: typst-length
 
-/// Sets up a canvas for drawing on. 
+/// Sets up a canvas for drawing on.
+///
+/// The default transformation matrix of the canvas is set to:
+/// $mat(1,0,0.5,0;
+///      0,-1,-0.5,0;
+///      0,0,0,0;
+///      0,0,0,1)$
 ///
 /// - length (length,ratio): Used to specify what 1 coordinate unit is. If given a ratio, that ratio is relative to the containing elements width!
 /// - body (none,array,element): A code block in which functions from `draw.typ` have been called.
@@ -41,11 +47,14 @@
     prev: (pt: (0, 0, 0)),
     em-size: measure(box(width: 1em, height: 1em), st),
     style: styles.default,
-    // Current transform
-    transform: matrix.mul-mat(
-      matrix.transform-shear-z(.5),
-      matrix.transform-scale((x: 1, y: -1, z: 1)),
-    ),
+    // Current transformation matrix, a lhs coordinate system
+    // where z is sheared by a half x and y.
+    //   +x = right, +y = up, +z = 1/2 (right + up)
+    transform:
+      ((1, 0,+.5, 0),
+       (0,-1,-.5, 0),
+       (0, 0, .0, 0),
+       (0, 0, .0, 1)),
     // Nodes, stores anchors and paths
     nodes: (:),
     // group stack

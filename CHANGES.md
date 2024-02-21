@@ -12,6 +12,7 @@
 
 ## Misc
 - The `hide` function now support an additional `bounds:` parameter to enable canvas bounds adjustment for hidden elements
+- The default transformation matrix changed
 
 ## Libs
 ### Plot
