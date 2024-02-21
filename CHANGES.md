@@ -14,6 +14,11 @@
 - The `hide` function now support an additional `bounds:` parameter to enable canvas bounds adjustment for hidden elements
 - The default transformation matrix changed
 
+## Charts
+- Default piechart rotation changed from counter-clockwise to clockwise
+- Default piechart start/stop angles changed so that the first item
+  starts at 90° (ccw)
+
 ## Libs
 ### Plot
 - The default style of plots changed

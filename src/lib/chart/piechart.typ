@@ -25,9 +25,11 @@
   ///   - "RADIUS": Offset slice radius by outset-offset (the slice gets scaled)
   outset-mode: "OFFSET",
   /// Pie start angle
-  start: 0deg,
+  start: 90deg,
   /// Pie stop angle
-  stop: 360deg,
+  stop: 360deg + 90deg,
+  /// Pie rotation direction (true = clockwise, false = anti-clockwise)
+  clockwise: true,
   outer-label: (
     /// Label kind
     /// If set to a function, that function gets called with (value, label) of each item
@@ -87,9 +89,11 @@
 ///   - "OFFSET": Offset slice position by `outset-offset`, increasing their gap to their siblings
 ///   - "RADIUS": Offset slice radius by `outset-offset`, which scales the slice and leaves the gap unchanged], default: "OFFSET")
 /// #show-parameter-block("start", ("angle"), [
-///   The pie-charts start angle. You can use this to draw charts not forming a full circle.], default: 0deg)
+///   The pie-charts start angle (ccw). You can use this to draw charts not forming a full circle.], default: 90deg)
 /// #show-parameter-block("stop", ("angle"), [
-///   The pie-charts stop angle.], default: 360deg)
+///   The pie-charts stop angle (ccw).], default: 360deg + 90deg)
+/// #show-parameter-block("clockwise", ("bool"), [
+///   The pie-charts rotation direction.], default: true)
 /// #show-parameter-block("outer-label.content", ("none","string","function"), [
 ///   Content to display outsides the charts slices.
 ///   There are the following predefined values:
@@ -206,6 +210,12 @@
 
     assert(style.outset-mode in ("OFFSET", "RADIUS"),
       message: "Outset mode must be 'OFFSET' or 'RADIUS', but is: " + str(style.outset-mode))
+
+    let data = if style.clockwise {
+      data.rev()
+    } else {
+      data
+    }
 
     let style-at = if type(slice-style) == function {
       slice-style
@@ -346,7 +356,7 @@
           // If the chart is not a full circle, we have to merge two arc
           // at their ends to create closing lines
           if stroke != none {
-            if stop-angle - start-angle != 360deg {
+            if calc.abs(stop-angle - start-angle) != 360deg {
               merge-path({
                 arc(origin, start: start, stop: end, radius: inner-radius, anchor: "origin")
                 arc(origin, start: end, stop: start, radius: radius, anchor: "origin")

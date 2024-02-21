@@ -81,7 +81,6 @@
     value-key: "value", label-key: "label", outer-label: (content: "LABEL", radius: 150%), outset-key: "o")
 }))
 
-
 // Keys
 #box(stroke: 2pt + red, canvas({
   piechart(((value: 1, label: [One]),
@@ -94,4 +93,10 @@
             (value: 1, label: [Eight], o: 14%),),
             slice-style: colors,
     value-key: "value", label-key: "label", outer-label: (content: "LABEL", radius: 150%), outset-key: "o")
+}))
+
+// Counter clockwise rotation
+#box(stroke: 2pt + red, canvas({
+  import draw: *
+  piechart(range(1,11), clockwise: false, slice-style: colors)
 }))
