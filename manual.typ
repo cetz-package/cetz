@@ -46,7 +46,7 @@ The name CeTZ is a recursive acronym for "CeTZ, ein Typst Zeichenpaket" (german 
 
 This is the minimal starting point:
 #pad(left: 1em)[```typ
-#import "@preview/cetz:0.2.0"
+#import "@preview/cetz:0.2.1"
 #cetz.canvas({
   import cetz.draw: *
   ...
