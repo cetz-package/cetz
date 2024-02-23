@@ -1,4 +1,4 @@
-#import "@preview/cetz:0.2.0": canvas, draw, tree
+#import "@preview/cetz:0.2.1": canvas, draw, tree
 
 #set page(width: auto, height: auto, margin: .5cm)
 
