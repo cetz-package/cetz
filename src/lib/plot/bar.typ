@@ -187,6 +187,5 @@
     plot-legend-preview: self => {
       draw.rect((0,0), (1,1), ..self.style)
     }
-    ),
-  )
+  ))
 }
