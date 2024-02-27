@@ -52,11 +52,11 @@
     let right = left + w
     let width = (right - left) / len
 
+
     if self.mode in ("basic", "clustered") {
       left = left + width * n
       right = left + width
     }
-
     if (left <= x-axis.max and right >= x-axis.min and
         y-min <= y-axis.max and y-max >= y-axis.min) {
       left = calc.max(left, x-axis.min)
@@ -64,7 +64,20 @@
       y-min = calc.max(y-min, y-axis.min)
       y-max = calc.min(y-max, y-axis.max)
 
-      draw.rect((left, y-min), (right, y-max))
+
+      draw.group(ctx => {
+        let right-padding = right - ctx.style.bars-padding
+        let left-padding = left + ctx.style.bars-padding
+        draw.rect((left-padding, y-min), (right-padding, y-max))
+        if ctx.style.data-label != none {
+          let offset = ctx.style.data-label.at("offset")
+          let size = ctx.style.data-label.at("text-size")
+          let data_label = text(size:size)[#y-max]
+          let anchor = if y-axis.horizontal {"west"} else {"south"}
+          draw.content((rel: (0, offset), to: ((left + right) / 2, y-max)), anchor:"south", data_label)
+        }
+      })
+    }
     }
   }
 }
@@ -176,5 +189,6 @@
     plot-legend-preview: self => {
       draw.rect((0,0), (1,1), ..self.style)
     }
-  ))
+    ),
+  )
 }
