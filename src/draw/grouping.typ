@@ -206,16 +206,18 @@
     let bounds = none
     let drawables = ()
     let group-ctx = ctx
-    group-ctx.groups.push((anchors: (:)))
+    group-ctx.groups.push(())
 
     (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, util.resolve-body(group-ctx, body))
 
     // Apply bounds padding
-    let bounds = if bounds != none {
+    bounds = if bounds != none {
       let padding = util.as-padding-dict(style.padding)
-      for (k, v) in padding {
-        padding.insert(k, util.resolve-number(ctx, v))
-      }
+      padding = padding.pairs().map(
+        ((k, v)) => (
+          (k): util.resolve-number(ctx, v)
+        )
+      ).join()
 
       aabb.padded(bounds, padding)
     }
@@ -234,9 +236,9 @@
           bounds.low,
         )), close: true)
       (center, width, height, path)
-    } else { (none, none, none, none) }
+    } else { (none,) * 4 }
 
-    let anchors = group-ctx.groups.last().anchors
+    let children = group-ctx.groups.last().map(name => ((name): group-ctx.nodes.at(name))).join()
 
     let (transform, anchors) = anchor_.setup(
       anchor => (
@@ -253,6 +255,7 @@
       radii: (width, height),
       path: path,
     )
+
     return (
       ctx: ctx,
       name: name,
@@ -288,8 +291,17 @@
     )
     let (ctx, position) = coordinate.resolve(ctx, position)
     position = util.apply-transform(ctx.transform, position)
-    ctx.groups.last().anchors.insert(name, position)
-    return (ctx: ctx, name: name, anchors: anchor_.setup(anchor => position, ("default",), default: "default", name: name, transform: none).last())
+    return (
+      ctx: ctx,
+      name: name,
+      anchors: anchor_.setup(
+        anchor => position,
+        ("default",),
+        default: "default",
+        name: name,
+        transform: none
+      ).last()
+    )
   },)
 }
 
