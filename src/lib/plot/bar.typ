@@ -66,9 +66,7 @@
 
 
       draw.group(ctx => {
-        let right-padding = right - ctx.style.bars-padding
-        let left-padding = left + ctx.style.bars-padding
-        draw.rect((left-padding, y-min), (right-padding, y-max))
+        draw.rect((left, y-min), (right, y-max))
         if ctx.style.data-label != none {
           let offset = ctx.style.data-label.at("offset")
           let size = ctx.style.data-label.at("text-size")
