@@ -256,7 +256,7 @@
         let (name, ..nested-anchors) = if type(anchor) == array {
           anchor
         } else {
-          (anchor, "default")
+          (anchor,)
         }
         anchor = (
           if bounds != none {
@@ -264,7 +264,7 @@
           } + anchors
         ).at(name)
         if type(anchor) == function {
-          anchor(nested-anchors)
+          anchor(if nested-anchors == () { "default" } else { nested-anchors })
         } else {
           anchor
         }
