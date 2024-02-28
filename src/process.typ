@@ -30,6 +30,9 @@
   }
   if "name" in element and type(element.name) == "string" and "anchors" in element {
     ctx.nodes.insert(element.name, element)
+    if ctx.groups.len() > 0 {
+      ctx.groups.last().push(element.name)
+    }
   }
 
   if ctx.debug and bounds != none {

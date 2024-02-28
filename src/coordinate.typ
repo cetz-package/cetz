@@ -58,12 +58,11 @@
   // "name.anchor"
   // "name"
   let (name, anchor) = if type(c) == str {
-    let parts = c.split(".")
-    if parts.len() == 1 {
-      (parts.first(), "default")
-    } else {
-      (parts.slice(0, -1).join("."), parts.last())
+    let (name, ..anchor) = c.split(".")
+    if anchor.len() == 0 {
+      anchor = "default"
     }
+    (name, anchor)
   } else {
     (c.name, c.at("anchor", default: "default"))
   }
@@ -80,8 +79,6 @@
   // Check if anchor is known
   let node = ctx.nodes.at(name)
   let pos = (node.anchors)(anchor)
-  assert(pos != none,
-    message: "Unknown anchor '" + repr(anchor) + "' for element '" + name + "'")
 
   let pos = util.revert-transform(
     ctx.transform,

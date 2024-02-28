@@ -240,12 +240,35 @@
 
     let children = group-ctx.groups.last().map(name => ((name): group-ctx.nodes.at(name))).join()
 
+    // Children can be none if the groups array is empty
+    let anchors = if children != none {
+      children.pairs().map(((name, child)) => {
+        if "anchors" in child {
+          ((name): child.anchors)
+        }
+      }).join()
+    } else {
+      (:)
+    }
+
     let (transform, anchors) = anchor_.setup(
-      anchor => (
-        if bounds != none {
-          (center: center, default: center)
-        } + anchors
-      ).at(anchor),
+      anchor => {
+        let (name, ..nested-anchors) = if type(anchor) == array {
+          anchor
+        } else {
+          (anchor, "default")
+        }
+        anchor = (
+          if bounds != none {
+            (default: center, center: center)
+          } + anchors
+        ).at(name)
+        if type(anchor) == function {
+          anchor(nested-anchors)
+        } else {
+          anchor
+        }
+      },
       (anchors.keys() + if bounds != none { ("center",) }).dedup(),
       name: name,
       default: if bounds != none or "default" in anchors { "default" },
@@ -254,6 +277,7 @@
       border-anchors: bounds != none,
       radii: (width, height),
       path: path,
+      nested-anchors: true
     )
 
     return (
@@ -326,24 +350,19 @@
       anchors = anchors.filter(a => a in filter)
     }
 
-    let new = {
-      let d = (:)
-      for a in anchors {
-        d.insert(a, calc-anchors(a))
-      }
-      d
+    let new = anchors.map(a => ((a): calc-anchors(a))).join()
+    if new == none {
+      new = ()
     }
 
     // Add each anchor as own element
     for (k, v) in new {
       ctx.nodes.insert(k, (anchors: (name => {
-        if name == () { return ("default",) }
+        if name == () { ("default",) }
         else if name == "default" { v }
       })))
+      ctx.groups.last().push(k)
     }
-
-    // Add anchors to group
-    ctx.groups.last().anchors += new
 
     return (ctx: ctx)
   },)
