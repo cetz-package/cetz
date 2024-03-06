@@ -1,3 +1,9 @@
+# Upcoming
+
+## Anchors
+- Support for accessing anchors within groups.
+- Support string shorthand for path and border anchors.
+
 # 0.2.1
 
 ## Anchors

@@ -190,6 +190,8 @@
 ///
 /// The default anchor is "center" but this can be overridden by using `anchor` to place a new anchor called "default".
 ///
+/// Named elements within a group can also be accessed as string anchors, see @coordinate-anchor.
+///
 /// - body (elements, function): Elements to group together. A least one is required. A function that accepts `ctx` and returns elements is also accepted.
 /// - anchor (none, string): Anchor to position the group and it's children relative to. For translation the difference between the groups `"default"` anchor and the passed anchor is used.
 /// - name (none, string):

@@ -403,19 +403,7 @@ for (c, s, f, cont) in (
 Defines a point relative to a named element using anchors, see @anchors.
 
 #doc-style.show-parameter-block("name", "string", [The name of the element that you wish to use to specify a coordinate.], show-default: false)
-#doc-style.show-parameter-block("anchor", ("number", "angle", "string", "ratio", "none"), [The anchor of the element. Strings are named anchors, angles are border anchors and numbers and ratios are path anchors. If not given the default anchor will be used, on most elements this is `center` but it can be different.])
-
-You can also use implicit syntax of a dot separated string in the form `"name.anchor"`
-for named anchors.
-
-```example
-line((0,0), (3,2), name: "line")
-circle("line.end", name: "circle")
-rect("line.start", "circle.east")
-```
-
-Note, that not all elements provide border or path anchors!
-
+#doc-style.show-parameter-block("anchor", ("number", "angle", "string", "ratio", "none"), [The anchor of the element. Strings are named anchors, angles are border anchors and numbers and ratios are path anchors. If not given, the default anchor will be used, on most elements this is `center` but it can be different.])
 
 ```example
 circle((0,0), name: "circle")
@@ -426,6 +414,24 @@ content((name: "circle", anchor: 30%), box(fill: white, $ 30 % $))
 // Anchor at 3.14 of the path
 content((name: "circle", anchor: 3.14), box(fill: white, $ p = 3.14 $))
 ```
+Note, that not all elements provide border or path anchors!
+
+You can also use implicit syntax of a dot separated string in the form `"name.anchor"` for all anchors. Because named elements in groups act as anchors, you can also access them through this syntax.
+
+```example
+group(name: "group", {
+  line((0,0), (3,2), name: "line")
+  circle("line.end", name: "circle")
+  rect("line.start", "circle.east")
+
+  circle("circle.30deg", radius: 0.1, fill: red)
+})
+
+circle("group.circle.-1", radius: 0.1, fill: blue)
+```
+
+
+
 
 
 == Tangent
