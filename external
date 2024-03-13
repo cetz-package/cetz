@@ -1,0 +1,55 @@
+#!/bin/env python
+from subprocess import run, PIPE
+from pathlib import Path
+import tempfile
+import argparse
+import json
+import os
+
+typst_bin = 'typst'
+output_dir = './.cetz-external'
+preamble = b"""
+#set page(width: auto, height: auto, margin: 0cm)
+"""
+cetz_version = b'0.2.1'
+
+parser = argparse.ArgumentParser("CeTZ externalize tool")
+parser.add_argument("input", help="Input Typst file", type=str)
+args = parser.parse_args()
+
+result = None
+with open("./.cetz-external-tmp.typ", "wb") as tmp_input:
+    tmp_input.write(b'#import "@preview/cetz:' + cetz_version + b'"\n')
+    tmp_input.write(b'#cetz.external-state.update(_ => { "query" })\n')
+    with open(args.input, "rb") as f:
+        tmp_input.write(f.read())
+    tmp_input.flush()
+
+    result = run([typst_bin, 'query', tmp_input.name, '<cetz-external>', '--root', '.'],
+                stdout=PIPE, check=True)
+
+
+def generate_image(filename, name):
+    out_filename = os.path.join(output_dir, name + '.svg')
+
+    print(f"Compiling {filename} to {out_filename}...")
+    with tempfile.NamedTemporaryFile() as tmp_file:
+        tmp_file.write(preamble)
+        try:
+            with open(filename, 'rb') as in_file:
+                tmp_file.write(in_file.read())
+        except FileNotFoundError:
+            tmp_file.write(b'File not found: ' + str.encode(filename))
+        tmp_file.flush()
+
+        run([typst_bin, "compile", tmp_file.name, out_filename],
+            stderr=PIPE, check=True)
+
+
+data = json.loads(result.stdout)
+Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+for entry in data:
+    if entry['func'] == 'metadata':
+        value = entry['value']
+        generate_image(value['file'], value['name'])

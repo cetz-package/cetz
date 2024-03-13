@@ -1,6 +1,7 @@
 #let version = version((0,2,1))
 
 #import "canvas.typ": canvas
+#import "external.typ": external, external-state
 #import "draw.typ"
 
 // Expose utilities
