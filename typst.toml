@@ -1,7 +1,7 @@
 [package]
 name = "cetz"
 version = "0.2.2"
-compiler = "0.10.0"
+compiler = "0.11.0"
 repository = "https://github.com/johannes-wolf/cetz"
 entrypoint = "src/lib.typ"
 authors = [

@@ -198,7 +198,7 @@
 
 // Measure content in canvas coordinates
 #let measure(ctx, cnt) = {
-  let size = typst-measure(cnt, ctx.typst-style)
+  let size = typst-measure(cnt)
   return (
     calc.abs(size.width / ctx.length),
     calc.abs(size.height / ctx.length)

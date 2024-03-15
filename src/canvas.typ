@@ -21,7 +21,7 @@
 /// - background (none,color): A color to be used for the background of the canvas.
 /// - debug (bool): Shows the bounding boxes of each element when `true`.
 /// -> content
-#let canvas(length: 1cm, debug: false, background: none, body) = layout(ly => style(st => {
+#let canvas(length: 1cm, debug: false, background: none, body) = context { layout(ly => {
   if body == none {
     return []
   }
@@ -34,18 +34,17 @@
   let length = if type(length) == ratio {
     length * ly.width
   } else {
-    measure(box(width: length, height: length), st).width
+    length.to-absolute()
   }
   assert(length / 1cm != 0,
     message: "Canvas length must be != 0!")
 
   let ctx = (
-    typst-style: st,
     length: length,
     debug: debug,
     // Previous element position & bbox
     prev: (pt: (0, 0, 0)),
-    em-size: measure(box(width: 1em, height: 1em), st),
+    em-size: 1em.to-absolute(),
     style: styles.default,
     // Current transformation matrix, a lhs coordinate system
     // where z is sheared by a half x and y.
@@ -130,7 +129,7 @@
           ..vertices,
         )
       } else if drawable.type == "content" {
-        let (width, height) = util.typst-measure(drawable.body, ctx.typst-style)
+        let (width, height) = util.typst-measure(drawable.body)
         move(
           dx: (drawable.pos.at(0) - bounds.low.at(0)) * length - width / 2,
           dy: (drawable.pos.at(1) - bounds.low.at(1)) * length - height / 2,
@@ -139,4 +138,4 @@
       }, dx: x * length, dy: y * length)
     }
   }))
-}))
+})}
