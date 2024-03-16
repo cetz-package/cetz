@@ -1,4 +1,9 @@
+
 # 0.2.2
+
+## Anchors
+- Support for accessing anchors within groups.
+- Support string shorthand for path and border anchors.
 
 ## 3D
 - CeTZ gained some helper functions for drawing 3D figures in orthographic projection: `ortho`, `on-xy`, `on-xz` and `on-yz`.

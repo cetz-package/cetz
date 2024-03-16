@@ -190,6 +190,8 @@
 ///
 /// The default anchor is "center" but this can be overridden by using `anchor` to place a new anchor called "default".
 ///
+/// Named elements within a group can also be accessed as string anchors, see @coordinate-anchor.
+///
 /// - body (elements, function): Elements to group together. A least one is required. A function that accepts `ctx` and returns elements is also accepted.
 /// - anchor (none, string): Anchor to position the group and it's children relative to. For translation the difference between the groups `"default"` anchor and the passed anchor is used.
 /// - name (none, string):
@@ -206,16 +208,18 @@
     let bounds = none
     let drawables = ()
     let group-ctx = ctx
-    group-ctx.groups.push((anchors: (:)))
+    group-ctx.groups.push(())
 
     (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, util.resolve-body(group-ctx, body))
 
     // Apply bounds padding
-    let bounds = if bounds != none {
+    bounds = if bounds != none {
       let padding = util.as-padding-dict(style.padding)
-      for (k, v) in padding {
-        padding.insert(k, util.resolve-number(ctx, v))
-      }
+      padding = padding.pairs().map(
+        ((k, v)) => (
+          (k): util.resolve-number(ctx, v)
+        )
+      ).join()
 
       aabb.padded(bounds, padding)
     }
@@ -234,16 +238,39 @@
           bounds.low,
         )), close: true)
       (center, width, height, path)
-    } else { (none, none, none, none) }
+    } else { (none,) * 4 }
 
-    let anchors = group-ctx.groups.last().anchors
+    let children = group-ctx.groups.last().map(name => ((name): group-ctx.nodes.at(name))).join()
+
+    // Children can be none if the groups array is empty
+    let anchors = if children != none {
+      children.pairs().map(((name, child)) => {
+        if "anchors" in child {
+          ((name): child.anchors)
+        }
+      }).join()
+    } else {
+      (:)
+    }
 
     let (transform, anchors) = anchor_.setup(
-      anchor => (
-        if bounds != none {
-          (center: center, default: center)
-        } + anchors
-      ).at(anchor),
+      anchor => {
+        let (name, ..nested-anchors) = if type(anchor) == array {
+          anchor
+        } else {
+          (anchor,)
+        }
+        anchor = (
+          if bounds != none {
+            (default: center, center: center)
+          } + anchors
+        ).at(name)
+        if type(anchor) == function {
+          anchor(if nested-anchors == () { "default" } else { nested-anchors })
+        } else {
+          anchor
+        }
+      },
       (anchors.keys() + if bounds != none { ("center",) }).dedup(),
       name: name,
       default: if bounds != none or "default" in anchors { "default" },
@@ -252,7 +279,9 @@
       border-anchors: bounds != none,
       radii: (width, height),
       path: path,
+      nested-anchors: true
     )
+
     return (
       ctx: ctx,
       name: name,
@@ -288,8 +317,17 @@
     )
     let (ctx, position) = coordinate.resolve(ctx, position)
     position = util.apply-transform(ctx.transform, position)
-    ctx.groups.last().anchors.insert(name, position)
-    return (ctx: ctx, name: name, anchors: anchor_.setup(anchor => position, ("default",), default: "default", name: name, transform: none).last())
+    return (
+      ctx: ctx,
+      name: name,
+      anchors: anchor_.setup(
+        anchor => position,
+        ("default",),
+        default: "default",
+        name: name,
+        transform: none
+      ).last()
+    )
   },)
 }
 
@@ -314,24 +352,19 @@
       anchors = anchors.filter(a => a in filter)
     }
 
-    let new = {
-      let d = (:)
-      for a in anchors {
-        d.insert(a, calc-anchors(a))
-      }
-      d
+    let new = anchors.map(a => ((a): calc-anchors(a))).join()
+    if new == none {
+      new = ()
     }
 
     // Add each anchor as own element
     for (k, v) in new {
       ctx.nodes.insert(k, (anchors: (name => {
-        if name == () { return ("default",) }
+        if name == () { ("default",) }
         else if name == "default" { v }
       })))
+      ctx.groups.last().push(k)
     }
-
-    // Add anchors to group
-    ctx.groups.last().anchors += new
 
     return (ctx: ctx)
   },)

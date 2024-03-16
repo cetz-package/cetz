@@ -103,7 +103,8 @@
     border-anchors: false,
     path-anchors: false,
     radii: none,
-    path: none
+    path: none,
+    nested-anchors: false
   ) = {
   // Passing no callback is valid!
   if callback == auto {
@@ -127,18 +128,37 @@
     }
 
     let out = none
+    let nested-anchors = if type(anchor) == array {
+      if not nested-anchors {
+        anchor = anchor.join(".")
+      } else {
+        if anchor.len() > 1 {
+          anchor
+        }
+        anchor = anchor.first()
+      }
+    } else if nested-anchors and type(anchor) == str {
+      anchor = anchor.split(".")
+      if anchor.len() > 1 {
+        anchor
+      }
+      anchor = anchor.first()
+    }
+
 
     if type(anchor) == str {
       if anchor in anchor-names or (anchor == "default" and default != none) {
         if anchor == "default" {
           anchor = default
         }
-
-        out = callback(anchor)
+        
+        out = callback(if nested-anchors != none { nested-anchors } else { anchor })
       } else if path-anchors and anchor in named-path-anchors {
         anchor = named-path-anchors.at(anchor)
       } else if border-anchors and anchor in named-border-anchors {
         anchor = named-border-anchors.at(anchor)
+      } else if util.str-is-number(anchor) {
+        anchor = util.str-to-number(if nested-anchors != none { nested-anchors.join(".") } else { anchor })
       } else {
         panic(
           strfmt(
@@ -150,6 +170,7 @@
         )
       }
     }
+
     if out == none {
       if type(anchor) in (ratio, float, int) {
         assert(path-anchors, message: strfmt("Element '{}' does not support path anchors.", name))

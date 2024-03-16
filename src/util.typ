@@ -385,3 +385,25 @@
   }
   return body
 }
+
+
+#let str-to-number-regex = regex("^(-?\d*\.?\d+)(cm|mm|pt|em|in|%|deg|rad)?$")
+#let number-units = (
+  "%": 1%,
+  "cm": 1cm,
+  "mm": 1mm,
+  "pt": 1pt,
+  "em": 1em,
+  "in": 1in,
+  "deg": 1deg,
+  "rad": 1rad
+)
+#let str-is-number(string) = string.match(str-to-number-regex) != none
+#let str-to-number(string) = {
+  let (num, unit) = string.match(str-to-number-regex).captures
+  num = float(num)
+  if unit != none and unit in number-units {
+    num *= number-units.at(unit)
+  }
+  return num
+}
