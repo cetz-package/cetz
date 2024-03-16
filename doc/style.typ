@@ -21,7 +21,7 @@
   description = description.map(e => if e.func() == heading {
     let fields = e.fields()
     let label = fields.remove("label", default: none)
-    heading(level: style-args.first-heading-level + 1 + fields.remove("level"), fields.remove("body"), ..fields); [#label]
+    heading(offset: style-args.first-heading-level + 1, fields.remove("body"), ..fields); [#label]
   } else { e })
   
   if parameter-index != none {
