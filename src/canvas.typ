@@ -44,7 +44,6 @@
     debug: debug,
     // Previous element position & bbox
     prev: (pt: (0, 0, 0)),
-    em-size: 1em.to-absolute(),
     style: styles.default,
     // Current transformation matrix, a lhs coordinate system
     // where z is sheared by a half x and y.
