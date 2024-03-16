@@ -1,8 +1,12 @@
-# Upcoming
+
+# 0.2.2
 
 ## Anchors
 - Support for accessing anchors within groups.
 - Support string shorthand for path and border anchors.
+
+## Fixes
+- Fixed piechart styles when using `clockwise: true`
 
 # 0.2.1
 

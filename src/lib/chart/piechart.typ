@@ -211,12 +211,6 @@
     assert(style.outset-mode in ("OFFSET", "RADIUS"),
       message: "Outset mode must be 'OFFSET' or 'RADIUS', but is: " + str(style.outset-mode))
 
-    let data = if style.clockwise {
-      data.rev()
-    } else {
-      data
-    }
-
     let style-at = if type(slice-style) == function {
       slice-style
     } else if type(slice-style) == array {
@@ -250,7 +244,12 @@
     }
 
     let start = start-angle
-    for (i, item) in data.enumerate() {
+    let enum-items = if style.clockwise {
+      data.enumerate().rev()
+    } else {
+      data.enumerate()
+    }
+    for (i, item) in enum-items {
       let (value, label, outset) = item
       if value == 0 { continue }
 
