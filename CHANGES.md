@@ -3,8 +3,12 @@
 ## 3D
 - CeTZ gained some helper functions for drawing 3D figures in orthographic projection: `ortho`, `on-xy`, `on-xz` and `on-yz`.
 
+## Plot
+- New axes style key `tick.label.show` to force showing tick labels on mirrored axes
+
 ## Fixes
 - Fixed piechart styles when using `clockwise: true`.
+- Fixed drawing of mirrored plot axis ticks
 - Fixed `decorations.flat-brace` vertical positioning
 
 # 0.2.1
