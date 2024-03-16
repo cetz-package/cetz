@@ -248,9 +248,9 @@
     message: "Invalid plot style")
 
 
-  // Create axes for data
+  // Create axes for data & annotations
   let axis-dict = (:)
-  for d in data {
+  for d in data + annotations {
     for (i, name) in d.axes.enumerate() {
       if not name in axis-dict {
         axis-dict.insert(name, axes.axis(

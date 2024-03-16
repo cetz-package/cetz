@@ -33,6 +33,7 @@
 /// #show-parameter-block("tick.label.offset", ("number"), [Major tick label offset away from the tick.])
 /// #show-parameter-block("tick.label.angle", ("angle"), [Major tick label angle.])
 /// #show-parameter-block("tick.label.anchor", ("anchor"), [Anchor of major tick labels used for positioning.])
+/// #show-parameter-block("tick.label.show", ("auto", "bool"), default: auto, [Set visibility of tick labels. A value of `auto` shows tick labels for all but mirrored axes.])
 /// #show-parameter-block("grid.stroke", "stroke", [Major grid line stroke style.])
 /// #show-parameter-block("minor-grid.stroke", "stroke", [Minor grid line stroke style.])
 /// #show-parameter-block("shared-zero", ("bool", "content"), default: "$0$", [School-book style axes only: Content to display at the plots origin (0,0). If set to `false`, nothing is shown. Having this set, suppresses auto-generated ticks for $0$!])
@@ -62,8 +63,9 @@
     minor-length: 70%,  // Minor tick length: Number, Ratio
     label: (
       offset: .15cm,    // Tick label offset
-      angle:   0deg,    // Tick label angle
+      angle:  0deg,     // Tick label angle
       anchor: auto,     // Tick label anchor
+      "show": auto,     // Show tick labels for axes in use
     )
   ),
   grid: (
@@ -201,7 +203,11 @@
 
   if type(value) != typst-content {
     let format = tic-options.at("format", default: "float")
-    if type(format) == function {
+    if format == none {
+      value = []
+    } else if type(format) == typst-content {
+      value = format
+    } else if type(format) == function {
       value = (format)(value)
     } else if format == "sci" {
       value = format-sci(value, tic-options.at("decimals", default: 2))
@@ -412,12 +418,17 @@
 }
 
 // Place a list of tick marks and labels along a path
-#let place-ticks-on-line(ticks, start, stop, style, flip: false) = {
+#let place-ticks-on-line(ticks, start, stop, style, flip: false, is-mirror: false) = {
   let dir = vector.sub(stop, start)
   let norm = vector.norm((-dir.at(1), dir.at(0), dir.at(2, default: 0)))
 
   let def(v, d) = {
     return if v == none or v == auto {d} else {v}
+  }
+
+  let show-label = style.tick.label.show
+  if show-label == auto {
+    show-label = not is-mirror
   }
 
   for (distance, label, is-major) in ticks {
@@ -434,7 +445,7 @@
 
     draw.line(a, b, stroke: style.tick.stroke)
 
-    if label != none {
+    if show-label and label != none {
       let offset = style.tick.label.offset
       if flip {
         offset *= -1
@@ -562,9 +573,7 @@
           group(name: "axis", {
             if draw-unset or axis != none {
               path;
-              if not is-mirror {
-                place-ticks-on-line(ticks, start, end, style, flip: flip)
-              }
+              place-ticks-on-line(ticks, start, end, style, flip: flip, is-mirror: is-mirror)
             }
           })
 
