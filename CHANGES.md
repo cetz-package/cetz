@@ -1,3 +1,8 @@
+# 0.2.2
+
+## Fixes
+- Fixed piechart styles when using `clockwise: true`
+
 # 0.2.1
 
 ## Anchors
