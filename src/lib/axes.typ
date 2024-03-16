@@ -203,7 +203,11 @@
 
   if type(value) != typst-content {
     let format = tic-options.at("format", default: "float")
-    if type(format) == function {
+    if format == none {
+      value = []
+    } else if type(format) == typst-content {
+      value = format
+    } else if type(format) == function {
       value = (format)(value)
     } else if format == "sci" {
       value = format-sci(value, tic-options.at("decimals", default: 2))
