@@ -1,7 +1,10 @@
 # 0.2.2
 
+## 3D
+- CeTZ gained some helper functions for drawing 3D figures in orthographic projection: `ortho`, `on-xy`, `on-xz` and `on-yz`.
+
 ## Fixes
-- Fixed piechart styles when using `clockwise: true`
+- Fixed piechart styles when using `clockwise: true`.
 - Fixed `decorations.flat-brace` vertical positioning
 
 # 0.2.1
