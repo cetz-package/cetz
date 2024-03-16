@@ -321,7 +321,7 @@
     // pointing upwards, so we set the origin and rotate the entire group accordingly
     let (_, start, end) = coordinate.resolve(ctx, start, end)
     set-origin(start)
-    rotate(vector.angle2(start, end) * -1)
+    rotate(vector.angle2(start, end))
 
     let length = vector.dist(start, end)
     let middle = aspect * length

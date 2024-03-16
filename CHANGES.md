@@ -5,6 +5,7 @@
 
 ## Fixes
 - Fixed piechart styles when using `clockwise: true`.
+- Fixed `decorations.flat-brace` vertical positioning
 
 # 0.2.1
 
