@@ -1,11 +1,13 @@
 #import "vector.typ"
 
+// Global rounding precission
+#let precission = 8
+
 #let cos(angle) = {
-  return calc.round(calc.cos(angle), digits: 10)
+  return calc.round(calc.cos(angle), digits: precission)
 }
 
 #let sin = calc.sin
-
 #let pi = calc.pi
 
 /// Create identity matrix with dimensions $m times n$
@@ -152,9 +154,8 @@
    (0,0,0,1))
 }
 
-// Multiply matrices on top of each other.
+/// Multiply matrices on top of each other.
 #let mul-mat(..matrices) = {
-  // assert(ms.named() == (:), message: "Unexpected named arguments: " + repr(ms.named()))
   matrices = matrices.pos()
   let out = matrices.remove(0)
   for matrix in matrices {
@@ -166,7 +167,7 @@
       for i in range(m) {
         (
           for j in range(p) {
-            (range(n).map(k => out.at(i).at(k) * matrix.at(k).at(j)).sum(),)
+            (calc.round(range(n).map(k => out.at(i).at(k) * matrix.at(k).at(j)).sum(), digits: precission),)
           }
         ,)
       }

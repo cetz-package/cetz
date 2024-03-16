@@ -17,6 +17,7 @@
 - Fixed `decorations.flat-brace` vertical positioning
 - Fixed drawing of mirrored plot axis ticks.
 - Fixed plots with only annotions.
+- Added matrix rounding to fix rounding errors when using lots of transforms
 
 # 0.2.1
 
