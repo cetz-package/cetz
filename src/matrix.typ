@@ -1,10 +1,10 @@
 #import "vector.typ"
 
-// Global rounding precission
-#let precission = 8
+// Global rounding precision
+#let precision = 8
 
 #let cos(angle) = {
-  return calc.round(calc.cos(angle), digits: precission)
+  return calc.round(calc.cos(angle), digits: precision)
 }
 
 #let sin = calc.sin
@@ -167,7 +167,7 @@
       for i in range(m) {
         (
           for j in range(p) {
-            (calc.round(range(n).map(k => out.at(i).at(k) * matrix.at(k).at(j)).sum(), digits: precission),)
+            (calc.round(range(n).map(k => out.at(i).at(k) * matrix.at(k).at(j)).sum(), digits: precision),)
           }
         ,)
       }
