@@ -150,16 +150,12 @@
 }
 
 #let resolve-number(ctx, num) = {
-  if type(num) == length {
-    if repr(num).ends-with("em") {
-      float(repr(num).slice(0, -2)) * ctx.em-size.width / ctx.length
-    } else {
-      float(num / ctx.length)
-    }
+  return if type(num) == length {
+    float(num.to-absolute() / ctx.length)
   } else if type(num) == ratio {
-    return num
+    num
   } else {
-    return float(num)
+    float(num)
   }
 }
 
@@ -198,7 +194,7 @@
 
 // Measure content in canvas coordinates
 #let measure(ctx, cnt) = {
-  let size = typst-measure(cnt, ctx.typst-style)
+  let size = typst-measure(cnt)
   return (
     calc.abs(size.width / ctx.length),
     calc.abs(size.height / ctx.length)

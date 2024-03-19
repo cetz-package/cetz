@@ -1,10 +1,9 @@
-#import "@preview/oxifmt:0.2.0": strfmt
-
 // This file contains utility functions for path calculation
 #import "util.typ"
 #import "vector.typ"
 #import "bezier.typ"
-
+#import "deps.typ"
+#import deps.oxifmt: strfmt
 
 #let default-samples = 25
 
