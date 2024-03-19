@@ -33,10 +33,10 @@ jobs:
           crate: typst-test
           git: https://github.com/tingerrr/typst-test.git
           tag: ci-semi-stable
-      - uses: yusancky/setup-typst@v2
-        id: setup-typst
+      - uses: typst-community/setup-typst@v3
         with:
-          version: 'v0.11.0'
+          typst-version: '0.11.0'
+          cache-dependency-path: src/deps.typ
       - run: |
           just install @local
           just install @preview

@@ -8,7 +8,7 @@ authors = [
   "Johannes Wolf <https://github.com/johannes-wolf>",
   "fenjalien <https://github.com/fenjalien>"
 ]
-categories = ["visualization"]
+categories = [ "visualization" ]
 license = "Apache-2.0"
 description = "Drawing with Typst made easy, providing an API inspired by TikZ and Processing. Includes modules for plotting, charts and tree layout."
 keywords = [ "draw", "canvas", "plot", "chart", "tree" ]
