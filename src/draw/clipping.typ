@@ -35,25 +35,70 @@
   },)
 }
 
-/// Return a union path(s) between paths a and b.
+/// Return one or more union paths of the input paths a and b.
 ///
-/// A union path is a path that uses the outer contour of both paths.
+/// *Note:* All of the clipping functions can only clip non `content` elements!
+/// Content elements passed to clipping functions are ignored.
+///
+/// *Note:* All of the clipping functions have limitations on which paths
+/// they work. Especially paths with cubic beziers (circles) can make the
+/// clipping functions fail in some circumstances. You can try to slightly
+/// move elements to fix those errors.
+///
+/// ```example
+/// union-path({
+///   rotate(45deg)
+///   rect((-.5, -.5), (rel: (1,1)))
+/// }, {
+///   rect((-.5, -.5), (.5,.5))
+/// })
+/// ```
 ///
 /// - a (element): Path a
 /// - b (element): Path b
+/// - name (none,str):
+/// - ..style (any):
 /// -> element
-#let union-path = _clip.with(mode: "union")
+#let union-path(a, b, name: none, ..style) = {
+  _clip(a, b, name: name, mode: "union", ..style)
+}
 
-/// Return the intersection path(s) between paths a and b
+/// Return the intersection paths between paths a and b
+///
+/// ```example
+/// intersection-path({
+///   rotate(45deg)
+///   rect((-.5, -.5), (rel: (1,1)))
+/// }, {
+///   rect((-.5, -.5), (.5,.5))
+/// })
+/// ```
 ///
 /// - a (element): Path a
 /// - b (element): Path b
+/// - name (none,str):
+/// - ..style (any):
 /// -> element
-#let intersection-path = _clip.with(mode: "intersection")
+#let intersection-path(a, b, name: none, ..style) = {
+  _clip(a, b, name: name, mode: "intersection", ..style)
+}
 
-/// Return the difference path(s) between paths a and b
+/// Return the difference paths between paths a and b
+///
+/// ```example
+/// difference-path({
+///   rotate(45deg)
+///   rect((-.5, -.5), (rel: (1,1)))
+/// }, {
+///   rect((-.5, -.5), (.5,.5))
+/// })
+/// ```
 ///
 /// - a (element): Path a
 /// - b (element): Path b
+/// - name (none,str):
+/// - ..style (any):
 /// -> element
-#let difference-path = _clip.with(mode: "difference")
+#let difference-path(a, b, name: none, ..style) = {
+  _clip(a, b, name: name, mode: "difference", ..style)
+}

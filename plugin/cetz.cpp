@@ -38,21 +38,20 @@ extern "C" std::int32_t clip_path(std::int32_t source_len,
     return contourklip::Point2d{j[0], j[1]};
   };
 
-  auto to_contour = [&to_pt](const json& j) {
-    contourklip::Contour c;
+  auto to_contour = [&to_pt](const json& j) -> contourklip::Contour {
+    if (j.empty() || j[0].size() < 2) {
+      return {};
+    }
 
-    // Last point
-    contourklip::Point2d last;
-
-    // Is first segment?
-    auto is_first = true;
+    contourklip::Point2d last = to_pt(j[0][1]);
+    contourklip::Contour c(last);
 
     for (const auto& s : j) {
       auto is_line = s[0] == "line";
       if (is_line) {
-        for (auto i = is_first ? 1 : 2; i < s.size(); ++i) {
+        for (auto i = 2; i < s.size(); ++i) {
           auto pt = to_pt(s[i]);
-          if (is_first || pt != last)
+          if (pt != last)
             c.push_back(to_pt(s[i]));
           last = pt;
         }
@@ -64,8 +63,6 @@ extern "C" std::int32_t clip_path(std::int32_t source_len,
         c.push_back(to_pt(s[3]), to_pt(s[4]), end);
         last = end;
       }
-
-      is_first = false;
     }
 
     c.close();
