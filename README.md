@@ -106,4 +106,4 @@ To run all tests you can run the `just test` target. You need to have
 ## Dependencies
 Path clipping implementation is handled by a WASM plugin that uses [contourklip](https://github.com/verven/contourklip) and  [nlohmann_json](https://github.com/nlohmann/json).
 
-To build the WASM plugin call `just wasm`. You need to have (`emmake`)[https://emscripten.org] and (`wasi-stub`)[https://github.com/astrale-sharp/wasm-minimal-protocol] in your PATH.
+To build all WASM plugins call `just plugin`. You need to have (`emmake`)[https://emscripten.org] and (`wasi-stub`)[https://github.com/astrale-sharp/wasm-minimal-protocol] in your PATH.

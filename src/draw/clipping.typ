@@ -3,7 +3,7 @@
 #import "/src/styles.typ"
 #import "/src/path-util.typ": expand-segments
 
-#let wasm = plugin("/plugin/cetz.wasm")
+#let wasm = plugin("/plugin/clipping/clipping.wasm")
 
 #let _clip(a, b, mode: "union", name: none, ..style) = {
   assert(mode in ("union", "intersection", "difference", "xor", "divide"),

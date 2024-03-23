@@ -1,9 +1,7 @@
 #pragma once
 
 #include "emscripten.h"
-
 #include <cstdint>
-#include <vector>
 
 #define PROTOCOL_FUNCTION __attribute__((import_module("typst_env"))) extern
 

@@ -7,7 +7,7 @@ PKG_PREFIX="cetz"
 files=(
   src/
   gallery/
-  plugin/cetz.wasm
+  plugin/clipping/clipping.wasm
   typst.toml
   LICENSE
   README.md

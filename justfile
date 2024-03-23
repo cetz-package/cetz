@@ -21,5 +21,5 @@ manual:
 gallery:
   for f in "{{gallery_dir}}"/*.typ; do typst c "$f" "${f/typ/png}"; done
 
-wasm:
-  cd plugin && emmake make
+plugins:
+  cd plugin/clipping && emmake make

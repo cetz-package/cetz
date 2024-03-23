@@ -6,9 +6,9 @@ INCLUDE_FLAGS=
 
 all: build
 
-build: cetz.cpp
-	$(CC) $(CFLAGS) cetz.cpp -o cetz.wasm $(INCLUDE_FLAGS)
-	wasi-stub cetz.wasm -o cetz.wasm
+build: main.cpp
+	$(CC) $(CFLAGS) main.cpp -o clipping.wasm $(INCLUDE_FLAGS)
+	wasi-stub clipping.wasm -o clipping.wasm
 
 clean:
 	rm *.wasm || true
