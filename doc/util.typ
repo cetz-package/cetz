@@ -6,7 +6,7 @@
   let left-color = blue.darken(30%)
   let right-color = white
 
-  let url = "https://github.com/johannes-wolf/cetz"
+  let url = "https://github.com/cetz-package/cetz"
   let authors = (
     ([Johannes Wolf], "https://github.com/johannes-wolf"),
     ([fenjalien],     "https://github.com/fenjalien"),
