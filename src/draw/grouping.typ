@@ -352,18 +352,21 @@
       anchors = anchors.filter(a => a in filter)
     }
 
-    let new = anchors.map(a => ((a): calc-anchors(a))).join()
-    if new == none {
-      new = ()
-    }
-
     // Add each anchor as own element
-    for (k, v) in new {
-      ctx.nodes.insert(k, (anchors: (name => {
-        if name == () { ("default",) }
-        else if name == "default" { v }
-      })))
-      ctx.groups.last().push(k)
+    for anchor in anchors {
+      ctx.nodes.insert(
+        anchor,
+        (anchors: name => {
+          if name == "default" {
+            calc-anchors(anchor)
+          } else if name == () {
+            ("default",)
+          } else {
+            calc-anchors((anchor,) + name)
+          }
+        })
+      )
+      ctx.groups.last().push(anchor)
     }
 
     return (ctx: ctx)

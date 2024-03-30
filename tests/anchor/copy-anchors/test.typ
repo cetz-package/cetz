@@ -16,3 +16,17 @@
 
   circle("b.my-anchor", radius: .2, stroke: blue)
 }))
+
+#box(stroke: 2pt + red, canvas(length: 1cm, {
+  import draw: *
+
+  group(name: "a", {
+    group(name: "b", {
+      line((), (1,1), name: "l")
+    })
+    copy-anchors("b")
+    circle("l.end")
+  })
+
+  circle("a.l.start")
+}))
