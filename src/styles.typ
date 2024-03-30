@@ -4,10 +4,15 @@
   fill: none,
   stroke: black + 1pt,
   radius: 1,
-  /// Bezier shortening mode:
-  ///   - "LINEAR" Moving the affected point and it's next control point (like TikZ "quick" key)
-  ///   - "CURVED" Preserving the bezier curve by calculating new control points
+  // Bezier shortening mode:
+  //   - "LINEAR" Moving the affected point and it's next control point (like TikZ "quick" key)
+  //   - "CURVED" Preserving the bezier curve by calculating new control points
   shorten: "LINEAR",
+
+  // Path decorations:
+  //   - Named decoration: "wave",
+  //   - Decoration function taking a path
+  decoration: none,
   
   // Allowed values:
   //   - none
