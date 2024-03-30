@@ -35,17 +35,6 @@
   return vecs
 }
 
-// #let apply-transform-many(transform, vecs) = {
-//   if type(vecs) == array {
-//     vecs.map(apply-transform.with(transform))
-//   } else if type(vecs) == dictionary {
-//     for (k, vec) in vecs {
-//       vecs.insert(k, apply-transform(transform, vec))
-//     }
-//     vecs
-//   }
-// }
-
 /// Reverts the transform of the given vector
 ///
 /// - transform (matrix): Transformation matrix

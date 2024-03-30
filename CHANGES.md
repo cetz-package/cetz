@@ -2,6 +2,9 @@
 
 CeTZ 0.3.0 requires Typst 0.11.0
 
+## Anchors
+- `copy-anchors` no longer requires copied anchors to have a default, allowing the copying of an element's anchors from a group as expected.
+
 # 0.2.2
 
 ## Anchors
