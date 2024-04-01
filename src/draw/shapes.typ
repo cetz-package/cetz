@@ -15,6 +15,7 @@
 #import "/src/mark.typ" as mark_
 #import "/src/mark-shapes.typ" as mark-shapes_
 #import "/src/aabb.typ"
+#import "/src/modifier.typ"
 
 #import "transformations.typ": *
 #import "styling.typ": *
@@ -38,25 +39,8 @@
 }
 
 // Apply path decoration to drawables
-#let _apply-decoration(ctx, style, drawables) = {
-  let deco = style.at("decoration", default: none)
-
-  if deco != none {
-    import "/src/lib/decorations.typ": wave, zigzag, coil
-    assert(type(deco) in (str, function),
-      message: "Decoration must be of type string or function")
-
-    let fn = if type(deco) == str {
-      ctx.decorations.at(deco)
-    } else if type(deco) == function {
-      deco
-    }
-
-    assert(fn != none,
-      message: "Decoration function is none")
-    return _apply-decoration-fn(ctx, style, drawables, fn)
-  }
-  return drawables
+#let _apply-decoration(ctx, style, drawables, close) = {
+  return modifier.apply-path-modifier(ctx, style, drawables, close).first()
 }
 
 /// Draws a circle or ellipse.
@@ -102,7 +86,7 @@
       stroke: style.stroke
     )
 
-    drawables = _apply-decoration(ctx, style, drawables)
+    drawables = _apply-decoration(ctx, style, drawables, true)
 
     let (transform, anchors) = anchor_.setup(
       (_) => pos,
@@ -177,7 +161,7 @@
       stroke: style.stroke
     )
 
-    drawables = _apply-decoration(ctx, style, drawables)
+    drawables = _apply-decoration(ctx, style, drawables, true)
 
     let (transform, anchors) = anchor_.setup(
       (anchor) => (
@@ -296,7 +280,7 @@
       mode: style.mode
     )
 
-    drawables = _apply-decoration(ctx, style, drawables)
+    drawables = _apply-decoration(ctx, style, drawables, false)
 
     let sector-center = (
       x - rx * calc.cos(start-angle),
@@ -612,7 +596,7 @@
     )
 
     // Apply decoration
-    drawables = _apply-decoration(ctx, style, drawables)
+    drawables = _apply-decoration(ctx, style, drawables, close)
 
     // Get bounds
     let (transform, anchors) = anchor_.setup(
@@ -929,7 +913,7 @@
 
     let drawables = ()
     if style.frame != none {
-      border = _apply-decoration(ctx, style, border)
+      border = _apply-decoration(ctx, style, border, true)
       drawables.push(border)
     }
 
@@ -1159,7 +1143,7 @@
         drawable.path(segments, fill: style.fill, stroke: style.stroke, close: true)
       }
 
-      drawables = _apply-decoration(ctx, style, drawables)
+      drawables = _apply-decoration(ctx, style, drawables, true)
 
       // Calculate border anchors
       let center = vector.lerp(a, b, .5)
@@ -1244,7 +1228,7 @@
         stroke: style.stroke,
       )
 
-      drawables = _apply-decoration(ctx, style, drawables)
+      drawables = _apply-decoration(ctx, style, drawables, false)
 
       let (transform, anchors) = anchor_.setup(
         anchor => (
@@ -1349,7 +1333,7 @@
       stroke: style.stroke,
       close: close)
 
-    drawables = _apply-decoration(ctx, style, drawables)
+    drawables = _apply-decoration(ctx, style, drawables, close)
 
     let (transform, anchors) = {
       let a = for (i, pt) in pts.enumerate() {
@@ -1430,7 +1414,7 @@
       stroke: style.stroke,
       close: close)
 
-    drawables = _apply-decoration(ctx, style, drawables)
+    drawables = _apply-decoration(ctx, style, drawables, close)
 
     let (transform, anchors) = {
       let a = for (i, pt) in pts.enumerate() {
@@ -1522,7 +1506,7 @@
       let style = styles.resolve(ctx.style, merge: style)
       let drawables = drawable.path(fill: style.fill, stroke: style.stroke, close: close, segments)
 
-      drawables = _apply-decoration(ctx, style, drawables)
+      drawables = _apply-decoration(ctx, style, drawables, close)
 
       let (transform, anchors) = anchor_.setup(
         auto,

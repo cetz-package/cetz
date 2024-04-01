@@ -13,6 +13,7 @@
   //   - Named decoration: "wave",
   //   - Decoration function taking a path
   decoration: none,
+  modifier: (:),
   
   // Allowed values:
   //   - none
@@ -64,7 +65,8 @@
   circle: (
     radius: auto,
     stroke: auto,
-    fill: auto
+    fill: auto,
+    decoration: auto,
   ),
   group: (
     padding: auto,
@@ -75,19 +77,22 @@
     mark: auto,
     fill: auto,
     stroke: auto,
+    decoration: auto,
   ),
   bezier: (
     stroke: auto,
     fill: auto,
     mark: auto,
     shorten: auto,
+    decoration: auto,
   ),
   catmull: (
     tension: .5,
     mark: auto,
     shorten: auto,
     stroke: auto,
-    fill: auto
+    fill: auto,
+    decoration: auto,
   ),
   hobby: (
     /// Curve start and end omega (curlyness)
@@ -95,7 +100,8 @@
     mark: auto,
     shorten: auto,
     stroke: auto,
-    fill: auto
+    fill: auto,
+    decoration: auto,
   ),
   rect: (
     /// Rect corner radius that supports the following types:
@@ -111,6 +117,7 @@
     radius: 0,
     stroke: auto,
     fill: auto,
+    decoration: auto,
   ),
   arc: (
     // Supported values:
@@ -122,7 +129,8 @@
     mark: auto,
     stroke: auto,
     fill: auto,
-    radius: auto
+    radius: auto,
+    decoration: auto,
   ),
   content: (
     padding: auto,
@@ -133,6 +141,7 @@
     frame: none,
     fill: auto,
     stroke: auto,
+    decoration: auto,
   ),
 )
 

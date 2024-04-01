@@ -6,6 +6,7 @@
 #import "styles.typ"
 #import "process.typ"
 #import "version.typ"
+#import "modifiers.typ"
 
 #import util: typst-length
 
@@ -66,6 +67,10 @@
       wave: wave,
       zigzag: zigzag,
       coil: coil,
+    ),
+    path-modifiers: (
+      linearize: modifiers.linearize,
+      wave: modifiers.wave,
     ),
   )
 
