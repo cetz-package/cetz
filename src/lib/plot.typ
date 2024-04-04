@@ -134,6 +134,11 @@
 ///   })
 ///   ```)
 /// ])
+/// #show-parameter-block("break", ("bool"), default: "false", [
+///   If true, add a "sawtooth" at the start or end of the axis line, depending
+///   on the axis bounds. If the axis min. value is > 0, a sawtooth is added
+///   to the start of the axes, if the axis max. value is < 0, a sawtooth is added
+///   to its end.])
 ///
 /// - body (body): Calls of `plot.add` or `plot.add-*` commands. Note that normal drawing
 ///   commands like `line` or `rect` are not allowed inside the plots body, instead wrap
@@ -290,7 +295,7 @@
   }
 
   // Set axis options
-  axis-dict = plot-util.setup-axes(axis-dict, options.named(), size)
+  axis-dict = plot-util.setup-axes(ctx, axis-dict, options.named(), size)
 
   // Prepare styles
   for i in range(data.len()) {
