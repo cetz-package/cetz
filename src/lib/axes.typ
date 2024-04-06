@@ -35,6 +35,8 @@
 /// #show-parameter-block("tick.label.anchor", ("anchor"), [Anchor of major tick labels used for positioning.])
 /// #show-parameter-block("tick.label.show", ("auto", "bool"), default: auto, [Set visibility of tick labels. A value of `auto` shows tick labels for all but mirrored axes.])
 /// #show-parameter-block("grid.stroke", "stroke", [Major grid line stroke style.])
+/// #show-parameter-block("break-point.width", "number", [Axis break width along the axis.])
+/// #show-parameter-block("break-point.length", "number", [Axis break length.])
 /// #show-parameter-block("minor-grid.stroke", "stroke", [Minor grid line stroke style.])
 /// #show-parameter-block("shared-zero", ("bool", "content"), default: "$0$", [School-book style axes only: Content to display at the plots origin (0,0). If set to `false`, nothing is shown. Having this set, suppresses auto-generated ticks for $0$!])
 #let default-style = (
@@ -67,6 +69,10 @@
       anchor: auto,     // Tick label anchor
       "show": auto,     // Show tick labels for axes in use
     )
+  ),
+  break-point: (
+    width: .75cm,
+    length: .15cm,
   ),
   grid: (
     stroke: (paint: gray.lighten(50%), thickness: 1pt),
@@ -122,6 +128,10 @@
   style.tick.minor-offset = rel-to(style.tick.minor-offset, style.tick.minor-length)
   style.tick.label.offset = res(style.tick.label.offset)
 
+  // Break points
+  style.break-point.width = res(style.break-point.width)
+  style.break-point.length = res(style.break-point.length)
+
   // Padding
   style.padding = res(style.padding)
 
@@ -149,6 +159,69 @@
   return 0
 }
 
+#let _inset-axis-points(ctx, style, axis, start, end) = {
+  if axis == none { return (start, end) }
+
+  let (low, high) = axis.inset.map(v => util.resolve-number(ctx, v))
+
+  let is-horizontal = start.at(1) == end.at(1)
+  if is-horizontal {
+    start = vector.add(start, (low, 0))
+    end = vector.sub(end, (high, 0))
+  } else {
+    start = vector.add(start, (0, low))
+    end = vector.sub(end, (0, high))
+  }
+  return (start, end)
+}
+
+#let _draw-axis-line(start, end, axis, is-horizontal, style) = {
+  let enabled = if axis != none and axis.show-break {
+    axis.min > 0 or axis.max < 0
+  } else { false }
+
+  if enabled {
+    let size = if is-horizontal {
+      (style.break-point.width, 0)
+    } else {
+      (0, style.break-point.width, 0)
+    }
+
+    let up = if is-horizontal {
+      (0, style.break-point.length)
+    } else {
+      (style.break-point.length, 0)
+    }
+
+    let add-break(is-end) = {
+      let a = ()
+      let b = (rel: vector.scale(size, .3), update: false)
+      let c = (rel: vector.add(vector.scale(size, .4), vector.scale(up, -1)), update: false)
+      let d = (rel: vector.add(vector.scale(size, .6), vector.scale(up, +1)), update: false)
+      let e = (rel: vector.scale(size, .7), update: false)
+      let f = (rel: size)
+
+      let mark = if is-end {
+        style.at("mark", default: none)
+      }
+      draw.line(a, b, c, d, e, f, stroke: style.stroke, mark: mark)
+    }
+
+    draw.merge-path({
+      draw.move-to(start)
+      if axis.min > 0 {
+        add-break(false)
+        draw.line((rel: size, to: start), end, mark: style.at("mark", default: none))
+      } else if axis.max < 0 {
+        draw.line(start, (rel: vector.scale(size, -1), to: end))
+        add-break(true)
+      }
+    }, stroke: style.stroke)
+  } else {
+    draw.line(start, end, stroke: style.stroke, mark: style.at("mark", default: none))
+  }
+}
+
 // Construct Axis Object
 //
 // - min (number): Minimum value
@@ -163,7 +236,7 @@
           ticks: (step: auto, minor-step: none,
                   unit: none, decimals: 2, grid: false,
                   format: "float")) = (
-  min: min, max: max, ticks: ticks, label: label,
+  min: min, max: max, ticks: ticks, label: label, inset: (0, 0), show-break: false,
 )
 
 // Format a tick value
@@ -369,6 +442,32 @@
   return ticks
 }
 
+// Prepares the axis post creation. The given axis
+// must be completely set-up, including its intervall.
+// Returns the prepared axis
+#let prepare-axis(ctx, axis, name) = {
+  let style = styles.resolve(ctx.style, root: "axes",
+                             base: default-style-scientific)
+  style = _prepare-style(ctx, style)
+  style = _get-axis-style(ctx, style, name)
+
+  if type(axis.inset) != array {
+    axis.inset = (axis.inset, axis.inset)
+  }
+
+  axis.inset = axis.inset.map(v => util.resolve-number(ctx, v))
+
+  if axis.show-break {
+    if axis.min > 0 {
+      axis.inset.at(0) += style.break-point.width
+    } else if axis.max < 0 {
+      axis.inset.at(1) += style.break-point.width
+    }
+  }
+
+  return axis
+}
+
 // Draw inside viewport coordinates of two axes
 //
 // - size (vector): Axis canvas size (relative to origin)
@@ -377,9 +476,16 @@
 // - y (axis): Vertical axis
 // - name (string,none): Group name
 #let axis-viewport(size, x, y, origin: (0, 0), name: none, body) = {
-  size = (rel: size, to: origin)
+  draw.group(name: name, ctx => {
+    let origin = origin
+    let size = size
 
-  draw.group(name: name, {
+    origin.at(0) += x.inset.at(0)
+    size.at(0) -= x.inset.sum()
+    origin.at(1) += y.inset.at(0)
+    size.at(1) -= y.inset.sum()
+
+    size = (rel: size, to: origin)
     draw.set-viewport(origin, size,
       bounds: (x.max - x.min,
                y.max - y.min,
@@ -391,17 +497,25 @@
 
 // Draw grid lines for the ticks of an axis
 //
+// - cxt (context):
 // - axis (dictionary): The axis
 // - ticks (array): The computed ticks
 // - low (vector): Start position of a grid-line at tick 0
 // - high (vector): End position of a grid-line at tick 0
 // - dir (vector): Normalized grid direction vector along the grid axis
 // - style (style): Axis style
-#let draw-grid-lines(axis, ticks, low, high, dir, style) = {
+#let draw-grid-lines(ctx, axis, ticks, low, high, dir, style) = {
+  let offset = (0,0)
+  if axis.inset != none {
+    let (inset-low, inset-high) = axis.inset.map(v => util.resolve-number(ctx, v))
+    offset = vector.scale(vector.norm(dir), inset-low)
+    dir = vector.sub(dir, vector.scale(vector.norm(dir), inset-low + inset-high))
+  }
+
   let kind = _get-grid-type(axis)
   if kind > 0 {
     for (distance, label, is-major) in ticks {
-      let offset = vector.scale(dir, distance)
+      let offset = vector.add(vector.scale(dir, distance), offset)
       let start = vector.add(low, offset)
       let end = vector.add(high, offset)
         
@@ -528,7 +642,6 @@
         ("left",   (0,0), (w,0), (0,+h), y-ticks,  left),
         ("right",  (w,0), (0,0), (0,+h), y2-ticks, right),
       )
-
       for (name, start, end, direction, ticks, axis) in axes {
         if axis == none { continue }
 
@@ -537,7 +650,7 @@
 
         if not is-mirror {
           on-layer(style.grid-layer, {
-            draw-grid-lines(axis, ticks, start, end, direction, style)
+            draw-grid-lines(ctx, axis, ticks, start, end, direction, style)
           })
         }
       }
@@ -561,6 +674,7 @@
       for (name, start, end, outsides, flip, ticks, axis) in axes {
         let style = _get-axis-style(ctx, style, name)
         let is-mirror = axis == none or axis.at("is-mirror", default: false)
+        let is-horizontal = name in ("bottom", "top")
 
         if style.padding != 0 {
           let padding = vector.scale(outsides, style.padding)
@@ -568,12 +682,14 @@
           end = vector.add(end, padding)
         }
 
-        let path = draw.line(start, end, ..style)
+        let (data-start, data-end) = _inset-axis-points(ctx, style, axis, start, end)
+
+        let path = _draw-axis-line(start, end, axis, is-horizontal, style)
         on-layer(style.axis-layer, {
           group(name: "axis", {
             if draw-unset or axis != none {
               path;
-              place-ticks-on-line(ticks, start, end, style, flip: flip, is-mirror: is-mirror)
+              place-ticks-on-line(ticks, data-start, data-end, style, flip: flip, is-mirror: is-mirror)
             }
           })
 
@@ -650,7 +766,7 @@
 
         let style = _get-axis-style(ctx, style, name)
         on-layer(style.grid-layer, {
-          draw-grid-lines(axis, ticks, start, end, direction, style)
+          draw-grid-lines(ctx, axis, ticks, start, end, direction, style)
         })
       }
     })
@@ -674,10 +790,12 @@
           let overshoot = style.overshoot
           let vstart = vector.sub(start, vector.scale(dir, pad))
           let vend = vector.add(end, vector.scale(dir, pad + overshoot))
+          let is-horizontal = name == "x"
 
+          let (data-start, data-end) = _inset-axis-points(ctx, style, axis, start, end)
           group(name: "axis", {
-            line(vstart, vend, stroke: style.stroke, mark: style.mark)
-            place-ticks-on-line(ticks, start, end, style, flip: flip)
+            _draw-axis-line(vstart, vend, axis, is-horizontal, style)
+            place-ticks-on-line(ticks, data-start, data-end, style, flip: flip)
           })
 
           if axis.label != none {

@@ -259,7 +259,9 @@
 // - axis-dict (dictionary): Existing axis dictionary
 // - options (dictionary): Named arguments
 // - plot-size (tuple): Plot width, height tuple
-#let setup-axes(axis-dict, options, plot-size) = {
+#let setup-axes(ctx, axis-dict, options, plot-size) = {
+  import "/src/lib/axes.typ"
+
   // Get axis option for name
   let get-axis-option(axis-name, name, default) = {
     let v = options.at(axis-name + "-" + name, default: default)
@@ -292,6 +294,10 @@
     axis.ticks.decimals = get-axis-option(name, "decimals", 2)
     axis.ticks.unit = get-axis-option(name, "unit", [])
     axis.ticks.format = get-axis-option(name, "format", axis.ticks.format)
+
+    // Axis break
+    axis.show-break = get-axis-option(name, "break", false)
+    axis.inset = get-axis-option(name, "inset", (0, 0))
 
     // Configure grid
     axis.ticks.grid = get-axis-option(name, "grid", false)
@@ -333,6 +339,10 @@
     if changed {
       axis-dict.at(name) = axis
     }
+  }
+
+  for (name, axis) in axis-dict {
+    axis-dict.at(name) = axes.prepare-axis(ctx, axis, name)
   }
 
   return axis-dict
