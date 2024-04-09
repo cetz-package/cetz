@@ -52,7 +52,7 @@ This is the minimal starting point:
   ...
 })
 ```]
-Note that draw functions are imported inside the scope of the `canvas` block. This is recommended as some draw functions override Typst's function's such as `line`.
+Note that draw functions are imported inside the scope of the `canvas` block. This is recommended as some draw functions override Typst's functions such as `line`.
 
 #show raw.where(block: false): it => if it.text.starts-with("<") and it.text.ends-with(">") {
     set text(1.2em)
@@ -98,14 +98,14 @@ Note that all anchors are transformed along with the element.
 === Named
 Named anchors are normally unique to the type of element, such as a bezier curve's control points. Other anchor variants specify their own named anchors that are available to all elements that support the anchor variant.
 
-All elements also have a "default" named anchor, it always refers to another anchor on the element. 
+All elements also have a "default" named anchor, it always refers to another anchor on the element.
 
 === Border
 A border anchor refers to a point on the element's border where a ray is cast from the element's center at a given angle and hits the border.
 
 They are given as angles where `0deg` is towards the right and `90deg` is up.
 
-Border anchors also specify named compass directions such as "north", "north-east", etc. Border anchors also spefcify a "center" named anchor which is where the ray cast originates from.
+Border anchors also specify named compass directions such as "north," "north-east," etc. Border anchors also spefcify a "center" named anchor which is where the ray cast originates from.
 
 ```example-vertical
 circle((0, 0), name: "circle", radius: 1)
@@ -121,7 +121,7 @@ content("circle.south-west", [South West], anchor: "north-east")
 === Path 
 A path anchor refers to a point along the path of an element. They can be given as either a `<number>` for an absolute distance along the path, or a `<ratio>` for a relative distance along the path.
 
-Path anchors also specify three anchors "start", "mid" and "end".
+Path anchors also specify three anchors "start," "mid," and "end".
 
 ```example-vertical
 line((0,0), (10, 1), name: "line")
@@ -253,7 +253,7 @@ set-style(mark: (symbol: ((symbol: ">", stroke: red), ">"), end: (stroke: blue))
 line(..c)
 ```
 
-#doc-style.show-parameter-block("symbol", ("none", "string", "array", "dictionary"), [This option sets the mark to draw when using the `mark` draw function, or applies styling to both mark ends of path based elements. The mark's name or shorthand can be given, multiple marks can be drawn by passing an array of names or shorthands. When `none` no marks will be drawn. A style `dictionary` can be given instead of a `string` to override styling for that particular mark, just make sure to still give the mark name using the `symbol` key otherwise nothing will be drawn!. ])
+#doc-style.show-parameter-block("symbol", ("none", "string", "array", "dictionary"), [This option sets the mark to draw when using the `mark` draw function, or applies styling to both mark ends of path based elements. The mark's name or shorthand can be given, multiple marks can be drawn by passing an array of names or shorthands. When `none` no marks will be drawn. A style `dictionary` can be given instead of a `string` to override styling for that particular mark, just make sure to still give the mark name using the `symbol` key otherwise nothing will be drawn! ])
 #doc-style.show-parameter-block("start", ("none", "string", "array", "dictionary"), [This option sets the mark to draw at the start of a path based element. It will override all options of the `symbol` key and will not effect marks drawn using the `mark` draw function.])
 #doc-style.show-parameter-block("end", ("none", "string", "array", "dictionary"), [This option sets the mark to draw at the end of a path based element. It will override all options of the `symbol` key and will not effect marks drawn using the `mark` draw function.])
 
