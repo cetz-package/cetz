@@ -276,7 +276,7 @@ line(..c)
 #doc-style.show-parameter-block("xy-up", "vector", [The direction which is "up" for use when drawing 2D marks.], default: (0, 0, 1))
 #doc-style.show-parameter-block("z-up", "vector", [The direction which is "up" for use when drawing 3D marks.], default: (0, 1, 0))
 
-#doc-style.show-parameter-block("shorten-to", ("integer", "auto", "none"), [Which mark to shorten the path to when multiple marks are given. `auto` will shorten to the last mark, `none` will shorten to the first mark (effectively disabling path shortening). An integer can be given to select the mark's index.])
+#doc-style.show-parameter-block("shorten-to", default: auto, ("integer", "auto", "none"), [Which mark to shorten the path to when multiple marks are given. `auto` will shorten to the last mark, `none` will shorten to the first mark (effectively disabling path shortening). An integer can be given to select the mark's index.])
 
 #doc-style.show-parameter-block("transform-shape", "bool", [When false marks will not be streched/affected by the current transformation, marks will be placed after the path is transformed.], default: true)
 
