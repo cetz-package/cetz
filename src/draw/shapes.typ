@@ -432,7 +432,7 @@
 /// You can directly use the styling from @styling-mark.
 ///
 /// - from (coordinate): The position to place the mark.
-/// - to (coordinate): The position the mark should point towards.
+/// - to (coordinate,angle): The position or angle the mark should point towards.
 /// - ..style (style):
 #let mark(from, to, ..style) = {
   assert.eq(
@@ -442,6 +442,13 @@
   )
   
   let style = style.named()
+
+  if type(to) == angle {
+    // Construct a coordinate pointing (+1, 0) away from
+    // `from`, rotated by the angle given.
+    to = ((rel: (to, 1), to: from))
+  }
+
   (from, to).map(coordinate.resolve-system)
   
   return (ctx => {
@@ -454,7 +461,10 @@
     style.start = none
     style.symbol = none
 
-    let drawables = drawable.path((path-util.line-segment(pts),))
+    let (to, from) = (..pts)
+    from = vector.sub(to, vector.sub(from, to))
+
+    let drawables = drawable.path((path-util.line-segment((from, to)),))
     drawables = mark_.place-marks-along-path(ctx, style, none, drawables, add-path: false)
     return (
       ctx: ctx,
