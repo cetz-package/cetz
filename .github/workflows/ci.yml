@@ -32,7 +32,6 @@ jobs:
         with:
           crate: typst-test
           git: https://github.com/tingerrr/typst-test.git
-          tag: ci-semi-stable
       - uses: typst-community/setup-typst@v3
         with:
           typst-version: '0.11.0'
