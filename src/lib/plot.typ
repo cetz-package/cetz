@@ -4,6 +4,7 @@
 #import "/src/matrix.typ"
 #import "/src/vector.typ"
 #import "/src/bezier.typ"
+#import "/src/styles.typ"
 #import "axes.typ"
 #import "palette.typ"
 
@@ -474,8 +475,21 @@
   if legend != none {
     let items = data.filter(d => "label" in d and d.label != none)
     if items.len() > 0 {
-      plot-legend.draw-legend(ctx, legend-style,
-        items, size, "plot", legend, legend-anchor)
+      let legend-style = styles.resolve(ctx.style,
+        base: plot-legend.default-style, root: "legend")
+
+      plot-legend.add-legend-anchors(legend-style, "plot", size)
+      plot-legend.legend(legend, anchor: legend-anchor, {
+        for item in items {
+          let preview = _ => {
+            if "plot-legend-preview" in item {
+              (item.plot-legend-preview)(item)
+            }
+          }
+
+          plot-legend.item(item.label, preview, ..item.style)
+        }
+      }, ..legend-style)
     }
   }
 
