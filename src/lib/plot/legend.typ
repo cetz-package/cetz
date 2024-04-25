@@ -92,11 +92,16 @@
 /// - label (none, auto, content): Legend label or auto to use the enumerated default label
 /// - preview (auto, function): Legend preview icon function of the format `item => elements`.
 ///                             Note that the canvas bounds for drawing the preview are (0,0) to (1,1).
+/// - mark: (none,string): Legend mark symbol
+/// - mark-style: (none,dictionary): Mark style
+/// - mark-size: (number): Mark size
 /// - style (styles): Style keys for the single item
-#let item(label, preview, ..style) = {
+#let item(label, preview, mark: none, mark-style: (:), mark-size: 1, ..style) = {
   assert.eq(style.pos().len(), 0,
     message: "Unexpected positional arguments")
-  return ((label: label, preview: preview, style: style.named()),)
+  return ((label: label, preview: preview,
+           mark: mark, mark-style: mark-style, mark-size: mark-size,
+           style: style.named()),)
 }
 
 /// Draw a legend

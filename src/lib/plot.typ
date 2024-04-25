@@ -476,18 +476,22 @@
     let items = data.filter(d => "label" in d and d.label != none)
     if items.len() > 0 {
       let legend-style = styles.resolve(ctx.style,
-        base: plot-legend.default-style, root: "legend")
+        base: plot-legend.default-style, merge: legend-style, root: "legend")
 
       plot-legend.add-legend-anchors(legend-style, "plot", size)
       plot-legend.legend(legend, anchor: legend-anchor, {
         for item in items {
-          let preview = _ => {
-            if "plot-legend-preview" in item {
-              (item.plot-legend-preview)(item)
-            }
+          let preview = if "plot-legend-preview" in item {
+            _ => {(item.plot-legend-preview)(item) }
+          } else {
+            auto
           }
 
-          plot-legend.item(item.label, preview, ..item.style)
+          plot-legend.item(item.label, preview,
+            mark: item.at("mark", default: none),
+            mark-size: item.at("mark-size", default: none),
+            mark-style: item.at("mark-style", default: none),
+            ..item.style)
         }
       }, ..legend-style)
     }
