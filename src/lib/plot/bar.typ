@@ -47,7 +47,13 @@
   for d in self.data {
     let (x, n, len, y-min, y-max) = d
 
+    let w = self.bar-width
+    let gap = self.cluster-gap * if w > 0 { -1 } else { +1 }
+    w += gap * (len - 1)
+
     let x-offset = _get-x-offset(self.bar-position, self.bar-width)
+    x-offset += gap * n
+
     let left  = x - x-offset
     let right = left + w
     let width = (right - left) / len
@@ -100,6 +106,7 @@
 ///   - "start": The lower edge of the data item is on the x value (left aligned)
 ///   - "center": The data item is centered on the x value
 ///   - "end": The upper edge of the data item is on the x value (right aligned)
+/// - cluster-gap (float): Spacing between bars insides a cluster.
 /// - style (dictionary): Plot style
 /// - axes (axes): Plot axes. To draw a horizontal growing bar chart, you can swap the x and y axes.
 #let add-bar(data,
@@ -107,6 +114,7 @@
              labels: none,
              bar-width: 1,
              bar-position: "center",
+             cluster-gap: 0,
              style: (:),
              axes: ("x", "y")) = {
   assert(mode in ("basic", "clustered", "stacked", "stacked100"),
@@ -170,6 +178,7 @@
     style: style,
     bar-width: bar-width,
     bar-position: bar-position,
+    cluster-gap: cluster-gap,
     plot-prepare: _prepare,
     plot-stroke: _stroke,
     plot-fill: _fill,

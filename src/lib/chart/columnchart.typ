@@ -6,6 +6,7 @@
 #let columnchart-default-style = (
   axes: (tick: (length: 0), grid: (stroke: (dash: "dotted"))),
   bar-width: .8,
+  cluster-gap: 0,
   x-inset: 1,
 )
 
@@ -118,6 +119,7 @@
         mode: mode,
         labels: labels,
         bar-width: style.bar-width,
+        cluster-gap: style.cluster-gap,
         axes: ("x", "y"))
     })
   })

@@ -42,7 +42,6 @@
                  size: (9, auto),
                  value-key: 1,
                  label-key: 0,
-                 bar-width: .7,
                  x-tick-step: 5,
                  x-label: [x],
                  y-label: [y],
@@ -54,7 +53,6 @@
                  size: (9, auto),
                  label-key: 0,
                  value-key: (..range(1, 5)),
-                 bar-width: .9,
                  data2)
 }))
 
@@ -63,7 +61,6 @@
                  size: (9, auto),
                  label-key: 0,
                  value-key: (..range(1, 5)),
-                 bar-width: .7,
                  bar-style: palette.blue,
                  data2)
 }))
@@ -73,7 +70,6 @@
                  size: (9, auto),
                  label-key: 0,
                  value-key: (..range(1, 5)),
-                 bar-width: .7,
                  bar-style: palette.blue,
                  data2)
 }))
@@ -89,7 +85,6 @@
                     size: (auto, 5),
                     value-key: 1,
                     label-key: 0,
-                    bar-width: .7,
                     y-tick-step: 5,
                     x-label: [x],
                     y-label: [y],
@@ -101,7 +96,6 @@
                     size: (auto, 5),
                     label-key: 0,
                     value-key: (..range(1, 5)),
-                    bar-width: .9,
                     data2)
 }))
 
@@ -110,7 +104,6 @@
                     size: (auto, 5),
                     label-key: 0,
                     value-key: (..range(1, 5)),
-                    bar-width: .7,
                     bar-style: palette.blue,
                     data2)
 }))
@@ -120,7 +113,6 @@
                     size: (auto, 4),
                     label-key: 0,
                     value-key: (..range(1, 5)),
-                    bar-width: .7,
                     bar-style: palette.blue,
                     data2)
 }))
@@ -191,4 +183,22 @@
     x-tick-step: 0.001,
     x-decimals: 3,
     data3)
+}))
+
+#box(stroke: 2pt + red, canvas({
+  draw.set-style(barchart: (bar-width: 1, cluster-gap: .2))
+  chart.barchart(mode: "clustered",
+                 size: (5, auto),
+                 label-key: 0,
+                 value-key: (..range(1, 5)),
+                 data2)
+}))
+
+#box(stroke: 2pt + red, canvas({
+  draw.set-style(columnchart: (bar-width: 1, cluster-gap: .2))
+  chart.columnchart(mode: "clustered",
+                    size: (auto, 5),
+                    label-key: 0,
+                    value-key: (..range(1, 5)),
+                    data2)
 }))
