@@ -62,3 +62,13 @@
     }
   })
 })
+
+// Bug #571
+#test-case({
+  import draw: *
+  import angle: right-angle, angle
+
+  let (o, a, b) = ((0,3), (0,4), (1,3))
+  line(a, o, b)
+  right-angle(o, a, b, name: "angle")
+})
