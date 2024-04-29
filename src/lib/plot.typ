@@ -214,6 +214,9 @@
     let x-scale =  ((x.max - x.min) / size.at(0))
     let y-scale =  ((y.max - y.min) / size.at(1))
 
+    if y.horizontal {
+      (x-scale, y-scale) = (y-scale, x-scale)
+    }
 
     return (x: x, y: y, size: size, x-scale: x-scale, y-scale: y-scale)
   }

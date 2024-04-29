@@ -2,10 +2,6 @@
 #import "/src/util.typ"
 #import "/src/vector.typ"
 
-#let _prepare(self, ctx) = {
-  return self
-}
-
 #let _draw-whisker(pt, dir, ..style) = {
   let a = vector.add(pt, vector.scale(dir, -1))
   let b = vector.add(pt, vector.scale(dir, +1))
@@ -13,35 +9,53 @@
   draw.line(a, b, ..style)
 }
 
-#let _stroke(self, ctx) = {
-  let (x-min, x-max) = self.x-error.map(v => v + self.x)
-  let (y-min, y-max) = self.y-error.map(v => v + self.y)
+#let draw-errorbar(pt, x, y, x-whisker-size, y-whisker-size, style) = {
+  if type(x) != array { x = (-x, x) }
+  if type(y) != array { y = (-y, y) }
 
-  let pt-x-min = (x-min, self.y)
-  let pt-x-max = (x-max, self.y)
-  let pt-y-min = (self.x, y-min)
-  let pt-y-max = (self.x, y-max)
-
-  if x-min != x-max or y-min != y-max {
-    if x-min != x-max {
-      draw.line(pt-x-min, pt-x-max, ..self.style)
-
-      let whisker-size = self.whisker-size * ctx.y-scale
-      if whisker-size != 0 {
-        _draw-whisker(pt-x-min, (0,whisker-size / 2), ..self.style)
-        _draw-whisker(pt-x-max, (0,whisker-size / 2), ..self.style)
+  let (x-min, x-max) = x
+  let x-min-pt = vector.add(pt, (x-min, 0))
+  let x-max-pt = vector.add(pt, (x-max, 0))
+  if x-min != 0 or x-max != 0 {
+    draw.line(x-min-pt, x-max-pt, ..style)
+    if x-whisker-size > 0 {
+      if x-min != 0 {
+        _draw-whisker(x-min-pt, (0, x-whisker-size), ..style)
       }
-    }
-    if y-min != y-max {
-      draw.line(pt-y-min, pt-y-max, ..self.style)
-
-      let whisker-size = self.whisker-size * ctx.x-scale
-      if whisker-size != 0 {
-        _draw-whisker(pt-y-min, (whisker-size / 2,0), ..self.style)
-        _draw-whisker(pt-y-max, (whisker-size / 2,0), ..self.style)
+      if x-max != 0 {
+        _draw-whisker(x-max-pt, (0, x-whisker-size), ..style)
       }
     }
   }
+
+  let (y-min, y-max) = y
+  let y-min-pt = vector.add(pt, (0, y-min))
+  let y-max-pt = vector.add(pt, (0, y-max))
+  if y-min != 0 or y-max != 0 {
+    draw.line(y-min-pt, y-max-pt, ..style)
+    if y-whisker-size > 0 {
+      if y-min != 0 {
+        _draw-whisker(y-min-pt, (y-whisker-size, 0), ..style)
+      }
+      if y-max != 0 {
+        _draw-whisker(y-max-pt, (y-whisker-size, 0), ..style)
+      }
+    }
+  }
+}
+
+#let _prepare(self, ctx) = {
+  return self
+}
+
+#let _stroke(self, ctx) = {
+  let x-whisker-size = self.whisker-size * ctx.y-scale
+  let y-whisker-size = self.whisker-size * ctx.x-scale
+
+  draw-errorbar((self.x, self.y),
+    self.x-error, self.y-error,
+    x-whisker-size, y-whisker-size,
+    self.style)
 }
 
 /// Add x- and/or y-error bars
