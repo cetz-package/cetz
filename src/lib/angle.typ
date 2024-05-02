@@ -202,7 +202,7 @@
   }
   draw.line(va, vm, vb, ..style, fill: none)
 
-  let label-pt = vector.scale(vector.norm(vector.sub(vm, vo)), ra)
+  let label-pt = vector.add(vo, vector.scale(vector.norm(vector.sub(vm, vo)), ra))
   if label != none {
     draw.content(label-pt, label)
   }
