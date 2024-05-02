@@ -7,6 +7,9 @@
   axes: (tick: (length: 0), grid: (stroke: (dash: "dotted"))),
   bar-width: .8,
   cluster-gap: 0,
+  error: (
+    whisker-size: .25,
+  ),
   y-inset: 1,
 )
 
@@ -36,9 +39,12 @@
 /// - label-key (int,string): Key to access the label of a data row.
 ///                           This key is used as argument to the
 ///                           rows `.at(..)` function.
-/// - value-key (int,string): Key(s) to access value(s) of data row.
+/// - value-key (int,string): Key(s) to access values of a data row.
 ///                           These keys are used as argument to the
 ///                           rows `.at(..)` function.
+/// - error-key (none,int,string): Key(s) to access error values of a data row.
+///                                These keys are used as argument to the
+///                                rows `.at(..)` function.
 /// - mode (string): Chart mode:
 ///   / basic: Single bar per data row
 ///   / clustered: Group of bars per data row
@@ -57,6 +63,7 @@
 #let barchart(data,
               label-key: 0,
               value-key: 1,
+              error-key: none,
               mode: "basic",
               size: (auto, 1),
               bar-style: palette.red,
@@ -77,6 +84,12 @@
     value-key = (value-key,)
   }
 
+  if error-key == none {
+    error-key = ()
+  } else if type(error-key) != array {
+    error-key = (error-key,)
+  }
+
   if type(size) != array {
     size = (size, auto)
   }
@@ -94,7 +107,7 @@
   }
 
   data = data.enumerate().map(((i, d)) => {
-    (data.len() - i - 1, ..value-key.map(k => d.at(k)))
+    (data.len() - i - 1, value-key.map(k => d.at(k, default: 0)).flatten(), error-key.map(k => d.at(k, default: 0)).flatten())
   })
 
   draw.group(ctx => {
@@ -116,6 +129,9 @@
               ..plot-args,
     {
       plot.add-bar(data,
+        x-key: 0,
+        y-key: 1,
+        error-key: if mode in ("basic", "clustered") { 2 },
         mode: mode,
         labels: labels,
         bar-width: -style.bar-width,

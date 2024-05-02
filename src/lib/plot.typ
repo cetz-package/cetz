@@ -15,6 +15,7 @@
 #import "plot/legend.typ" as plot-legend
 #import "plot/annotation.typ": annotate, calc-annotation-domain
 #import "plot/bar.typ": add-bar
+#import "plot/errorbar.typ": add-errorbar
 #import "plot/mark.typ"
 
 #let default-colors = (blue, red, green, yellow, black)
@@ -208,8 +209,16 @@
   let make-ctx(x, y, size) = {
     assert(x != none, message: "X axis does not exist")
     assert(y != none, message: "Y axis does not exist")
+    assert(size.at(0) > 0 and size.at(1) > 0, message: "Plot size must be > 0")
 
-    return (x: x, y: y, size: size)
+    let x-scale =  ((x.max - x.min) / size.at(0))
+    let y-scale =  ((y.max - y.min) / size.at(1))
+
+    if y.horizontal {
+      (x-scale, y-scale) = (y-scale, x-scale)
+    }
+
+    return (x: x, y: y, size: size, x-scale: x-scale, y-scale: y-scale)
   }
 
   // Setup data viewport

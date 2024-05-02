@@ -1,16 +1,61 @@
 #import "/src/draw.typ"
 #import "/src/util.typ"
 
+#import "errorbar.typ": draw-errorbar
+
+#let _transform-row(row, x-key, y-key, error-key) = {
+  let x = row.at(x-key)
+  let y = if y-key == auto {
+    row.slice(1)
+  } else if type(y-key) == array {
+    y-key.map(k => row.at(k, default: 0))
+  } else {
+    row.at(y-key, default: 0)
+  }
+  let err = if error-key == none {
+    0
+  } else if type(error-key) == array {
+    error-key.map(k => row.at(k, default: 0))
+  } else {
+    row.at(error-key, default: 0)
+  }
+
+  if type(y) != array { y = (y,) }
+  if type(err) != array { err = (err,) }
+
+  (x, y.flatten(), err.flatten())
+}
+
+// Get a single items min and maximum y-value
+#let _minmax-value(row) = {
+  let min = none
+  let max = none
+
+  let y = row.at(1)
+  let e = row.at(2)
+  for i in range(0, y.len()) {
+    let i-min = y.at(i) - e.at(i, default: 0)
+    if min == none { min = i-min }
+    else { min = calc.min(min, i-min) }
+
+    let i-max = y.at(i) + e.at(i, default: 0)
+    if max == none { max = i-max }
+    else { max = calc.max(max, i-max) }
+  }
+
+  return (min: min, max: max)
+}
+
 // Functions for max value calculation
 #let _max-value-fn = (
   basic: (data, min: 0) => {
-    calc.max(min, ..data.map(t => calc.max(..t.slice(1))))
+    calc.max(min, ..data.map(t => _minmax-value(t).max))
   },
   clustered: (data, min: 0) => {
-    calc.max(min, ..data.map(t => calc.max(..t.slice(1))))
+    calc.max(min, ..data.map(t => _minmax-value(t).max))
   },
   stacked: (data, min: 0) => {
-    calc.max(min, ..data.map(t => t.slice(1).sum()))
+    calc.max(min, ..data.map(t => t.at(1).sum()))
   },
   stacked100: (.., min: 0) => {min + 100}
 )
@@ -18,13 +63,13 @@
 // Functions for min value calculation
 #let _min-value-fn = (
   basic: (data, min: 0) => {
-    calc.min(min, ..data.map(t => calc.min(..t.slice(1))))
+    calc.min(min, ..data.map(t => _minmax-value(t).min))
   },
   clustered: (data, min: 0) => {
-    calc.min(min, ..data.map(t => calc.min(..t.slice(1))))
+    calc.min(min, ..data.map(t => _minmax-value(t).min))
   },
   stacked: (data, min: 0) => {
-    calc.min(min, ..data.map(t => t.slice(1).sum()))
+    calc.min(min, ..data.map(t => t.at(1).sum()))
   },
   stacked100: (.., min: 0) => {min}
 )
@@ -39,13 +84,16 @@
   else { width / 2 }
 }
 
-#let _draw-rects(self, ctx, ..args) = {
+#let _draw-rects(filling, self, ctx, ..args) = {
   let x-axis = ctx.x
   let y-axis = ctx.y
 
+  let bars = ()
+  let errors = ()
+
   let w = self.bar-width
   for d in self.data {
-    let (x, n, len, y-min, y-max) = d
+    let (x, n, len, y-min, y-max, err) = d
 
     let w = self.bar-width
     let gap = self.cluster-gap * if w > 0 { -1 } else { +1 }
@@ -71,16 +119,22 @@
       y-max = calc.min(y-max, y-axis.max)
 
       draw.rect((left, y-min), (right, y-max))
+
+      if not filling and err != 0 {
+        let y-whisker-size = self.whisker-size * ctx.x-scale
+        draw-errorbar(((left + right) / 2, y-max),
+          0, err, 0, y-whisker-size / 2, self.style + self.error-style)
+      }
     }
   }
 }
 
 #let _stroke(self, ctx) = {
-  _draw-rects(self, ctx, fill: none)
+  _draw-rects(false, self, ctx, fill: none)
 }
 
 #let _fill(self, ctx) = {
-  _draw-rects(self, ctx, stroke: none)
+  _draw-rects(true, self, ctx, stroke: none)
 }
 
 /// Add a bar- or column-chart to the plot
@@ -90,6 +144,12 @@
 /// - data (array): Array of data items. An item is an array containing a x an one or more y values.
 ///                 For example `(0, 1)` or `(0, 10, 5, 30)`. Depending on the `mode`, the data items
 ///                 get drawn as either clustered or stacked rects.
+/// - x-key: (int,string): Key to use for retreiving a bars x-value from a single data entry.
+///   This value gets passed to the `.at(...)` function of a data item.
+/// - y-key: (auto,int,string,array): Key to use for retreiving a bars y-value. For clustered/stacked
+///   data, this must be set to a list of keys (e.g. `range(1, 4)`). If set to `auto`, att but the first
+///   array-values of a data item are used as y-values.
+/// - error-key: (none,int,string): Key to use for retreiving a bars y-error.
 /// - mode (string): The mode on how to group data items into bars:
 ///   / basic: Add one bar per data value. If the data contains multiple values,
 ///     group those bars next to each other.
@@ -110,11 +170,16 @@
 /// - style (dictionary): Plot style
 /// - axes (axes): Plot axes. To draw a horizontal growing bar chart, you can swap the x and y axes.
 #let add-bar(data,
+             x-key: 0,
+             y-key: auto,
+             error-key: none,
              mode: "basic",
              labels: none,
              bar-width: 1,
              bar-position: "center",
              cluster-gap: 0,
+             whisker-size: .25,
+             error-style: (:),
              style: (:),
              axes: ("x", "y")) = {
   assert(mode in ("basic", "clustered", "stacked", "stacked100"),
@@ -123,8 +188,17 @@
     message: "Invalid bar-position '" + bar-position + "'. Allowed values are: start, center, end")
   assert(bar-width != 0,
     message: "Option bar-width must be != 0, but is " + str(bar-width))
+  if error-key != none {
+    assert(y-key != auto,
+      message: "Bar value-key must be set != auto if error-key is set")
+    assert(mode in ("basic", "clustered"),
+      message: "Error bars are supported for basic or clustered only, got " + mode)
+  }
 
-  let n = util.max(..data.map(d => d.len() - 1))
+  // Transform data to (x, y, error) triplets
+  let data = data.map(row => _transform-row(row, x-key, y-key, error-key))
+
+  let n = util.max(..data.map(d => d.at(1).len()))
   let x-offset = _get-x-offset(bar-position, bar-width)
   let x-domain = (util.min(..data.map(d => d.at(0))) - x-offset,
                   util.max(..data.map(d => d.at(0))) - x-offset + bar-width)
@@ -133,10 +207,9 @@
 
   // For stacked 100%, multiply each column/bar
   if mode == "stacked100" {
-    data = data.map(d => {
-      let (x, ..y) = d
+    data = data.map(((x, y, err)) => {
       let f = 100 / y.sum()
-      return (x, ..y.map(v => v * f))
+      return (x, y.map(v => v * f), err)
     })
   }
 
@@ -150,16 +223,17 @@
   }
 
   let j = 0
-  for (x, ..y) in data {
+  for (x, y, err) in data {
     let len = if clustered { n } else { y.len() }
     let sum = 0
     for (i, y) in y.enumerate() {
+      let err = err.at(i, default: 0)
       if stacked {
-        bar-data.at(i).push((x, i, len, sum, sum + y))
+        bar-data.at(i).push((x, i, len, sum, sum + y, err))
       } else if clustered {
-        bar-data.at(i).push((x, i, len, 0, y))
+        bar-data.at(i).push((x, i, len, 0, y, err))
       } else {
-        bar-data.at(j).push((x, i, len, 0, y))
+        bar-data.at(j).push((x, i, len, 0, y, err))
       }
       sum += y
     }
@@ -179,6 +253,8 @@
     bar-width: bar-width,
     bar-position: bar-position,
     cluster-gap: cluster-gap,
+    whisker-size: whisker-size,
+    error-style: error-style,
     plot-prepare: _prepare,
     plot-stroke: _stroke,
     plot-fill: _fill,

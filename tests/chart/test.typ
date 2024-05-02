@@ -31,6 +31,12 @@
   (3, 0.003),
 )
 
+#let data4 = (
+  (1, 1, .3),
+  (2, 2, .2),
+  (3, 3, .1),
+)
+
 #box(stroke: 2pt + red, canvas({
   chart.barchart(mode: "basic",
                  size: (9, auto),
@@ -201,4 +207,18 @@
                     label-key: 0,
                     value-key: (..range(1, 5)),
                     data2)
+}))
+
+#box(stroke: 2pt + red, canvas({
+  chart.columnchart(mode: "basic",
+                    size: (auto, 4),
+                    error-key: 2,
+                    data4)
+}))
+
+#box(stroke: 2pt + red, canvas({
+  chart.barchart(mode: "basic",
+                 size: (9, auto),
+                 error-key: 2,
+                 data4)
 }))

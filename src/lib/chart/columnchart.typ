@@ -7,6 +7,9 @@
   axes: (tick: (length: 0), grid: (stroke: (dash: "dotted"))),
   bar-width: .8,
   cluster-gap: 0,
+  error: (
+    whisker-size: .25,
+  ),
   x-inset: 1,
 )
 
@@ -39,6 +42,9 @@
 /// - value-key (int,string): Key(s) to access value(s) of data row.
 ///                           These keys are used as argument to the
 ///                           rows `.at(..)` function.
+/// - error-key (none,int,string): Key(s) to access error values of a data row.
+///                                These keys are used as argument to the
+///                                rows `.at(..)` function.
 /// - mode (string): Chart mode:
 ///   / basic: Single bar per data row
 ///   / clustered: Group of bars per data row
@@ -57,6 +63,7 @@
 #let columnchart(data,
                  label-key: 0,
                  value-key: 1,
+                 error-key: none,
                  mode: "basic",
                  size: (auto, 1),
                  bar-style: palette.red,
@@ -69,12 +76,16 @@
   assert(type(label-key) in (int, str))
   if mode == "basic" {
     assert(type(value-key) in (int, str))
-  } else {
-    assert(type(value-key) == array)
   }
 
   if type(value-key) != array {
     value-key = (value-key,)
+  }
+
+  if error-key == none {
+    error-key = ()
+  } else if type(error-key) != array {
+    error-key = (error-key,)
   }
 
   if type(size) != array {
@@ -94,7 +105,7 @@
   }
 
   data = data.enumerate().map(((i, d)) => {
-    (i, ..value-key.map(k => d.at(k)))
+    (i, value-key.map(k => d.at(k)).flatten(), error-key.map(k => d.at(k, default: 0)).flatten())
   })
 
   draw.group(ctx => {
@@ -116,10 +127,15 @@
               ..plot-args,
     {
       plot.add-bar(data,
+        x-key: 0,
+        y-key: 1,
+        error-key: if mode in ("basic", "clustered") { 2 },
         mode: mode,
         labels: labels,
         bar-width: style.bar-width,
         cluster-gap: style.cluster-gap,
+        error-style: style.error,
+        whisker-size: style.error.whisker-size,
         axes: ("x", "y"))
     })
   })

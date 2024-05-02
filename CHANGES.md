@@ -5,6 +5,11 @@ CeTZ 0.3.0 requires Typst 0.11.0
 ## Plot
 - Added support for automatically adding axis breaks (sawtooth lines) by setting the `break`
   attribute of an axis to `true`.
+- Added a new errorbar function: `add-errorbar`
+- Added errorbar support to the `add-bar` function
+
+## Chart
+- Added errorbar support for bar- and columncharts
 
 ## Anchors
 - `copy-anchors` no longer requires copied anchors to have a default, allowing the copying of an element's anchors from a group as expected.
