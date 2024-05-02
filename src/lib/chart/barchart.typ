@@ -6,6 +6,7 @@
 #let barchart-default-style = (
   axes: (tick: (length: 0), grid: (stroke: (dash: "dotted"))),
   bar-width: .8,
+  cluster-gap: 0,
   y-inset: 1,
 )
 
@@ -118,6 +119,7 @@
         mode: mode,
         labels: labels,
         bar-width: -style.bar-width,
+        cluster-gap: style.cluster-gap,
         axes: ("y", "x"))
     })
   })
