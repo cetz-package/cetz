@@ -10,8 +10,9 @@
   decorations.brace((-1,0), (1,0), ..args)
 }, args: (
   (amplitude: .3),
-  (pointiness: 1),
-  (pointiness: 45deg),
+  (pointiness: 0%),
+  (pointiness: 50%),
+  (pointiness: 100%),
 ))
 
 #test-case(args => {
