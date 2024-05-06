@@ -63,81 +63,87 @@
 /// - end (coordinate): End point
 /// - name (string, none): Element name used for querying anchors
 /// - ..style (style): Style key-value pairs
-#let brace(start, end, ..style, name: none) = group(name: name, ctx => {
+#let brace(start, end, ..style, name: none) = {
   assert.eq(style.pos().len(), 0,
     message: "Brace takes no additional positional arugments.")
 
-  // Resolve all coordinates
-  let (ctx, start, end) = coordinate.resolve(ctx, start, end)
+  // Validate coordinates
+  let _ = (start, end).map(coordinate.resolve-system)
 
-  // Query and resolve style
-  let style = styles.resolve(ctx.style, root: "brace", base: brace-default-style, merge: style.named())
+  group(name: name, ctx => {
+    // Resolve all coordinates
+    let (ctx, start, end) = coordinate.resolve(ctx, start, end)
 
-  let amplitude = util.resolve-number(ctx, style.amplitude)
-  let content-offset = util.resolve-number(ctx, style.content-offset)
-  let pointiness = if type(style.pointiness) == ratio {
-    (1 - style.pointiness / 100%) * 90deg
-  } else { style.pointiness }
-  pointiness = calc.max(0deg, calc.min(pointiness, 90deg))
+    // Query and resolve style
+    let style = styles.resolve(ctx.style, root: "brace", base: brace-default-style, merge: style.named())
 
-  let outer-pointiness = if type(style.outer-pointiness) == ratio {
-    (1 - style.outer-pointiness / 100%) * 90deg
-  } else { style.outer-pointiness }
-  outer-pointiness = calc.max(0deg, calc.min(outer-pointiness, 90deg))
+    let amplitude = util.resolve-number(ctx, style.amplitude)
+    let content-offset = util.resolve-number(ctx, style.content-offset)
+    let pointiness = if type(style.pointiness) == ratio {
+      (1 - style.pointiness / 100%) * 90deg
+    } else { style.pointiness }
+    pointiness = calc.max(0deg, calc.min(pointiness, 90deg))
 
-  let up = (0, 0, -1)
-  let mid = vector.lerp(start, end, .5)
+    let outer-pointiness = if type(style.outer-pointiness) == ratio {
+      (1 - style.outer-pointiness / 100%) * 90deg
+    } else { style.outer-pointiness }
+    outer-pointiness = calc.max(0deg, calc.min(outer-pointiness, 90deg)) * -1
 
-  let dir = vector.norm(vector.sub(end, start))
-  let normal = vector.cross(dir, up)
-  if style.flip {
-    normal = vector.scale(normal, -1)
-    pointiness *= -1
-    outer-pointiness *= -1
-  }
+    let up = (0, 0, -1)
+    let mid = vector.lerp(start, end, .5)
 
-  // Compute tip coordinate
-  let tip = vector.add(mid, vector.scale(normal, calc.abs(amplitude)))
-
-  // Measure distance between midpoint on start-end and tip
-  let amplitude = vector.dist(mid, tip)
-
-  // Add anchors
-  anchor("start", start)
-  anchor("end", end)
-  anchor("default", mid)
-  anchor("spike", tip)
-
-  // Offset content anchor
-  anchor("content", vector.add(tip, vector.scale(normal, content-offset)))
-
-  merge-path({
-    let scale-amplitude(v) = {
-      vector.scale(v, amplitude)
+    let dir = vector.norm(vector.sub(end, start))
+    let normal = vector.cross(dir, up)
+    if style.flip {
+      normal = vector.scale(normal, -1)
+      pointiness *= -1
+      outer-pointiness *= -1
     }
 
-    let rotate-inner(factor) = {
-      vector.rotate-z(normal, pointiness * factor)
-    }
+    // Compute tip coordinate
+    let tip = vector.add(mid, vector.scale(normal, calc.abs(amplitude)))
 
-    let rotate-outer(factor) = {
-      vector.rotate-z(normal, outer-pointiness * factor)
-    }
+    // Measure distance between midpoint on start-end and tip
+    let amplitude = vector.dist(mid, tip)
 
-    let dist = vector.dist(start, tip) + vector.dist(tip, end)
-    let ratio = vector.dist(start, tip) / dist
-    let b = vector.dist(end, tip) / dist
+    // Add anchors
+    anchor("start", start)
+    anchor("end", end)
+    anchor("default", mid)
+    anchor("spike", tip)
 
-    bezier(start, tip,
-      vector.add(start, scale-amplitude(rotate-outer(+1))),
-      vector.sub(tip,   scale-amplitude(rotate-inner(-1))))
-    bezier(tip, end,
-      vector.sub(tip,   scale-amplitude(rotate-inner(+1))),
-      vector.add(end,   scale-amplitude(rotate-outer(-1))))
-  }, stroke: style.stroke, fill: style.fill)
+    // Offset content anchor
+    anchor("content", vector.add(tip, vector.scale(normal, content-offset)))
 
-  move-to(end)
-})
+    merge-path({
+      let scale-amplitude(v) = {
+        let max = vector.dist(start, end) / 2
+        vector.scale(v, calc.min(amplitude, max))
+      }
+
+      let rotate-inner(factor) = {
+        vector.rotate-z(normal, pointiness * factor)
+      }
+
+      let rotate-outer(factor) = {
+        vector.rotate-z(normal, outer-pointiness * factor)
+      }
+
+      let dist = vector.dist(start, tip) + vector.dist(tip, end)
+      let ratio = vector.dist(start, tip) / dist
+      let b = vector.dist(end, tip) / dist
+
+      bezier(start, tip,
+        vector.add(start, scale-amplitude(rotate-outer(+1))),
+        vector.sub(tip,   scale-amplitude(rotate-inner(-1))))
+      bezier(tip, end,
+        vector.sub(tip,   scale-amplitude(rotate-inner(+1))),
+        vector.add(end,   scale-amplitude(rotate-outer(-1))))
+    }, stroke: style.stroke, fill: style.fill)
+
+    move-to(end)
+  })
+}
 
 
 #let flat-brace-default-style = (
@@ -198,7 +204,7 @@
   ..style,
 ) = {
   // Validate coordinates
-  let t = (start, end).map(coordinate.resolve-system)
+  let _ = (start, end).map(coordinate.resolve-system)
 
   group(name: name, ctx => {
     // Get styles and validate their types and values
