@@ -3,11 +3,16 @@
 // Global rounding precision
 #let precision = 8
 
-#let cos(angle) = {
-  return calc.round(calc.cos(angle), digits: precision)
+#let _round = calc.round.with(digits: precision)
+
+#let cos(x) = {
+  _round(calc.cos(x))
 }
 
-#let sin = calc.sin
+#let sin(x) = {
+  _round(calc.sin(x))
+}
+
 #let pi = calc.pi
 
 /// Create identity matrix with dimensions $m times n$
@@ -29,6 +34,35 @@
 /// -> tuple
 #let dim(m) = {
   return (m.len(), if m.len() > 0 {m.at(0).len()} else {0})
+}
+
+/// Get matrix column n as vector
+/// - mat (matrix): Input matrix
+/// - n (int): Column
+/// -> vector
+#let column(mat, n) = {
+  range(0, mat.len()).map(m => mat.at(m).at(n))
+}
+
+/// Return copy matrix with column n set to vector
+/// - mat (matrix): Input matrix
+/// - n (int): Column
+/// - vec (vector): Column vector
+/// -> matrix
+#let set-column(mat, n, vec) = {
+  assert(vec.len() == matrix.len())
+  for m in range(0, mat.len()) {
+    mat.at(m).at(n) = vec.at(n)
+  }
+}
+
+/// Round matrix by rounding all cells
+/// applying rounding
+/// - mat (matrix): Input matrix
+/// - precision (int): Rounding precision (digits)
+/// -> matrix
+#let round(mat, precision: precision) = {
+  mat.map(r => r.map(v => _round(v, digits: precision)))
 }
 
 /// Return a $4 times 4$ translation matrix
@@ -90,7 +124,6 @@
 
 // Return 4x4 rotate x matrix
 #let transform-rotate-x(angle) = {
-  // let (cos, sin) = (calc.cos, calc.sin)
   ((1, 0, 0, 0),
    (0, cos(angle), -sin(angle), 0),
    (0, sin(angle), cos(angle), 0),
@@ -99,7 +132,6 @@
 
 // Return 4x4 rotate y matrix
 #let transform-rotate-y(angle) = {
-  // let (cos, sin) = (calc.cos, calc.sin)
   ((cos(angle), 0, -sin(angle), 0),
    (0, 1, 0, 0),
    (sin(angle), 0, cos(angle), 0),
@@ -167,7 +199,7 @@
       for i in range(m) {
         (
           for j in range(p) {
-            (calc.round(range(n).map(k => out.at(i).at(k) * matrix.at(k).at(j)).sum(), digits: precision),)
+            (_round(range(n).map(k => out.at(i).at(k) * matrix.at(k).at(j)).sum(), digits: precision),)
           }
         ,)
       }
@@ -235,8 +267,8 @@
           if L != j {
             p = -matrix.at(L).at(j)
             for k in N {
-              matrix.at(L).at(k) += p * matrix.at(j).at(k)
-              inverted.at(L).at(k) += p * inverted.at(j).at(k)
+              matrix.at(L).at(k) += _round(p * matrix.at(j).at(k))
+              inverted.at(L).at(k) += _round(p * inverted.at(j).at(k))
             }
           }
         }

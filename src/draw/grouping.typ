@@ -8,6 +8,7 @@
 #import "/src/coordinate.typ"
 #import "/src/aabb.typ"
 #import "/src/anchor.typ" as anchor_
+#import "/src/matrix.typ"
 #import "/src/deps.typ"
 #import deps.oxifmt: strfmt
 
@@ -400,7 +401,16 @@
 /// - callback (function): A function that accepts the context dictionary and only returns a new one.
 #let set-ctx(callback) = {
   assert(type(callback) == function)
-  return (ctx => (ctx: callback(ctx)),)
+  return (ctx => {
+    let new-ctx = callback(ctx)
+    assert(new-ctx != none, message: "set-ctx must return a context!")
+
+    if new-ctx.transform != ctx.transform {
+      // User supplied matrices can cause rounding issues
+      new-ctx.transform = matrix.round(new-ctx.transform)
+    }
+    (ctx: new-ctx)
+  },)
 }
 
 /// An advanced element that allows you to read the current canvas context through a callback and return elements based on it.

@@ -28,7 +28,7 @@
   let mat = if mat == none {
     matrix.ident()
   } else {
-    mat
+    matrix.round(mat)
   }
 
   assert(

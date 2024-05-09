@@ -18,3 +18,21 @@
 
   cetz.decorations.wave(line((-1,0), (1,0), stroke: green))
 })
+
+// #580
+#test-case({
+  import cetz.draw: *
+  for i in range(0, 360, step: 3) {
+    let th = 1deg * i
+    set-ctx(ctx => {
+      ctx.transform = ((calc.cos(th), -calc.sin(th), 0, 0),
+       (-calc.sin(th), -calc.cos(th), 0, 0),
+       (0, 0, 0, 0),
+       (0, 0, 0, 1),)
+       return ctx
+    })
+
+    circle((0deg, 4), radius: 0.1, name: "X", fill: luma(200))
+    line("X", (rel: (1,0)))
+  }
+})
