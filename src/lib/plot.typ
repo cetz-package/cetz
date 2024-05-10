@@ -261,7 +261,6 @@
   assert(axis-style in (none, "scientific", "scientific-auto", "school-book", "left"),
     message: "Invalid plot style")
 
-
   // Create axes for data & annotations
   let axis-dict = (:)
   for d in data + annotations {
@@ -312,9 +311,15 @@
     if type(style-base) == function {
       style-base = (style-base)(i)
     }
+    assert.eq(type(style-base), dictionary,
+      message: "plot-style must be of type dictionary")
+
     if type(data.at(i).style) == function {
       data.at(i).style = (data.at(i).style)(i)
     }
+    assert.eq(type(style-base), dictionary,
+      message: "data plot-style must be of type dictionary")
+
     data.at(i).style = util.merge-dictionary(
       style-base, data.at(i).style)
 
@@ -323,9 +328,13 @@
       if type(mark-style-base) == function {
         mark-style-base = (mark-style-base)(i)
       }
+      assert.eq(type(mark-style-base), dictionary,
+        message: "mark-style must be of type dictionary")
+
       if type(data.at(i).mark-style) == function {
         data.at(i).mark-style = (data.at(i).mark-style)(i)
       }
+
       if type(data.at(i).mark-style) == dictionary {
         data.at(i).mark-style = util.merge-dictionary(
           mark-style-base,
