@@ -49,6 +49,8 @@
     /// for all marks on a path. If set to false, marks get placed after the
     /// shape they are placed on got transformed.
     transform-shape: true,
+    /// Mark origin along it's x-axis, 0% being the tip, 100% the tail.
+    origin: 0%,
   ),
   circle: (
     radius: auto,

@@ -30,7 +30,8 @@
     xy-up: auto,
     z-up: auto,
     shorten-to: auto,
-    position-samples: auto
+    position-samples: auto,
+    origin: 0%,
   )
 
   if type(style.at(root)) != array {
@@ -97,13 +98,17 @@
     up = style.z-up
   }
 
+  let visible-offset = mark.at("tip-offset", default: 0)
+  let visible-length = mark.length + visible-offset
+  let origin = style.origin / 100% * visible-length
+
   mark.drawables = drawable.apply-transform(
     matrix.mul-mat(
       ..(
         matrix.transform-translate(..pos),
         matrix.transform-rotate-dir(dir, up),
         matrix.transform-rotate-z(90deg),
-        matrix.transform-translate(if reverse { mark.length } else { mark.tip-offset }, 0, 0),
+        matrix.transform-translate(if reverse { mark.length } else { mark.tip-offset } - origin, 0, 0),
         if slant not in (none, 0%) {
           if type(slant) == ratio {
             slant /= 100%
