@@ -22,7 +22,9 @@
   pointiness: 15deg,
   outer-pointiness: 0deg,
   content-offset: .3,
-  debug-text-size: 6pt,
+  flip: false,
+  stroke: auto,
+  fill: none,
 )
 
 /// Draw a curly brace between two points.
@@ -41,11 +43,13 @@
 ///   #show-parameter-block("amplitude", ("number"), [
 ///     Sets the height of the brace, from its baseline to its middle tip.], default: .5)
 ///   #show-parameter-block("pointiness", ("ratio", "angle"), [
-///     How pointy the spike should be. #0deg or `0%` for maximum pointiness, #90deg or `100%` for minimum.], default: 15deg)
+///     How pointy the spike should be. #0deg or `100%` for maximum pointiness, #90deg or `100%` for minimum.], default: 15deg)
 ///   #show-parameter-block("outer-pointiness", ("ratio", "angle"), [
-///     How pointy the outer edges should be. #0deg or `0` for maximum pointiness (allowing for a smooth transition to a straight line), #90deg or `1` for minimum. Setting this to #auto will use the value set for `pointiness`.], default: 15deg)
-///   #show-parameter-block("content-offset", ("number","length"), [
+///     How pointy the outer edges should be. #0deg or `100%` for maximum pointiness (allowing for a smooth transition to a straight line), #90deg or `1` for minimum. Setting this to #auto will use the value set for `pointiness`.], default: 15deg)
+///   #show-parameter-block("content-offset", ("number"), [
 ///     Offset of the `"content"` anchor from the spike of the brace.], default: .3)
+///   #show-parameter-block("flip", ("bool"), [
+///     Mirror the brace along the line between start and end], default: false)
 ///
 /// *Anchors:*
 ///   / start:   Where the brace starts, same as the `start` parameter.
@@ -57,145 +61,90 @@
 ///
 /// - start (coordinate): Start point
 /// - end (coordinate): End point
-/// - flip (bool): Flip the brace around
 /// - name (string, none): Element name used for querying anchors
 /// - ..style (style): Style key-value pairs
-#let brace(
-  start,
-  end,
-  flip: false,
-  debug: false,
-  name: none,
-  ..style,
-) = {
+#let brace(start, end, ..style, name: none) = {
+  assert.eq(style.pos().len(), 0,
+    message: "Brace takes no additional positional arugments.")
+
   // Validate coordinates
-  let t = (start, end).map(coordinate.resolve-system)
+  let _ = (start, end).map(coordinate.resolve-system)
 
   group(name: name, ctx => {
-    // Get styles and validate types and values
-    let style = styles.resolve(ctx.style, merge: style.named(),
-      root: "brace", base: brace-default-style)
+    // Resolve all coordinates
+    let (ctx, start, end) = coordinate.resolve(ctx, start, end)
 
-    let amplitude = style.amplitude
-    assert(
-      type(amplitude) in (int, float),
-      message: "amplitude must be a number, got " + repr(amplitude),
-    )
+    // Query and resolve style
+    let style = styles.resolve(ctx.style, root: "brace", base: brace-default-style, merge: style.named())
 
-    let pointiness = style.pointiness
-    assert(
-      (type(pointiness) in (int, float)
-        and pointiness >= 0 and pointiness <= 1)
-      or (type(pointiness) == ratio
-        and pointiness >= 0% and pointiness <= 100%)
-      or (type(pointiness) == angle
-        and pointiness >= 0deg and pointiness <= 90deg),
-      message: "pointiness must be a factor between 0 and 1 or an angle between 0deg and 90deg, got " + repr(pointiness),
-    )
-    let pointiness = if type(pointiness) == angle { pointiness } else { pointiness * 90deg }
+    let amplitude = util.resolve-number(ctx, style.amplitude)
+    let content-offset = util.resolve-number(ctx, style.content-offset)
+    let pointiness = if type(style.pointiness) == ratio {
+      (1 - style.pointiness / 100%) * 90deg
+    } else { style.pointiness }
+    pointiness = calc.max(0deg, calc.min(pointiness, 90deg))
 
-    let outer-pointiness = style.outer-pointiness
-    assert(
-      outer-pointiness == auto
-      or (type(outer-pointiness) in (int, float)
-        and outer-pointiness >= 0 and outer-pointiness <= 1)
-      or (type(outer-pointiness) == ratio)
-        and outer-pointiness >= 0% and outer-pointiness <= 100%
-      or (type(outer-pointiness) == angle
-        and outer-pointiness >= 0deg and outer-pointiness <= 90deg),
-      message: "outer-pointiness must be a factor between 0 and 1 or an angle between 0deg and 90deg or auto, got " + repr(outer-pointiness),
-    )
-    let outer-pointiness = if outer-pointiness == auto {
-      pointiness
-    } else if type(outer-pointiness) == angle {
-      outer-pointiness
-    } else {
-      outer-pointiness * 90deg
-    }
+    let outer-pointiness = if type(style.outer-pointiness) == ratio {
+      (1 - style.outer-pointiness / 100%) * 90deg
+    } else { style.outer-pointiness }
+    outer-pointiness = calc.max(0deg, calc.min(outer-pointiness, 90deg)) * -1
 
-    let content-offset = style.content-offset
-    assert(
-      type(content-offset) in (int, float),
-      message: "content-offset must be a number, got " + repr(content-offset),
-    )
+    let up = (0, 0, -1)
+    let mid = vector.lerp(start, end, .5)
 
-    // we flip the brace by inverting the amplitude and pointiness values
-    if flip {
-      amplitude *= -1
+    let dir = vector.norm(vector.sub(end, start))
+    let normal = vector.cross(dir, up)
+    if style.flip {
+      normal = vector.scale(normal, -1)
       pointiness *= -1
       outer-pointiness *= -1
     }
 
-    // 'abcd' is a rectangle with the base line 'ab' and the height 'amplitude'
-    let a = start
-    let b = end
-    let c = (_rotate-around.with(len: amplitude, angle: -90deg), b, a)
-    let d = (_rotate-around.with(len: amplitude, angle: +90deg), a, b)
-    if debug {
-      line(a, b, stroke: red)
-      line(b, c, stroke: blue)
-      line(c, d, stroke: olive)
-      line(d, a, stroke: yellow)
-    }
+    // Compute tip coordinate
+    let tip = vector.add(mid, vector.scale(normal, calc.abs(amplitude)))
 
-    // 'ef' is the perpendicular line in the center of that rectangle, with length 'amplitude'
-    let e = (a, 50%, b)
-    let f = (c, 50%, d)
-    if debug {
-      line(e, f, stroke: eastern)
-    }
+    // Measure distance between midpoint on start-end and tip
+    let amplitude = vector.dist(mid, tip)
 
-    // 'g' and 'h' are the control points for the middle spike
-    let g = (_rotate-around.with(angle: -pointiness), f, e)
-    let h = (_rotate-around.with(angle: +pointiness), f, e)
-    if debug {
-      line(f, g, stroke: purple)
-      line(f, h, stroke: orange)
-    }
+    // Add anchors
+    anchor("start", start)
+    anchor("end", end)
+    anchor("default", mid)
+    anchor("spike", tip)
 
-    // 'i' and 'j' are the control points for the outer ends
-    let i = (_rotate-around.with(angle: -outer-pointiness), a, d)
-    let j = (_rotate-around.with(angle: +outer-pointiness), b, c)
-    if debug {
-      line(a, i, stroke: purple)
-      line(b, j, stroke: orange)
-    }
+    // Offset content anchor
+    anchor("content", vector.add(tip, vector.scale(normal, content-offset)))
 
-    // 'k' is the point where the content should be placed. It is offset from the spike (point 'f')
-    // by 'content-offset' in the direction the spike is pointing
-    let k = ((a, b) => {
-      let rel = vector.sub(b, a)
-      let scaled = vector.scale(vector.norm(rel), vector.len(rel) + content-offset)
-      return vector.add(a, scaled)
-    }, e, f)
-
-    let points = (a: a, b: b, c: c, d: d, e: e, f: f, g: g, h: h, i: i, j: j, k: k)
-    // combine the two bezier curves using 'merge-path' and apply styling
     merge-path({
-      bezier(a, f, i, g)
-      bezier(f, b, h, j)
-    }, ..style)
-    // define some named anchors
-    anchor("spike", f)
-    anchor("content", k)
-    anchor("start", a)
-    anchor("end", b)
-    anchor("default", (e, 50%, f))
-    // define anchors for all points
-    for (name, point) in points {
-      anchor(name, point)
-    }
-
-    // label all points in debug mode
-    if debug {
-      for (name, point) in points {
-        content(point, box(fill: luma(240), inset: .5pt, text(style.debug-text-size, raw(name))))
+      let scale-amplitude(v) = {
+        let max = vector.dist(start, end) / 2
+        vector.scale(v, calc.min(amplitude, max))
       }
-    }
+
+      let rotate-inner(factor) = {
+        vector.rotate-z(normal, pointiness * factor)
+      }
+
+      let rotate-outer(factor) = {
+        vector.rotate-z(normal, outer-pointiness * factor)
+      }
+
+      let dist = vector.dist(start, tip) + vector.dist(tip, end)
+      let ratio = vector.dist(start, tip) / dist
+      let b = vector.dist(end, tip) / dist
+
+      bezier(start, tip,
+        vector.add(start, scale-amplitude(rotate-outer(+1))),
+        vector.sub(tip,   scale-amplitude(rotate-inner(-1))))
+      bezier(tip, end,
+        vector.sub(tip,   scale-amplitude(rotate-inner(+1))),
+        vector.add(end,   scale-amplitude(rotate-outer(-1))))
+    }, stroke: style.stroke, fill: style.fill)
+
+    move-to(end)
   })
-  // move to end point so the current position after this is the end position
-  move-to(end)
 }
+
 
 #let flat-brace-default-style = (
   amplitude: .3,
@@ -255,7 +204,7 @@
   ..style,
 ) = {
   // Validate coordinates
-  let t = (start, end).map(coordinate.resolve-system)
+  let _ = (start, end).map(coordinate.resolve-system)
 
   group(name: name, ctx => {
     // Get styles and validate their types and values
