@@ -43,9 +43,9 @@
 ///   #show-parameter-block("amplitude", ("number"), [
 ///     Sets the height of the brace, from its baseline to its middle tip.], default: .5)
 ///   #show-parameter-block("pointiness", ("ratio", "angle"), [
-///     How pointy the spike should be. #0deg or `100%` for maximum pointiness, #90deg or `100%` for minimum.], default: 15deg)
+///     How pointy the spike should be. #0deg or `100%` for maximum pointiness, #90deg or `0%` for minimum.], default: 15deg)
 ///   #show-parameter-block("outer-pointiness", ("ratio", "angle"), [
-///     How pointy the outer edges should be. #0deg or `100%` for maximum pointiness (allowing for a smooth transition to a straight line), #90deg or `1` for minimum. Setting this to #auto will use the value set for `pointiness`.], default: 15deg)
+///     How pointy the outer edges should be. #0deg or `100%` for maximum pointiness (allowing for a smooth transition to a straight line), #90deg or `0%` for minimum. Setting this to #auto will use the value set for `pointiness`.], default: 15deg)
 ///   #show-parameter-block("content-offset", ("number"), [
 ///     Offset of the `"content"` anchor from the spike of the brace.], default: .3)
 ///   #show-parameter-block("flip", ("bool"), [
