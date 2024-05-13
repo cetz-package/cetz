@@ -49,8 +49,12 @@
     /// for all marks on a path. If set to false, marks get placed after the
     /// shape they are placed on got transformed.
     transform-shape: true,
-    /// Mark origin along it's x-axis, 0% being the tip, 100% the tail.
-    origin: 0%,
+    /// Mark anchor used for placement
+    /// Possible values are:
+    ///   - "tip"
+    ///   - "center"
+    ///   - "base"
+    anchor: "tip",
   ),
   circle: (
     radius: auto,

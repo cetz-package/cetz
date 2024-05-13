@@ -31,7 +31,7 @@
     z-up: auto,
     shorten-to: auto,
     position-samples: auto,
-    origin: 0%,
+    anchor: auto,
   )
 
   if type(style.at(root)) != array {
@@ -92,15 +92,24 @@
   return out
 }
 
+#let get-anchor-offset(style, mark) = {
+  let anchor = style.anchor
+  return if anchor == "center" {
+    .5 * mark.length + mark.at("tip-offset", default: 0)
+  } else if anchor == "base" {
+    mark.length + mark.at("base-offset", default: 0)
+  } else if anchor == "tip" {
+    0
+  } else {
+    assert("Invalid mark anchor: " + repr(anchor))
+  }
+}
+
 #let transform-mark(style, mark, pos, dir, flip: false, reverse: false, slant: none, harpoon: false) = {
   let up = style.xy-up
   if dir.at(2) != 0 {
     up = style.z-up
   }
-
-  let visible-offset = mark.at("tip-offset", default: 0)
-  let visible-length = mark.length + visible-offset
-  let origin = style.origin / 100% * visible-length
 
   mark.drawables = drawable.apply-transform(
     matrix.mul-mat(
@@ -108,7 +117,7 @@
         matrix.transform-translate(..pos),
         matrix.transform-rotate-dir(dir, up),
         matrix.transform-rotate-z(90deg),
-        matrix.transform-translate(if reverse { mark.length } else { mark.tip-offset } - origin, 0, 0),
+        matrix.transform-translate(if reverse { mark.length } else { mark.tip-offset } - get-anchor-offset(style, mark), 0, 0),
         if slant not in (none, 0%) {
           if type(slant) == ratio {
             slant /= 100%
@@ -241,6 +250,9 @@
     // Shorten path to this mark
     let inset = mark.at("inset", default: 0)
     if style.shorten-to != none and (style.shorten-to == auto or i <= style.shorten-to) {
+      let offset = get-anchor-offset(style, mark)
+      inset += offset
+
       shorten-distance = distance + mark.length - inset
       shorten-pos = vector.add(pos,
         vector.scale(vector.norm(dir), mark.length - inset))

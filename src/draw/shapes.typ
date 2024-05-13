@@ -425,6 +425,9 @@
 /// mark((0,0), (1,1), symbol: "stealth", scale: 3, fill: black)
 /// ```)
 ///
+/// Note: To place a mark centered at the first coodinate (`from`) use
+/// the marks `anchor: "center"` style.
+///
 /// = parameters
 ///
 /// = Styling
