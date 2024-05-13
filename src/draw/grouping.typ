@@ -383,6 +383,10 @@
 /// - `transform` (cetz.matrix): Current 4x4 transformation matrix
 /// - `debug` (bool): True if the canvas' debug flag is set
 ///
+/// Note: The transformation matrix (`transform`) is rounded after calling the
+/// `callback` function and therefore might be not exactly the matrix specified.
+/// This is due to rounding errors and should not cause any problems.
+///
 /// #example(```
 /// // Setting a custom transformation matrix
 /// set-ctx(ctx => {

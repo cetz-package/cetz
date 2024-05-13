@@ -2,6 +2,9 @@
 
 CeTZ 0.3.0 requires Typst 0.11.0
 
+## Canvas
+- Transformation matrices are now rounded
+
 ## Plot
 - Added support for automatically adding axis breaks (sawtooth lines) by setting the `break`
   attribute of an axis to `true`.
