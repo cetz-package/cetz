@@ -239,7 +239,7 @@
 /// circle((5,5))
 /// ```)
 ///
-/// - from (coordinate): Bottom-Left corner coordinate
+/// - from (coordinate): Bottom left corner coordinate
 /// - to (coordinate): Top right corner coordinate
 /// - bounds (vector): Viewport bounds vector that describes the inner width,
 ///   height and depth of the viewport
