@@ -268,6 +268,11 @@ line(..c)
 #doc-style.show-parameter-block("pos", ("number", "ratio"), [Overrides the mark's position along a path. A number will move it an absolute distance, while a ratio will be a distance relative to the length of the path. Note that this may be removed in the future in preference of a different method.])
 
 #doc-style.show-parameter-block("offset", ("number", "ratio"), [Like `pos` but it moves the position of the mark instead of overriding it.])
+#doc-style.show-parameter-block("anchor", ("string"), default: "tip", [Anchor of the mark to use for positioning. Available anchors are \
+  - `tip` The marks tip (default)
+  - `center` The visual center of the mark
+  - `base` The base/end of the mark
+])
 
 #doc-style.show-parameter-block("slant", "ratio", [How much to slant the mark relative to the axis of the arrow. 0% means no slant 100% slants at 45 degrees], default: 0%)
 #doc-style.show-parameter-block("harpoon", "boolean", [When true only the top half of the mark is drawn.], default: false)

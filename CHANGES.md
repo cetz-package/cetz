@@ -5,6 +5,10 @@ CeTZ 0.3.0 requires Typst 0.11.0
 ## Canvas
 - Transformation matrices are now rounded
 
+## Marks
+- Added support for mark `anchor` style key, to adjust mark placement and
+  allow for centered marks.
+
 ## Plot
 - Added support for automatically adding axis breaks (sawtooth lines) by setting the `break`
   attribute of an axis to `true`.

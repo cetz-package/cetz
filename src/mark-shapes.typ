@@ -171,7 +171,8 @@
       fill: style.fill,
       stroke: style.stroke
     ),
-    tip-offset: calculate-tip-offset(style),
+    tip-offset: style.stroke.thickness / 2,
+    base-offset: style.stroke.thickness / 2,
     distance: style.length
   )},
   hook: (style) => {

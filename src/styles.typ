@@ -49,6 +49,12 @@
     /// for all marks on a path. If set to false, marks get placed after the
     /// shape they are placed on got transformed.
     transform-shape: true,
+    /// Mark anchor used for placement
+    /// Possible values are:
+    ///   - "tip"
+    ///   - "center"
+    ///   - "base"
+    anchor: "tip",
   ),
   circle: (
     radius: auto,
