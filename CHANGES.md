@@ -3,6 +3,7 @@
 CeTZ 0.3.0 requires Typst 0.11.0
 
 ## Canvas
+- Add runtime cetz version check support (see `assert-version`)
 - Transformation matrices are now rounded
 
 ## Plot
