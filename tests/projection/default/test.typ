@@ -1,5 +1,6 @@
 #import "/src/lib.typ" as cetz
 #import "/tests/helper.typ": *
+#set page(width: auto, height: auto)
 
 // Positive direction
 #test-case({
