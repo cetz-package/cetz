@@ -101,4 +101,4 @@ To run all tests you can run the `just test` target. You need to have
 - [conchord](https://github.com/sitandr/conchord) Package for writing lyrics with chords that generates fretboard diagrams using CeTZ.
 - [finite](https://github.com/jneug/typst-finite) Finite is a Typst package for rendering finite automata.
 - [fletcher](https://github.com/Jollywatt/typst-fletcher) Package for drawing commutative diagrams and figures with arrows.
-- [riemann](https://github.com/ThatOneCalculator/riemann-sum-typst-cetz) Package for drawing Riemann sums.
+- [riesketcher](https://github.com/ThatOneCalculator/riesketcher) Package for drawing Riemann sums.
