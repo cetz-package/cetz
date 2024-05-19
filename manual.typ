@@ -5,7 +5,7 @@
 #import "src/lib.typ": *
 #import "src/styles.typ"
 #import "src/anchor.typ" as anchor_
-#import "@preview/tidy:0.2.0"
+#import "@preview/tidy:0.3.0"
 
 
 // Usage:
