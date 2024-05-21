@@ -1,6 +1,7 @@
 # 0.3.0
 
 CeTZ 0.3.0 requires Typst 0.11.0
+The licence changed from Apache-2.0 to GPLv3.
 
 ## Canvas
 - Transformation matrices are now rounded
