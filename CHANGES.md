@@ -4,6 +4,8 @@ CeTZ 0.3.0 requires Typst 0.11.0
 
 ## Canvas
 - Transformation matrices are now rounded
+- The default coordinate system changed to a right-hand side system.
+  Use `scale(z: -1)` if you want to change back to a left-hand system.
 
 ## Marks
 - Added support for mark `anchor` style key, to adjust mark placement and
