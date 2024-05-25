@@ -123,6 +123,9 @@
     matrix.transform-rotate-z(-90deg),
 
     /* Apply mark transformations */
+    if reverse {
+      matrix.transform-translate(-mark.length, 0, 0)
+    },
     if slant not in (none, 0%) {
       if type(slant) == ratio {
         slant /= 100%

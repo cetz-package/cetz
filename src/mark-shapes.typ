@@ -61,9 +61,7 @@
   let tip-style = style
   tip-style.length = style.length * (ratio / 100%)
   anchor("tip", vector.add(tip, vector.scale(dir, _calculate-tip-offset(tip-style))))
-  let base-style = style
-  base-style.length = style.length * ((100% - ratio) / 100%)
-  anchor("base", vector.sub(base, vector.scale(dir, _calculate-tip-offset(base-style))))
+  anchor("base", base)
 }
 
 // Dictionary of built-in mark styles
