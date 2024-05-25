@@ -48,7 +48,11 @@
   let dir = vector.norm(vector.sub(tip, base))
 
   import "/src/draw.typ": *
-  anchor("tip", vector.add(tip, vector.scale(dir, _calculate-tip-offset(style))))
+  if style.reverse {
+    anchor("tip", tip)
+  } else {
+    anchor("tip", vector.add(tip, vector.scale(dir, _calculate-tip-offset(style))))
+  }
   anchor("base", vector.sub(base, vector.scale(dir, style.stroke.thickness / 2)))
 }
 
@@ -60,8 +64,16 @@
 
   let tip-style = style
   tip-style.length = style.length * (ratio / 100%)
-  anchor("tip", vector.add(tip, vector.scale(dir, _calculate-tip-offset(tip-style))))
-  anchor("base", base)
+  if style.reverse {
+    anchor("tip", tip)
+  } else {
+    anchor("tip", vector.add(tip, vector.scale(dir, _calculate-tip-offset(tip-style))))
+  }
+  if style.reverse {
+    anchor("base", vector.sub(base, vector.scale(dir, _calculate-tip-offset(tip-style))))
+  } else {
+    anchor("base", base)
+  }
 }
 
 // Dictionary of built-in mark styles
