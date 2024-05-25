@@ -170,7 +170,6 @@
 
   import "/src/draw.typ"
   let body = draw.group({
-    draw.scale(y: -1)
     draw.set-style(
       stroke: style.at("stroke", default: none),
       fill: style.at("fill", default: none),

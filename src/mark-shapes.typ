@@ -299,11 +299,12 @@
 
 // Get a mark shape + reverse tuple for a mark name
 #let get-mark(ctx, symbol) = {
-  // TODO: Support user supplied marks by looking them up in the ctx style
-
-  let defaults = (:)
-  if not symbol in marks {
-    (symbol, defaults) = mnemonics.at(symbol)
+  symbol = ctx.marks.mnemonics.at(symbol, default: symbol)
+  if symbol in ctx.marks.marks {
+    return (ctx.marks.marks.at(symbol), (:))
   }
+
+  let (symbol, defaults) = mnemonics.at(symbol, default: (symbol, (:)))
+  assert(symbol in marks, message: "Unknown mark '" + symbol + "'")
   return (marks.at(symbol), defaults)
 }

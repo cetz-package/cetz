@@ -30,3 +30,22 @@
 ///
 /// - stroke (stroke): Stroke style
 #let stroke(stroke) = set-style(stroke: stroke)
+
+/// Register a custom mark to the canvas
+///
+/// - symbol (string): Mark name
+/// - mnemonic (none,string): Mark short name
+/// - body (function): Mark drawing callback, receiving the mark style as
+///   argument. Format (styles) => elements.
+#let register-mark(symbol, body, mnemonic: none) = {
+  assert(type(symbol) == str)
+  assert(type(body) == function)
+
+  (ctx => {
+    ctx.marks.marks.insert(symbol, body)
+    if type(mnemonic) == str and mnemonic.len() > 0 {
+      ctx.marks.mnemonics.insert(symbol, mnemonic)
+    }
+    return (ctx: ctx)
+  },)
+}
