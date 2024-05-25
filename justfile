@@ -4,10 +4,10 @@
 gallery_dir := "./gallery"
 
 package target *options:
-  ./scripts/package "{{target}}" {{options}}
+  ./common/scripts/package "{{target}}" {{options}}
 
 install target="@local":
-  ./scripts/package "{{target}}"
+  ./common/scripts/package "{{target}}"
 
 test *filter:
   typst-test run {{filter}}
