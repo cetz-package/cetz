@@ -44,7 +44,7 @@
   (ctx => {
     ctx.marks.marks.insert(symbol, body)
     if type(mnemonic) == str and mnemonic.len() > 0 {
-      ctx.marks.mnemonics.insert(symbol, mnemonic)
+      ctx.marks.mnemonics.insert(mnemonic, symbol)
     }
     return (ctx: ctx)
   },)
