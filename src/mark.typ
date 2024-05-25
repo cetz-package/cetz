@@ -156,6 +156,11 @@
 }
 
 #let _eval-mark(ctx, mark, style) = {
+  if "eval-mark-guard" in ctx {
+    panic("Recursive mark drawing is not allowed")
+  }
+  ctx.eval-mark-guard = true
+
   ctx.groups = ()
   ctx.nodes = (:)
   ctx.transform = matrix.ident()
@@ -165,7 +170,11 @@
     draw.scale(y: -1)
     draw.set-style(
       stroke: style.at("stroke", default: none),
-      fill: style.at("fill", default: none)
+      fill: style.at("fill", default: none),
+      mark: none,
+      line: (mark: none),
+      bezier: (mark: none),
+      arc: (mark: none),
     )
     draw.set-ctx(ctx => {
       ctx.testtest = "hello"
