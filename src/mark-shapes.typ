@@ -7,7 +7,7 @@
 //
 // The angle is calculated for an isosceles triangle of base style.widh
 // and height style.length
-#let calculate-tip-offset(style) = {
+#let _calculate-tip-offset(style) = {
   if style.stroke.join == "round" {
     return style.stroke.thickness / 2
   }
@@ -34,259 +34,266 @@
   return calc.sin(angle/2) * (style.stroke.thickness / 2)
 }
 
-#let _star-shape(n, style, angle-offset: 0deg) = {
-  let radius(angle) = {
-    vector.dist((0,0), (calc.cos(angle) * style.length, calc.sin(angle) * style.width)) / 2
-  }
-  range(0, n)
-    .map(i => i * 360deg / n + angle-offset)
-    .filter(a => not style.harpoon or (a >= 0deg and a <= 180deg))
-    .map(a => {
-      let d = vector.scale(vector.rotate-z((1, 0, 0), a), radius(a))
+#let tip-base(style, tip, base, center: none) = {
+  if base == tip { base = vector.add(tip, (1e-8, 0, 0)) }
+  let dir = vector.norm(vector.sub(tip, base))
 
-      drawable.path(path-util.line-segment(((0,0,0), vector.add((0,0,0), d))),
-        stroke: style.stroke, close: false)
-  })
+  import "/src/draw.typ": *
+  anchor("tip", vector.add(tip, vector.scale(dir, style.stroke.thickness / 2)))
+  anchor("base", vector.sub(tip, vector.scale(dir, style.stroke.thickness / 2)))
+}
+
+#let triangle-tip-base(style, tip, base, center: none) = {
+  if base == tip { base = vector.add(tip, (1e-8, 0, 0)) }
+  let dir = vector.norm(vector.sub(tip, base))
+
+  import "/src/draw.typ": *
+  anchor("tip", vector.add(tip, vector.scale(dir, _calculate-tip-offset(style))))
+  anchor("base", vector.sub(tip, vector.scale(dir, style.stroke.thickness / 2)))
+}
+
+#let diamond-tip-base(style, tip, base, center: none, ratio: 50%) = {
+  if base == tip { base = vector.add(tip, (1e-8, 0, 0)) }
+  let dir = vector.norm(vector.sub(tip, base))
+
+  import "/src/draw.typ": *
+
+  let tip-style = style
+  tip-style.length = style.length * (ratio / 100%)
+  anchor("tip", vector.add(tip, vector.scale(dir, _calculate-tip-offset(tip-style))))
+  let base-style = style
+  base-style.length = style.length * ((100% - ratio) / 100%)
+  anchor("base", vector.sub(tip, vector.scale(dir, _calculate-tip-offset(base-style))))
 }
 
 // Dictionary of built-in mark styles
 //
-// (style) => (drawables:, tip-offset:, distance:)
+// (style) => (<elements..>)
 #let marks = (
-  triangle: (style) => (
-    drawables: drawable.path(
-      path-util.line-segment(
-        (
-          (0, 0),
-          (style.length, style.width/2),
-          if style.harpoon { (style.length, 0) } else { (style.length, -style.width/2) }
-        )
-      ),
-      close: true,
-      fill: style.fill,
-      stroke: style.stroke
-    ),
-    tip-offset: calculate-tip-offset(style),
-    distance: style.length
-  ),
-  stealth: (style) => (
-    drawables: drawable.path(
-      path-util.line-segment(
-        (
-          (0, 0),
-          (style.length, style.width/2),
-          (style.length - style.inset, 0),
-          if not style.harpoon {
-            (style.length, -style.width/2)
-          }
-        ).filter(c => c != none)
-      ),
-      stroke: style.stroke,
-      close: true,
-      fill: style.fill
-    ),
-    distance: style.length - style.inset,
-    tip-offset: calculate-tip-offset(style)
-  ),
-  bar: (style) => (
-    drawables: drawable.path(
-      path-util.line-segment(
-        if style.harpoon {
-          ((0, 0), (0, +style.width/2))
-        } else {
-          ((0, -style.width/2), (0, +style.width/2))
-        }),
-      stroke: style.stroke,
-      fill: none,
-      close: false,
-    ),
-    distance: 0,
-    tip-offset: style.stroke.thickness / 2,
-  ),
-  ellipse: (style) => (
-    drawables: drawable.ellipse(
-      style.length / 2, 0, 0, style.length / 2, style.width / 2,
-      stroke: style.stroke,
-      fill: style.fill),
-    distance: style.length,
-    tip-offset: style.stroke.thickness / 2,
-  ),
-  circle: (style) => {
-    let radius = calc.min(style.length, style.width) / 2
-    (
-      drawables: drawable.ellipse(
-        radius, 0, 0, radius, radius,
-        stroke: style.stroke,
-        fill: style.fill),
-      distance: radius * 2,
-      tip-offset: style.stroke.thickness / 2,
-    )
-  },
-  bracket: (style) => (
-    drawables: drawable.path(
-      path-util.line-segment(
-        if style.harpoon {
-          ((style.length - style.inset, style.width/2),
-           (0, style.width/2),
-           (0, 0))
-        } else {
-          ((style.length - style.inset, -style.width/2),
-           (0, -style.width/2),
-           (0, +style.width/2),
-           (style.length - style.inset, +style.width/2))
-        }),
-      stroke: style.stroke,
-      fill: none,
-      close: false,
-    ),
-    distance: style.length,
-    inset: style.length + style.stroke.thickness / 2,
-    tip-offset: style.stroke.thickness / 2,
-  ),
-  diamond: (style) => (
-    drawables: drawable.path(
-      path-util.line-segment(
-        if style.harpoon {
-          ((0,0), (style.length / 2, style.width / 2), (style.length, 0))
-        } else {
-          ((0,0), (style.length / 2, style.width / 2), (style.length, 0), (style.length / 2, -style.width / 2))
-        }
-      ),
-      close: true,
-      fill: style.fill,
-      stroke: style.stroke
-    ),
-    tip-offset: calculate-tip-offset(style),
-    base-offset: calculate-tip-offset(style),
-    distance: style.length
-  ),
-  rect: (style) => {
-    let top = if style.harpoon { 0 } else { -style.width / 2 }
-    let width = if style.harpoon { style.width / 2 } else { style.width }
-    (drawables: drawable.path(
-      path-util.line-segment(
-        ((0, top), (0, top + width), (style.length, top + width), (style.length, top))
-      ),
-      close: true,
-      fill: style.fill,
-      stroke: style.stroke
-    ),
-    tip-offset: style.stroke.thickness / 2,
-    base-offset: style.stroke.thickness / 2,
-    distance: style.length
-  )},
-  hook: (style) => {
-    let rx = calc.min(style.length, style.width / 2) / 2
-    let length = calc.max(style.length - style.inset, rx)
-    let lower = (
-      path-util.line-segment(((length, style.width / 2), (rx, style.width / 2))),
-      path-util.cubic-segment(
-        (rx, style.width / 2),
-        (rx, 0),
-        (-rx, style.width / 2),
-        (-rx, 0)),
-      path-util.line-segment(((rx, 0), (style.length, 0))))
-    let upper = (
-      path-util.line-segment(((style.length, 0), (rx, 0))),
-      path-util.cubic-segment(
-        (rx, 0),
-        (rx, -style.width / 2),
-        (-rx, 0),
-        (-rx, -style.width / 2)),
-      path-util.line-segment(((rx, -style.width / 2), (length, -style.width / 2))))
+  triangle: (style) => {
+    import "/src/draw.typ": *
 
-    (drawables: drawable.path(
-      lower + (if not style.harpoon {
-        upper
-      } else { () }),
-      close: false,
-      fill: none,
-      stroke: style.stroke
-    ),
-    tip-offset: calculate-tip-offset(style),
-    distance: style.length
-  )},
-  straight: (style) => (
-    drawables: drawable.path(
-      path-util.line-segment(
-        if style.harpoon {
-          ((style.length, style.width/2),
-           (0, 0),)
-        } else {
-          ((style.length, +style.width/2),
-           (0, 0),
-           (style.length, -style.width/2),)
-        }),
-      close: false,
-      fill: none,
-      stroke: style.stroke
-    ),
-    tip-offset: calculate-tip-offset(style),
-    distance: style.length,
-    inset: style.length
-  ),
+    if style.harpoon {
+      line((0,0), (-style.length, 0), (-style.length, +style.width / 2), close: true)
+    } else {
+      line((0,0), (-style.length, -style.width / 2), (-style.length, +style.width / 2), close: true)
+    }
+
+    triangle-tip-base(style, (0, 0), (-style.length, 0))
+  },
+  stealth: (style) => {
+    import "/src/draw.typ": *
+
+    let (l, w, i) = (style.length, style.width, style.inset)
+
+    if style.harpoon {
+      line((0,0), (l, w / 2), (l - i, 0), close: true)
+    } else {
+      line((0,0), (l, w / 2), (l - i, 0), (l, -w / 2), close: true)
+    }
+
+    triangle-tip-base(style, (0, 0), (l - i, 0))
+  },
+  bar: (style) => {
+    import "/src/draw.typ": *
+
+    let w = style.width
+
+    if style.harpoon {
+      line((0, w / 2), (0, 0))
+    } else {
+      line((0, w / 2), (0, -w / 2))
+    }
+
+    tip-base(style, (0, 0), (0, 0))
+  },
+  ellipse: (style) => {
+    import "/src/draw.typ": *
+
+    let r = (style.length / 2, style.width / 2)
+
+    if style.harpoon {
+      arc((0, 0), delta: -180deg, start: 0deg, radius: r, anchor: "origin", mode: "PIE")
+    } else {
+      circle((0, 0), radius: r)
+    }
+
+    tip-base(style, (r.at(0), 0), (-r.at(0), 0))
+  },
+  circle: (style) => {
+    import "/src/draw.typ": *
+
+    let r = calc.min(style.length, style.width) / 2
+
+    if style.harpoon {
+      arc((0, 0), delta: -180deg, start: 0deg, radius: r, anchor: "origin", mode: "PIE")
+    } else {
+      circle((0, 0), radius: r)
+    }
+
+    tip-base(style, (r, 0), (-r, 0))
+  },
+  bracket: (style) => {
+    import "/src/draw.typ": *
+
+    let (l, w, i) = (style.length, style.width, style.inset)
+
+    if style.harpoon {
+      line((-l - i, w / 2), (0, w / 2), (0, 0))
+    } else {
+      line((-l - i, w / 2), (0, w / 2), (0, -w / 2), (-l - i, -w / 2))
+    }
+
+    tip-base(style, (0, 0), (-1e-8, 0), center: ((-l - i) / 2, 0))
+  },
+  diamond: (style) => {
+    import "/src/draw.typ": *
+
+    let (l, w) = (style.length, style.width)
+
+    if style.harpoon {
+      line((0,0), (l / 2, w / 2), (l, 0), close: true)
+    } else {
+      line((0,0), (l / 2, w / 2), (l, 0), (l / 2, -w / 2), close: true)
+    }
+
+    diamond-tip-base(style, (0, 0), (l, 0))
+  },
+  rect: (style) => {
+    import "/src/draw.typ": *
+
+    let (l, w) = (style.length, style.width)
+
+    if style.harpoon {
+      rect((0, -w / 2), (-l, +w / 2))
+    } else {
+      rect((0, -w / 2), (-l, +w / 2))
+    }
+
+    tip-base(style, (0, 0), (-l, 0))
+  },
+  hook: (style) => {
+    import "/src/draw.typ": *
+
+    let r = calc.min(style.length, style.width / 2) / 2
+    let (l, i) = (style.length, style.inset)
+
+    merge-path({
+      line((i, -2 * r), (0, -2 * r))
+      arc((0, 0), delta: -180deg, start: -90deg, radius: r, anchor: "end")
+      if not style.harpoon {
+        arc((0, 0), delta: -180deg, start: -90deg, radius: r, anchor: "start")
+        line((i, +2 * r), (0, +2 * r))
+      }
+    })
+
+    line((0, 0), (l - r, 0))
+
+    tip-base(style, (-r, 0), (l - r, 0), center: ((-r + i) / 2, 0))
+  },
+  straight: (style) => {
+    import "/src/draw.typ": *
+
+    let (l, w) = (style.length, style.width)
+
+    if style.harpoon {
+      line((l, w / 2), (0, 0))
+    } else {
+      line((l, w / 2), (0, 0), (l, -w / 2))
+    }
+
+    triangle-tip-base(style, (0, 0), (0, 0))
+  },
   barbed: (style) => {
-    // Force join to "round" as other joins look bad
+    import "/src/draw.typ": *
+
+    let style = style
     style.stroke.join = "round"
-    let ctrl-a = (style.length, 0)
+
+    let (l, w) = (style.length, style.width)
+
+    // Force join to "round" as other joins look bad
+    let ctrl-a = (l, 0)
     let ctrl-b = (0, 0)
-    (drawables: drawable.path(
-      (path-util.cubic-segment(
-         (style.length, style.width / 2), (0,0),
-         ctrl-a, ctrl-b),)
-      + if not style.harpoon {
-        (path-util.cubic-segment(
-          (0,0), (style.length, -style.width / 2),
-          ctrl-b, ctrl-a),)
-      } else { () },
-      close: false,
-      fill: none,
-      stroke: style.stroke),
-    tip-offset: calculate-tip-offset(style),
-    distance: style.length,
-    inset: style.length
-  )},
-  plus: (style) => (
-    drawables: _star-shape(4, style),
-    tip-offset: style.length / 2,
-    distance: style.length / 2,
-  ),
-  x: (style) => (
-    drawables: _star-shape(4, style, angle-offset: 45deg),
-    tip-offset: style.length / 2,
-    distance: style.length / 2,
-    inset: style.length / 2
-  ),
-  star: (style) => (
-    drawables: _star-shape(5, style),
-    tip-offset: style.length / 2,
-    distance: style.length / 2,
-  )
+
+    merge-path({
+      bezier((l, w / 2), (0, 0), ctrl-a, ctrl-b)
+      if not style.harpoon {
+        bezier((0, 0), (l, -w / 2), ctrl-b, ctrl-a)
+      }
+    }, ..style)
+
+    tip-base(style, (0, 0), (1e-6, 0))
+  },
+  plus: (style) => {
+    import "/src/draw.typ": *
+
+    let style = style
+    style.stroke.join = "round"
+
+    let (l, w) = (style.length, style.width)
+
+    line((-l / 2, 0), (+l / 2, 0))
+    line((0, -w / 2), (0, +w / 2))
+
+    tip-base(style, (0, 0), (l / 2, 0))
+  },
+  x: (style) => {
+    import "/src/draw.typ": *
+
+    let style = style
+    style.stroke.join = "round"
+
+    let (l, w) = (style.length, style.width)
+
+    line((-l / 2, w / 2), (+l / 2, -w / 2))
+    line((-l / 2, -w / 2), (+l / 2, +w / 2))
+
+    tip-base(style, (0, 0), (0, 0))
+  },
+  star: (style) => {
+    import "/src/draw.typ": *
+
+    let (l, w) = (style.length, style.width)
+
+    let n = 5
+    for i in range(0, n) {
+      let a = 360deg / n * i
+      line((0, 0), (calc.cos(a) * l / 2, calc.sin(a) * w / 2))
+    }
+
+    tip-base(style, (0, 0), (l / 2, 0))
+  },
 )
 #let names = marks.keys()
 
 // Mark mnemonics
+// Each mnemonic maps to a dictionary of:
+//   - reverse (bool)
+//   - flip (bool)
+//   - harpoon (bool)
+// TODO: Resolve mark styles at a later point, to support all style keys here
 #let mnemonics = (
-  ">":  ("triangle", false),
-  "<":  ("triangle", true),
-  "<>": ("diamond",  false),
-  "[]": ("rect",     false),
-  "]":  ("bracket",  false),
-  "[":  ("bracket",  true),
-  "|":  ("bar",      false),
-  "o":  ("circle",   false),
-  "+":  ("plus",     false),
-  "x":  ("x",        false),
-  "*":  ("star",     false),
+  ">":  ("triangle", (:)),
+  "<":  ("triangle", (reverse: true)),
+  "<>": ("diamond",  (:)),
+  "[]": ("rect",     (:)),
+  "]":  ("bracket",  (:)),
+  "[":  ("bracket",  (reverse: true)),
+  "|":  ("bar",      (:)),
+  "o":  ("circle",   (:)),
+  "+":  ("plus",     (:)),
+  "x":  ("x",        (:)),
+  "*":  ("star",     (:)),
 )
 
 // Get a mark shape + reverse tuple for a mark name
 #let get-mark(ctx, symbol) = {
   // TODO: Support user supplied marks by looking them up in the ctx style
 
-  let reverse = false
+  let defaults = (:)
   if not symbol in marks {
-    (symbol, reverse) = mnemonics.at(symbol)
+    (symbol, defaults) = mnemonics.at(symbol)
   }
-  return (marks.at(symbol), reverse)
+  return (marks.at(symbol), defaults)
 }
