@@ -40,7 +40,7 @@
 
   import "/src/draw.typ": *
   anchor("tip", vector.add(tip, vector.scale(dir, style.stroke.thickness / 2)))
-  anchor("base", vector.sub(tip, vector.scale(dir, style.stroke.thickness / 2)))
+  anchor("base", vector.sub(base, vector.scale(dir, style.stroke.thickness / 2)))
 }
 
 #let triangle-tip-base(style, tip, base, center: none) = {
@@ -49,7 +49,7 @@
 
   import "/src/draw.typ": *
   anchor("tip", vector.add(tip, vector.scale(dir, _calculate-tip-offset(style))))
-  anchor("base", vector.sub(tip, vector.scale(dir, style.stroke.thickness / 2)))
+  anchor("base", vector.sub(base, vector.scale(dir, style.stroke.thickness / 2)))
 }
 
 #let diamond-tip-base(style, tip, base, center: none, ratio: 50%) = {
@@ -63,7 +63,7 @@
   anchor("tip", vector.add(tip, vector.scale(dir, _calculate-tip-offset(tip-style))))
   let base-style = style
   base-style.length = style.length * ((100% - ratio) / 100%)
-  anchor("base", vector.sub(tip, vector.scale(dir, _calculate-tip-offset(base-style))))
+  anchor("base", vector.sub(base, vector.scale(dir, _calculate-tip-offset(base-style))))
 }
 
 // Dictionary of built-in mark styles
@@ -74,12 +74,12 @@
     import "/src/draw.typ": *
 
     if style.harpoon {
-      line((0,0), (-style.length, 0), (-style.length, +style.width / 2), close: true)
+      line((0,0), (style.length, 0), (style.length, +style.width / 2), close: true)
     } else {
-      line((0,0), (-style.length, -style.width / 2), (-style.length, +style.width / 2), close: true)
+      line((0,0), (style.length, -style.width / 2), (style.length, +style.width / 2), close: true)
     }
 
-    triangle-tip-base(style, (0, 0), (-style.length, 0))
+    triangle-tip-base(style, (0, 0), (style.length, 0))
   },
   stealth: (style) => {
     import "/src/draw.typ": *
