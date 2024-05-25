@@ -137,9 +137,9 @@
     let (l, w, i) = (style.length, style.width, style.inset)
 
     if style.harpoon {
-      line((-l - i, w / 2), (0, w / 2), (0, 0))
+      line((-l - i, w / 2), (0, w / 2), (0, 0), fill: none)
     } else {
-      line((-l - i, w / 2), (0, w / 2), (0, -w / 2), (-l - i, -w / 2))
+      line((-l - i, w / 2), (0, w / 2), (0, -w / 2), (-l - i, -w / 2), fill: none)
     }
 
     tip-base(style, (0, 0), (-1e-8, 0), center: ((-l - i) / 2, 0))
@@ -183,7 +183,7 @@
         arc((0, 0), delta: -180deg, start: -90deg, radius: r, anchor: "start")
         line((i, +2 * r), (0, +2 * r))
       }
-    })
+    }, fill: none)
 
     line((0, 0), (l - r, 0))
 
@@ -195,9 +195,9 @@
     let (l, w) = (style.length, style.width)
 
     if style.harpoon {
-      line((l, w / 2), (0, 0))
+      line((l, w / 2), (0, 0), fill: none)
     } else {
-      line((l, w / 2), (0, 0), (l, -w / 2))
+      line((l, w / 2), (0, 0), (l, -w / 2), fill: none)
     }
 
     triangle-tip-base(style, (0, 0), (0, 0))
