@@ -12,6 +12,8 @@ The licence changed from Apache-2.0 to GPLv3.
 - A new `scope(...)` element got added that behaves like a unnamed group but
   leaking child elements to the outside. This element can be used for scoping
   transformations, without having to scope children under a group name.
+- The center anchor of `content()` with two coordinates got fixed when using
+  negative cordinates.
 
 ## Marks
 - Added support for mark `anchor` style key, to adjust mark placement and

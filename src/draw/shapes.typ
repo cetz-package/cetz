@@ -825,7 +825,7 @@
       let center = if auto-size {
         a
       } else {
-        vector.add(a, (w, -h))
+        vector.lerp(a, b, .5)
       }
 
       // Only the center anchor gets transformed. All other anchors
