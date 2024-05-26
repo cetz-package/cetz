@@ -7,6 +7,8 @@ The licence changed from Apache-2.0 to GPLv3.
 - Transformation matrices are now rounded
 - The default coordinate system changed to a right-hand side system.
   Use `scale(z: -1)` if you want to change back to a left-hand system.
+- The center anchor of `content()` with two coordinates got fixed when using
+  negative cordinates.
 
 ## Marks
 - Added support for mark `anchor` style key, to adjust mark placement and
