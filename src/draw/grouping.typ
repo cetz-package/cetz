@@ -52,6 +52,41 @@
   return body
 }
 
+/// Places an element without affecting layout.
+///
+/// Floating elements are drawn to the canvas but are ignored when calculating
+/// bouding boxes. All other behaviours remain the same.
+///
+/// #example(```
+/// group({
+///   circle((0,0))
+///   content((0,2), [Non-floating])
+///   floating(content((2,0), [Floating]))
+/// }, name: "bounds")
+///
+/// set-style(stroke: red)
+/// rect("bounds.north-west", "bounds.south-east")
+/// ```)
+///
+/// - body (element): One or more elements to place
+#let floating(body) = {
+  if type(body) == array {
+    return body.map(f => {
+      ctx => {
+        let element = f(ctx)
+        if "drawables" in element {
+          element.drawables = element.drawables.map(d => {
+            d.bounds = false
+            return d
+          })
+        }
+        return element
+      }
+    })
+  }
+  return body
+}
+
 /// Calculates the intersections between multiple paths and creates one anchor
 /// per intersection point.
 ///
