@@ -10,6 +10,9 @@ The licence changed from Apache-2.0 to GPLv3.
 - The center anchor of `content()` with two coordinates got fixed when using
   negative cordinates.
 
+## Draw
+- Added `floating` function for drawing elements without affecting bounding boxes.
+
 ## Marks
 - Added support for mark `anchor` style key, to adjust mark placement and
   allow for centered marks.
