@@ -52,20 +52,19 @@
   return body
 }
 
-/// Places an element without affecting layout.
+/// Places an element without affecting bounding boxes.
 ///
 /// Floating elements are drawn to the canvas but are ignored when calculating
 /// bouding boxes. All other behaviours remain the same.
 ///
 /// #example(```
-/// group({
-///   circle((0,0))
-///   content((0,2), [Non-floating])
-///   floating(content((2,0), [Floating]))
-/// }, name: "bounds")
-///
+/// group(name: "g", {
+///   content((1,0), [Normal])
+///   content((0,1), [Normal])
+///   floating(content((.5,1.5), [Floating]))
+/// })
 /// set-style(stroke: red)
-/// rect("bounds.north-west", "bounds.south-east")
+/// rect("g.north-west", "g.south-east")
 /// ```)
 ///
 /// - body (element): One or more elements to place
