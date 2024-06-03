@@ -57,6 +57,11 @@
     nodes: (:),
     // group stack
     groups: (),
+    // user defined marks
+    marks: (
+      mnemonics: (:),
+      marks: (:),
+    )
   )
 
   let (ctx, bounds, drawables) = process.many(ctx, body)
