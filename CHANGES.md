@@ -7,6 +7,11 @@ The licence changed from Apache-2.0 to GPLv3.
 - Transformation matrices are now rounded
 - The default coordinate system changed to a right-hand side system.
   Use `scale(z: -1)` if you want to change back to a left-hand system.
+- The `on-<axes>` functions lead to wrong anchors and got fixed. The offset
+  argument is now behaving as tranlation instead of hard setting the coordinate!
+- A new `scope(...)` element got added that behaves like a unnamed group but
+  leaking child elements to the outside. This element can be used for scoping
+  transformations, without having to scope children under a group name.
 - The center anchor of `content()` with two coordinates got fixed when using
   negative cordinates.
 

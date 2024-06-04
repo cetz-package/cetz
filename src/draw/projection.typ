@@ -1,4 +1,4 @@
-#import "grouping.typ": group, get-ctx
+#import "grouping.typ": group, get-ctx, set-ctx, scope
 #import "transformations.typ": set-transform
 #import "/src/process.typ"
 #import "/src/matrix.typ"
@@ -50,28 +50,15 @@
 // elements in `body`.
 //
 // - body (element): Elements
-// - fn (function): Callback of the form `vector => vector` that gets
-//   applied to all vertices
-#let apply-transform-function(body, fn) = {
-  (ctx => {
-    let transform = ctx.transform
-    ctx.transform = matrix.ident()
-    let (ctx, drawables, bounds) = process.many(ctx, util.resolve-body(ctx, body))
-    ctx.transform = transform
-
-    drawables = drawables.map(d => {
-      d.segments = d.segments.map(s => (s.at(0), ..s.slice(1).map(fn)))
-      if d.type == "content" {
-        d.pos = fn(d.pos)
-      }
-      return d
+// - ..mat (matrix): Transformation matrices
+#let scoped-transform(body, ..mat) = {
+  scope({
+    set-ctx(ctx => {
+      ctx.transform = matrix.mul-mat(ctx.transform, ..mat.pos().filter(m => m != none))
+      return ctx
     })
-
-    return (
-      ctx: ctx,
-      drawables: drawable.apply-transform(ctx.transform, drawables),
-    )
-  },)
+    body
+  })
 }
 
 /// Set-up an orthographic projection environment.
@@ -99,7 +86,7 @@
     ortho-projection-matrix, reset-transform: reset-transform)
 })
 
-/// Draw elements on the xy-plane with optional z value.
+/// Draw elements on the xy-plane with optional z offset.
 ///
 /// All vertices of all elements will be changed in the
 /// following way: $vec(x, y, z_"argument")$, where $z_"argument"$
@@ -111,16 +98,16 @@
 /// })
 /// ```)
 ///
-/// - z (number): Z coordinate for all coordinates
+/// - z (number): Z offset for all coordinates
 /// - body (element): Elements to draw
 #let on-xy(z: 0, body) = get-ctx(ctx => {
   let z = util.resolve-number(ctx, z)
-  apply-transform-function(body, pt => {
-    (pt.at(0), pt.at(1), z)
-  })
+  scoped-transform(body, if z != 0 {
+    matrix.transform-translate(0, 0, z)
+  }, matrix.ident())
 })
 
-/// Draw elements on the xz-plane with optional y value.
+/// Draw elements on the xz-plane with optional y offset.
 ///
 /// All vertices of all elements will be changed in the
 /// following way: $vec(x, y_"argument", y)$, where $y_"argument"$
@@ -132,16 +119,16 @@
 /// })
 /// ```)
 ///
-/// - y (number): Y coordinate for all coordinates
+/// - y (number): Y offset for all coordinates
 /// - body (element): Elements to draw
 #let on-xz(y: 0, body) = get-ctx(ctx => {
   let y = util.resolve-number(ctx, y)
-  apply-transform-function(body, pt => {
-    (pt.at(0), y, pt.at(1))
-  })
+  scoped-transform(body, if y != 0 {
+    matrix.transform-translate(0, y, 0)
+  }, matrix.transform-rotate-x(90deg))
 })
 
-/// Draw elements on the yz-plane with optional y value.
+/// Draw elements on the yz-plane with optional x offset.
 ///
 /// All vertices of all elements will be changed in the
 /// following way: $vec(x_"argument", x, y)$, where $x_"argument"$
@@ -153,11 +140,11 @@
 /// })
 /// ```)
 ///
-/// - x (number): X coordinate for all coordinates
+/// - x (number): X offset for all coordinates
 /// - body (element): Elements to draw
 #let on-yz(x: 0, body) = get-ctx(ctx => {
   let x = util.resolve-number(ctx, x)
-  apply-transform-function(body, pt => {
-    (x, pt.at(0), pt.at(1))
-  })
+  scoped-transform(body, if x != 0 {
+    matrix.transform-translate(x, 0, 0)
+  }, matrix.transform-rotate-y(90deg))
 })
