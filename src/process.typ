@@ -44,7 +44,8 @@
         (bounds.low.at(0), bounds.high.at(1), 0)
       )),
       stroke: red,
-      close: true
+      close: true,
+      debug: true,
     ))
   }
 

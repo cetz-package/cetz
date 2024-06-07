@@ -30,7 +30,7 @@
   }
 }
 
-#let path(close: false, fill: none, stroke: none, segments) = {
+#let path(close: false, fill: none, stroke: none, segments, debug: false) = {
   let segments = segments
   // Handle case where only one segment has been passed
   if type(segments.first()) == str {
@@ -53,7 +53,9 @@
     stroke: stroke,
     hidden: false,
     bounds: true,
-  )
+  ) + if debug {
+    (debug: true)
+  }
 }
 
 #let content(pos, width, height, border, body) = {
