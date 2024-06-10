@@ -28,6 +28,7 @@ The licence changed from Apache-2.0 to GPLv3.
   attribute of an axis to `true`.
 - Added a new errorbar function: `add-errorbar`
 - Added errorbar support to the `add-bar` function
+- Improved the performance & memory consumption of the clipping algorithm
 
 ## Chart
 - Added errorbar support for bar- and columncharts
