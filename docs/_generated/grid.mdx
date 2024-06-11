@@ -1,0 +1,27 @@
+import Type from "@site/src/components/Type";
+import Function from "@site/src/components/Function";
+import Parameter from "@site/src/components/Parameter";
+
+<Function name="grid" parameters={{"from":{"types":"coordinate"},"to":{"types":"coordinate"},"name":{"default":"none","types":"none,str"},"..style":{"types":"style"}}}/>
+Draws a grid between two coordinates
+
+```typc example
+// Draw a grid
+grid((0,0), (2,2))
+
+// Draw a smaller blue grid
+grid((1,1), (2,2), stroke: blue, step: .25)
+```
+
+<Parameter name="from" types="coordinate" > The top left of the grid</Parameter>
+<Parameter name="to" types="coordinate" > The bottom right of the grid</Parameter>
+
+
+
+## Styling
+*Root*: `grid`
+<Parameter name="step" types="number, array, dictionary" default_value="1"> Distance between grid lines. A distance of $1$ means to draw a grid line every $1$ length units in x- and y-direction. If given a dictionary with `x` and `y` keys or a tuple, the step is set per axis.</Parameter>
+<Parameter name="help-lines" types="bool" default_value="false"> [If true, force the stroke style to `gray + 0.2pt`</Parameter>
+
+## Anchors
+  Supports border anchors.

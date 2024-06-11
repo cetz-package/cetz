@@ -1,0 +1,23 @@
+import Type from "@site/src/components/Type";
+import Function from "@site/src/components/Function";
+import Parameter from "@site/src/components/Parameter";
+
+<Function name="mark" parameters={{"from":{"types":"coordinate"},"to":{"types":"coordinate,angle"},"..style":{"types":"style"}}}/>
+Draws a single mark pointing towards a target coordinate.
+
+```typc example
+mark((0,0), (1,0), symbol: ">", fill: black)
+mark((0,0), (1,1), symbol: "stealth", scale: 3, fill: black)
+```
+
+Note: To place a mark centered at the first coodinate (`from`) use
+the marks `anchor: "center"` style.
+
+<Parameter name="from" types="coordinate" > The position to place the mark.</Parameter>
+<Parameter name="to" types="coordinate,angle" > The position or angle the mark should point towards.</Parameter>
+
+
+## Styling
+*Root*: `mark`
+
+You can directly use the styling from [Mark Styling](/docs/basics/marks).

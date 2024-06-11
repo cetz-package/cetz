@@ -1,0 +1,23 @@
+import Type from "@site/src/components/Type";
+import Function from "@site/src/components/Function";
+import Parameter from "@site/src/components/Parameter";
+
+<Function name="merge-path" parameters={{"body":{"types":"elements"},"close":{"default":"false","types":"bool"},"name":{"default":"none","types":"none,str"},"..style":{"types":"style"}}}/>
+Merges two or more paths by concattenating their elements. Anchors and visual styling, such as `stroke` and `fill`, are not preserved. When an element's path does not start at the same position the previous element's path ended, a straight line is drawn between them so that the final path is continuous. You must then pay attention to the direction in which element paths are drawn.
+
+```typc example
+merge-path(fill: white, {
+  line((0, 0), (1, 0))
+  bezier((), (0, 0), (1,1), (0,1))
+})
+```
+
+Elements hidden via @@hide() are ignored.
+
+<Parameter name="body" types="elements" > Elements with paths to be merged together.</Parameter>
+<Parameter name="close" types="bool" default_value="false"> Close the path with a straight line from the start of the path to its end.</Parameter>
+
+
+
+## Anchors
+  Supports path anchors.
