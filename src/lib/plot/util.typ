@@ -103,8 +103,26 @@
   }
 
   for i in range(1, points.len()) {
+    let prev = points.at(i - 1)
     let pt = points.at(i)
+
     let is-inside = in-rect(pt)
+
+    let (x1, y1) = prev
+    let (x2, y2) = pt
+
+    // Ignore lines if both ends are outsides the x-window and on the
+    // same side.
+    if (x1 < min-x and x2 < min-x) or (x1 > max-x and x2 > max-x) {
+      if fill {
+        let clamped = clamped-pt(pt)
+        if path.last() != clamped {
+          path.push(clamped)
+        }
+      }
+      was-inside = false
+      continue
+    }
 
     if is-inside {
       if was-inside {
@@ -123,8 +141,10 @@
           path.push(a)
           path.push(b)
         } else if fill {
-          path.push((calc.max(min-x, calc.min(pt.at(0), max-x)),
-                     calc.max(min-y, calc.min(pt.at(1), max-y))))
+          let clamped = clamped-pt(pt)
+          if path.last() != clamped {
+            path.push(clamped)
+          }
         }
       }
 
@@ -134,13 +154,12 @@
       }
     }
     
-    prev = pt
     was-inside = is-inside
   }
 
   // Append clamped last point if filling
-  if fill and not in-rect(prev) {
-    path.push(clamped-pt(prev))
+  if fill and not in-rect(points.last()) {
+    path.push(clamped-pt(points.last()))
   }
 
   if path.len() > 1 {
