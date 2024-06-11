@@ -1,0 +1,40 @@
+import Type from "@site/src/components/Type";
+import Function from "@site/src/components/Function";
+import Parameter from "@site/src/components/Parameter";
+
+<Function name="content" parameters={{"..args-style":{"types":"coordinate, content, style"},"angle":{"default":"0deg","types":"angle,coordinate"},"anchor":{"default":"none","types":"none, str"},"name":{"default":"none","types":"none, str"}}}/>
+Positions Typst content in the canvas. Note that the content itself is not transformed only its position is.
+
+```typc example
+content((0,0), [Hello World!])
+```
+To put text on a line you can let the function calculate the angle between its position and a second coordinate by passing it to `angle`: 
+
+```typc example
+line((0, 0), (3, 1), name: "line")
+content(
+  ("line.start", 0.5, "line.end"),
+  angle: "line.end",
+  padding: .1,
+  anchor: "south", 
+  [Text on a line]
+)
+```
+
+```typc example
+// Place content in a rect between two coordinates
+content((0, 0), (2, 2), box(par(justify: false)[This is a long text.], stroke: 1pt, width: 100%, height: 100%, inset: 1em))
+```
+
+<Parameter name="..args-style" types="coordinate, content, style" > When one coordinate is given as a positional argument, the content will be placed at that position. When two coordinates are given as positional arguments, the content will be placed inside a rectangle between the two positions. All named arguments are styling and any additional positional arguments will panic.</Parameter>
+<Parameter name="angle" types="angle,coordinate" default_value="0deg"> Rotates the content by the given angle. A coordinate can be given to rotate the content by the angle between it and the first coordinate given in `args`. This effectively points the right hand side of the content towards the coordinate. This currently exists because Typst's rotate function does not change the width and height of content.</Parameter>
+
+
+
+## Styling
+*Root*: `content`
+<Parameter name="padding" types="number, dictionary" default_value="0"> Sets the spacing around content. Can be a single number to set padding on all sides or a dictionary to specify each side specifically. The dictionary follows Typst's `pad` function: https://typst.app/docs/reference/layout/pad/</Parameter>
+<Parameter name="frame" types="str, none" default_value="none"> Sets the frame style. Can be `none`, "rect" or "circle" and inherits the `stroke` and `fill` style.</Parameter>
+  
+## Anchors
+Supports border anchors.

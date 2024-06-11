@@ -1,0 +1,41 @@
+import Type from "@site/src/components/Type";
+import Function from "@site/src/components/Function";
+import Parameter from "@site/src/components/Parameter";
+
+<Function name="rect" parameters={{"a":{"types":"coordinate"},"b":{"types":"coordinate"},"name":{"default":"none","types":"none,str"},"anchor":{"default":"none","types":"none, str"},"..style":{"types":"style"}}}/>
+Draws a rectangle between two coordinates.
+```typc example
+rect((0,0), (1,1))
+rect((-.5, -.5), (rel: (2, 2)),
+  radius: (north-east: (100%, .5),
+           south-west: (100%, .5), rest: .2),
+  stroke: red)
+rect((-1, -1), (rel: (3, 3)), radius: .5, stroke: blue)
+```
+
+<Parameter name="a" types="coordinate" > Coordinate of the bottom left corner of the rectangle.</Parameter>
+<Parameter name="b" types="coordinate" > Coordinate of the top right corner of the rectangle. You can draw a rectangle with a specified width and height by using relative coordinates for this parameter `(rel: (width, height))`.</Parameter>
+
+
+
+
+## Styling
+*Root*: `rect`
+<Parameter name="radius" types="number,ratio,dictionary" default_value="0">
+The rectangles corner radius. If set to a single number, that radius is applied to all four corners of the rectangle. If passed a dictionary you can set the radii per corner. The following keys support either a <Type>number</Type>, <Type>ratio</Type> or an array of <Type>number</Type>, <Type>ratio</Type> for specifying a different x- and y-radius: `north`, `east`, `south`, `west`, `north-west`, `north-east`, `south-west` and `south-east`. To set a default value for remaining corners, the `rest` key can be used.
+
+Ratio values are relative to the rects width/height.
+
+```typc example
+rect((0,0), (rel: (1,1)), radius: 0)
+rect((2,0), (rel: (1,1)), radius: 25%)
+rect((4,0), (rel: (1,1)), radius: (north: 50%))
+rect((6,0), (rel: (1,1)), radius: (north-east: 50%))
+rect((8,0), (rel: (1,1)), radius: (south-west: 0, rest: 50%))
+rect((10,0), (rel: (1,1)), radius: (rest: (20%, 50%)))
+```
+</Parameter>
+
+## Anchors
+  Supports border and path anchors.
+

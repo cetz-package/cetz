@@ -1,0 +1,27 @@
+import Type from "@site/src/components/Type";
+import Function from "@site/src/components/Function";
+import Parameter from "@site/src/components/Parameter";
+
+<Function name="hobby" parameters={{"..pts-style":{"types":"coordinate,style"},"ta":{"default":"auto","types":"auto, array"},"tb":{"default":"auto","types":"auto,array"},"close":{"default":"false","types":"bool"},"name":{"default":"none","types":"none,str"}}}/>
+Draws a Hobby curve through a set of points.
+
+```typc example
+hobby((0, 0), (1, 1), (2, -1), (3, 0), omega: 0, stroke: blue)
+hobby((0, 0), (1, 1), (2, -1), (3, 0), omega: 1, stroke: red)
+```
+
+<Parameter name="..pts-style" types="coordinate,style" > Positional arguments are the coordinates to use to draw the curve with, a minimum of two is required. Named arguments are for styling.</Parameter>
+<Parameter name="tb" types="auto,array" default_value="auto"> Incoming tension at `pts.at(n+1)` from `pts.at(n)` to `pts.at(n+1)`. The number given must be one less than the number of points.</Parameter>
+<Parameter name="ta" types="auto, array" default_value="auto"> Outgoing tension at `pts.at(n)` from `pts.at(n)` to `pts.at(n+1)`. The number given must be one less than the number of points.</Parameter>
+<Parameter name="close" types="bool" default_value="false"> Closes the curve with a proper smooth curve between the start and end of the curve.</Parameter>
+
+
+## Styling
+*Root* `hobby`
+
+Supports marks. 
+<Parameter name="omega" types="array" default_value="(1, 1)"> A tuple of floats that describe how curly the curve should be at each endpoint. When the curl is close to zero, the spline approaches a straight line near the endpoints. When the curl is close to one, it approaches a circular arc.</Parameter>
+
+## Anchors
+Supports path anchors.
+- **pt-n**: The nth given position (0 indexed, so "pt-0" is equal to "start")
