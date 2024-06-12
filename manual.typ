@@ -627,29 +627,29 @@ Types commonly used by function of the `plot` library:
 === Legends <plot-legends>
 A legend for a plot will be drawn if at least one set of data with a label that is not `none` is given.
 The following anchors are available when placing a legend on a plot:
-  - `legend.north`
-  - `legend.south`
-  - `legend.east`
-  - `legend.west`
-  - `legend.north-east`
-  - `legend.north-west`
-  - `legend.south-east`
-  - `legend.south-west`
-  - `legend.inner-north`
-  - `legend.inner-south`
-  - `legend.inner-east`
-  - `legend.inner-west`
-  - `legend.inner-north-east`
-  - `legend.inner-north-west`
-  - `legend.inner-south-east`
-  - `legend.inner-south-west`
+  - `north`
+  - `south`
+  - `east`
+  - `west`
+  - `north-east`
+  - `north-west`
+  - `south-east`
+  - `south-west`
+  - `inner-north`
+  - `inner-south`
+  - `inner-east`
+  - `inner-west`
+  - `inner-north-east`
+  - `inner-north-west`
+  - `inner-south-east`
+  - `inner-south-west`
 ```example
 import cetz.plot
 plot.plot(
   size: (3,2),
   x-tick-step: none,
   y-tick-step: none,
-  legend: "legend.north", {
+  legend: "north", {
   plot.add(
     ((-1, -1), (1, 1)),
     mark: "o",

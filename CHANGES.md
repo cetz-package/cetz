@@ -29,9 +29,12 @@ The licence changed from Apache-2.0 to GPLv3.
 - Added a new errorbar function: `add-errorbar`
 - Added errorbar support to the `add-bar` function
 - Improved the performance & memory consumption of the clipping algorithm
+- **BREAKING** Legend anchors got renamed and do not use the legend prefix anymore
 
 ## Chart
 - Added errorbar support for bar- and columncharts
+- Piecharts now support a legend (see `legend.label` style)
+- **BREAKING** Legend anchors got renamed and do not use the legend prefix anymore
 
 ## Anchors
 - `copy-anchors` no longer requires copied anchors to have a default, allowing the copying of an element's anchors from a group as expected.

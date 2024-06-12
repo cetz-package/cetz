@@ -2,10 +2,11 @@
 #import "/src/anchor.typ" as anchor_
 #import "/src/styles.typ"
 #import "mark.typ": draw-mark-shape
+#import draw: group
 
 #let default-style = (
   orientation: ttb,
-  default-position: "legend.north-east",
+  default-position: "north-east",
   layer: 1,        // Legend layer
   fill: rgb(255,255,255,200), // Legend background
   stroke: black,   // Legend border
@@ -86,27 +87,50 @@
   }
 }
 
-// Draw a legend box at position relative to anchor of plot-element
-#let draw-legend(ctx, style, items, size, plot, position, anchor) = {
+/// Construct a legend item for use with the `legend` function
+///
+/// - label (none, auto, content): Legend label or auto to use the enumerated default label
+/// - preview (auto, function): Legend preview icon function of the format `item => elements`.
+///                             Note that the canvas bounds for drawing the preview are (0,0) to (1,1).
+/// - mark: (none,string): Legend mark symbol
+/// - mark-style: (none,dictionary): Mark style
+/// - mark-size: (number): Mark size
+/// - style (styles): Style keys for the single item
+#let item(label, preview, mark: none, mark-style: (:), mark-size: 1, ..style) = {
+  assert.eq(style.pos().len(), 0,
+    message: "Unexpected positional arguments")
+  return ((label: label, preview: preview,
+           mark: mark, mark-style: mark-style, mark-size: mark-size,
+           style: style.named()),)
+}
+
+/// Draw a legend
+#let legend(position, items, name: "legend", ..style) = group(name: name, ctx => {
+  draw.anchor("default", ())
+  let items = if items != none { items.filter(v => v.label != none) } else { () }
+  if items == () {
+    return
+  }
+
   let style = styles.resolve(
-    ctx.style, merge: style, base: default-style, root: "legend")
+    ctx.style, merge: style.named(), base: default-style, root: "legend")
   assert(style.orientation in (ttb, ltr),
     message: "Unsupported legend orientation.")
 
-  if position == auto {
-    position = style.default-position
+  // Position
+  let position = if position == auto {
+    style.default-position
+  } else {
+    position
   }
 
-  // Create legend anchors
-  draw.group(name: "legend", {
-    add-legend-anchors(style, plot, size)
-  })
-
-  // Try finding an optimal legend anchor
-  let anchor = if type(position) == str and anchor == auto {
-    auto-group-anchor.at(position.replace("legend.", ""), default: "north-west")
-  } else {
-    anchor
+  // Adjust anchor
+  if style.anchor == auto {
+    style.anchor = if type(position) == str {
+      auto-group-anchor.at(position, default: "north-west")
+    } else {
+      "north-west"
+    }
   }
 
   // Apply offset
@@ -114,8 +138,9 @@
     position = (rel: style.offset, to: position)
   }
 
+  // Draw items
   draw.on-layer(style.layer, {
-    draw.group(name: "legend", padding: style.padding, ctx => {
+    draw.group(name: "items", padding: style.padding, ctx => {
       import draw: *
 
       set-origin(position)
@@ -123,10 +148,12 @@
 
       let pt = (0, 0)
       for (i, item) in items.enumerate() {
-        if item.label == none { continue }
-        let label = if item.label == auto {
-          $ f_(#i) $
-        } else { item.label }
+        let (label, preview) = item
+        if label == none {
+          continue
+        } else if label == auto {
+          label = $ f_(#i) $
+        }
 
         group({
           anchor("default", (0,0))
@@ -138,8 +165,7 @@
           let label-west = (preview-width + style.item.preview.margin, 0)
 
           // Draw item preview
-          let draw-preview = item.at("plot-legend-preview",
-            default: draw-generic-preview)
+          let draw-preview = if preview == auto { draw-generic-preview } else { preview }
           group({
             set-viewport(preview-a, preview-b, bounds: (1, 1, 0))
             (draw-preview)(item)
@@ -168,12 +194,12 @@
                       to: "item.east"))
         }
       }
-    }, anchor: anchor)
+    }, anchor: style.anchor)
   })
 
   // Fill legend background
   draw.on-layer(style.layer - .5, {
-    draw.rect("legend.south-west",
-              "legend.north-east", fill: style.fill, stroke: style.stroke, radius: style.radius)
+    draw.rect("items.south-west",
+              "items.north-east", fill: style.fill, stroke: style.stroke, radius: style.radius)
   })
-}
+})
