@@ -1,7 +1,10 @@
 # 0.3.0
 
 CeTZ 0.3.0 requires Typst 0.11.0
-The licence changed from Apache-2.0 to GPLv3.
+The licence changed from Apache-2.0 to LGPLv3.
+
+CeTZ' plotting and charting functionality has been moved to a separate 
+package called `cetz-plot`.
 
 ## Canvas
 - Fixed a bug with `#set place(float: true)` affecting the canvas.
@@ -24,6 +27,7 @@ The licence changed from Apache-2.0 to GPLv3.
   allow for centered marks.
 
 ## Plot
+- **BREAKING** The plot library has been moved out of cetz
 - Added support for automatically adding axis breaks (sawtooth lines) by setting the `break`
   attribute of an axis to `true`.
 - Added a new errorbar function: `add-errorbar`
@@ -32,6 +36,7 @@ The licence changed from Apache-2.0 to GPLv3.
 - **BREAKING** Legend anchors got renamed and do not use the legend prefix anymore
 
 ## Chart
+- **BREAKING** The chart library has been moved out of cetz
 - Added errorbar support for bar- and columncharts
 - Piecharts now support a legend (see `legend.label` style)
 - **BREAKING** Legend anchors got renamed and do not use the legend prefix anymore
