@@ -3,6 +3,7 @@
 #import "/src/intersection.typ"
 #import "/src/vector.typ"
 #import "/src/util.typ": circle-arclen
+#import "/src/lib/plot/legend.typ"
 #import "/src/lib/palette.typ"
 
 // Piechart Label Kind
@@ -52,8 +53,42 @@
     /// Label anchor
     anchor: "center",
   ),
+  legend: (
+    ..legend.default-style,
+
+    /// Label used for the legend
+    /// The legend gets rendered as soon as at least one item with a label
+    /// exists and the `legend-label.content` is set != none. This field
+    /// accepts the same values as inner-label.content or outer-label.content.
+    label: "LABEL",
+
+    /// Anchor of the charts data bounding box to place the legend relative to
+    position: "south",
+
+    /// Anchor of the legend bounding box to use as origin
+    anchor: "north",
+
+    /// Custom preview function override
+    /// The function takes an item dictionary an is responsible for drawing
+    /// the preview icon. Stroke and fill styles are set to match the items
+    /// style.
+    preview: none,
+
+    /// See lenged.typ for the following style keys
+    orientation: ltr,
+    offset: (0,-.5em),
+    stroke: none,
+    item: (
+      spacing: .25,
+      preview: (
+        width: .3,
+        height: .3,
+      ),
+    ),
+  )
 )
 #let piechart-default-style = default-style
+
 
 /// Draw a pie- or donut-chart
 ///
@@ -123,6 +158,8 @@
 ///   See `outer-label.angle`.], default: 0deg)
 /// #show-parameter-block("inner-label.anchor", ("string"), [
 ///   See `outer-label.anchor`.], default: "center")
+/// #show-parameter-block("legend.label", ("none","string","function"), [
+///   See `outer-label.content`. The legend gets shown if this key is set != none.], default: "LABEL")
 ///
 /// = Anchors
 ///   The chart places one anchor per item at the radius of it's slice that
@@ -249,187 +286,210 @@
     } else {
       data.enumerate()
     }
-    for (i, item) in enum-items {
-      let (value, label, outset) = item
-      if value == 0 { continue }
+    group(name: "chart", {
+      for (i, item) in enum-items {
+        let (value, label, outset) = item
+        if value == 0 { continue }
 
-      let origin = (0,0)
-      let radius = radius
-      let inner-radius = inner-radius
+        let origin = (0,0)
+        let radius = radius
+        let inner-radius = inner-radius
 
-      // Calculate item angles
-      let delta = f * value
-      let end = start + delta
+        // Calculate item angles
+        let delta = f * value
+        let end = start + delta
 
-      // Apply item outset
-      let outset-offset = if outset == true {
-        style.outset-offset
-      } else if outset == false {
-        0
-      } else if type(outset) in (float, ratio) {
-        outset
-      } else {
-        panic("Invalid type for outset. Expected bool, float or ratio, got: " + repr(outset))
-      }
-      if type(outset-offset) == ratio {
-        outset-offset = outset-offset * radius / 100%
-      }
-
-      if outset-offset != 0 {
-        if style.outset-mode == "OFFSET" {
-          let dir = (calc.cos((start + end) / 2), calc.sin((start + end) / 2))
-          origin = vector.add(origin, vector.scale(dir, outset-offset))
-            radius += outset-offset
+        // Apply item outset
+        let outset-offset = if outset == true {
+          style.outset-offset
+        } else if outset == false {
+          0
+        } else if type(outset) in (float, ratio) {
+          outset
         } else {
-          radius += outset-offset
-          if inner-radius > 0 {
-            inner-radius += outset-offset
+          panic("Invalid type for outset. Expected bool, float or ratio, got: " + repr(outset))
+        }
+        if type(outset-offset) == ratio {
+          outset-offset = outset-offset * radius / 100%
+        }
+
+        if outset-offset != 0 {
+          if style.outset-mode == "OFFSET" {
+            let dir = (calc.cos((start + end) / 2), calc.sin((start + end) / 2))
+            origin = vector.add(origin, vector.scale(dir, outset-offset))
+              radius += outset-offset
+          } else {
+            radius += outset-offset
+            if inner-radius > 0 {
+              inner-radius += outset-offset
+            }
           }
         }
-      }
 
-      // Calculate gap angles
-      let outer-gap = gap
-      let gap-dist = outer-gap / 360deg * 2 * calc.pi * radius
-      let inner-gap = if inner-radius > 0 {
-        gap-dist / (2 * calc.pi * inner-radius) * 360deg
-      } else {
-        1 / calc.pi * 360deg
-      }
+        // Calculate gap angles
+        let outer-gap = gap
+        let gap-dist = outer-gap / 360deg * 2 * calc.pi * radius
+        let inner-gap = if inner-radius > 0 {
+          gap-dist / (2 * calc.pi * inner-radius) * 360deg
+        } else {
+          1 / calc.pi * 360deg
+        }
 
-      // Calculate angle deltas
-      let outer-angle = end - start - outer-gap * 2
-      let inner-angle = end - start - inner-gap * 2
-      let mid-angle = (start + end) / 2
+        // Calculate angle deltas
+        let outer-angle = end - start - outer-gap * 2
+        let inner-angle = end - start - inner-gap * 2
+        let mid-angle = (start + end) / 2
 
-      // Skip negative values
-      if outer-angle < 0deg {
-        // TODO: Add a warning as soon as Typst is ready!
-        continue
-      }
+        // Skip negative values
+        if outer-angle < 0deg {
+          // TODO: Add a warning as soon as Typst is ready!
+          continue
+        }
 
-      // A sharp item is an item that should be round but is sharp due to the gap being big
-      let is-sharp = inner-radius == 0 or circle-arclen(inner-radius, angle: inner-angle) > circle-arclen(radius, angle: outer-angle)
+        // A sharp item is an item that should be round but is sharp due to the gap being big
+        let is-sharp = inner-radius == 0 or circle-arclen(inner-radius, angle: inner-angle) > circle-arclen(radius, angle: outer-angle)
 
-      let inner-origin = vector.add(origin, if inner-radius == 0 {
-        if gap-dist >= 0 {
+        let inner-origin = vector.add(origin, if inner-radius == 0 {
+          if gap-dist >= 0 {
+            let outer-end = vector.scale((calc.cos(end - outer-gap), calc.sin(end - outer-gap)), radius)
+            let inner-end = vector.scale((calc.cos(end - inner-gap), calc.sin(end - inner-gap)), gap-dist)
+            let outer-start = vector.scale((calc.cos(start + outer-gap), calc.sin(start + outer-gap)), radius)
+            let inner-start = vector.scale((calc.cos(start + inner-gap), calc.sin(start + inner-gap)), gap-dist)
+
+            intersection.line-line(outer-end, inner-end, outer-start, inner-start, ray: true)
+          } else {
+            (0,0)
+          }
+        } else if is-sharp {
           let outer-end = vector.scale((calc.cos(end - outer-gap), calc.sin(end - outer-gap)), radius)
-          let inner-end = vector.scale((calc.cos(end - inner-gap), calc.sin(end - inner-gap)), gap-dist)
+          let inner-end = vector.scale((calc.cos(end - inner-gap), calc.sin(end - inner-gap)), inner-radius)
           let outer-start = vector.scale((calc.cos(start + outer-gap), calc.sin(start + outer-gap)), radius)
-          let inner-start = vector.scale((calc.cos(start + inner-gap), calc.sin(start + inner-gap)), gap-dist)
+          let inner-start = vector.scale((calc.cos(start + inner-gap), calc.sin(start + inner-gap)), inner-radius)
 
           intersection.line-line(outer-end, inner-end, outer-start, inner-start, ray: true)
         } else {
           (0,0)
-        }
-      } else if is-sharp {
-        let outer-end = vector.scale((calc.cos(end - outer-gap), calc.sin(end - outer-gap)), radius)
-        let inner-end = vector.scale((calc.cos(end - inner-gap), calc.sin(end - inner-gap)), inner-radius)
-        let outer-start = vector.scale((calc.cos(start + outer-gap), calc.sin(start + outer-gap)), radius)
-        let inner-start = vector.scale((calc.cos(start + inner-gap), calc.sin(start + inner-gap)), inner-radius)
+        })
 
-        intersection.line-line(outer-end, inner-end, outer-start, inner-start, ray: true)
-      } else {
-        (0,0)
-      })
+        // Draw one segment
+        let stroke = style-at(i).at("stroke", default: style.stroke)
+        let fill = style-at(i).at("fill", default: style.fill)
+        if data.len() == 1 {
+          // If the chart has only one segment, we may have to fake a path
+          // with a hole in it by using a combination of multiple arcs.
+          if inner-radius > 0 {
+            // Split the circle/arc into two arcs
+            // and fill them
+            merge-path({
+              arc(origin, start: start-angle, stop: mid-angle, radius: radius, anchor: "origin")
+              arc(origin, stop: start-angle, start: mid-angle, radius: inner-radius, anchor: "origin")
+            }, close: false, fill:fill, stroke: none)
+            merge-path({
+              arc(origin, start: mid-angle, stop: stop-angle, radius: radius, anchor: "origin")
+              arc(origin, stop: mid-angle, start: stop-angle, radius: inner-radius, anchor: "origin")
+            }, close: false, fill:fill, stroke: none)
 
-      // Draw one segment
-      let stroke = style-at(i).at("stroke", default: style.stroke)
-      let fill = style-at(i).at("fill", default: style.fill)
-      if data.len() == 1 {
-        // If the chart has only one segment, we may have to fake a path
-        // with a hole in it by using a combination of multiple arcs.
-        if inner-radius > 0 {
-          // Split the circle/arc into two arcs
-          // and fill them
-          merge-path({
-            arc(origin, start: start-angle, stop: mid-angle, radius: radius, anchor: "origin")
-            arc(origin, stop: start-angle, start: mid-angle, radius: inner-radius, anchor: "origin")
-          }, close: false, fill:fill, stroke: none)
-          merge-path({
-            arc(origin, start: mid-angle, stop: stop-angle, radius: radius, anchor: "origin")
-            arc(origin, stop: mid-angle, start: stop-angle, radius: inner-radius, anchor: "origin")
-          }, close: false, fill:fill, stroke: none)
-
-          // Create arcs for the inner and outer border and stroke them.
-          // If the chart is not a full circle, we have to merge two arc
-          // at their ends to create closing lines
-          if stroke != none {
-            if calc.abs(stop-angle - start-angle) != 360deg {
-              merge-path({
-                arc(origin, start: start, stop: end, radius: inner-radius, anchor: "origin")
-                arc(origin, start: end, stop: start, radius: radius, anchor: "origin")
-              }, close: true, fill: none, stroke: stroke)
-            } else {
-              arc(origin, start: start, stop: end, radius: inner-radius, fill: none, stroke: stroke, anchor: "origin")
-              arc(origin, start: start, stop: end, radius: radius, fill: none, stroke: stroke, anchor: "origin")
+            // Create arcs for the inner and outer border and stroke them.
+            // If the chart is not a full circle, we have to merge two arc
+            // at their ends to create closing lines
+            if stroke != none {
+              if calc.abs(stop-angle - start-angle) != 360deg {
+                merge-path({
+                  arc(origin, start: start, stop: end, radius: inner-radius, anchor: "origin")
+                  arc(origin, start: end, stop: start, radius: radius, anchor: "origin")
+                }, close: true, fill: none, stroke: stroke)
+              } else {
+                arc(origin, start: start, stop: end, radius: inner-radius, fill: none, stroke: stroke, anchor: "origin")
+                arc(origin, start: start, stop: end, radius: radius, fill: none, stroke: stroke, anchor: "origin")
+              }
             }
+          } else {
+            arc(origin, start: start, stop: end, radius: radius, fill: fill, stroke: stroke, mode: "PIE", anchor: "origin")
           }
         } else {
-          arc(origin, start: start, stop: end, radius: radius, fill: fill, stroke: stroke, mode: "PIE", anchor: "origin")
-        }
-      } else {
-        // Draw a normal segment
-        if inner-origin != none {
-          merge-path({
-            arc(origin, start: start + outer-gap, stop: end - outer-gap, anchor: "origin",
-              radius: radius)
-            if inner-radius > 0 and not is-sharp {
-              if inner-angle < 0deg {
-                arc(inner-origin, stop: end - inner-gap, delta: inner-angle, anchor: "origin",
-                  radius: inner-radius)
+          // Draw a normal segment
+          if inner-origin != none {
+            merge-path({
+              arc(origin, start: start + outer-gap, stop: end - outer-gap, anchor: "origin",
+                radius: radius)
+              if inner-radius > 0 and not is-sharp {
+                if inner-angle < 0deg {
+                  arc(inner-origin, stop: end - inner-gap, delta: inner-angle, anchor: "origin",
+                    radius: inner-radius)
+                } else {
+                  arc(inner-origin, start: end - inner-gap, delta: -inner-angle, anchor: "origin",
+                    radius: inner-radius)
+                }
               } else {
-                arc(inner-origin, start: end - inner-gap, delta: -inner-angle, anchor: "origin",
-                  radius: inner-radius)
+                line((rel: (end - outer-gap, radius), to: origin),
+                    inner-origin,
+                    (rel: (start + outer-gap, radius), to: origin))
               }
-            } else {
-              line((rel: (end - outer-gap, radius), to: origin),
-                   inner-origin,
-                   (rel: (start + outer-gap, radius), to: origin))
-            }
-          }, close: true, fill: fill, stroke: stroke)
-        }
-      }
-
-      // Place outer label
-      let outer-label = get-item-label(item, style.outer-label.content)
-      if outer-label != none {
-        let r = style.outer-label.radius
-        if type(r) == ratio {r = r * radius / 100%}
-
-        let dir = (r * calc.cos(mid-angle), r * calc.sin(mid-angle))
-        let pt = vector.add(origin, dir)
-
-        let angle = style.outer-label.angle
-        if angle == auto {
-          angle = vector.add(pt, (dir.at(1), -dir.at(0)))
+            }, close: true, fill: fill, stroke: stroke)
+          }
         }
 
-        content(pt, outer-label, angle: angle, anchor: style.outer-label.anchor)
-      }
+        // Place outer label
+        let outer-label = get-item-label(item, style.outer-label.content)
+        if outer-label != none {
+          let r = style.outer-label.radius
+          if type(r) == ratio {r = r * radius / 100%}
 
-      // Place inner label
-      let inner-label = get-item-label(item, style.inner-label.content)
-      if inner-label != none {
-        let r = style.inner-label.radius
-        if type(r) == ratio {r = r * (radius + inner-radius) / 200%}
+          let dir = (r * calc.cos(mid-angle), r * calc.sin(mid-angle))
+          let pt = vector.add(origin, dir)
 
-        let dir = (r * calc.cos(mid-angle), r * calc.sin(mid-angle))
-        let pt = vector.add(origin, dir)
+          let angle = style.outer-label.angle
+          if angle == auto {
+            angle = vector.add(pt, (dir.at(1), -dir.at(0)))
+          }
 
-        let angle = style.inner-label.angle
-        if angle == auto {
-          angle = vector.add(pt, (dir.at(1), -dir.at(0)))
+          content(pt, outer-label, angle: angle, anchor: style.outer-label.anchor)
         }
 
-        content(pt, inner-label, angle: angle, anchor: style.inner-label.anchor)
+        // Place inner label
+        let inner-label = get-item-label(item, style.inner-label.content)
+        if inner-label != none {
+          let r = style.inner-label.radius
+          if type(r) == ratio {r = r * (radius + inner-radius) / 200%}
+
+          let dir = (r * calc.cos(mid-angle), r * calc.sin(mid-angle))
+          let pt = vector.add(origin, dir)
+
+          let angle = style.inner-label.angle
+          if angle == auto {
+            angle = vector.add(pt, (dir.at(1), -dir.at(0)))
+          }
+
+          content(pt, inner-label, angle: angle, anchor: style.inner-label.anchor)
+        }
+
+        // Place item anchor
+        anchor("item-" + str(i), (rel: (mid-angle, radius), to: origin))
+        anchor("item-" + str(i) + "-inner", (rel: (mid-angle, inner-radius), to: origin))
+
+        start = end
+      }
+    })
+
+    legend.legend((name: "chart", anchor: style.legend.position), {
+      let preview-fn = if style.legend.preview != none {
+        style.legend.preview
+      } else {
+        (_) => { rect((0,0), (1,1)) }
       }
 
-      // Place item anchor
-      anchor("item-" + str(i), (rel: (mid-angle, radius), to: origin))
-      anchor("item-" + str(i) + "-inner", (rel: (mid-angle, inner-radius), to: origin))
+      for (i, item) in enum-items.rev() {
+        let label = get-item-label(item, style.legend.label)
+        let preview = (item) => {
+          let stroke = style-at(i).at("stroke", default: style.stroke)
+          let fill = style-at(i).at("fill", default: style.fill)
 
-      start = end
-    }
+          set-style(stroke: stroke, fill: fill)
+          preview-fn(item)
+        }
+
+        legend.item(label, preview)
+      }
+    }, ..style.at("legend", default: (:)))
   })
 }

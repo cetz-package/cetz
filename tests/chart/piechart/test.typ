@@ -7,7 +7,7 @@
 // Outset items
 #box(stroke: 2pt + red, canvas({
   import draw: *
-  piechart(range(1,11), outset: 3, outset-offset: 25%, slice-style: colors)
+  piechart(range(1,11), outset: 3, outset-offset: 25%, slice-style: colors, legend: (label: "%"))
 }))
 
 // Outset items + inner radius

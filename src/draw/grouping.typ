@@ -52,6 +52,40 @@
   return body
 }
 
+/// Places an element without affecting bounding boxes.
+///
+/// Floating elements are drawn to the canvas but are ignored when calculating
+/// bouding boxes. All other behaviours remain the same.
+///
+/// #example(```
+/// group(name: "g", {
+///   content((1,0), [Normal])
+///   content((0,1), [Normal])
+///   floating(content((.5,1.5), [Floating]))
+/// })
+/// set-style(stroke: red)
+/// rect("g.north-west", "g.south-east")
+/// ```)
+///
+/// - body (element): One or more elements to place
+#let floating(body) = {
+  if type(body) == array {
+    return body.map(f => {
+      ctx => {
+        let element = f(ctx)
+        if "drawables" in element {
+          element.drawables = element.drawables.map(d => {
+            d.bounds = false
+            return d
+          })
+        }
+        return element
+      }
+    })
+  }
+  return body
+}
+
 /// Calculates the intersections between multiple paths and creates one anchor
 /// per intersection point.
 ///
@@ -291,6 +325,27 @@
     )
   },)
 }
+
+/// This element acts as a scope, all state changes such as transformations and styling only affect the elements in the group. Elements after the scope are not affected by the changes inside the scope.
+/// In contrast to `group`, the `scope` element does not create a named element itself and "leaks" body element to the outside.
+///
+/// - body (elements, function): Elements to group together. A least one is required. A function that accepts `ctx` and returns elements is also accepted.
+#let scope(body) = (ctx => {
+  let bounds = none
+  let drawables = ()
+  let group-ctx = ctx
+  group-ctx.groups.push(())
+
+  (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, util.resolve-body(group-ctx, body))
+
+  // Leak nodes
+  ctx.nodes += group-ctx.nodes
+
+  return (
+    ctx: ctx,
+    drawables: drawables,
+  )
+},)
 
 /// Creates a new anchor for the current group. This element can only be used inside a group otherwise it will panic. The new anchor will be accessible from inside the group by using just the anchor's name as a coordinate.
 ///

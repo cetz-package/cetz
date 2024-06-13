@@ -425,6 +425,9 @@
 /// mark((0,0), (1,1), symbol: "stealth", scale: 3, fill: black)
 /// ```)
 ///
+/// Note: To place a mark centered at the first coodinate (`from`) use
+/// the marks `anchor: "center"` style.
+///
 /// = parameters
 ///
 /// = Styling
@@ -822,7 +825,7 @@
       let center = if auto-size {
         a
       } else {
-        vector.add(a, (w, -h))
+        vector.lerp(a, b, .5)
       }
 
       // Only the center anchor gets transformed. All other anchors

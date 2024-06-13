@@ -268,6 +268,11 @@ line(..c)
 #doc-style.show-parameter-block("pos", ("number", "ratio"), [Overrides the mark's position along a path. A number will move it an absolute distance, while a ratio will be a distance relative to the length of the path. Note that this may be removed in the future in preference of a different method.])
 
 #doc-style.show-parameter-block("offset", ("number", "ratio"), [Like `pos` but it moves the position of the mark instead of overriding it.])
+#doc-style.show-parameter-block("anchor", ("string"), default: "tip", [Anchor of the mark to use for positioning. Available anchors are \
+  - `tip` The marks tip (default)
+  - `center` The visual center of the mark
+  - `base` The base/end of the mark
+])
 
 #doc-style.show-parameter-block("slant", "ratio", [How much to slant the mark relative to the axis of the arrow. 0% means no slant 100% slants at 45 degrees], default: 0%)
 #doc-style.show-parameter-block("harpoon", "boolean", [When true only the top half of the mark is drawn.], default: false)
@@ -626,29 +631,29 @@ Types commonly used by function of the `plot` library:
 === Legends <plot-legends>
 A legend for a plot will be drawn if at least one set of data with a label that is not `none` is given.
 The following anchors are available when placing a legend on a plot:
-  - `legend.north`
-  - `legend.south`
-  - `legend.east`
-  - `legend.west`
-  - `legend.north-east`
-  - `legend.north-west`
-  - `legend.south-east`
-  - `legend.south-west`
-  - `legend.inner-north`
-  - `legend.inner-south`
-  - `legend.inner-east`
-  - `legend.inner-west`
-  - `legend.inner-north-east`
-  - `legend.inner-north-west`
-  - `legend.inner-south-east`
-  - `legend.inner-south-west`
+  - `north`
+  - `south`
+  - `east`
+  - `west`
+  - `north-east`
+  - `north-west`
+  - `south-east`
+  - `south-west`
+  - `inner-north`
+  - `inner-south`
+  - `inner-east`
+  - `inner-west`
+  - `inner-north-east`
+  - `inner-north-west`
+  - `inner-south-east`
+  - `inner-south-west`
 ```example
 import cetz.plot
 plot.plot(
   size: (3,2),
   x-tick-step: none,
   y-tick-step: none,
-  legend: "legend.north", {
+  legend: "north", {
   plot.add(
     ((-1, -1), (1, 1)),
     mark: "o",

@@ -1,19 +1,41 @@
 # 0.3.0
 
 CeTZ 0.3.0 requires Typst 0.11.0
+The licence changed from Apache-2.0 to GPLv3.
 
 ## Canvas
 - Add runtime cetz version check support (see `assert-version`)
+- Fixed a bug with `#set place(float: true)` affecting the canvas.
 - Transformation matrices are now rounded
+- The default coordinate system changed to a right-hand side system.
+  Use `scale(z: -1)` if you want to change back to a left-hand system.
+- The `on-<axes>` functions lead to wrong anchors and got fixed. The offset
+  argument is now behaving as tranlation instead of hard setting the coordinate!
+- A new `scope(...)` element got added that behaves like a unnamed group but
+  leaking child elements to the outside. This element can be used for scoping
+  transformations, without having to scope children under a group name.
+- The center anchor of `content()` with two coordinates got fixed when using
+  negative cordinates.
+
+## Draw
+- Added `floating` function for drawing elements without affecting bounding boxes.
+
+## Marks
+- Added support for mark `anchor` style key, to adjust mark placement and
+  allow for centered marks.
 
 ## Plot
 - Added support for automatically adding axis breaks (sawtooth lines) by setting the `break`
   attribute of an axis to `true`.
 - Added a new errorbar function: `add-errorbar`
 - Added errorbar support to the `add-bar` function
+- Improved the performance & memory consumption of the clipping algorithm
+- **BREAKING** Legend anchors got renamed and do not use the legend prefix anymore
 
 ## Chart
 - Added errorbar support for bar- and columncharts
+- Piecharts now support a legend (see `legend.label` style)
+- **BREAKING** Legend anchors got renamed and do not use the legend prefix anymore
 
 ## Anchors
 - `copy-anchors` no longer requires copied anchors to have a default, allowing the copying of an element's anchors from a group as expected.

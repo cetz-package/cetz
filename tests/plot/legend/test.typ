@@ -7,7 +7,6 @@
 #for pos in ("north", "south", "west", "east",
              "north-east", "north-west",
              "south-east", "south-west",) {
-  pos = "legend." + pos
   block(stroke: 2pt + red, canvas({
     import draw: *
 
@@ -24,7 +23,6 @@
 #for pos in ("inner-north", "inner-south", "inner-west", "inner-east",
              "inner-north-east", "inner-north-west",
              "inner-south-east", "inner-south-west",) {
-  pos = "legend." + pos
   block(stroke: 2pt + red, canvas({
     import draw: *
 
@@ -125,7 +123,7 @@
   import draw: *
 
   set-style(legend: (item: (preview: (width: .4), spacing: .7),
-    orientation: ltr, default-position: "legend.north"))
+    orientation: ltr, default-position: "north"))
 
   plot.plot(size: (4, 2),
     x-tick-step: none,
@@ -144,7 +142,7 @@
     padding: .1,
     stroke: black,
     fill: white,
-    orientation: ltr, default-position: "legend.north"))
+    orientation: ltr, default-position: "north"))
 
   plot.plot(size: (4, 2),
     x-tick-step: none,
