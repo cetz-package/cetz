@@ -5,6 +5,7 @@
 #import "aabb.typ"
 #import "styles.typ"
 #import "process.typ"
+#import "version.typ"
 
 #import util: typst-length
 
@@ -40,6 +41,7 @@
     message: "Canvas length must be != 0!")
 
   let ctx = (
+    version: version.version,
     length: length,
     debug: debug,
     // Previous element position & bbox
