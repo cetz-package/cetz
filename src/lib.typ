@@ -17,9 +17,6 @@
 #import "mark-shapes.typ"
 
 // Libraries
-#import "lib/axes.typ"
-#import "lib/plot.typ"
-#import "lib/chart.typ"
 #import "lib/palette.typ"
 #import "lib/angle.typ"
 #import "lib/tree.typ"

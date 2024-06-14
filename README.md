@@ -64,6 +64,10 @@ To use this package, simply add the following code to your document:
 })
 ```
 
+## CeTZ Libraries
+
+- [cetz-plot - Plotting and Charts Library](https://github.com/cetz-package/cetz-plot)
+
 ## Installing
 
 To install the CeTZ package under [your local typst package dir](https://github.com/typst/packages?tab=readme-ov-file#local-packages) you can use the `install` script from the repository.
