@@ -1,7 +1,15 @@
 #import "/src/path-util.typ"
 
 /// A path modifier is a function that accepts a contex, style and
-/// a single drawable and returns a single (modifierd) drawable.
+/// a single drawable and returns a single (modified) drawable.
+///
+/// Example:
+/// ```typ
+/// (ctx, style, drawable) => {
+///   // ... modify the drawable ...
+///   return drawable
+/// }
+/// ```
 
 // Function for slicing a path into three parts,
 // a head, a mid section and a tail.
