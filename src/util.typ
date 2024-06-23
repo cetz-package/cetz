@@ -138,6 +138,49 @@
   return vector.as-vec(line-intersection-2d(..args), init: (0, 0, a.at(2)))
 }
 
+// Calculate triangle centroid
+#let calc-triangle-centroid(points) = {
+  let (mx, my, mz) = points.first()
+  let n = points.len()
+  for p in points {
+    let (x, y, z) = p
+    mx += x / n
+    my += y / n
+    mz += z / n
+  }
+  return (mx, my, mz)
+}
+
+// Calculate the centroid of a line, triangle or simple polygon
+// Formulas:
+//   https://en.wikipedia.org/wiki/Centroid
+#let calc-simple-polygon-centroid(points) = {
+  return if points.len() == 2 {
+    vector.lerp(..points, .5)
+  } else if points.len() == 3 {
+    calc-triangle-centroid(points)
+  } else if points.len() > 3 {
+    // Skip polygons with multiple z values
+    let z = points.first().at(2, default: 0)
+    if points.any(p => p.at(2) != z) {
+      return none
+    }
+
+    let a = 0 // Signed area: 1/2 sum_i=0^n-1 x_i*y_i+1 - x_i+1*y_i
+    let n = points.len()
+    let (cx, cy) = (0, 0)
+    for i in range(0, n) {
+      let (x0, y0, z0) = points.at(i)
+      let (x1, y1, _) = points.at(calc.rem(i + 1, n))
+      cx += (x0 + x1) * (x0 * y1 - x1 * y0)
+      cy += (y0 + y1) * (x0 * y1 - x1 * y0)
+      a += x0 * y1 - x1 * y0
+    }
+    a = .5 * a
+    return (cx/(6*a), cy/(6*a), z)
+  }
+}
+
 #let resolve-number(ctx, num) = {
   return if type(num) == length {
     float(num.to-absolute() / ctx.length)

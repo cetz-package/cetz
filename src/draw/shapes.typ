@@ -504,6 +504,7 @@
 /// 
 /// = Anchors
 ///   Supports path anchors.
+///   The `"center"` anchor is calculated for triangles or closed polygons if all vertices share the same z value.
 ///
 /// - ..pts-style (coordinates, style): Positional two or more coordinates to draw lines between. Accepts style key-value pairs.
 /// - close (bool): If true, the line-strip gets closed to form a polygon
@@ -566,10 +567,17 @@
       close: close
     )
 
+    // Find center for simple polygons, might return none
+    let center = if close {
+      util.calc-simple-polygon-centroid(pts)
+    }
+
     // Get bounds
     let (transform, anchors) = anchor_.setup(
-      auto,
-      (),
+      name => {
+        if name == "center" { return center }
+      },
+      if center != none { ("center",) } else { () },
       name: name,
       transform: ctx.transform,
       path-anchors: true,
