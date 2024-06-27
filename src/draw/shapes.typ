@@ -428,6 +428,9 @@
 /// Note: To place a mark centered at the first coodinate (`from`) use
 /// the marks `anchor: "center"` style.
 ///
+/// To place marks unaffected by the current transformation, set their
+/// `transform-shape` style to `false`.
+///
 /// = parameters
 ///
 /// = Styling
@@ -436,27 +439,26 @@
 ///
 /// - from (coordinate): The position to place the mark.
 /// - to (coordinate,angle): The position or angle the mark should point towards.
-/// - ..style (style):
-#let mark(from, to, ..style) = {
-  assert.eq(
-    style.pos(),
-    (),
-    message: "Unexpected positional arguments: " + repr(style.pos()),
-  )
-  
-  let style = style.named()
+/// - ..args-style (coordinate,angle,style): An optional secondary position or angle
+///   to rotate the mark by and the marks style key value pairs (including `symbol:` to set the mark shape).
+#let mark(from, ..args-style) = {
+  assert(args-style.pos().len() <= 1,
+    message: "Unexpected positional arguments: " + repr(args-style.pos()))
 
-  if type(to) == angle {
-    // Construct a coordinate pointing (+1, 0) away from
-    // `from`, rotated by the angle given.
-    to = ((rel: (to, 1), to: from))
+  let style = args-style.named()
+
+  let to-angle = args-style.pos().at(0, default: 0deg)
+  let to = if type(to-angle) == angle {
+    (rel: (to-angle, 1), to: from)
+  } else if to-angle != none {
+    to-angle
   }
 
   (from, to).map(coordinate.resolve-system)
   
   return (ctx => {
-    let (ctx, ..pts) = coordinate.resolve(ctx, from, to)
     let style = styles.resolve(ctx.style, merge: style, root: "mark")
+    let (ctx, ..pts) = coordinate.resolve(ctx, from, to)
 
     if style.end == none {
       style.end = style.symbol
@@ -471,7 +473,11 @@
     drawables = mark_.place-marks-along-path(ctx, style, none, drawables, add-path: false)
     return (
       ctx: ctx,
-      drawables: drawable.apply-transform(ctx.transform, drawables)
+      drawables: if style.transform-shape {
+        drawable.apply-transform(ctx.transform, drawables)
+      } else {
+        drawables
+      }
     )
   },)
 }
