@@ -4,7 +4,9 @@ CeTZ 0.3.0 requires Typst 0.11.0
 The licence changed from Apache-2.0 to GPLv3.
 
 ## Canvas
-- Add runtime cetz version check support (see `assert-version`)
+- Marks drawn using the `mark` function now respect the `transform-shape` style.
+- The second argument of `mark` is now optional and defaults to `0deg`.
+- Add runtime cetz version check support (see `assert-version`).
 - Fixed a bug with `#set place(float: true)` affecting the canvas.
 - Transformation matrices are now rounded
 - The default coordinate system changed to a right-hand side system.
