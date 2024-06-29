@@ -62,15 +62,13 @@
     nodes: (:),
     // Group stack
     groups: (),
-    // Registeretd decoration functions
-    decorations: (
-      wave: wave,
-      zigzag: zigzag,
-      coil: coil,
-    ),
+    // Registeretd modifier functions
     path-modifiers: (
       linearize: modifiers.linearize,
       wave: modifiers.wave,
+      //zigzag: modifiers.zigzag,
+      //coil: modifiers.coil,
+      ticks: modifiers.ticks,
     ),
   )
 

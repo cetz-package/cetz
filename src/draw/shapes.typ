@@ -40,7 +40,7 @@
 
 // Apply path decoration to drawables
 #let _apply-decoration(ctx, style, drawables, close) = {
-  return modifier.apply-path-modifier(ctx, style, drawables, close).first()
+  return modifier.apply-path-modifier(ctx, style, drawables, close)
 }
 
 /// Draws a circle or ellipse.

@@ -583,7 +583,7 @@
     let (ctx, drawables, ..) = process.many(ctx, util.resolve-body(ctx, body))
 
     let style = styles.resolve(ctx.style, merge: style.named())
-    style.decoration = modifier
+    style.modifier = modifier
 
     drawables = apply-path-modifier(ctx, style, drawables, close)
 

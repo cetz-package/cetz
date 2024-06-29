@@ -66,10 +66,10 @@
     drawables = (drawables,)
   }
 
-  let fns = if type(style.decoration) == array {
-    style.decoration
+  let fns = if type(style.modifier) == array {
+    style.modifier
   } else {
-    (style.decoration,)
+    (style.modifier,)
   }.map(n => {
     let name = if type(n) == dictionary {
       n.name
@@ -94,8 +94,8 @@
     (fn: fn, style: style + extra-style)
   })
 
-  // Unset decorations to prevent unwanted recursion
-  style.decoration = ()
+  // Unset modifiers to prevent unwanted recursion
+  style.modifier = ()
 
   // Apply function on all drawables
   return drawables.map(d => {

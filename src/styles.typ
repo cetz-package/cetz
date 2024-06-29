@@ -9,10 +9,9 @@
   //   - "CURVED" Preserving the bezier curve by calculating new control points
   shorten: "LINEAR",
 
-  // Path decorations:
-  //   - Named decoration: "wave",
-  //   - Decoration function taking a path
-  decoration: none,
+  // Path modifier:
+  //   - Named modifier: "wave",
+  //   - Modifier function taking a path
   modifier: (:),
   
   // Allowed values:
@@ -66,7 +65,7 @@
     radius: auto,
     stroke: auto,
     fill: auto,
-    decoration: auto,
+    modifier: auto,
   ),
   group: (
     padding: auto,
@@ -77,14 +76,14 @@
     mark: auto,
     fill: auto,
     stroke: auto,
-    decoration: auto,
+    modifier: auto,
   ),
   bezier: (
     stroke: auto,
     fill: auto,
     mark: auto,
     shorten: auto,
-    decoration: auto,
+    modifier: auto,
   ),
   catmull: (
     tension: .5,
@@ -92,7 +91,7 @@
     shorten: auto,
     stroke: auto,
     fill: auto,
-    decoration: auto,
+    modifier: auto,
   ),
   hobby: (
     /// Curve start and end omega (curlyness)
@@ -101,7 +100,7 @@
     shorten: auto,
     stroke: auto,
     fill: auto,
-    decoration: auto,
+    modifier: auto,
   ),
   rect: (
     /// Rect corner radius that supports the following types:
@@ -117,7 +116,7 @@
     radius: 0,
     stroke: auto,
     fill: auto,
-    decoration: auto,
+    modifier: auto,
   ),
   arc: (
     // Supported values:
@@ -130,7 +129,7 @@
     stroke: auto,
     fill: auto,
     radius: auto,
-    decoration: auto,
+    modifier: auto,
   ),
   content: (
     padding: auto,
@@ -141,7 +140,7 @@
     frame: none,
     fill: auto,
     stroke: auto,
-    decoration: auto,
+    modifier: auto,
   ),
 )
 
