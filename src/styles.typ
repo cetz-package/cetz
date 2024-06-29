@@ -59,7 +59,8 @@
   circle: (
     radius: auto,
     stroke: auto,
-    fill: auto
+    fill: auto,
+    transform-shape: true,
   ),
   group: (
     padding: auto,

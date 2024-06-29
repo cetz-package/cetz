@@ -33,6 +33,7 @@
 /// *Root:* `circle`
 /// == Keys
 ///   #show-parameter-block("radius", ("number", "array"), [A number that defines the size of the circle's radius. Can also be set to a tuple of two numbers to define the radii of an ellipse, the first number is the `x` radius and the second is the `y` radius.], default: 1)
+///   #show-parameter-block("transform-shape", ("boolean"), [If false, only the center of the circle is affected by the current transformation], default: true)
 /// 
 /// = Anchors
 ///   Supports border and path anchors. The "center" anchor is the default.
@@ -54,8 +55,17 @@
     let (ctx, pos) = coordinate.resolve(ctx, position)
     let style = styles.resolve(ctx.style, merge: style, root: "circle")
     let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
-    let (cx, cy, cz) = pos
 
+    // If the shape should not be transformed,
+    // temp. unset the context transform and
+    // transform the circle center only!
+    let transform = ctx.transform
+    if not style.transform-shape {
+      pos = util.apply-transform(ctx.transform, pos)
+      transform = none
+    }
+
+    let (cx, cy, cz) = pos
     let drawables = drawable.ellipse(
       cx, cy, cz,
       rx, ry,
@@ -69,7 +79,7 @@
       default: "center",
       name: name,
       offset-anchor: anchor,
-      transform: ctx.transform,
+      transform: transform,
       border-anchors: true,
       path-anchors: true,
       radii: (rx*2, ry*2),
