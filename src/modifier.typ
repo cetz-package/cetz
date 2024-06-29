@@ -1,13 +1,21 @@
 #import "/src/path-util.typ"
 
 /// A path modifier is a function that accepts a contex, style and
-/// a single drawable and returns a single (modified) drawable.
+/// a single drawable and returns either a single replacement drawable,
+/// or an dictionary with the keys `replacement` (single drawable) and `decoration` (list of drawables)
+/// that contain a replacement and/or additional drawable to render.
+///
+/// Arguments:
+///   - ctx (context):
+///   - style (styles):
+///   - drawable (drawable): Single drawable to modify/decorate
+///   - close (bool): Boolean if the drawable is closed
 ///
 /// Example:
 /// ```typ
-/// (ctx, style, drawable) => {
+/// (ctx, style, drawable, close) => {
 ///   // ... modify the drawable ...
-///   return drawable
+///   return (replacement: ..., decoration: ...)
 /// }
 /// ```
 
@@ -44,20 +52,51 @@
 /// - ctx (context):
 /// - style (style):
 /// - elem (element): Single element
+/// -> List of elements
 #let apply-modifier-fn(ctx, style, elem, fn, close) = {
   assert(type(fn) == function,
     message: "Path modifier must be of type function.")
 
+  let new-elements = ()
   if "segments" in elem {
     let begin = style.at("begin", default: 0%)
     let end = style.at("end", default: 0%)
 
     let (head, mid, tail) = slice-segments(elem.segments, begin, end)
     let close = close and head == () and tail == ()
-    elem.segments = head + (fn)(ctx, style, mid, close) + tail
+    let result = (fn)(ctx, style, mid, close)
+    if type(result) != dictionary {
+      result = (replacement: result)
+    } else {
+      new-elements += result.at("decoration", default: ())
+    }
+
+    let replace = result.at("replacement", default: none)
+    if replace != none {
+      let replacement-elem = elem
+      replacement-elem.segments = head + replace + tail
+
+      if replacement-elem.segments != () {
+        new-elements.insert(0, replacement-elem)
+      }
+    } else {
+      if head != () {
+        let head-elem = elem
+        head-elem.segments = head
+
+        new-elements.insert(0, head-elem)
+      }
+
+      if tail != () {
+        let tail-elem = elem
+        tail-elem.segments = tail
+
+        new-elements.push(tail-elem)
+      }
+    }
   }
 
-  return elem
+  return new-elements
 }
 
 /// Apply a path modifier to a list of drawables
@@ -72,7 +111,7 @@
     (style.modifier,)
   }.map(n => {
     let name = if type(n) == dictionary {
-      n.name
+      n.at("name", default: none)
     } else {
       n
     }
@@ -98,10 +137,13 @@
   style.modifier = ()
 
   // Apply function on all drawables
-  return drawables.map(d => {
-    for fn in fns.filter(v => v.fn != none) {
-      d = apply-modifier-fn(ctx, fn.style, d, fn.fn, close)
+  for fn in fns.filter(v => v.fn != none) {
+    let new = ()
+    for i in range(0, drawables.len()) {
+      new += apply-modifier-fn(ctx, fn.style, drawables.at(i), fn.fn, close)
     }
-    return d
-  })
+    drawables = new
+  }
+
+  return drawables
 }

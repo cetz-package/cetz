@@ -2,6 +2,8 @@
 #import "/src/path-util.typ"
 #import "/src/bezier.typ" as bezier_
 #import "/src/vector.typ"
+#import "/src/drawable.typ"
+#import "/src/util.typ"
 
 // Call callback `fn` for each decoration segment
 // on path `segments`.
@@ -64,7 +66,7 @@
       new.push(s)
     }
   }
-  return new
+  return (replacement: new)
 }
 
 
@@ -110,7 +112,59 @@
   }
 
   let pts = _n-segment-effect(ctx, segments, fn, style, close: close)
-  return bezier_.catmull-to-cubic(pts, style.tension, close: close).map(c => {
-    path-util.cubic-segment(..c)
-  })
+  return (
+    replacement: bezier_.catmull-to-cubic(pts, style.tension, close: close).map(c => {
+      path-util.cubic-segment(..c)
+    })
+  )
+}
+
+
+
+#let ticks-default-style = (
+  step: 10%,
+  length: 1,
+  origin: 50%,
+  replace: false,
+)
+
+// Draw tick-marks along a path
+#let ticks(ctx, style, segments, close) = {
+  let style = styles.resolve(ctx.style, merge: style,
+    base: ticks-default-style)
+
+  let length = path-util.length(segments)
+  let step = if type(style.step) == ratio {
+    length * style.step / 100%
+  } else {
+    util.resolve-number(ctx, style.step)
+  }
+
+  assert(step > 1e-6,
+    message: "Tick step must be > 0!")
+
+  let tick-segments = ()
+
+  let distance = 0
+  while distance <= length {
+    let (pt, dir) = path-util.direction(segments, distance)
+
+    // Compute the tangent normal
+    let norm = vector.scale(vector.norm((-dir.at(1), dir.at(0), dir.at(2))),
+      style.length)
+
+    // Compute points
+    let p0 = vector.add(pt, vector.scale(norm, -style.origin / 100%))
+    let p1 = vector.add(pt, vector.scale(norm, (100% - style.origin) / 100%))
+
+    tick-segments.push(path-util.line-segment((p0, p1)))
+
+    distance += step
+  }
+
+  return (
+    replacement: if style.replace { none } else { segments },
+    decoration: tick-segments.map(s => {
+      drawable.path(s, stroke: style.stroke)
+    }))
 }
