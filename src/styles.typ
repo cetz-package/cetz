@@ -4,10 +4,15 @@
   fill: none,
   stroke: black + 1pt,
   radius: 1,
-  /// Bezier shortening mode:
-  ///   - "LINEAR" Moving the affected point and it's next control point (like TikZ "quick" key)
-  ///   - "CURVED" Preserving the bezier curve by calculating new control points
+  // Bezier shortening mode:
+  //   - "LINEAR" Moving the affected point and it's next control point (like TikZ "quick" key)
+  //   - "CURVED" Preserving the bezier curve by calculating new control points
   shorten: "LINEAR",
+
+  // Path modifier:
+  //   - Named modifier: "wave",
+  //   - Modifier function taking a path
+  modifier: (:),
   
   // Allowed values:
   //   - none
@@ -59,7 +64,8 @@
   circle: (
     radius: auto,
     stroke: auto,
-    fill: auto
+    fill: auto,
+    modifier: auto,
   ),
   group: (
     padding: auto,
@@ -70,19 +76,22 @@
     mark: auto,
     fill: auto,
     stroke: auto,
+    modifier: auto,
   ),
   bezier: (
     stroke: auto,
     fill: auto,
     mark: auto,
     shorten: auto,
+    modifier: auto,
   ),
   catmull: (
     tension: .5,
     mark: auto,
     shorten: auto,
     stroke: auto,
-    fill: auto
+    fill: auto,
+    modifier: auto,
   ),
   hobby: (
     /// Curve start and end omega (curlyness)
@@ -90,7 +99,8 @@
     mark: auto,
     shorten: auto,
     stroke: auto,
-    fill: auto
+    fill: auto,
+    modifier: auto,
   ),
   rect: (
     /// Rect corner radius that supports the following types:
@@ -106,6 +116,7 @@
     radius: 0,
     stroke: auto,
     fill: auto,
+    modifier: auto,
   ),
   arc: (
     // Supported values:
@@ -117,7 +128,8 @@
     mark: auto,
     stroke: auto,
     fill: auto,
-    radius: auto
+    radius: auto,
+    modifier: auto,
   ),
   content: (
     padding: auto,
@@ -128,6 +140,7 @@
     frame: none,
     fill: auto,
     stroke: auto,
+    modifier: auto,
   ),
 )
 
