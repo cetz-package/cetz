@@ -52,10 +52,9 @@
 
 /// Places an element without affecting bounding boxes.
 ///
-/// Floating elements are drawn to the canvas but are ignored when calculating
-/// bouding boxes. All other behaviours remain the same.
+/// Floating elements are drawn to the canvas but are ignored when calculating bouding boxes. All other behaviours remain the same.
 ///
-/// #example(```
+/// ```typc example
 /// group(name: "g", {
 ///   content((1,0), [Normal])
 ///   content((0,1), [Normal])
@@ -63,7 +62,7 @@
 /// })
 /// set-style(stroke: red)
 /// rect("g.north-west", "g.south-east")
-/// ```)
+/// ```
 ///
 /// - body (element): One or more elements to place
 #let floating(body) = {

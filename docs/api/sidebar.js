@@ -28,6 +28,26 @@ export default [
           "api/draw-functions/shapes/merge-path",
         ],
       },
+      {
+        type: "category",
+        label: "Grouping",
+        link: {
+          type: "doc",
+          id: "api/draw-functions/grouping/index",
+        },
+        items: [
+          "api/draw-functions/grouping/hide",
+          "api/draw-functions/grouping/intersections",
+          "api/draw-functions/grouping/group",
+          "api/draw-functions/grouping/anchor",
+          "api/draw-functions/grouping/copy-anchors",
+          "api/draw-functions/grouping/set-ctx",
+          "api/draw-functions/grouping/get-ctx",
+          "api/draw-functions/grouping/for-each-anchor",
+          "api/draw-functions/grouping/on-layer",
+          "api/draw-functions/grouping/floating",
+        ],
+      },
     ],
   },
 ];
