@@ -1,0 +1,31 @@
+import Type from "@site/src/components/Type";
+import Function from "@site/src/components/Function";
+import Parameter from "@site/src/components/Parameter";
+
+<Function name="bezier" parameters={{"start":{"types":"coordinate"},"end":{"types":"coordinate"},"..ctrl-style":{"types":"coordinate,style"},"name":{"default":"none","types":"none,str"}}}/>
+Draws a quadratic or cubic bezier curve
+
+```typc example
+let (a, b, c) = ((0, 0), (2, 0), (1, 1))
+line(a, c,  b, stroke: gray)
+bezier(a, b, c)
+
+let (a, b, c, d) = ((0, -1), (2, -1), (.5, -2), (1.5, 0))
+line(a, c, d, b, stroke: gray)
+bezier(a, b, c, d)
+```
+
+<Parameter name="start" types="coordinate" > Start position</Parameter>
+<Parameter name="end" types="coordinate" > End position (last coordinate)</Parameter>
+
+<Parameter name="..ctrl-style" types="coordinate,style" > The first two positional arguments are taken as cubic bezier control points, where the first is the start control point and the second is the end control point. One control point can be given for a quadratic bezier curve instead. Named arguments are for styling.</Parameter>
+
+## Styling 
+*Root* `bezier`
+
+Supports marks.
+  
+## Anchors
+Supports path anchors.
+- **ctrl-n**: nth control point where n is an integer starting at 0
+

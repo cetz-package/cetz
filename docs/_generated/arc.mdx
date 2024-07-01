@@ -1,0 +1,38 @@
+import Type from "@site/src/components/Type";
+import Function from "@site/src/components/Function";
+import Parameter from "@site/src/components/Parameter";
+
+<Function name="arc" parameters={{"position":{"types":"coordinate"},"start":{"default":"auto","types":"auto,angle"},"stop":{"default":"auto","types":"auto,angle"},"delta":{"default":"auto","types":"auto,angle"},"name":{"default":"none","types":"none,str"},"anchor":{"default":"none","types":"none, str"},"..style":{"types":"style"}}}/>
+Draws a circular segment. 
+
+```typc example
+arc((0,0), start: 45deg, stop: 135deg)
+arc((0,-0.5), start: 45deg, delta: 90deg, mode: "CLOSE")
+arc((0,-1), stop: 135deg, delta: 90deg, mode: "PIE")
+```
+
+Note that two of the three angle arguments (`start`, `stop` and `delta`) must be set.
+The current position `()` gets updated to the arc's end coordinate (anchor `arc-end`).
+
+<Parameter name="position" types="coordinate" > Position to place the arc at.</Parameter>
+<Parameter name="start" types="auto,angle" default_value="auto"> The angle at which the arc should start. Remember that `0deg` points directly towards the right and `90deg` points up.</Parameter>
+<Parameter name="stop" types="auto,angle" default_value="auto"> The angle at which the arc should stop.</Parameter>
+<Parameter name="delta" types="auto,angle" default_value="auto"> The change in angle away start or stop.</Parameter>
+
+
+
+
+## Styling
+*Root*: `arc`\
+<Parameter name="radius" types="number, array" default_value="1"> The radius of the arc. An elliptical arc can be created by passing a tuple of numbers where the first element is the x radius and the second element is the y radius.</Parameter>
+<Parameter name="mode" types="str" default_value="&quot;OPEN&quot;"> The options are: "OPEN" no additional lines are drawn so just the arc is shown; "CLOSE" a line is drawn from the start to the end of the arc creating a circular segment; "PIE" lines are drawn from the start and end of the arc to the origin creating a circular sector.</Parameter>
+<Parameter name="update-position" types="bool" default_value="true"> Update the current canvas position to the arc's end point (anchor `"arc-end"`). This overrides the default of `true`, that allows chaining of (arc) elements.</Parameter>
+
+## Anchors
+Supports border and path anchors.
+- **arc-start** The position at which the arc's curve starts, this is the default.
+- **arc-end** The position of the arc's curve end.
+- **arc-center** The midpoint of the arc's curve.
+- **center** The center of the arc, this position changes depending on if the arc is closed or not.
+- **chord-center** Center of chord of the arc drawn between the start and end point.
+- **origin** The origin of the arc's circle.
