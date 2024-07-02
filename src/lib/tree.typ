@@ -135,7 +135,7 @@
     let children = ()
     let content = none
 
-    let (e, tree) = if type(tree-arr) == array and tree-arr.len() == 2 and type(tree-arr.at(0)) == int {
+    let (e, tree) = if type(tree-arr) == array and tree-arr.len() == 2 and type(tree-arr.at(0)) in (int,float) {
         tree-arr
     } else {
         (1, tree-arr)
