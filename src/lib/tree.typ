@@ -131,12 +131,20 @@
   }
   assert(draw-node != none, message: "Node draw callback must be set!")
 
-  let build-node(tree, depth: 0, sibling: 0) = {
+  let build-node(tree-arr, depth: 0, sibling: 0) = {
     let children = ()
     let content = none
+
+    let (e, tree) = if type(tree-arr) == array and tree-arr.len() == 2 and type(tree-arr.at(0)) == int {
+        tree-arr
+    } else {
+        (1, tree-arr)
+    }
+    let depth = depth + e
+
     if type(tree) == array {
       children = tree.slice(1).enumerate().map(
-        ((n, c)) => build-node(c, depth: depth + 1, sibling: n)
+        ((n, c)) => build-node(c, depth: depth, sibling: n)
       )
       content = tree.at(0)
     } else {
