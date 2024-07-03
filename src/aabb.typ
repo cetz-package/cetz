@@ -1,7 +1,6 @@
 #import "vector.typ"
 
-/// Compute an axis aligned bounding box (aabb)
-/// for a list of vectors.
+/// Compute an axis aligned bounding box (aabb) for a list of vectors.
 ///
 /// An aabb dictionary has the following keys:
 ///  - low  (vector) Min. bounds vector
@@ -9,7 +8,7 @@
 ///
 /// - pts (array): List of vectors/points
 /// - init (dictionary): Initial aabb
-/// -> dictionary AABB object
+/// -> dictionary
 #let aabb(pts, init: none) = {
   let bounds = init
 
@@ -42,23 +41,21 @@
 
 /// Get the mid-point of an aabb as vector.
 ///
-/// - bounds (AABB): AABB
+/// - bounds (aabb): The aabb to get the mid-point of.
 /// -> vector
 #let mid(bounds) = {
   return vector.scale(vector.add(bounds.low, bounds.high), .5)
 }
 
-/// Get the size of an aabb as vector
-/// this is a vector from the aabb's low to high.
+/// Get the size of an aabb as vector. This is a vector from the aabb's low to high.
 ///
-/// - bounds (AABB): AABB
+/// - bounds (aabb): The aabb to 
 /// -> vector
 #let size(bounds) = {
   return vector.sub(bounds.high, bounds.low)
 }
 
-/// Pad AABB with padding from dictionary with
-/// keys top, left, right and bottom.
+/// Pad AABB with padding from dictionary with keys top, left, right and bottom.
 ///
 /// - bounds (AABB): AABB
 /// - padding (none, dictionary): Padding values

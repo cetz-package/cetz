@@ -1,4 +1,5 @@
 export default [
+  "api/overview",
   {
     type: "category",
     label: "Draw Functions",
@@ -46,6 +47,37 @@ export default [
           "api/draw-functions/grouping/for-each-anchor",
           "api/draw-functions/grouping/on-layer",
           "api/draw-functions/grouping/floating",
+        ],
+      },
+      {
+        type: "category",
+        label: "Transformations",
+        link: {
+          type: "doc",
+          id: "api/draw-functions/transformations/index",
+        },
+        items: [
+          "api/draw-functions/transformations/set-transform",
+          "api/draw-functions/transformations/rotate",
+          "api/draw-functions/transformations/translate",
+          "api/draw-functions/transformations/scale",
+          "api/draw-functions/transformations/set-origin",
+          "api/draw-functions/transformations/move-to",
+          "api/draw-functions/transformations/set-viewport",
+        ],
+      },
+      {
+        type: "category",
+        label: "Projections",
+        link: {
+          type: "doc",
+          id: "api/draw-functions/projections/index",
+        },
+        items: [
+          "api/draw-functions/projections/ortho",
+          "api/draw-functions/projections/on-xy",
+          "api/draw-functions/projections/on-xz",
+          "api/draw-functions/projections/on-yz",
         ],
       },
     ],

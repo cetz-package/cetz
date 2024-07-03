@@ -45,7 +45,25 @@ cetz.tree.tree(
 ```
 
 ## Drawing and Styling Tree Nodes
-To control how the nodes and edges are drawn, you can provide function callbacks to the `draw-node` and `draw-edge` parameters. 
+The `tree()` function takes an optional `draw-node:` and `draw-edge:` callback function that can be used to customice node and edge drawing.
 
-...
+The `draw-node` function must take the current node and its parents node anchor as arguments and return one or more elements.
 
+For drawing edges between nodes, the `draw-edge` function must take two node anchors and the target node as arguments and return one or more elements.
+
+```typc example
+import cetz.tree
+let data = ([\*], ([A], [A.A], [A.B]), ([B], [B.A]))
+tree.tree(
+  data,
+  direction: "right",
+  draw-node: (node, ..) => {
+    circle((), radius: .35, fill: blue, stroke: none)
+    content((), text(white, [#node.content]))
+  },
+  draw-edge: (from, to, ..) => {
+    let (a, b) = (from + ".center", to + ".center")
+    line((a, .4, b), (b, .4, a))
+  }
+)
+```

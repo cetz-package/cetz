@@ -36,69 +36,22 @@
 
 /// Lays out and renders tree nodes.
 ///
-/// For each node, the `tree` function creates an anchor of the format
-/// `"node-<depth>-<child-index>"` that can be used to query a nodes position
-/// on the canvas. <tree-node-name>
+/// For each node, the `tree` function creates an anchor of the format `"node-<depth>-<child-index>"` that can be used to query a nodes position on the canvas. <tree-node-name>
 ///
-/// #example(```
+/// ```typc example
 /// import cetz.tree
 /// set-style(content: (padding: .1))
 /// tree.tree(([Root], ([A], [A.A], [A.B]), ([B], [B.A])))
-/// ```)
+/// ```
 ///
-/// = parameters
-///
-/// ==== Nodes
-///
-/// A tree node is an array consisting of the nodes value at index $0$ followed by its child nodes. For the default `draw-node` function, the value (first item) of an node must be of type `<content>`.
-///
-/// *Example of a list of nodes:*
-/// #example(```
-/// cetz.tree.tree(([A], ([B], ([C], ([D],)))), direction: "right")
-/// ```)
-///
-/// *Example of a tree of nodes:*
-/// #example(```
-/// cetz.tree.tree(([A], ([B], [C]), ([D], [E])), direction: "right")
-/// ```)
-///
-/// ==== Drawing and Styling Tree Nodes
-///
-/// The @@tree() function takes an optional `draw-node:` and `draw-edge:`
-/// callback function that can be used to customice node and edge drawing.
-///
-/// The `draw-node` function must take the current node and its parents node
-/// anchor as arguments and return one or more elements.
-///
-/// For drawing edges between nodes, the `draw-edge` function must take two
-/// node anchors and the target node as arguments and return one or more elements.
-///
-/// #example(```
-/// import cetz.tree
-/// let data = ([\*], ([A], [A.A], [A.B]), ([B], [B.A]))
-/// tree.tree(
-///   data,
-///   direction: "right",
-///   draw-node: (node, ..) => {
-///     circle((), radius: .35, fill: blue, stroke: none)
-///     content((), text(white, [#node.content]))
-///   },
-///   draw-edge: (from, to, ..) => {
-///     let (a, b) = (from + ".center", to + ".center")
-///     line((a, .4, b), (b, .4, a))
-///   }
-/// )
-/// ```)
 /// - root (array): A nested array of content that describes the structure the tree should take. Example: `([root], [child 1], ([child 2], [grandchild 1]))`
-/// - draw-node (auto,function): The function to call to draw a node. The function will be passed two positional arguments, the node to draw and the node's parent, and is expected to return elements (`(node, parent-node) => elements`). The node's position is accessible through the "center" anchor or by using the previous position coordinate `()`.
-///   If `auto` is given, just the node's value will be drawn as content.
-///   The following predefined styles can be used:
+/// - draw-node (auto,function): The function to call to draw a node. The function will be passed two positional arguments, the node to draw and the node's parent, and is expected to return elements (`(node, parent-node) => elements`). The node's position is accessible through the "center" anchor or by using the previous position coordinate `()`. If `auto` is given, just the node's value will be drawn as content. The following predefined styles can be used:
 /// - draw-edge (none,auto,function): The function to call draw an edge between two nodes. The function will be passed the name of the starting node, the name of the ending node, and the end node and is expected to return elements (`(source-name, target-name, target-node) => elements`). If `auto` is given, a straight line will be drawn between nodes.
-/// - direction (string): A string describing the direction the tree should grow in ("up", "down", "left", "right")
-/// - parent-position (string): Positioning of parent nodes (begin, center, end)
+/// - direction (str): A string describing the direction the tree should grow in ("up", "down", "left", "right")
+/// - parent-position (str): Positioning of parent nodes (begin, center, end)
 /// - grow (float): Depth grow factor
 /// - spread (float): Sibling spread factor
-/// - name (none,string): The tree elements name
+/// - name (none,str): The tree element's name
 #let tree(
   root, 
   draw-node: auto,

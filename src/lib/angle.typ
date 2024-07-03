@@ -17,7 +17,7 @@
 
 /// Draw an angle between `a` and `b` through origin `origin`
 ///
-/// #example(```
+/// ```typc example
 /// line((0,0), (1,1.5), name: "a")
 /// line((0,0), (2,-1), name: "b")
 ///
@@ -26,33 +26,29 @@
 ///   mark: (end: ">"), radius: 1.5)
 /// cetz.angle.angle("a.start", "b.end", "a.end", label: $ alpha' $,
 ///   radius: 50%, inner: false)
-/// ```)
-///
-/// *Style Root:* `angle`
-///
-/// *Style Keys:*
-///   #show-parameter-block("radius", ("number"), [
-///     The radius of the angles arc. If of type `ratio`, it is relative to the smaller distance of either origin to a or origin to b.], default: .5)
-///   #show-parameter-block("label-radius", ("number", "ratio"), [
-///     The radius of the angles label origin. If of type `ratio`, it is relative to `radius`.], default: 50%)
-///
-/// *Anchors*
-/// / `"a"`: Point a
-/// / `"b"`: Point b
-/// / `"origin"`: Origin
-/// / `"label"`: Label center
-/// / `"start"`: Arc start
-/// / `"end"`: Arc end
+/// ```
 ///
 /// - origin (coordinate): Angle origin
 /// - a (coordinate): Coordinate of side `a`, containing an angle between `origin` and `b`.
 /// - b (coordinate): Coordinate of side `b`, containing an angle between `origin` and `a`.
 /// - inner (bool): Draw the smaller (inner) angle if true, otherwise the outer angle gets drawn.
-/// - label (none,content,function): Draw a label at the angles "label" anchor.
-///   If label is a function, it gets the angle value passed as argument. The function must
-///   be of the format `angle => content`.
-/// - name (none,string): Element name, used for querying anchors.
+/// - label (none,content,function): Draw a label at the angles "label" anchor. If label is a function, it gets the angle value passed as argument. The function must be of the format `angle => content`.
+/// - name (none,str): Element name, used for querying anchors.
 /// - ..style (style): Style key-value pairs.
+///
+/// ## Styling
+/// *Root:* `angle` \
+///
+///   - radius (number) = 0.5: The radius of the angles arc. If of type `ratio`, it is relative to the smaller distance of either origin to a or origin to b.
+///   - label-radius (number, ratio) = 50%: The radius of the angles label origin. If of type `ratio`, it is relative to `radius`.
+///
+/// ## Anchors
+/// - **a** Point a
+/// - **b** Point b
+/// - **origin** Origin
+/// - **label** Label center
+/// - **start** Arc start
+/// - **end** Arc end
 #let angle(
   origin,
   a,
@@ -136,7 +132,7 @@
 
 /// Draw a right angle between `a` and `b` through origin `origin`
 ///
-/// #example(```
+/// ```
 /// line((0,0), (1,2), name: "a")
 /// line((0,0), (2,-1), name: "b")
 ///
@@ -145,27 +141,19 @@
 ///   radius: 1.5)
 /// ```)
 ///
-/// *Style Root:* `angle`
-///
-/// *Style Keys:*
-///   #show-parameter-block("radius", ("number"), [
-///     The radius of the angles arc. If of type `ratio`, it is relative to the smaller distance of either origin to a or origin to b.], default: .5)
-///   #show-parameter-block("label-radius", ("number", "ratio"), [
-///     The radius of the angles label origin. If of type `ratio`, it is relative to the distance between `origin` and the angle corner.], default: 50%)
-///
-/// *Anchors*
-/// / `"a"`: Point a
-/// / `"b"`: Point b
-/// / `"origin"`: Origin
-/// / `"corner"`: Angle corner
-/// / `"label"`: Label center
-///
 /// - origin (coordinate): Angle origin
 /// - a (coordinate): Coordinate of side `a`, containing an angle between `origin` and `b`.
 /// - b (coordinate): Coordinate of side `b`, containing an angle between `origin` and `a`.
 /// - label (none,content): Draw a label at the angles "label" anchor.
-/// - name (none,string): Element name, used for querying anchors.
+/// - name (none,str): Element name, used for querying anchors.
 /// - ..style (style): Style key-value pairs.
+///
+/// ## Styling
+/// Styling is the same as the `angle` function.
+///
+/// ## Anchors
+/// Anchors are the same as the `angle` function
+///
 #let right-angle(
   origin,
   a,

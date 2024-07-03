@@ -18,9 +18,7 @@
   matrix.transform-rotate-z(z),
 )
 
-// Pushes a view- and projection-matrix to transform
-// all `body` elements. The current context transform is
-// not modified.
+// Pushes a view- and projection-matrix to transform all `body` elements. The current context transform is not modified.
 //
 // - body (element): Elements
 // - view-matrix (matrix): View matrix
@@ -63,24 +61,24 @@
 
 /// Set-up an orthographic projection environment.
 ///
-/// This is a transformation matrix that rotates elements around
-/// the x, the y and the z axis by the parameters given.
+/// This is a transformation matrix that rotates elements around the x, the y and the z axis by the parameters given.
 ///
 /// By default an isometric projection (x ≈ 35.264°, y = 45°) is set.
 ///
-/// #example(```
+/// ```typc example
 /// ortho({
 ///   on-xz({
 ///     rect((-1,-1), (1,1))
 ///   })
 /// })
-/// ```)
+/// ```
 ///
 /// - x (angle): X-axis rotation angle
 /// - y (angle): Y-axis rotation angle
 /// - z (angle): Z-axis rotation angle
 /// - reset-transform (bool): Ignore the current transformation matrix
 /// - body (element): Elements to draw
+/// - name (none,str):
 #let ortho(x: 35.264deg, y: 45deg, z: 0deg, reset-transform: false, body, name: none) = group(name: name, ctx => {
   _projection(body, ortho-matrix(x, y, z),
     ortho-projection-matrix, reset-transform: reset-transform)
@@ -88,15 +86,13 @@
 
 /// Draw elements on the xy-plane with optional z offset.
 ///
-/// All vertices of all elements will be changed in the
-/// following way: $vec(x, y, z_"argument")$, where $z_"argument"$
-/// is the z-value given as argument.
+/// All vertices of all elements will be changed in the following way: $\begin{pmatrix} x \\ y \\ z_\text{argument}\end{pmatrix}$, where $z_\text{argument}$ is the z-value given as argument.
 ///
-/// #example(```
+/// ```typc example
 /// on-xy({
 ///   rect((-1, -1), (1, 1))
 /// })
-/// ```)
+/// ```
 ///
 /// - z (number): Z offset for all coordinates
 /// - body (element): Elements to draw
@@ -109,15 +105,13 @@
 
 /// Draw elements on the xz-plane with optional y offset.
 ///
-/// All vertices of all elements will be changed in the
-/// following way: $vec(x, y_"argument", y)$, where $y_"argument"$
-/// is the y-value given as argument.
+/// All vertices of all elements will be changed in the following way: $\begin{pmatrix} x \\ y_\text{argument} \\ y \end{pmatrix}$, where $y_\text{argument}$ is the y-value given as argument.
 ///
-/// #example(```
+/// ```typc example
 /// on-xz({
 ///   rect((-1, -1), (1, 1))
 /// })
-/// ```)
+/// ```
 ///
 /// - y (number): Y offset for all coordinates
 /// - body (element): Elements to draw
@@ -130,15 +124,13 @@
 
 /// Draw elements on the yz-plane with optional x offset.
 ///
-/// All vertices of all elements will be changed in the
-/// following way: $vec(x_"argument", x, y)$, where $x_"argument"$
-/// is the x-value given as argument.
+/// All vertices of all elements will be changed in the following way: $\begin{pmatrix} x_\text{argument} \\ x \\ y \end{pmatrix}$, where $x_\text{argument}$ is the x-value given as argument.
 ///
-/// #example(```
+/// ```typc example
 /// on-yz({
 ///   rect((-1, -1), (1, 1))
 /// })
-/// ```)
+/// ```
 ///
 /// - x (number): X offset for all coordinates
 /// - body (element): Elements to draw

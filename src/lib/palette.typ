@@ -2,33 +2,25 @@
 
 /// Create a new palette based on a base style
 ///
-/// #example(```
+/// ```typc example
 /// let p = cetz.palette.new(colors: (red, blue, green))
 /// for i in range(0, p("len")) {
 ///   set-style(..p(i))
 ///   circle((0,0), radius: .5)
-///   set-origin((1.1,0))
+///   set-origin((1.1, 0))
 /// }
-/// ```)
+/// ```
 ///
 /// The functions returned by this function have the following named arguments:
-/// #show-parameter-block("fill", ("bool"), default: true, [
-///   If true, the returned fill color is one of the colors
-///   from the `colors` list, otherwise the base styles fill is used.
-/// ])
-/// #show-parameter-block("stroke", ("bool"), default: false, [
-///   If true, the returned stroke color is one of the colors
-///   from the `colors` list, otherwise the base styles stroke color is used.
-/// ])
+/// - fill (bool) = true: If true, the returned fill color is one of the colors from the `colors` list, otherwise the base styles fill is used.
+/// - stroke (bool) = false: If true, the returned stroke color is one of the colors from the `colors` list, otherwise the base styles stroke color is used.
 ///
 /// You can use a palette for stroking via: `red.with(stroke: true)`.
 ///
-/// - base (style): Style dictionary to use as base style for the styles generated
-///   per color
-/// - colors (none, array): List of colors the returned palette should return styles with
-/// - dash (none, array): List of stroke dash patterns the returned palette should return styles with
-///
-/// -> function Palette function of the form `index => style` that returns a style for an integer index
+/// - base (style): Style dictionary to use as base style for the styles generated per color
+/// - colors (none, array): List of colors the returned palette should return styles with.
+/// - dash (none, array): List of stroke dash patterns the returned palette should return styles with.
+/// -> function
 #let new(base: base-style, colors: (), dash: ()) = {
   if not "stroke" in base { base.stroke = (paint: black, thickness: 1pt, dash: "solid") }
   if not "fill" in base { base.fill = none }

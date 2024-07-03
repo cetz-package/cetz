@@ -49,14 +49,14 @@
 
 /// Rotates the transformation matrix on the z-axis by a given angle or other axes when specified.
 ///
-/// #example(```
+/// ```typc example
 /// // Rotate on z-axis
 /// rotate(z: 45deg)
 /// rect((-1,-1), (1,1))
 /// // Rotate on y-axis
 /// rotate(y: 80deg)
 /// circle((0,0))
-/// ```)
+/// ```
 ///
 /// - ..angles (angle): A single angle as a positional argument to rotate on the z-axis by.
 ///   Named arguments of `x`, `y` or `z` can be given to rotate on their respective axis.
@@ -95,13 +95,13 @@
 
 /// Translates the transformation matrix by the given vector or dictionary.
 ///
-/// #example(```
+/// ```typc example
 /// // Outer rect
 /// rect((0, 0), (2, 2))
 /// // Inner rect
 /// translate(x: .5, y: .5)
 /// rect((0, 0), (1, 1))
-/// ```)
+/// ```
 ///
 /// - ..args (vector, float, length): A single vector or any combination of the named arguments `x`, `y` and `z` to translate by.
 ///   A translation matrix with the given offsets gets multiplied with the current transformation depending on the value of `pre`.
@@ -142,11 +142,11 @@
 
 /// Scales the transformation matrix by the given factor(s).
 ///
-/// #example(```
+/// ```typc example
 /// // Scale the y-axis
 /// scale(y: 50%)
 /// circle((0,0))
-/// ```)
+/// ```
 ///
 /// - ..args (float, ratio): A single value to scale the transformation matrix by or per axis
 ///   scaling factors. Accepts a single float or ratio value or any combination of the named arguments
@@ -186,13 +186,13 @@
 
 /// Sets the given position as the new origin `(0, 0, 0)`
 ///
-/// #example(```
+/// ```typc example
 /// // Outer rect
 /// rect((0,0), (2,2), name: "r")
 /// // Move origin to top edge
 /// set-origin("r.north")
 /// circle((0, 0), radius: .1)
-/// ```)
+/// ```
 ///
 /// - origin (coordinate): Coordinate to set as new origin `(0,0,0)`
 #let set-origin(origin) = {
@@ -215,11 +215,11 @@
 /// It is also used as base for relative coordinates if not specified
 /// otherwise.
 ///
-/// #example(```
+/// ```typc example
 /// circle((), radius: .25)
 /// move-to((1,0))
 /// circle((), radius: .15)
-/// ```)
+/// ```
 ///
 /// - pt (coordinate): The coordinate to move to.
 #let move-to(pt) = {
@@ -233,11 +233,11 @@
 
 /// Span viewport between two coordinates and set-up scaling and translation
 ///
-/// #example(```
+/// ```typc example
 /// rect((0,0), (2,2))
 /// set-viewport((0,0), (2,2), bounds: (10, 10))
 /// circle((5,5))
-/// ```)
+/// ```
 ///
 /// - from (coordinate): Bottom left corner coordinate
 /// - to (coordinate): Top right corner coordinate
