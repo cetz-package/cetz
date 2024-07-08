@@ -43,7 +43,8 @@
   h(.1cm)
 }
 
+// Specify branch lengths
 #test-case({
-  // Specify branch lengths
-  cetz.tree.tree(([], (1, ([], (1, []), (1, []))), (2, [])))
+  cetz.draw.set-style(content: (frame: "rect", padding: .1))
+  cetz.tree.tree(([A], (1, ([B], (1, [C]), (1, [D]))), (2, [E])))
 })
