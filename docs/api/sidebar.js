@@ -1,3 +1,4 @@
+/** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 export default [
   "api/overview",
   {
@@ -78,6 +79,57 @@ export default [
           "api/draw-functions/projections/on-xy",
           "api/draw-functions/projections/on-xz",
           "api/draw-functions/projections/on-yz",
+        ],
+      },
+    ],
+  },
+  {
+    type: "category",
+    label: "Libraries",
+    link: { type: "doc", id: "api/libraries/index" },
+    items: [
+      {
+        type: "category",
+        label: "Tree",
+        link: { type: "doc", id: "api/libraries/tree/index" },
+        items: ["api/libraries/tree/tree"],
+      },
+      {
+        type: "category",
+        label: "Palette",
+        link: { type: "doc", id: "api/libraries/palette/index" },
+        items: ["api/libraries/palette/new"],
+      },
+      {
+        type: "category",
+        label: "Angle",
+        link: { type: "doc", id: "api/libraries/angle/index" },
+        items: ["api/libraries/angle/angle", "api/libraries/angle/right-angle"],
+      },
+      {
+        type: "category",
+        label: "Decorations",
+        link: { type: "doc", id: "api/libraries/decorations/index" },
+        items: [
+          {
+            type: "category",
+            label: "Braces",
+            link: { type: "doc", id: "api/libraries/decorations/braces/index" },
+            items: [
+              "api/libraries/decorations/braces/brace",
+              "api/libraries/decorations/braces/flat-brace",
+            ],
+          },
+          {
+            type: "category",
+            label: "Paths",
+            link: { type: "doc", id: "api/libraries/decorations/path/index" },
+            items: [
+              "api/libraries/decorations/path/zigzag",
+              "api/libraries/decorations/path/coil",
+              "api/libraries/decorations/path/wave",
+            ],
+          },
         ],
       },
     ],

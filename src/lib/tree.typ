@@ -36,7 +36,7 @@
 
 /// Lays out and renders tree nodes.
 ///
-/// For each node, the `tree` function creates an anchor of the format `"node-<depth>-<child-index>"` that can be used to query a nodes position on the canvas. <tree-node-name>
+/// For each node, the `tree` function creates an anchor of the format `"node-<depth>-<child-index>"` that can be used to query a nodes position on the canvas.
 ///
 /// ```typc example
 /// import cetz.tree

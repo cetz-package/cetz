@@ -170,6 +170,7 @@
 /// - end (coordinate): End point
 /// - flip (bool): Flip the brace around
 /// - name (str, none): Element name for querying anchors
+/// - debug (bool):
 /// - ..style (style): Style key-value pairs
 ///
 /// ## Styling
