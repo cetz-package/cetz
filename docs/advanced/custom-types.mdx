@@ -1,0 +1,17 @@
+
+# Custom Types
+
+## <Type>context</Type>
+A CeTZ context object that holds internal state.
+
+## <Type>vector</Type>
+A three element <Type>array</Type> of <Type>float</Type>s.
+
+## <Type>matrix</Type>
+An <Type>array</Type> of <Type>array</Type>s of <Type>float</Type>s that represent a matrix. Can be any size but transformation matrices are 4x4.
+
+## <Type>drawable</Type>
+A <Type>dictionary</Type> that contains path or content data that will actually get drawn by the canvas. Can also be an <Type>array</Type> of this type.
+
+## <Type>element</Type>
+A function that, when called with a <Type>context</Type>, returns some data that effects the canvas. Can also be an <Type>array</Type> of this type.

@@ -36,5 +36,15 @@ export default [
     },
     items: ["tutorials/karl"],
   },
-  "internals/internals",
+  {
+    type: "category",
+    label: "Advanced",
+    link: {
+      type: "doc",
+      id: "advanced/advanced"
+    },
+    items: [
+      "advanced/custom-types"
+    ]
+  }
 ];

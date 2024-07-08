@@ -10,12 +10,12 @@
   return ts + d2 * r
 }
 
-/// Get point on quadratic bezier at position t
+/// Get the point on quadratic bezier at position `t`.
 ///
 /// - a (vector): Start point
 /// - b (vector): End point
 /// - c (vector): Control point
-/// - t (float): Position on curve [0, 1]
+/// - t (float): Position on curve $[0, 1]$
 /// -> vector
 #let quadratic-point(a, b, c, t) = {
   // (1-t)^2 * a + 2 * (1-t) * t * c + t^2 b
@@ -28,7 +28,7 @@
   )
 }
 
-/// Get dx/dt of quadratic bezier at position t
+/// Get the derivative (dx/dt) of a quadratic bezier at position `t`.
 ///
 /// - a (vector): Start point
 /// - b (vector): End point
@@ -48,7 +48,7 @@
   , 2)
 }
 
-/// Get point on cubic bezier curve at position t
+/// Get the point on a cubic bezier curve at position `t`.
 ///
 /// - a (vector):  Start point
 /// - b (vector):  End point
@@ -70,7 +70,7 @@
   )
 }
 
-/// Get dx/dt of cubic bezier at position t
+/// Get the derivative (dx/dt) of a cubic bezier at position `t`.
 ///
 /// - a (vector): Start point
 /// - b (vector): End point
@@ -101,7 +101,7 @@
   )
 }
 
-/// Get bezier curves ABC coordinates
+/// Get a bezier curve's ABC coordinates. Returns them as a respective <Type>array</Type> of <Type>vector</Type>s.
 ///
 ///        /A\  <-- Control point of quadratic bezier
 ///       / | \
@@ -114,9 +114,9 @@
 /// - s (vector): Curve start
 /// - e (vector): Curve end
 /// - B (vector): Point on curve
-/// - t (fload): Position on curve [0, 1]
+/// - t (float): Position on curve $[0, 1]$
 /// - deg (int): Bezier degree (2 or 3)
-/// -> (tuple) Tuple of A, B and C vectors
+/// -> array
 #let to-abc(s, e, B, t, deg: 2) = {
   let tt = calc.pow(t, deg)
   let u(t) = {
@@ -135,13 +135,12 @@
 }
 
 
-/// Compute control points for quadratic bezier through 3 points
+/// Compute the control points for a quadratic bezier through 3 points. Returns an <Type>array</Type> of three <Type>vector</Type>s, the start point, the end point and the control point.
 ///
 /// - s (vector): Curve start
 /// - e (vector): Curve end
 /// - B (vector): Point on curve
-///
-/// -> (s, e, c) Cubic bezier curve points
+/// -> array
 #let quadratic-through-3points(s, B, e) = {
   let d1 = vector.dist(s, B)
   let d2 = vector.dist(e, B)
