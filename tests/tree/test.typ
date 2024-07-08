@@ -42,3 +42,8 @@
   })
   h(.1cm)
 }
+
+#test-case({
+  // Specify branch lengths
+  cetz.tree.tree(([], (1, ([], (1, []), (1, []))), (2, [])))
+})
