@@ -16,8 +16,7 @@
     assert(type(drawable) != array,
       message: "Expected drawable, got array: " + repr(drawable))
     if drawable.type == "path" {
-      drawable.segments = drawable.segments.map(segment => {
-        let (kind, ..pts) = segment
+      drawable.segments = drawable.segments.map(((kind, ..pts)) => {
         return (kind,) + util.apply-transform(transform, ..pts)
       })
     } else if drawable.type == "content" {
