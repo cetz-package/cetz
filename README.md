@@ -67,6 +67,7 @@ To use this package, simply add the following code to your document:
 ## CeTZ Libraries
 
 - [cetz-plot - Plotting and Charts Library](https://github.com/cetz-package/cetz-plot)
+- [cetz-venn - Simple two- or three-set Venn diagrams](https://github.com/cetz-package/cetz-venn)
 
 ## Installing
 
