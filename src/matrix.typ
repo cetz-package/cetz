@@ -15,10 +15,10 @@
 
 #let pi = calc.pi
 
-/// Create identity matrix with dimensions $m times n$
+/// Create identity matrix with dimensions $m \times n$
 ///
-/// - m (int): Rows
-/// - n (int): Columns
+/// - m (int): The number of rows
+/// - n (int): The number of columns
 /// - one (float): Value to set as $1$
 /// - zero (float): Value to set as $0$
 /// -> matrix
@@ -30,24 +30,25 @@
     }})
 }
 
-/// Return matrix dimensions (m, n)
-/// -> tuple
+/// Returns the dimension of the given matrix as `(m, n)`
+/// - m (matrix): The matrix
+/// -> array
 #let dim(m) = {
   return (m.len(), if m.len() > 0 {m.at(0).len()} else {0})
 }
 
-/// Get matrix column n as vector
+/// Returns the nth column of a matrix as a {{vector}}
 /// - mat (matrix): Input matrix
-/// - n (int): Column
+/// - n (int): The column's index
 /// -> vector
 #let column(mat, n) = {
   range(0, mat.len()).map(m => mat.at(m).at(n))
 }
 
-/// Return copy matrix with column n set to vector
-/// - mat (matrix): Input matrix
-/// - n (int): Column
-/// - vec (vector): Column vector
+/// Replaces the nth column of a matrix with the given vector.
+/// - mat (matrix): Input matrix.
+/// - n (int): The index of the column to replace
+/// - vec (vector): The column data to insert.
 /// -> matrix
 #let set-column(mat, n, vec) = {
   assert(vec.len() == matrix.len())
@@ -56,16 +57,19 @@
   }
 }
 
-/// Round matrix by rounding all cells
-/// applying rounding
+/// Rounds each value in the matrix to a precision.
 /// - mat (matrix): Input matrix
-/// - precision (int): Rounding precision (digits)
+/// - precision (int) = 8: Rounding precision (digits)
 /// -> matrix
 #let round(mat, precision: precision) = {
   mat.map(r => r.map(v => _round(v, digits: precision)))
 }
 
-/// Return a $4 times 4$ translation matrix
+/// Returns a $4 \times 4$ translation matrix
+/// - x (float): The translation in the $x$ direction.
+/// - y (float): The translation in the $y$ direction.
+/// - z (float): The translation in the $x$ direction.
+/// -> matrix
 #let transform-translate(x, y, z) = {
   ((1, 0, 0, x),
    (0, 1, 0, y),
@@ -73,7 +77,9 @@
    (0, 0, 0, 1))
 }
 
-// Return 4x4 x-shear matrix
+/// Returns a $4 \times 4$ x-shear matrix
+/// - factor (float): The shear in the $x$ direction.
+/// -> matrix
 #let transform-shear-x(factor) = {
   ((1, factor, 0, 0),
    (0, 1, 0, 0),
@@ -81,7 +87,10 @@
    (0, 0, 0, 1))
 }
 
-/// Return a $4 times 4$ z-shear matrix
+
+/// Returns a $4 \times 4$ z-shear matrix
+/// - factor (float): The shear in the $z$ direction.
+/// -> matrix
 #let transform-shear-z(factor) = {
   ((1, 0, factor, 0),
    (0, 1,-factor, 0),
@@ -89,7 +98,9 @@
    (0, 0, 0, 1))
 }
 
-// Return 4x4 scale matrix
+/// Returns a $4 \times 4$ scale matrix
+/// - f (float,array,dictionary): The scale factor(s) of the matrix. An {{array}} of at least 3 {{float}}s sets the x, y and z scale factors. A {{dictionary}} sets the scale in the direction of the corresponding x, y and z keys. A single {{float}} sets the scale for all directions.
+/// -> matrix
 #let transform-scale(f) = {
   let (x, y, z) = if type(f) == array {
     vector.as-vec(f, init: (1, 1, 1))
@@ -107,7 +118,10 @@
    (0, 0, 0, 1))
 }
 
-// Return 4x4 rotate xyz matrix for direction and up vector
+/// Returns a $4 \times 4$ rotation xyz matrix for a direction and up vector
+/// - dir (vector): idk
+/// - up (vector): idk
+/// -> matrix
 #let transform-rotate-dir(dir, up) = {
   dir = vector.norm(dir)
   up = vector.norm(up)
@@ -123,6 +137,9 @@
 }
 
 // Return 4x4 rotate x matrix
+/// Returns a $4 \times 4$ $x$ rotation matrix
+/// - angle (angle): The angle to rotate around the $x$ axis
+/// -> matrix
 #let transform-rotate-x(angle) = {
   ((1, 0, 0, 0),
    (0, cos(angle), -sin(angle), 0),
@@ -131,6 +148,9 @@
 }
 
 // Return 4x4 rotate y matrix
+/// Returns a $4 \times 4$ $y$ rotation matrix
+/// - angle (angle): The angle to rotate around the $y$ axis
+/// -> matrix
 #let transform-rotate-y(angle) = {
   ((cos(angle), 0, -sin(angle), 0),
    (0, 1, 0, 0),
@@ -139,6 +159,9 @@
 }
 
 // Return 4x4 rotate z matrix
+/// Returns a $4 \times 4$ $z$ rotation matrix
+/// - angle (angle): The angle to rotate around the $z$ axis
+/// -> matrix
 #let transform-rotate-z(angle) = {
   ((cos(angle), -sin(angle), 0, 0),
    (sin(angle), cos(angle), 0, 0),
@@ -147,6 +170,10 @@
 }
 
 // Return 4x4 rotate xz matrix
+/// Returns a $4 \times 4$ $x z$ rotation matrix
+/// - x (angle): The angle to rotate around the $x$ axis
+/// - z (angle): The angle to rotate around the $z$ axis
+/// -> matrix
 #let transform-rotate-xz(x, z) = {
   ((cos(z), sin(z), 0, 0),
    (-cos(x)*sin(z), cos(x)*cos(z), -sin(x), 0),
@@ -154,10 +181,10 @@
    (0, 0, 0, 1))
 }
 
-/// Return 4x4 rotation matrix - yaw-pitch-roll
+/// Returns a $4 \times 4$ rotation matrix - yaw-pitch-roll
 ///
 /// Calculates the product of the three rotation matrices
-/// R = Rz(a) Ry(b) Rx(c)
+/// $R = Rz(a) Ry(b) Rx(c)$
 ///
 /// - a (angle): Yaw
 /// - b (angle): Pitch
@@ -170,10 +197,10 @@
    (0,0,0,1))
 }
 
-/// Return 4x4 rotation matrix - euler angles
+/// Returns a $4 \times 4$ rotation matrix - euler angles
 ///
 /// Calculates the product of the three rotation matrices
-/// R = Rz(z) Ry(y) Rx(x)
+/// $R = Rz(z) Ry(y) Rx(x)$
 ///
 /// - x (angle): Rotation about x
 /// - y (angle): Rotation about y
@@ -186,7 +213,9 @@
    (0,0,0,1))
 }
 
-/// Multiply matrices on top of each other.
+/// Multiplies matrices on top of each other.
+/// - ..matrices (matrix): The matrices to multiply from left to right.
+/// -> matrix
 #let mul-mat(..matrices) = {
   matrices = matrices.pos()
   let out = matrices.remove(0)
@@ -212,6 +241,11 @@
 // The value of vec_4 defaults to w (1).
 //
 // The resulting vector is of dimension 3
+/// Multiplies a $4 \times 4$ matrix with a vector of size 3 or 4. The resulting is three dimensional
+/// - mat (matrix): The matrix to multiply
+/// - vec (vector): The vector to multiply
+/// - w (float): The default value for the fourth element of the vector if it is three dimensional.
+/// -> vector
 #let mul4x4-vec3(mat, vec, w: 1) = {
   assert(vec.len() <= 4)
   let out = (0, 0, 0)
@@ -226,6 +260,10 @@
 }
 
 // Multiply matrix with vector
+/// Multiplies an $m \times n$ matrix with an $m$th dimensional vector where $m \lte 4$. Prefer the use of `mul4x4-vec3` when possible as it does not use loops.
+/// - mat (matrix): The matrix to multiply
+/// - vec (vector): The vector to multiply
+/// -> vector
 #let mul-vec(mat, vec) = {
   if mat.len() != vector.dim(vec) {
     panic("matrix m must be equal to vector dim")
@@ -241,6 +279,9 @@
   return new
 }
 
+/// Calculates the inverse matrix of any size.
+/// - matrix (matrix): The matrix to inverse.
+/// -> matrix
 #let inverse(matrix) = {
   let n = {
     let size = dim(matrix)
@@ -279,12 +320,12 @@
   return inverted
 }
 
-/// Swap column a with column b
+/// Swaps the ath column with the bth column.
 ///
 /// - mat (matrix): Matrix
-/// - a (int): Column a
-/// - b (int): Column b
-/// -> matrix New matrix
+/// - a (int): The index of column a.
+/// - b (int): The index of column b.
+/// -> matrix
 #let swap-cols(mat, a, b) = {
   let new = mat
   for m in range(mat.len()) {
@@ -294,7 +335,9 @@
   return new
 }
 
-// Translate the matrix by the vector
+/// Translates a matrix by a vector.
+/// - mat (matrix): The matrix to translate
+/// - vec (vector): The vector to translate by.
 #let translate(mat, vec) = {
   return mul-mat(
     mat,

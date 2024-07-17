@@ -7,7 +7,7 @@
 
 #let default-samples = 25
 
-/// Get first position vector of a path segment
+/// Returns the first position vector of a path segment.
 ///
 /// - s (segment): Path segment
 /// -> vector
@@ -15,7 +15,7 @@
   return s.at(1)
 }
 
-/// Get last position vector of a path segment
+/// Returns the last position vector of a path segment
 ///
 /// - s (segment): Path segment
 /// -> vector
@@ -26,10 +26,10 @@
   return s.at(2)
 }
 
-/// Calculate bounding points for a list of path segments
+/// Calculates the bounding points for a list of path segments
 ///
 /// - segments (array): List of path segments
-/// -> array: List of vectors
+/// -> array
 #let bounds(segments) = {
   let bounds = ()
 
@@ -46,10 +46,10 @@
   return bounds
 }
 
-/// Calculate length of a single path segment
+/// Calculates the length of a single path segment
 ///
 /// - s (array): Path segment
-/// -> float: Length of the segment in canvas units
+/// -> float
 #let _segment-length(s, samples: default-samples) = {
   let (kind, ..pts) = s
   if kind == "line" {
@@ -65,15 +65,27 @@
   }
 }
 
-/// Get the length of a path
+/// Calculates the length of a path
 ///
 /// - segments (array): List of path segments
-/// -> float: Total length of the path
+/// -> float
 #let length(segments) = {
   return segments.map(_segment-length).sum()
 }
 
-/// Finds the two points that are between t on a line segment.
+/// Finds the two points that enclose a distance along a line segment.
+/// 
+/// Returns a {{dictionary}} with the following key values:
+/// - start (int): The index of the point that is before the distance.
+/// - end (int): The index of the point that is after the distance.
+/// - distance (float): The distance along the line segment to the point with the `start` index.
+/// - length (float): The distance between the found points.
+/// 
+/// ---
+/// 
+/// - pts (array): The array of points of a line segment.
+/// - distance (float): The distance along the line segment.
+/// -> dictionary
 #let _points-between-distance(pts, distance) = {
   let travelled = 0
   let length = 0
@@ -101,7 +113,7 @@
 ///
 /// - segment (array): The line segment
 /// - distance (float): The distance along the line segment to find the point
-/// -> vector: The point on the line segment
+/// -> vector
 #let _point-on-line-segment(segment, distance) = {
   let pts = segment.slice(1)
 
@@ -120,8 +132,7 @@
 /// - segment (segment): Path segment
 /// - distance (float): The distance along the path segment to find the point
 /// - extrapolate (bool): If true, use linear extrapolation for distances outsides the path
-///
-/// -> vector: The point on the path segment
+/// -> vector
 #let _point-on-segment(segment, distance, samples: default-samples, extrapolate: false) = {
   let (kind, ..pts) = segment
   if kind == "line" {
@@ -138,6 +149,20 @@
   }
 }
 
+/// Finds the segment that contains a point that is distance `t` from the start of a path.
+/// - segments (array): The array of segments that make up the path.
+/// - t (float,ratio): The distance to find the segment with. A {{float}} will be in absolute distance along the path. A {{ratio}} will be relative to the length of the path. Will panic if the distance is greater than the length of the path.
+/// - rev (bool): When true the path will be reversed, effectively looking for the segment from the end of the path.
+/// - samples (int): The number of samples to use when calculating the length of a cubic segment.
+/// - clamp (bool): Clamps the distance to the length of the path, so the function won't panic.
+/// -> dictionary
+/// ---
+/// Returns a {{dictionary}} with the folloing key-value pairs:
+/// - index (int): The index of the segment in the given array of segments.
+/// - segment (segment): The found segment.
+/// - travelled (float): The absolute distance travelled along the path to find the segment.
+/// - distance (float): The distance left to travel along the path.
+/// - length (float): The length of the returned segment.
 #let segment-at-t(segments, t, rev: false, samples: default-samples, clamp: false) = {
   let lengths = segments.map(_segment-length.with(samples: samples))
   let total = lengths.sum()
@@ -178,6 +203,11 @@
     length: lengths.last())
 }
 
+/// Extrapolates a point from a segment. It finds the direction the end of the segment is pointing and scales the normalised vector from the end of the segment. Returns {{none}} if the segment has no direction.
+/// - segment (segment): The segment to extrapolate from.
+/// - distance (float): The distance to extrapolate the point to.
+/// - rev (bool): If `true` the segment will be reversed, effectively extrapolating the point from its start.
+/// - samples (int): This isn't used.
 #let _extrapolated-point-on-segment(segment, distance, rev: false, samples: 100) = {
   let (kind, ..pts) = segment
   let (pt, dir) = if kind == "line" {
@@ -201,13 +231,12 @@
   return none
 }
 
-/// Get position on path
+/// Finds the position of a point a distance from the start of a path. If the path is empty {{none}} will be returned.
 ///
 /// - segments (array): List of path segments
-/// - t (int,float,ratio): Absolute position on the path if given an
-///   float or integer, or relative position if given a ratio from 0% to 100%
-/// - extrapolate (bool): If true, use linear extrapolation if distance is outsides the paths range
-/// -> none,vector: Position on path. If the path is empty (segments == ()), none is returned
+/// - t (int,float,ratio): Absolute position on the path if given an float or integer, or relative position if given a ratio from 0% to 100%. When this value is negative, the point will be found from the end of the path instaed of the start.
+/// - extrapolate (bool): If true, use linear extrapolation if distance is outsides the path's range
+/// -> none,vector
 #let point-on-path(segments, t, samples: default-samples, extrapolate: false) = {
   assert(
     type(t) in (int, float, ratio),
@@ -238,12 +267,13 @@
   }
 }
 
-/// Get position and direction on path
+/// Finds the position and direction of a point a distance along from the start of a path. Returns an {{array}} of two vectors where the first is the position, and the second is the direction.
 ///
 /// - segments (array): List of path segments
-/// - t (float): Position (from 0 to 1)
-/// - clamp (bool): Clamp position between 0 and 1
-/// -> tuple: Tuple of the point at t and the scaled direction
+/// - t (int,float,ratio): Absolute position on the path if given an float or integer, or relative position if given a ratio from 0% to 100%. When this value is negative, the point will be found from the end of the path instaed of the start.
+/// - extrapolate (bool): If true, use linear extrapolation if distance is outsides the path's range
+/// - clamp (bool): Clamps the distance between the start and end of a path.
+/// -> array
 #let direction(segments, t, samples: default-samples, clamp: false) = {
   let (segment, distance, length, ..) = segment-at-t(segments, t, samples: samples, clamp: clamp)
   let (kind, ..pts) = segment
@@ -264,30 +294,29 @@
   )
 }
 
-/// Create a line segment with points
+/// Creates a line segment with points
 ///
 /// - points (array): List of points
-/// -> array Segment
+/// -> segment
 #let line-segment(points) = {
   ("line",) + points
 }
 
-/// Create a cubic bezier segment
+/// Creates a cubic bezier segment
 ///
 /// - a (vector): Start
 /// - b (vector): End
 /// - ctrl-a (vector): Control point a
 /// - ctrl-b (vector): Control point b
-/// -> array Segment
+/// -> segment
 #let cubic-segment(a, b, ctrl-a, ctrl-b) = {
   ("cubic", a, b, ctrl-a, ctrl-b)
 }
 
-/// Normalize segments by connecting gaps via straight line segments
-/// and merging multiple line segments into a single one.
+/// Normalize segments by connecting gaps via straight line segments and merging multiple line segments into a single one.
 ///
-/// - segments (array): Path segments
-/// -> array Normalized path segments
+/// - segments (array): The path segments to normalize.
+/// -> array
 #let normalize(segments) = {
   let new = ()
   for s in segments {
@@ -323,6 +352,12 @@
 }
 
 /// Shortens a segment by a given distance.
+/// - segment (segment): The segment to shorten.
+/// - distance (float): The distance to move the start of the segment towards the end of the segment. If this value is negative, the end of the segment will be moved towards the start.
+/// - snap-to (none, vector): Shortening bezier curves suffers from rounding and precision errors so a position can be given to "snap" a curve's start/end point to.
+/// - mode (str): How cubic segments should be shortned. Can be `"LINEAR"` to use `bezier.cubic-shorten-linear` or `"CURVED"` to use `bezier.cubic-shorten`.
+/// - samples (int): The number of samples to use when shortening a cubic segment.
+/// -> segment
 #let shorten-segment(segment, distance, snap-to: none, mode: "CURVED", samples: default-samples) = {
   let rev = distance < 0
   if distance >= _segment-length(segment) {
@@ -363,7 +398,7 @@
   return (kind,) + s
 }
 
-/// Shortens a path's segments by the given distances. The start of the path is shortened first by moving the point along the line towards the end. The end of the path is then shortened in the same way. When a distance is 0 no other calculations are made.
+/// Shortens a path's segments by the given distances. The start of the path is shortened first by moving the point along the path towards the end. The end of the path is then shortened in the same way. When a distance is 0 no other calculations are made.
 /// 
 /// - segments (segments): The segments of the path to shorten.
 /// - start-distance (int, float): The distance to shorten from the start of the path.

@@ -1,40 +1,83 @@
-// Real and imaginary part
+/// Returns the real part of a complex number.
+/// - V (complex): A complex number.
+/// -> float
 #let re(V) = V.at(0)
+
+/// Returns the imaginary part of a complex number.
+/// - V (complex): A complex number.
+/// -> float
 #let im(V) = V.at(1)
 
-// Complex multiplication
-#let mul(V,W) = (re(V)*re(W) - im(V)*im(W),im(V)*re(W) + re(V)*im(W))
 
-// Complex conjugate
+/// Multiplies two complex numbers together and returns the result $V W$.
+/// - V (complex): The complex number on the left hand side.
+/// - W (complex): The complex number on the right hand side.
+#let mul(V, W) = (re(V) * re(W) - im(V) * im(W), im(V) * re(W) + re(V) * im(W))
+
+/// Calculates the conjugate of a complex number.
+/// - V (complex): A complex number.
+/// -> complex
 #let conj(V) = (re(V),-im(V))
 
-// Dot product of V and W as vectors in R^2
+// TODO: check what "in R^2" means.
+/// Calculates the dot product of two complex numbers in R^2 $V \cdot W$.
+/// - V (complex): The complex number on the left hand side.
+/// - W (complex): The complex number on the right hand side.
+/// -> float
 #let dot(V,W) = re(mul(V,conj(W)))
 
-// Norm and norm-squared
+/// Calculates the squared normal of a complex number.
+/// - V (complex): The complex number.
+/// -> float
 #let normsq(V) = dot(V,V)
+
+
+/// Calculates the normal of a complex number
+/// - V (complex): The complex number.
+/// -> float
 #let norm(V) = calc.sqrt(normsq(V))
 
-// V*t
+/// Multiplies a complex number by a scale factor.
+/// - V (complex): The complex number to scale.
+/// - t (float): The scale factor.
+/// -> complex
 #let scale(V,t) = mul(V,(t,0))
 
-// Unit vector in the direction of V
+/// Returns a unit vector in the direction of a complex number.
+/// - V (complex): The complex number.
+/// -> vector
 #let unit(V) = scale(V, 1/norm(V))
 
-// V^(-1) as a complex number
+/// Inverts a complex number.
+/// - V (complex): The complex number 
+/// -> complex
 #let inv(V) = scale(conj(V), 1/normsq(V))
 
-// V / W
+/// Divides two complex numbers.
+/// - V (complex): The complex number of the numerator.
+/// - W (complex): The complex number of the denominator.
+/// -> complex
 #let div(V,W) = mul(V,inv(W))
 
-// V + W and V - W
+/// Adds two complex numbers together.
+/// - V (complex): The complex number on the left hand side.
+/// - W (complex): The complex number on the right hand side.
+/// -> complex
 #let add(V,W) = (re(V) + re(W),im(V) + im(W))
+
+/// Subtracts two complex numbers together.
+/// - V (complex): The complex number on the left hand side.
+/// - W (complex): The complex number on the right hand side.
+/// -> complex
 #let sub(V,W) = (re(V) - re(W),im(V) - im(W))
 
-// Argument
+/// Calculates the argument of a complex number.
+/// - V (complex): The complex number.
 #let arg(V) = calc.atan2(..V) / 1rad
 
-// Signed angle from V to W
+/// Get the signed angle of two complex numbers from V to W.
+/// - V (complex): A complex number.
+/// - W (complex): A complex number.
 #let ang(V,W) = arg(div(W,V))
 
 // exp(i*a)

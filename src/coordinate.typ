@@ -248,7 +248,9 @@
   // (name: str, pos: float, auto?: left|right, swap?: bool)
 }
 
-// Returns the given coordinate's system name
+/// Figures out what system a coordinate belongs to and returns the corresponding string.
+/// - c (coordinate): The coordinate to find the system of.
+/// -> str
 #let resolve-system(c) = {
   let t = if type(c) == dictionary {
     let keys = c.keys()
@@ -300,9 +302,9 @@
   return t
 }
 
-/// Resolve a list of coordinates to absolute vectors
+/// Resolve a list of coordinates to absolute vectors. Returns an array of the new <Type>context</Type> then the resolved coordinate vectors.
 ///
-/// #example(```
+/// ```typc example
 /// line((0,0), (1,1), name: "l")
 /// get-ctx(ctx => {
 ///   // Get the vector of coordinate "l.start" and "l.end"
@@ -310,13 +312,12 @@
 ///   content("l.start", [#a], frame: "rect", stroke: none, fill: white)
 ///   content("l.end",   [#b], frame: "rect", stroke: none, fill: white)
 /// })
-/// ```)
+/// ```
 ///
 /// - ctx (context): Canvas context object
 /// - ..coordinates (coordinate): List of coordinates
 /// - update (bool): Update the context's last position
-/// -> (ctx, vector..) Returns a list of the new context object plus the
-///    resolved coordinate vectors
+/// -> array
 #let resolve(ctx, ..coordinates, update: true) = {
   let result = ()
   for c in coordinates.pos() {

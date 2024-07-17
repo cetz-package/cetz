@@ -1,6 +1,4 @@
-/// Return a new vector of dimension `dim` with all fields
-/// set to `init` (defaults to 0). A vector is a Typst array
-/// of numbers.
+/// Returns a new vector of dimension `dim` with all fields set to `init` (defaults to 0).
 ///
 /// - dim (int): Vector dimension
 /// - init (float): Initial value of all fields
@@ -9,18 +7,23 @@
   return range(0, dim).map(x => init)
 }
 
-/// Return dimension of vector v
+/// Returns the dimension of a vector. 
 ///
-/// - v (vector): Vector
-/// -> int Dimension
-#let dim(v) = { assert(type(v) == array,
-  message: "Expected vector to be of array type, got: " + repr(v)); return v.len() }
+/// - v (vector): The vector to find the dimension of.
+/// -> int
+#let dim(v) = {
+  assert(
+    type(v) == array,
+    message: "Expected vector to be of array type, got: " + repr(v)
+  )
+  return v.len() 
+}
 
 
-/// Convert vector `v` to row or column matrix
+/// Converts a vector to a row or column matrix.
 ///
-/// - v (vector): Vector
-/// - mode ("row", "column"): Conversion mode
+/// - v (vector): The vector to convert.
+/// - mode (str): The type of matrix to convert into. Must be one of `"row"` or `"column"`.
 /// -> matrix
 #let as-mat(v, mode: "row") = {
   if mode == "column" {
@@ -32,11 +35,10 @@
   }
 }
 
-/// Convert vector to vector of different dimension
-/// with missing fields of `v` set to fields of vector `init`
+/// Ensures a vector has an exact dimension. This is done by passing another vector `init` that has the required dimension. If the original vector does not have enough dimensions, the values from `init` will be inserted. It is recommended to use a zero vector for `init`.
 ///
-/// - v (vector): Vector
-/// - init (vector): Vectors to use for all unset fields
+/// - v (vector): The vector to ensure.
+/// - init (vector): The vector to check the dimension against.
 /// -> vector
 #let as-vec(v, init: (0, 0, 0)) = {
   for i in range(0, calc.min(dim(v), dim(init))) {
@@ -46,18 +48,18 @@
 }
 
 
-/// Return length/magnitude of a vector $norm(arrow(v))$
+/// Return length/magnitude of a vector.
 ///
-/// - v (vector): Vector
-/// -> float Length
+/// - v (vector): The vector to find the magnitude of.
+/// -> float
 #let len(v) = {
   return calc.sqrt(v.fold(0, (s, c) => s + c * c))
 }
 
-/// Add two vectors of the same dimension
+/// Adds two vectors of the same dimension
 ///
-/// - v1 (vector): Vector a
-/// - v2 (vector): Vector b
+/// - v1 (vector): The vector on the left hand side.
+/// - v2 (vector): The vector on the right hand side.
 /// -> vector
 #let add(v1, v2) = {
   if dim(v1) != dim(v2) {
@@ -68,10 +70,10 @@
   return v1.zip(v2).map(((a, b)) => a + b)
 }
 
-/// Subtract two vectors of the same dimension
+/// Subtracts two vectors of the same dimension
 ///
-/// - v1 (vector): Vector a
-/// - v2 (vector): Vector b
+/// - v1 (vector): The vector on the left hand side.
+/// - v2 (vector): The vector on the right hand side.
 /// -> vector
 #let sub(v1, v2) = {
   if dim(v1) != dim(v2) {
@@ -82,33 +84,47 @@
   return v1.zip(v2).map(((a, b)) => a - b)
 }
 
-/// Return distance of vector a and b by calculating the
-/// length of vector b - a.
+/// Calculates the distance between two vectors by subtracting the length of vector `a` from vector `b`.
 ///
 /// - a (vector): Vector a
 /// - b (vector): Vector b
 /// -> float
 #let dist(a, b) = len(sub(b, a))
 
-/// Multiply vector with scalar `x`
+/// Multiplys a vector with scalar `x`
+/// - v (vector): The vector to scale.
+/// - x (float): The scale factor.
+/// -> vector
 #let scale(v, x) = v.map(s => s * x)
 
-/// Divide vector by scalar `x`
+/// Divides a vector by scalar `x`
+/// - v (vector): The vector to be divded.
+/// - x (float): The inverse scale factor.
 #let div(v, x) = v.map(s => s / x)
 
-/// Negate each vector field
+/// Negates each value in a vector
+/// - v (vector): The vector to negate.
+/// -> vector
 #let neg(v) = scale(v, -1)
 
-/// Normalize vector (divide by its length) $arrow(v)/norm(arrow(v))$
+/// Normalizes a vector (divide by its length)
+/// - v (vector): The vector to normalize.
+/// -> vector
 #let norm(v) = div(v, len(v))
 
-/// Calculate dot product between two vectors `v1` and `v2`
+/// Calculates the dot product between two vectors.
+/// - v1 (vector): The vector on the left hand side.
+/// - v2 (vector): The vector on the right hand side.
+/// -> float
 #let dot(v1, v2) = {
   assert(dim(v1) == dim(v2))
   return v1.enumerate().fold(0, (s, t) => s + t.at(1) * v2.at(t.at(0)))
 }
 
-/// Calculate cross product of two vectors of dim 3
+/// Calculates the cross product of two vectors with a dimension of three.
+/// - v1 (vector): The vector on the left hand side.
+/// - v2 (vector): The vector on the right hand side.
+/// -> vector
 #let cross(v1, v2) = {
   assert(dim(v1) == 3 and dim(v2) == 3)
   let x = v1.at(1) * v2.at(2) - v1.at(2) * v2.at(1)
@@ -117,13 +133,19 @@
   return (x, y, z)
 }
 
-/// Calculate angle between two points and the x-axis in 2d space
+/// Calculates the angle between two vectors and the x-axis in 2d space
+/// - a (vector): The vector to measure the angle from.
+/// - b (vector): The vector to measure the angle to.
+/// -> angle
 #let angle2(a, b) = {
   // Typst's atan2 is (x, y) order, not (y, x)
   return calc.atan2(b.at(0) - a.at(0), b.at(1) - a.at(1))
 }
 
-/// Calculate angle between three points 
+/// Calculates the angle between three vectors
+/// - v1 (vector): The vector to measure the angle from.
+/// - c (vector): The vector to measure the angle at.
+/// - v2 (vector): The vector to measure the angle to.
 #let angle(v1, c, v2) = {
   assert(dim(v1) == dim(v2), message: "Vectors " + repr(v1) + " and " + repr(v2) + " do not have the same dimensions.")
   if dim(v1) == 2 or dim(v1) == 3 {
@@ -135,7 +157,10 @@
   }
 }
 
-/// Linear interpolation
+/// Linear interpolation between two vectors.
+/// - v1 (vector): The vector to interpolate from.
+/// - v2 (vector): The vector to interpolate to.
+/// - t (float): The factor to interpolate by. A value of `0` is `v1` and a value of `1` is `v2`.
 #let lerp(v1, v2, t) = {
   return add(
     v1,
@@ -149,9 +174,9 @@
   )
 }
 
-/// Rotate vector of dimension 2 or 3 around the z-axis by angle
-/// - v (vector): Vector to rotate
-/// - angle (angle): Angle
+/// Rotates a vector of dimension 2 or 3 around the z-axis by an angle.
+/// - v (vector): The vector to rotate.
+/// - angle (angle): The angle to rotate by.
 /// -> vector
 #let rotate-z(v, angle) = {
   assert(v.len() >= 2,

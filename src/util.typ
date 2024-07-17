@@ -13,11 +13,11 @@
 #let typst-length = length
 
 
-/// Multiplies vectors by the transform matrix
+/// Multiplies vectors by a transformation matrix. If multiple vectors are given they are returned as an array, if only one vector is given only one will be returned, if a dictionary is given they will be returned in the dictionary with the same keys.
 ///
-/// - transform (matrix,function): Transformation matrix or a function that accepts and returns a vector.
-/// - ..vecs (vectors): Vectors to get transformed. Only the positional part of the sink is used. A dictionary of vectors can be passed and all will be transformed.
-/// -> vectors If multiple vectors are given they are returned as an array, if only one vector is given only one will be returned, if a dictionary is given they will be returned in the dictionary with the same keys.
+/// - transform (matrix): The $4 \times 4$ transformation matrix.
+/// - ..vecs (vector): Vectors to get transformed. Only the positional part of the sink is used. A dictionary of vectors can also be passed and all will be transformed.
+/// -> vector,array,dictionary
 #let apply-transform(transform, ..vecs) = {
   let t = if type(transform) != function {
     matrix.mul4x4-vec3.with(transform)
@@ -41,17 +41,18 @@
 /// Reverts the transform of the given vector
 ///
 /// - transform (matrix): Transformation matrix
-/// - vec (vector): Vector to get transformed
+/// - vec (vector): Vector to be transformed
 /// -> vector
 #let revert-transform(transform, ..vecs) = {
   apply-transform(matrix.inverse(transform), ..vecs)
 }
 
-// Get point on line
-//
-// - a (vector): Start point
-// - b (vector): End point
-// - t (float):  Position on line [0, 1]
+/// Linearly interpolates between two points and returns its position
+///
+/// - a (vector): Start point
+/// - b (vector): End point
+/// - t (float):  Position on the line $[0, 1]$
+/// -> vector
 #let line-pt(a, b, t) = {
   return vector.add(a, vector.scale(vector.sub(b, a), t))
 }
@@ -60,18 +61,17 @@
 ///
 /// - a (vector): Start point
 /// - b (vector): End point
-/// -> vector Cormal direction
+/// -> vector
 #let line-normal(a, b) = {
   let v = vector.norm(vector.sub(b, a))
   return (0 - v.at(1), v.at(0), v.at(2, default: 0))
 }
 
-/// Get the arc-len of a circle or arc
+/// Calculates the arc-length of a circle or arc
 ///
 /// - radius (float): Circle or arc radius
-/// - start (angle): Start angle
-/// - stop (angle): Stop angle
-/// -> float Arc length
+/// - angle (angle): The angle of the arc.
+/// -> float
 #let circle-arclen(radius, angle: 360deg) = {
   calc.abs(angle / 360deg * 2 * calc.pi)
 }
@@ -93,12 +93,12 @@
   return (calc.cos(angle) * rx + x, calc.sin(angle) * ry + y, z)
 }
 
-/// Calculate circle center from 3 points. The z coordinate
-/// is taken from point a.
+/// Calculates the center of a circle from 3 points. The z coordinate is taken from point a.
 ///
 /// - a (vector): Point 1
 /// - b (vector): Point 2
 /// - c (vector): Point 3
+/// -> vector
 #let calculate-circle-center-3pt(a, b, c) = {
   let m-ab = line-pt(a, b, .5)
   let m-bc = line-pt(b, c, .5)
@@ -141,6 +141,10 @@
   return vector.as-vec(line-intersection-2d(..args), init: (0, 0, a.at(2)))
 }
 
+/// Converts a {{number}} to "canvas units"
+/// - ctx (context): The current context object.
+/// - num (number): The number to resolve.
+/// -> float
 #let resolve-number(ctx, num) = {
   return if type(num) == length {
     float(num.to-absolute() / ctx.length)
@@ -151,27 +155,34 @@
   }
 }
 
+/// Ensures that a radius has an `x` and `y` component.
+/// - radius (number, array):
+/// -> array
 #let resolve-radius(radius) = {
   return if type(radius) == array {radius} else {(radius, radius)}
 }
 
-/// Find minimum value of a, ignoring `none`
+/// Finds the minimum of a set of values while ignoring {{none}} values.
+/// - a (float,none):
+/// -> float
 #let min(..a) = {
   let a = a.pos().filter(v => v != none)
   return calc.min(..a)
 }
 
-/// Find maximum value of a, ignoring `none`
+/// Finds the maximum of a set of values while ignoring {{none}} values.
+/// - ..a (float,none):
+/// -> float
 #let max(..a) = {
   let a = a.pos().filter(v => v != none)
   return calc.max(..a)
 }
 
-/// Merge dictionary a and b and return the result
-/// Prefers values of b.
+/// Merges dictionary `b` onto dictionary `a`. If a key does not exist in `a` but does in `b`, it is inserted into `a` with `b`'s value. If a key does exist in `a` and `b`, the value in `b` is only inserted into `a` if the `overwrite` argument is `true`. If a key does exist both in `a` and `b` and both values are of type {{dictionary}} they will be recursively merged with this same function.
 ///
 /// - a (dictionary): Dictionary a
 /// - b (dictionary): Dictionary b
+/// - overwrite (bool): Whether to override an entry in `a` that also exists in `b` with the value in `b`.
 /// -> dictionary
 #let merge-dictionary(a, b, overwrite: true) = {
   for (k, v) in b {
@@ -184,7 +195,10 @@
   return a
 }
 
-// Measure content in canvas coordinates
+/// Measures the size of some {{content}} in canvas coordinates.
+/// - ctx (context): The current context object.
+/// - cnt (content): The content to measure.
+/// -> vector
 #let measure(ctx, cnt) = {
   let size = typst-measure(cnt)
   return (
@@ -193,18 +207,18 @@
   )
 }
 
-/// Get a padding/margin dictionary (top, left, bottom, right) from
-/// a padding value.
+/// Get a padding/margin dictionary with keys `(top, left, bottom, right)` from a padding value.
+///
+///
+/// Type of `padding`:
+/// - {{none}}: All sides padded by 0
+/// - {{number}}: All sides are padded by the same value
+/// - {{array}}: CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`
+/// - {{dictionary}}: Converts a Typst padding dictionary (top, left, bottom, right, x, y, rest) to a dictionary containing top, left, bottom and right.
 ///
 /// - padding (none, number, array, dictionary): Padding specification
-///   Type of `padding`:
-///   / `none`: All sides padded by 0
-///   / `number`: All sides are padded by the same value
-///   / `array`: CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`
-///   / `dictionary`: Converts typst padding dictionary (top, left, bottom, right, x, y, rest)
-///                   to a dictionary containing top, left, bottom and right.
 ///
-/// -> dictionary Dictionary with the keys: top, left, bottom and right
+/// -> dictionary
 #let as-padding-dict(padding) = {
   if padding == none {
     padding = 0
@@ -240,19 +254,13 @@
   }
 }
 
-/// Get a corner-radius dictionary (north-east, north-west, south-east, south-west) from
-/// a corner-radius value. Returns none if all radii are zero or none
+/// Creates a corner-radius dictionary with keys `north-east`, `north-west`, `south-east` and `south-west` with values of a two element {{array}} of the radius in the `x` and `y` direction. Returns none if all radii are zero or none.
 ///
-/// - ctx (context): Canvas context object
-/// - radii (none, number, dictionary): Radius specification
-///   Type of `padding`:
-///   / `number`: All corners have the same radius
-///   / `tuple`: All corners have the same rx/ry radius
-///   / `dictionary`: Converts corner radius dictionary (rest, north, south, east, west, north-south, north-east, south-west, south-east)
-///     to a dictionary containing north-east, north-west, south-east and south-west
+/// - ctx (context): The current canvas context object
+/// - radii (none, number, dictionary): The radius specification. A {{number}} will cause all corners to have the same radius. An {{array}} with two items will cause all corners to have the same rx and ry radius. A {{dictionary}} can be given where the key specifies the corner and the value specifies the radius. The value can be either {{number}} for a circle radius or {{array}} for an x and y radius. The keys `north`, `south`, `east` and `west` targets both corners in that cardinal direction e.g. `south` sets the south west and south east corners. The keys `north-east`, `north-west`, `south-east` and `south-west` targets the corresponding corner. The key `rest` targets all other corners that have not been target by other keys.
+/// - size (???): I'm not sure what this does.
 ///
-/// -> dictionary Dictionary with the keys: north-east, north-west, south-east, south-west set
-///    to corner radius tuples (x and y radius)
+/// -> dictionary
 #let as-corner-radius-dict(ctx, radii, size) = {
   if radii == none or radii == 0 {
     return (north-west: (0,0), north-east: (0,0),
@@ -309,10 +317,10 @@
   )
 }
 
-/// Sort list of points/vectors by distance to base
-/// - base (vector): Vector to measure distance to
-/// - pts (array of vector): List of points
-/// -> array Sorted list of points
+/// Sorts an array of vectors by distance to a common position.
+/// - base (vector): The position to measure the distance of the other vectors from.
+/// - pts (array): The array of vectors to sort.
+/// -> array
 #let sort-points-by-distance(base, pts) = {
   if pts.len() == 1 {
     return pts
@@ -327,7 +335,9 @@
     .map(t => t.at(0))
 }
 
-/// Resolves a stroke into a usable dictionary with all fields that are missing or auto set to their defaults
+/// Resolves a stroke into a usable dictionary with all fields that are missing or auto set to their Typst defaults.
+/// - stroke (none, stroke): The stroke to resolve.
+/// -> dictionary
 #let resolve-stroke(stroke) = {
   if stroke == none {
     return (paint: none, thickness: 0pt, join: none, cap: none, miter-limit: 4)
@@ -352,8 +362,7 @@
   return stroke
 }
 
-// Function for early checking the type of
-// a body (element) argument.
+/// Asserts whether a "body" has the correct type.
 #let assert-body(body) = {
   assert(body == none or type(body) in (array, function),
     message: "Body must be of type none, array or function")

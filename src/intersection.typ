@@ -1,14 +1,14 @@
 #import "vector.typ"
 #import "util.typ"
 
-/// Check for line-line intersection and return point or none
+/// Checks for a line-line intersection between the given points and returns its position, otherwise {{none}}.
 ///
 /// - a (vector): Line 1 point 1
 /// - b (vector): Line 1 point 2
 /// - c (vector): Line 2 point 1
 /// - d (vector): Line 2 point 2
-/// - ray (bool): treat both lines as infinite
-/// -> (vector,none)
+/// - ray (bool): When `true`, intersections will be found for the whole line instead of inbetween the given points.
+/// -> vector,none
 #let line-line(a, b, c, d, ray: false) = {
   let lli8(x1, y1, x2, y2, x3, y3, x4, y4) = {
     let nx = (x1*y2 - y1*x2)*(x3 - x4)-(x1 - x2)*(x3*y4 - y3*x4)
@@ -37,13 +37,26 @@
   }
 }
 
-// Check for line-cubic bezier intersection
+/// Finds the intersections of a line and cubic bezier.
+/// 
+/// - s   (vector): Bezier start point
+/// - e   (vector): Bezier end point
+/// - c1  (vector): Bezier control point 1
+/// - c2  (vector): Bezier control point 2
+/// - la  (vector): Line start point
+/// - lb  (vector): Line end point
+/// - ray (bool): When `true`, intersections will be found for the whole line instead of inbetween the given points.
+/// -> array
 #let line-cubic(la, lb, s, e, c1, c2) = {
   import "/src/bezier.typ": line-cubic-intersections as line-cubic
   return line-cubic(la, lb, s, e, c1, c2)
 }
 
-// Check for line-linestrip intersection
+/// Finds the intersections of a line and linestrip.
+/// - la (vector): Line start point.
+/// - lb (vector): Line end point.
+/// - v (array): An {{array}} of {{vector}}s that define each point on the linestrip.
+/// -> array
 #let line-linestrip(la, lb, v) = {
   let pts = ()
   for i in range(0, v.len() - 1) {
@@ -55,11 +68,12 @@
   return pts
 }
 
-/// Check for line-path intersection in 2D
+/// Finds the intersections of a line and path in 2D. The path should be given as a {{drawable}} of type `path`.
 ///
 /// - la (vector): Line start
 /// - lb (vector): Line end
-/// - path (path): Path
+/// - path (drawable): The path.
+/// -> array
 #let line-path(la, lb, path) = {
   let segment(s) = {
     let (k, ..v) = s
@@ -79,12 +93,12 @@
   return pts
 }
 
-/// Check for path-path intersection in 2D
+/// Finds the intersections between two path {{drawable}}s in 2D.
 ///
 /// - a (path): Path a
 /// - b (path): Path b
 /// - samples (int): Number of samples to use for bezier curves
-/// -> array List of vectors
+/// -> array
 #let path-path(a, b, samples: 8) = {
   import "bezier.typ": cubic-point
 

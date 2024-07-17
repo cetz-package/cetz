@@ -135,12 +135,12 @@
 }
 
 
-/// Compute the control points for a quadratic bezier through 3 points. Returns an <Type>array</Type> of three <Type>vector</Type>s, the start point, the end point and the control point.
+/// Compute the control points for a quadratic bezier through 3 points.
 ///
 /// - s (vector): Curve start
 /// - e (vector): Curve end
-/// - B (vector): Point on curve
-/// -> array
+/// - B (vector): A point which the curve passes through
+/// -> bezier
 #let quadratic-through-3points(s, B, e) = {
   let d1 = vector.dist(s, B)
   let d2 = vector.dist(e, B)
@@ -151,13 +151,12 @@
   return (s, e, A)
 }
 
-/// Compute control points for cubic bezier through 3 points
+/// Compute the control points for a cubic bezier through 3 points.
 ///
 /// - s (vector): Curve start
 /// - e (vector): Curve end
-/// - B (vector): Point on curve
-///
-/// -> (s, e, c1, c2) Cubic bezier curve points
+/// - B (vector): A point which the curve passes through
+/// -> bezier
 #let cubic-through-3points(s, B, e) = {
   let d1 = vector.dist(s, B)
   let d2 = vector.dist(e, B)
@@ -185,27 +184,26 @@
   return (s, e, c1, c2)
 }
 
-/// Convert quadratic bezier to cubic
+/// Convert a quadratic bezier to a cubic bezier.
 ///
 /// - s (vector): Curve start
 /// - e (vector): Curve end
 /// - c (vector): Control point
-///
-/// -> (s, e, c1, c2)
+/// -> bezier
 #let quadratic-to-cubic(s, e, c) = {
   let c1 = vector.add(s, vector.scale(vector.sub(c, s), 2/3))
   let c2 = vector.add(e, vector.scale(vector.sub(c, e), 2/3))
   return (s, e, c1, c2)
 }
 
-/// Split a cubic bezier into two cubic beziers at t
+/// Split a cubic bezier into two cubic beziers at the point `t`. Returns an <Type>array</Type> of two <Type>bezier</Type>. The first holds the original curve start `s`, and the second holds the original curve end `e`.
 ///
 /// - s  (vector): Curve start
 /// - e  (vector): Curve end
 /// - c1 (vector): Control point 1
 /// - c2 (vector): Control point 2
-/// - t  (float): t 0..1
-/// -> ((s, e, c1, c2), (s, e, c1, c2))
+/// - t  (float): The point on the bezier to split, $[0, 1]$
+/// -> array
 #let split(s, e, c1, c2, t) = {
   t = calc.max(0, calc.min(t, 1))
 
@@ -235,12 +233,12 @@
           (right.at(3), right.at(0), right.at(2), right.at(1)))
 }
 
-/// Approximate cubic curve length
+/// Get the approximate cubic curve length
 /// - s  (vector): Curve start
 /// - e  (vector): Curve end
 /// - c1 (vector): Control point 1
 /// - c2 (vector): Control point 2
-/// -> float Arc length
+/// -> float
 #let cubic-arclen(s, e, c1, c2, samples: 10) = {
   let d = 0
   let last = none
@@ -254,17 +252,14 @@
   return d
 }
 
-/// Shorten the curve by offsetting s and c1 or e and c2
-/// by distance d. If d is positive the curve gets shortened
-/// by moving s and c1 closer to e, if d is negative, e and c2
-/// get moved closer to s.
+/// Shorten the curve by offsetting s and c1 or e and c2 by distance d. If d is positive the curve gets shortened by moving s and c1 closer to e, if d is negative, e and c2 get moved closer to s.
 ///
 /// - s  (vector): Curve start
 /// - e  (vector): Curve end
 /// - c1 (vector): Control point 1
 /// - c2 (vector): Control point 2
 /// - d  (float): Distance to shorten by
-/// -> (s, e, c1, c2) Shortened curve
+/// -> bezier
 #let cubic-shorten-linear(s, e, c1, c2, d) = {
   if d == 0 { return (s, e, c1, c2) }
 
@@ -285,11 +280,13 @@
   return (s, e, c1, c2)
 }
 
-/// Approximate bezier interval t for a given distance d.
-/// If d is positive, the functions starts from the curves
-/// start s, if d is negative, it starts form the curves end
-/// e.
-/// -> float Bezier t value from [0,1]
+/// Approximate bezier interval `t` for a given distance `d`. If `d` is positive, the functions starts from the curve's start `s`, if `d` is negative, it starts form the curve's end `e`.
+/// - s  (vector): Curve start
+/// - e  (vector): Curve end
+/// - c1 (vector): Control point 1
+/// - c2 (vector): Control point 2
+/// - d  (float): The distance along the bezier to find `t`.
+/// -> float
 #let cubic-t-for-distance(s, e, c1, c2, d, samples: 20) = {
   let travel-forwards(s, e, c1, c2, d) = {
     let sum = 0
@@ -318,12 +315,7 @@
   }
 }
 
-/// Shorten curve by distance d. This keeps the curvature of the
-/// curve by finding new values along the original curve.
-/// If d is positive the curve gets shortened by moving s
-/// closer to e, if d is negative, e is moved closer to s.
-/// The points s and e are moved along the curve, keeping the
-/// kurves curvature the same (the control points get recalculated).
+/// Shorten curve by distance `d`. This keeps the curvature of the curve by finding new values along the original curve. If `d` is positive the curve gets shortened by moving `s` closer to `e`, if `d` is negative, `e` is moved closer to `s`. The points `s` and `e` are moved along the curve, keeping the curve's curvature the same (the control points get recalculated).
 ///
 /// - s  (vector): Curve start
 /// - e  (vector): Curve end
@@ -331,7 +323,7 @@
 /// - c2 (vector): Control point 2
 /// - d  (float): Distance to shorten by
 /// - samples (int): Maximum of samples/steps to use
-/// -> (s, e, c1, c2) Shortened curve
+/// -> bezier
 #let cubic-shorten(s, e, c1, c2, d, samples: 15) = {
   if d == 0 { return (s, e, c1, c2) }
 
@@ -343,10 +335,12 @@
   }
 }
 
-/// Find cubic curve extrema by calculating
-/// the roots of the curves first derivative.
-///
-/// -> (array of vector) List of extrema points
+/// Find cubic curve extrema by calculating the roots of the curve's first derivative. Returns an <Type>array</Type> of <Type>vector</Type> ordered by distance along the curve from the start to its end.
+/// - s  (vector): Curve start
+/// - e  (vector): Curve end
+/// - c1 (vector): Control point 1
+/// - c2 (vector): Control point 2
+/// -> array
 #let cubic-extrema(s, e, c1, c2) = {
   // Compute roots of a single dimension (x, y, z) of the
   // curve by using the abc formula for finding roots of
@@ -398,9 +392,13 @@
   return pts
 }
 
-/// Return aabb coordinates for cubic bezier curve
+/// Returns axis aligned bounding box coordinates `(bottom-left, top-right)` for a cubic bezier curve.
 ///
-/// -> (bottom-left, top-right)
+/// - s  (vector): Curve start
+/// - e  (vector): Curve end
+/// - c1 (vector): Control point 1
+/// - c2 (vector): Control point 2
+/// -> array
 #let cubic-aabb(s, e, c1, c2) = {
   let (lo, hi) = (s, e)
   for dim in range(lo.len()) {
@@ -417,25 +415,25 @@
   return (lo, hi)
 }
 
-/// Returns a cubic bezier between p2 and p3 for a catmull-rom curve
-/// through all four points.
+/// Returns a cubic bezier between points `p2` and `p3` for a catmull-rom curve through all four points.
 ///
 /// - p1 (vector): Point 1
 /// - p2 (vector): Point 2
 /// - p3 (vector): Point 3
 /// - p4 (vector): Point 4
-/// - k  (float): Tension between 0 and 1
-/// -> (a, b, c1, c2)
+/// - k  (float): The tension of the catmull-rom curve. Must be in the range $[0, 1]$
+/// -> bezier
 #let _catmull-section-to-cubic(p1, p2, p3, p4, k) = {
   return (p2, p3,
           vector.add(p2, vector.scale(vector.sub(p3, p1), 1/(k * 6))),
           vector.sub(p3, vector.scale(vector.sub(p4, p2), 1/(k * 6))))
 }
 
-/// Returns a list of cubic beziert for a catmull curve through points
+/// Returns an array of cubic <Type>bezier</Type> for a catmull curve through an array of points.
 ///
 /// - points (array): Array of 2d points
-/// - k (float): Strength between 0 and oo
+/// - k (float): Strength between 0 and 1
+/// -> array
 #let catmull-to-cubic(points, k, close: false) = {
   k = calc.max(k, 0.1)
   k = if k < .5 {
@@ -477,7 +475,7 @@
   return ()
 }
 
-/// Find roots of a cubic polynomial with the coefficients a, b, c and d
+/// Find the roots of a cubic polynomial with the coefficients a, b, c and d.
 ///
 /// -> array Array of roots
 #let _cubic-roots(a, b, c, d) = {
@@ -535,7 +533,7 @@
   return roots.filter(t => t >= 0 - epsilon and t <= 1 + epsilon)
 }
 
-/// Calculate 2D cubic-bezier and line intersetction points
+/// Calculate the intersection points between a 2D cubic-bezier and a straight line. Returns an array of <Type>vector</Type>
 ///
 /// - s   (vector): Bezier start point
 /// - e   (vector): Bezier end point
@@ -544,6 +542,7 @@
 /// - la  (vector): Line start point
 /// - lb  (vector): Line end point
 /// - ray (bool): If set to true, ignore line length
+/// -> array
 #let line-cubic-intersections(la, lb, s, e, c1, c2, ray: false) = {
   // Based on:
   //   http://www.particleincell.com/blog/2013/cubic-line-intersection/

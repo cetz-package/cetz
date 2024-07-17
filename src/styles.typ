@@ -133,8 +133,8 @@
 
 /// You can use this to combine the style in `ctx`, the style given by a user for a single element and an element's default style. 
 ///
-/// `base` is first merged onto `dict` without overwriting existing values, and if `root` is given it is merged onto that key of `dict`. `merge` is then merged onto `dict` but does overwrite existing entries, if `root` is given it is merged onto that key of `dict`. Then entries in `dict` that are `<auto>` inherit values from their nearest ancestor and entries of type `<dictionary>` are merged with their closest ancestor. 
-/// ```typ
+/// `base` is first merged onto `dict` without overwriting existing values, and if `root` is given it is merged onto that key of `dict`. `merge` is then merged onto `dict` but does overwrite existing entries, if `root` is given it is merged onto that key of `dict`. Then entries in `dict` that are {{auto}} inherit values from their nearest ancestor and entries of type {{dictionary}} are merged with their closest ancestor. 
+/// ```typ example
 /// #let dict = (
 ///   stroke: "black",
 ///   fill: none,
@@ -143,13 +143,6 @@
 /// )
 /// #styles.resolve(dict, merge: (mark: (stroke: "yellow")), root: "line")
 /// ```
-/// #let dict = (
-///   stroke: "black",
-///   fill: none,
-///   mark: (stroke: auto, fill: "blue"),
-///   line: (stroke: auto, mark: auto, fill: "red")
-/// )
-/// #cetz.styles.resolve(dict, merge: (mark: (stroke: "yellow")), root: "line")\
 /// The following is a more detailed explanation of how the algorithm works to use as a reference if needed. It should be updated whenever changes are made.
 /// Remember that dictionaries are recursively merged, if an entry is any other type it is simply updated. (dict + dict = merged dict, value + dict = dict, dict + value = value)
 /// First if `base` is given, it will be merged without overwriting values onto `dict`. If `root` is given it will be merged onto that key of `dict`.
@@ -158,17 +151,18 @@
 /// + If an entry is `auto` or a dictionary, the tree is travelled back up until an entry with the same key is found. If the current entry is `auto` the value of the ancestor's entry is copied. Or if the current entry and ancestor entry is a dictionary, they are merged with the current entry overwriting any values in it's ancestors.
 /// + Each entry that is a dictionary is then resolved from step 1. 
 ///
-/// #example(```
+/// ```typc example
 /// get-ctx(ctx => {
 ///   // Get the current "mark" style
 ///   content((0,0), [#cetz.styles.resolve(ctx.style, root: "mark")])
 /// })
-/// ```)
+/// ```
 ///
-/// - dict (style): Current context style (`ctx.style`).
+/// - dict (style): Current context style from `ctx.style`.
 /// - merge (style): Style values overwriting the current style. I.e. inline styles passed with an element: `line(.., stroke: red)`.
 /// - root (none, str): Style root element name.
 /// - base (none, style): Style values to merge into `dict` without overwriting it.
+/// -> style
 #let resolve(dict, root: none, merge: (:), base: (:)) = {
   let resolve(dict, ancestors, merge) = {
     // Merge. If both values are dictionaries, merge's values will be inserted at a lower level in this step.

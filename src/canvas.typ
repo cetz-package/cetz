@@ -11,14 +11,8 @@
 
 /// Sets up a canvas for drawing on.
 ///
-/// The default transformation matrix of the canvas is set to:
-/// $mat(1, 0,-0.5, 0;
-///      0,-1, 0.5, 0;
-///      0, 0, 0,   0;
-///      0, 0, 0,   1)$
-///
 /// - length (length,ratio): Used to specify what 1 coordinate unit is. If given a ratio, that ratio is relative to the containing elements width!
-/// - body (none,array,element): A code block in which functions from `draw.typ` have been called.
+/// - body (none,array,element): A code block in which functions from the `draw` module have been called.
 /// - background (none,color): A color to be used for the background of the canvas.
 /// - debug (bool): Shows the bounding boxes of each element when `true`.
 /// -> content

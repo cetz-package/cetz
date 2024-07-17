@@ -6,7 +6,7 @@ export default [
     label: "Draw Functions",
     link: {
       type: "doc",
-      id: "api/draw-functions/index",
+      id: "api/draw-functions/draw-functions",
     },
     items: [
       {
@@ -14,7 +14,7 @@ export default [
         label: "Shapes",
         link: {
           type: "doc",
-          id: "api/draw-functions/shapes/index",
+          id: "api/draw-functions/shapes/shapes",
         },
         items: [
           "api/draw-functions/shapes/circle",
@@ -35,7 +35,7 @@ export default [
         label: "Grouping",
         link: {
           type: "doc",
-          id: "api/draw-functions/grouping/index",
+          id: "api/draw-functions/grouping/grouping",
         },
         items: [
           "api/draw-functions/grouping/hide",
@@ -55,7 +55,7 @@ export default [
         label: "Transformations",
         link: {
           type: "doc",
-          id: "api/draw-functions/transformations/index",
+          id: "api/draw-functions/transformations/transformations",
         },
         items: [
           "api/draw-functions/transformations/set-transform",
@@ -72,7 +72,7 @@ export default [
         label: "Projections",
         link: {
           type: "doc",
-          id: "api/draw-functions/projections/index",
+          id: "api/draw-functions/projections/projections",
         },
         items: [
           "api/draw-functions/projections/ortho",
@@ -134,4 +134,12 @@ export default [
       },
     ],
   },
+  {
+    type: "category",
+    label: "Internal",
+    link: { type: "doc", id: "api/internal/internal"},
+    items: [
+      "api/internal/bezier"
+    ]
+  }
 ];
