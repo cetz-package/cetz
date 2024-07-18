@@ -45,6 +45,9 @@ package called `cetz-plot`.
 ## Anchors
 - `copy-anchors` no longer requires copied anchors to have a default, allowing the copying of an element's anchors from a group as expected.
 
+## Util
+- `apply-transform` now allows passing a function that takes and returns a vector, instead of a transformation matrix.
+
 # 0.2.2
 
 ## Anchors

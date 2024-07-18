@@ -20,8 +20,7 @@
 /// -> vectors If multiple vectors are given they are returned as an array, if only one vector is given only one will be returned, if a dictionary is given they will be returned in the dictionary with the same keys.
 #let apply-transform(transform, ..vecs) = {
   let t = if type(transform) != function {
-    vec => matrix.mul4x4-vec3(
-      transform, vec)
+    matrix.mul4x4-vec3.with(transform)
   } else {
     transform
   }
