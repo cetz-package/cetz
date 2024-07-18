@@ -40,7 +40,7 @@
   let n = points.len()
   let (cx, cy) = (0, 0)
   for i in range(0, n) {
-    let (x0, y0, z0) = points.at(i)
+    let (x0, y0, _) = points.at(i)
     let (x1, y1, _) = points.at(calc.rem(i + 1, n))
     cx += (x0 + x1) * (x0 * y1 - x1 * y0)
     cy += (y0 + y1) * (x0 * y1 - x1 * y0)
@@ -49,9 +49,8 @@
   return .5 * a
 }
 
-// Computet the face order by computing the face
+// Compute the face order by computing the face
 // area. Curves get sampled to a polygon.
-// This won't work correctly for non coplanar
 #let _compute-face-order(d, samples: 10) = {
   import "/src/bezier.typ": cubic-point
   let points = ()
@@ -152,6 +151,7 @@
 /// - z (angle): Z-axis rotation angle
 /// - sorted (bool): Sort drawables by maximum distance (front to back)
 /// - cull-face (none,string): Enable back-face culling if set to `"cw"` for clockwise
+///   or `"ccw"` for counter-clockwise. Polygons of the specified order will not get drawn.
 /// - reset-transform (bool): Ignore the current transformation matrix
 /// - body (element): Elements to draw
 #let ortho(x: 35.264deg, y: 45deg, z: 0deg, sorted: true, cull-face: none, reset-transform: false, body, name: none) = group(name: name, ctx => {
