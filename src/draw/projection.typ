@@ -5,11 +5,6 @@
 #import "/src/drawable.typ"
 #import "/src/util.typ"
 
-#let ortho-projection-matrix = ((1, 0, 0, 0),
-                                (0, 1, 0, 0),
-                                (0, 0, 0, 0),
-                                (0, 0, 0, 1))
-
 // Get an orthographic view matrix for 3 angles
 #let ortho-matrix(x, y, z) = matrix.mul-mat(
   matrix.ident(),
@@ -18,23 +13,101 @@
   matrix.transform-rotate-z(z),
 )
 
-// Pushes a view- and projection-matrix to transform all `body` elements. The current context transform is not modified.
+#let ortho-projection-matrix = (
+  (1, 0, 0, 0),
+  (0, 1, 0, 0),
+  (0, 0, 0, 0),
+  (0, 0, 0, 1),
+)
+
+#let _sort-by-distance(drawables) = {
+  return drawables.sorted(key: d => {
+    let z = none
+    for ((kind, ..pts)) in d.segments {
+      pts = pts.map(p => p.at(2))
+      z = if z == none {
+        calc.max(..pts)
+      } else {
+        calc.max(z, ..pts)
+      }
+    }
+    return z
+  })
+}
+
+#let _calc-polygon-area(points) = {
+  let a = 0 // Signed area: 1/2 sum_i=0^n-1 x_i*y_i+1 - x_i+1*y_i
+  let n = points.len()
+  let (cx, cy) = (0, 0)
+  for i in range(0, n) {
+    let (x0, y0, z0) = points.at(i)
+    let (x1, y1, _) = points.at(calc.rem(i + 1, n))
+    cx += (x0 + x1) * (x0 * y1 - x1 * y0)
+    cy += (y0 + y1) * (x0 * y1 - x1 * y0)
+    a += x0 * y1 - x1 * y0
+  }
+  return .5 * a
+}
+
+// Computet the face order by computing the face
+// area. Curves get sampled to a polygon.
+// This won't work correctly for non coplanar
+#let _compute-face-order(d, samples: 10) = {
+  import "/src/bezier.typ": cubic-point
+  let points = ()
+  for ((kind, ..pts)) in d.segments {
+    if kind == "cubic" {
+      pts = range(0, samples).map(t => {
+        cubic-point(..pts, t / (samples - 1))
+      })
+    }
+    points += pts
+  }
+  return _calc-polygon-area(points) <= 0
+}
+
+#let _filter-cw-faces(drawables, invert: false) = {
+  return drawables.filter(d => {
+    let a = _compute-face-order(d)
+    let b = invert
+    return (a and not b) or (not a and b)
+  })
+}
+
+// Sets up a view matrix to transform all `body` elements. The current context
+// transform is not modified.
 //
 // - body (element): Elements
 // - view-matrix (matrix): View matrix
 // - projection-matrix (matrix): Projection matrix
-// - reset-transform (bool): If true, override (and thus ignore)
-//   the current transformation with the new matrices instead
-//   of multiplying them.
-#let _projection(body, view-matrix, projection-matrix, reset-transform: false) = {
+// - reset-transform (bool): Ignore the current transformation matrix
+// - sorted (bool): Sort drawables by maximum distance (front to back)
+// - cull-face (none,string): Enable back-face culling if set to `"cw"` for clockwise
+//   or `"ccw"` for counter-clockwise. Polygons of the specified order will not get drawn.
+#let _projection(body, view-matrix, projection-matrix, reset-transform: true, sorted: true, cull-face: "cw") = {
   (ctx => {
     let transform = ctx.transform
-    ctx.transform = matrix.mul-mat(projection-matrix, view-matrix)
-    if not reset-transform {
-      ctx.transform = matrix.mul-mat(transform, ctx.transform)
-    }
+    ctx.transform = view-matrix
+
     let (ctx, drawables, bounds) = process.many(ctx, util.resolve-body(ctx, body))
+
+    if cull-face != none {
+      assert(cull-face in ("cw", "ccw"),
+        message: "cull-face must be none, cw or ccw.")
+      drawables = _filter-cw-faces(drawables, invert: cull-face == "ccw")
+    }
+    if sorted {
+      drawables = _sort-by-distance(drawables)
+    }
+
+    if projection-matrix != none {
+      drawables = drawable.apply-transform(projection-matrix, drawables)
+    }
+
     ctx.transform = transform
+    if not reset-transform {
+      drawables = drawable.apply-transform(ctx.transform, drawables)
+    }
 
     return (
       ctx: ctx,
@@ -76,12 +149,15 @@
 /// - x (angle): X-axis rotation angle
 /// - y (angle): Y-axis rotation angle
 /// - z (angle): Z-axis rotation angle
+/// - sorted (bool): Sort drawables by maximum distance (front to back)
+/// - cull-face (none,string): Enable back-face culling if set to `"cw"` for clockwise
 /// - reset-transform (bool): Ignore the current transformation matrix
 /// - body (element): Elements to draw
-/// - name (none,str):
-#let ortho(x: 35.264deg, y: 45deg, z: 0deg, reset-transform: false, body, name: none) = group(name: name, ctx => {
-  _projection(body, ortho-matrix(x, y, z),
-    ortho-projection-matrix, reset-transform: reset-transform)
+#let ortho(x: 35.264deg, y: 45deg, z: 0deg, sorted: true, cull-face: none, reset-transform: false, body, name: none) = group(name: name, ctx => {
+  _projection(body, ortho-matrix(x, y, z), ortho-projection-matrix,
+    sorted: sorted,
+    cull-face: cull-face,
+    reset-transform: reset-transform)
 })
 
 /// Draw elements on the xy-plane with optional z offset.
