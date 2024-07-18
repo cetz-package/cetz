@@ -22,6 +22,8 @@ package called `cetz-plot`.
 
 ## Draw
 - Added `floating` function for drawing elements without affecting bounding boxes.
+- The `ortho` function gained a `sorted` and `cull-face` argument to enable
+  depth ordering and face culling of drawables. Ordering is enabled by default.
 
 ## Marks
 - Added support for mark `anchor` style key, to adjust mark placement and
