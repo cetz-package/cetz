@@ -4,6 +4,7 @@
 #import "/src/matrix.typ"
 #import "/src/drawable.typ"
 #import "/src/util.typ"
+#import "/src/polygon.typ"
 
 // Get an orthographic view matrix for 3 angles
 #let ortho-matrix(x, y, z) = matrix.mul-mat(
@@ -20,6 +21,7 @@
   (0, 0, 0, 1),
 )
 
+// Sort drawables by median or max segment z-value
 #let _sort-by-distance(drawables) = {
   return drawables.sorted(key: d => {
     let z = none
@@ -35,41 +37,12 @@
   })
 }
 
-#let _calc-polygon-area(points) = {
-  let a = 0 // Signed area: 1/2 sum_i=0^n-1 x_i*y_i+1 - x_i+1*y_i
-  let n = points.len()
-  let (cx, cy) = (0, 0)
-  for i in range(0, n) {
-    let (x0, y0, _) = points.at(i)
-    let (x1, y1, _) = points.at(calc.rem(i + 1, n))
-    cx += (x0 + x1) * (x0 * y1 - x1 * y0)
-    cy += (y0 + y1) * (x0 * y1 - x1 * y0)
-    a += x0 * y1 - x1 * y0
-  }
-  return .5 * a
-}
-
-// Compute the face order by computing the face
-// area. Curves get sampled to a polygon.
-#let _compute-face-order(d, samples: 10) = {
-  import "/src/bezier.typ": cubic-point
-  let points = ()
-  for ((kind, ..pts)) in d.segments {
-    if kind == "cubic" {
-      pts = range(0, samples).map(t => {
-        cubic-point(..pts, t / (samples - 1))
-      })
-    }
-    points += pts
-  }
-  return _calc-polygon-area(points) <= 0
-}
-
-#let _filter-cw-faces(drawables, invert: false) = {
+// Filter out all clock-wise polygons, or if `invert` is true,
+// all counter clock-wise ones.
+#let _filter-cw-faces(drawables, mode: "cw") = {
   return drawables.filter(d => {
-    let a = _compute-face-order(d)
-    let b = invert
-    return (a and not b) or (not a and b)
+    let poly = polygon.from-segments(d.segments)
+    poly.first() != poly.last() or polygon.winding-order(poly) == mode
   })
 }
 
@@ -93,7 +66,7 @@
     if cull-face != none {
       assert(cull-face in ("cw", "ccw"),
         message: "cull-face must be none, cw or ccw.")
-      drawables = _filter-cw-faces(drawables, invert: cull-face == "ccw")
+      drawables = _filter-cw-faces(drawables, mode: cull-face)
     }
     if sorted {
       drawables = _sort-by-distance(drawables)
