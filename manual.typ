@@ -311,6 +311,10 @@ $ M_"world" = M_"world" dot M_"local" $
 
 #doc-style.parse-show-module("/src/draw/projection.typ")
 
+== Bodies
+
+#doc-style.parse-show-module("/src/draw/bodies.typ")
+
 = Coordinate Systems <coordinate-systems>
 A _coordinate_ is a position on the canvas on which the picture is drawn. They take the form of dictionaries and the following sub-sections define the key value pairs for each system. Some systems have a more implicit form as an array of values and `CeTZ` attempts to infer the system based on the element types.
 
