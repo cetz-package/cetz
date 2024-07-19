@@ -24,6 +24,8 @@ package called `cetz-plot`.
 - Added `floating` function for drawing elements without affecting bounding boxes.
 - The `ortho` function gained a `sorted` and `cull-face` argument to enable
   depth ordering and face culling of drawables. Ordering is enabled by default.
+- **BREAKING** Elements changed to counter clock-wise drawing order. This can
+  lead to changed path anchors, as the direction has changed!
 
 ## Marks
 - Added support for mark `anchor` style key, to adjust mark placement and
@@ -46,6 +48,10 @@ package called `cetz-plot`.
 
 ## Anchors
 - `copy-anchors` no longer requires copied anchors to have a default, allowing the copying of an element's anchors from a group as expected.
+
+## 3D
+- Added a `prism` function that allows extending a supplied front-face
+  along a vector.
 
 # 0.2.2
 
