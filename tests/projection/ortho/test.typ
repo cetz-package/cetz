@@ -104,8 +104,8 @@
 #test-case({
   import draw: *
   ortho(x: 0deg, y: 0deg, cull-face: "cw", {
-    rect((-1, -1), (1, 1))
-    circle((0,0))
+    line((-1, -1), (1, -1), (1, 1), (-1, 1), close: true)
+    line((-1,-1), (1,-1), (0,1), close: true)
   })
 })
 
@@ -113,8 +113,8 @@
 #test-case({
   import draw: *
   ortho(x: 0deg, y: 0deg, cull-face: "cw", {
-    rect((-1, -1), (1, 1))
-    rotate(y: 91deg)
-    circle((0,0))
+    line((-1, -1), (1, -1), (1, 1), (-1, 1), close: true)
+    rotate(y: 120deg)
+    line((-1,-1), (1,-1), (0,1), close: true)
   })
 })
