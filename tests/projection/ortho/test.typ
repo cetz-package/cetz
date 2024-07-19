@@ -118,3 +118,32 @@
     line((-1,-1), (1,-1), (0,1), close: true)
   })
 })
+
+// Face order of library shapes
+#test-case({
+  import draw: *
+  ortho(cull-face: "cw", {
+    rect((-1, -1), (1, 1), radius: .5)
+  })
+})
+
+#test-case({
+  import draw: *
+  ortho(cull-face: "cw", {
+    circle((0,0))
+  })
+})
+
+#test-case({
+  import draw: *
+  ortho(cull-face: "cw", {
+    arc((0,0), start: 0deg, stop: 270deg, mode: "PIE")
+  })
+})
+
+#test-case({
+  import draw: *
+  ortho(cull-face: "cw", {
+    content((0,0), [Text])
+  })
+})

@@ -1069,10 +1069,10 @@
           let (rx, ry) = radius
           if rx > 0 or ry > 0 {
             let m = 0.551784
-            let p0 = (p0.at(0) * m * radius.at(0),
-                      p0.at(1) * m * radius.at(1))
-            let p1 = (p1.at(0) * m * radius.at(0),
-                      p1.at(1) * m * radius.at(1))
+            let p0 = (p0.at(0) * m * rx,
+                      p0.at(1) * m * ry)
+            let p1 = (p1.at(0) * m * rx,
+                      p1.at(1) * m * ry)
             (path-util.cubic-segment(s, e,
               vector.add(s, p0),
               vector.add(e, p1)),)
@@ -1098,14 +1098,14 @@
         let (p6, p7) = get-corner-pts(sw, (x1, y1, z), ( 1, 0), ( 0, 1))
 
         let segments = ()
-        segments += corner-arc(nw, p0, p1, (0, 1), (-1, 0))
-        if p1 != p2 { segments += (path-util.line-segment((p1, p2)),) }
-        segments += corner-arc(ne, p2, p3, (1, 0), (0, 1))
-        if p3 != p4 { segments += (path-util.line-segment((p3, p4)),) }
-        segments += corner-arc(se, p4, p5, (0, -1), (1, 0))
-        if p5 != p6 { segments += (path-util.line-segment((p5, p6)),) }
-        segments += corner-arc(sw, p6, p7, (-1, 0), (0,-1))
-        if p7 != p0 { segments += (path-util.line-segment((p7, p0)),) }
+        segments += corner-arc(nw, p1, p0, (-1,0), (0, 1))
+        if p0 != p7 { segments += (path-util.line-segment((p0, p7)),) }
+        segments += corner-arc(sw, p7, p6, (0,-1), (-1,0))
+        if p6 != p5 { segments += (path-util.line-segment((p6, p5)),) }
+        segments += corner-arc(se, p5, p4, (1, 0), (0,-1))
+        if p4 != p3 { segments += (path-util.line-segment((p4, p3)),) }
+        segments += corner-arc(ne, p3, p2, (0, 1), (1, 0))
+        if p2 != p1 { segments += (path-util.line-segment((p2, p1)),) }
 
         drawable.path(segments, fill: style.fill, stroke: style.stroke, close: true)
       }
