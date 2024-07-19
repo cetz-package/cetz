@@ -129,6 +129,10 @@
     fill: auto,
     stroke: auto,
   ),
+  prism: (
+    stroke: auto,
+    fill: auto,
+  ),
 )
 
 /// You can use this to combine the style in `ctx`, the style given by a user for a single element and an element's default style. 
