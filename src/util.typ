@@ -15,9 +15,9 @@
 
 /// Multiplies vectors by a transformation matrix. If multiple vectors are given they are returned as an array, if only one vector is given only one will be returned, if a dictionary is given they will be returned in the dictionary with the same keys.
 ///
-/// - transform (matrix): The $4 \times 4$ transformation matrix.
-/// - ..vecs (vector): Vectors to get transformed. Only the positional part of the sink is used. A dictionary of vectors can also be passed and all will be transformed.
-/// -> vector,array,dictionary
+/// - transform (matrix,function): Transformation matrix or a function that accepts and returns a vector.
+/// - ..vecs (vectors): Vectors to get transformed. Only the positional part of the sink is used. A dictionary of vectors can be passed and all will be transformed.
+/// -> vectors If multiple vectors are given they are returned as an array, if only one vector is given only one will be returned, if a dictionary is given they will be returned in the dictionary with the same keys.
 #let apply-transform(transform, ..vecs) = {
   let t = if type(transform) != function {
     matrix.mul4x4-vec3.with(transform)
