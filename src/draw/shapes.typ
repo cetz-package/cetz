@@ -14,6 +14,7 @@
 #import "/src/anchor.typ" as anchor_
 #import "/src/mark.typ" as mark_
 #import "/src/mark-shapes.typ" as mark-shapes_
+#import "/src/polygon.typ"
 #import "/src/aabb.typ"
 
 #import "transformations.typ": *
@@ -504,6 +505,7 @@
 /// 
 /// = Anchors
 ///   Supports path anchors.
+///   / center: The center anchor is calculated for _closed non self-intersecting_ polygons if all vertices share the same z value.
 ///
 /// - ..pts-style (coordinates, style): Positional two or more coordinates to draw lines between. Accepts style key-value pairs.
 /// - close (bool): If true, the line-strip gets closed to form a polygon
@@ -566,10 +568,17 @@
       close: close
     )
 
+    // Find center for simple polygons, might return none
+    let center = if close {
+      polygon.simple-centroid(pts)
+    }
+
     // Get bounds
     let (transform, anchors) = anchor_.setup(
-      auto,
-      (),
+      name => {
+        if name == "center" { return center }
+      },
+      if center != none { ("center",) } else { () },
       name: name,
       transform: ctx.transform,
       path-anchors: true,
@@ -1423,7 +1432,8 @@
 /// = parameters
 ///
 /// = Anchors
-///   Supports path anchors.
+///   / center: Centroid of the _closed and non self-intersecting_ shape. Only exists if `close` is true.
+///   Supports path anchors and shapes where all vertices share the same z-value.
 ///
 /// - body (elements): Elements with paths to be merged together.
 /// - close (bool): Close the path with a straight line from the start of the path to its end.
@@ -1465,9 +1475,17 @@
       let style = styles.resolve(ctx.style, merge: style)
       let drawables = drawable.path(fill: style.fill, stroke: style.stroke, close: close, segments)
 
+      // Try finding a closed shapes center by
+      // Sampling it to a polygon.
+      let center = if close {
+        polygon.simple-centroid(polygon.from-segments(drawables.segments))
+      }
+
       let (transform, anchors) = anchor_.setup(
-        auto,
-        (),
+        name => {
+          if name == "center" { return center }
+        },
+        if center != none { ("center",) } else { () },
         name: name,
         transform: none,
         path-anchors: true,
