@@ -28,3 +28,10 @@
   mark((0,0), 180deg, symbol: ">", scale: 3, fill: red)
   mark((0,0), 270deg, symbol: ">", scale: 3, fill: yellow)
 })
+
+// Default angle
+#test-case({
+  import draw: *
+
+  mark((0,0), symbol: ">")
+})

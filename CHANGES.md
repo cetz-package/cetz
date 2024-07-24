@@ -7,7 +7,9 @@ CeTZ' plotting and charting functionality has been moved to a separate
 package called `cetz-plot`.
 
 ## Canvas
-- Add runtime cetz version check support (see `assert-version`)
+- Marks drawn using the `mark` function now respect the `transform-shape` style.
+- The second argument of `mark` is now optional and defaults to `0deg`.
+- Add runtime cetz version check support (see `assert-version`).
 - Fixed a bug with `#set place(float: true)` affecting the canvas.
 - Transformation matrices are now rounded
 - The default coordinate system changed to a right-hand side system.
