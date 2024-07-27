@@ -105,7 +105,7 @@ A border anchor refers to a point on the element's border where a ray is cast fr
 
 They are given as angles where `0deg` is towards the right and `90deg` is up.
 
-Border anchors also specify named compass directions such as "north," "north-east," etc. Border anchors also spefcify a "center" named anchor which is where the ray cast originates from.
+Border anchors also specify named compass directions such as "north," "north-east," etc. Border anchors also specify a "center" named anchor which is where the ray cast originates from.
 
 ```example-vertical
 circle((0, 0), name: "circle", radius: 1)
