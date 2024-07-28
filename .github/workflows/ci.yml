@@ -41,5 +41,4 @@ jobs:
       - run: |
           just install @local
           just install @preview
-          just manual
           just test
