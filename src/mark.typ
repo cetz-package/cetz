@@ -155,7 +155,9 @@
 /// - drawables (drawable): The mark drawables.
 /// - distance (float): The length to shorten the path by.
 /// - pos (float): The position of the mark, can be used to snap the end of the path to after shortening.
+///
 /// ---
+///
 /// - ctx (context): The canvas context object.
 /// - styles (style): A processed mark styling.
 /// - segments (drawable): The path to place the mark on.

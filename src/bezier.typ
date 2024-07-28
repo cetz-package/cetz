@@ -102,7 +102,7 @@
 }
 
 /// Get a bezier curve's ABC coordinates. Returns them as a respective <Type>array</Type> of <Type>vector</Type>s.
-///
+/// ```
 ///        /A\  <-- Control point of quadratic bezier
 ///       / | \
 ///      /  |  \
@@ -110,7 +110,7 @@
 ///    ,'   |   ',
 ///   /     |     \
 ///  s------C------e  <-- Point on line between s and e
-///
+/// ```
 /// - s (vector): Curve start
 /// - e (vector): Curve end
 /// - B (vector): Point on curve
@@ -336,8 +336,8 @@
 }
 
 /// Find cubic curve extrema by calculating the roots of the curve's first derivative. Returns an <Type>array</Type> of <Type>vector</Type> ordered by distance along the curve from the start to its end.
-/// - s  (vector): Curve start
-/// - e  (vector): Curve end
+/// - s (vector): Curve start
+/// - e (vector): Curve end
 /// - c1 (vector): Control point 1
 /// - c2 (vector): Control point 2
 /// -> array
@@ -433,6 +433,7 @@
 ///
 /// - points (array): Array of 2d points
 /// - k (float): Strength between 0 and 1
+/// - close (bool):
 /// -> array
 #let catmull-to-cubic(points, k, close: false) = {
   k = calc.max(k, 0.1)

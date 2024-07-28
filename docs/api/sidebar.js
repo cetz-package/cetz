@@ -139,7 +139,22 @@ export default [
     label: "Internal",
     link: { type: "doc", id: "api/internal/internal"},
     items: [
-      "api/internal/bezier"
+      "api/internal/canvas",
+      "api/internal/drawable",
+      "api/internal/process",
+      "api/internal/coordinate",
+      "api/internal/anchor",
+      "api/internal/mark",
+      "api/internal/vector",
+      "api/internal/matrix",
+      "api/internal/bezier",
+      "api/internal/aabb",
+      "api/internal/complex",
+      "api/internal/hobby",
+      "api/internal/intersection",
+      "api/internal/path-util",
+      "api/internal/styles",
+      "api/internal/util",
     ]
   }
 ];

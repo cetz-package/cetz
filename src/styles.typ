@@ -141,7 +141,7 @@
 ///   mark: (stroke: auto, fill: "blue"),
 ///   line: (stroke: auto, mark: auto, fill: "red")
 /// )
-/// #styles.resolve(dict, merge: (mark: (stroke: "yellow")), root: "line")
+/// #cetz.styles.resolve(dict, merge: (mark: (stroke: "yellow")), root: "line")
 /// ```
 /// The following is a more detailed explanation of how the algorithm works to use as a reference if needed. It should be updated whenever changes are made.
 /// Remember that dictionaries are recursively merged, if an entry is any other type it is simply updated. (dict + dict = merged dict, value + dict = dict, dict + value = value)
