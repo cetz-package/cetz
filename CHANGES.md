@@ -48,6 +48,9 @@ package called `cetz-plot`.
 ## Util
 - `apply-transform` now allows passing a function that takes and returns a vector, instead of a transformation matrix.
 
+## Tree
+- Support specifying an items depth by setting the first data-value to an integer.
+
 # 0.2.2
 
 ## Anchors
