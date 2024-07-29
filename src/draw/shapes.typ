@@ -1455,7 +1455,7 @@
             }
           }
           for drawable in r.drawables {
-            if drawable.hidden { continue }
+            if drawable.hidden or "debug" in drawable { continue }
             assert.eq(drawable.type, "path")
             segments += drawable.segments
           }
