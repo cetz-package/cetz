@@ -227,16 +227,15 @@
 
 // Multiply matrix with vector
 #let mul-vec(mat, vec) = {
-  if mat.len() != vector.dim(vec) {
-    panic("matrix m must be equal to vector dim")
-  }
-  let new = (0, 0, 0, 1)
-  for m in range(0, mat.len()) {
-    let v = 0
-    for n in range(0, vector.dim(vec)) {
-      v += vec.at(n) * mat.at(m).at(n)
+  let m = mat.len()
+  let n = mat.at(0).len()
+  assert(n == vec.len(), message: "Matrix columns must be equal to vector rows")
+
+  let new = (0,) * m
+  for i in range(0, m) {
+    for j in range(0, n) {
+      new.at(i) = new.at(i) + mat.at(i).at(j) * vec.at(j)
     }
-    new.at(m) = v
   }
   return new
 }

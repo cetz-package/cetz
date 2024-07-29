@@ -47,6 +47,7 @@ package called `cetz-plot`.
 
 ## Util
 - `apply-transform` now allows passing a function that takes and returns a vector, instead of a transformation matrix.
+- Fixed matrix-vector multiplication.
 
 # 0.2.2
 
