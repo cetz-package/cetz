@@ -28,10 +28,19 @@
       }
     }
   }
-  if "name" in element and type(element.name) == "string" and "anchors" in element {
-    ctx.nodes.insert(element.name, element)
-    if ctx.groups.len() > 0 {
-      ctx.groups.last().push(element.name)
+
+  let name = element.at("name", default: none)
+  if name != none {
+    assert.eq(type(name), str,
+      message: "Element name must be a string")
+    assert(not name.contains("."),
+      message: "Invalid name for element '" + element.name + "'; name must not contain '.'")
+
+    if "anchors" in element {
+      ctx.nodes.insert(name, element)
+      if ctx.groups.len() > 0 {
+        ctx.groups.last().push(name)
+      }
     }
   }
 

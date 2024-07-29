@@ -19,6 +19,7 @@ package called `cetz-plot`.
   transformations, without having to scope children under a group name.
 - The center anchor of `content()` with two coordinates got fixed when using
   negative cordinates.
+- Element names are now checked to not contain a "." character.
 
 ## Draw
 - Added `floating` function for drawing elements without affecting bounding boxes.

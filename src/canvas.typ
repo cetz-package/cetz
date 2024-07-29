@@ -95,29 +95,25 @@
 
       place(top + left, float: false, if drawable.type == "path" {
         let vertices = ()
-        for s in drawable.segments {
-          let type = s.at(0)
-          let coordinates = s.slice(1).map(c => {
-            return (
-              (c.at(0) - bounds.low.at(0) - x) * length,
-              (c.at(1) - bounds.low.at(1) - y) * length,
-            )
+        for ((kind, ..pts)) in drawable.segments {
+          pts = pts.map(c => {
+            ((c.at(0) - bounds.low.at(0) - x) * length,
+             (c.at(1) - bounds.low.at(1) - y) * length)
           })
           assert(
-            type in ("line", "cubic"),
-            message: "Path segments must be of type line, cubic",
-          )
+            kind in ("line", "cubic"),
+            message: "Path segments must be of type line, cubic")
 
-          if type == "cubic" {
-            let a = coordinates.at(0)
-            let b = coordinates.at(1)
-            let ctrla = relative(a, coordinates.at(2))
-            let ctrlb = relative(b, coordinates.at(3))
+          if kind == "cubic" {
+            let a = pts.at(0)
+            let b = pts.at(1)
+            let ctrla = relative(a, pts.at(2))
+            let ctrlb = relative(b, pts.at(3))
 
             vertices.push((a, (0pt, 0pt), ctrla))
             vertices.push((b, ctrlb, (0pt, 0pt)))
           } else {
-            vertices += coordinates
+            vertices += pts
           }
         }
         if type(drawable.stroke) == dictionary and "thickness" in drawable.stroke and type(drawable.stroke.thickness) != typst-length {
