@@ -7,14 +7,16 @@
 
   set-style(mark: (end: ">"))
 
-  line((-l,0), (l,0), stroke: red, name: "x")
-  content((rel: ((name: "x", anchor: 50%), .5, "x.end"), to: "x.end"), text(red, $x$))
+  on-layer(-1, {
+    line((-l,0), (l,0), stroke: red, name: "x")
+    content((rel: ((name: "x", anchor: 50%), .5, "x.end"), to: "x.end"), text(red, $x$))
 
-  line((0,-l), (0,l), stroke: blue, name: "y")
-  content((rel: ((name: "y", anchor: 50%), .5, "y.end"), to: "y.end"), text(blue, $y$))
+    line((0,-l), (0,l), stroke: blue, name: "y")
+    content((rel: ((name: "y", anchor: 50%), .5, "y.end"), to: "y.end"), text(blue, $y$))
 
-  line((0,0,-l), (0,0,l), stroke: green, name: "z", mark: (z-up: (1,0,0)))
-  content((rel: ((name: "z", anchor: 50%), .5, "z.end"), to: "z.end"), text(green, $z$))
+    line((0,0,-l), (0,0,l), stroke: green, name: "z", mark: (z-up: (1,0,0)))
+    content((rel: ((name: "z", anchor: 50%), .5, "z.end"), to: "z.end"), text(green, $z$))
+  })
 }
 
 #let checkerboard() = {
@@ -26,6 +28,13 @@
     }
   }
 }
+
+#test-case({
+  import draw: *
+  ortho(reset-transform: false, {
+    line((-1, 0), (1, 0), mark: (end: ">"))
+  })
+})
 
 #test-case({
   import draw: *
@@ -67,7 +76,7 @@
 
 #test-case({
   import draw: *
-  ortho({
+  ortho(sorted: true, {
     axes(4)
     on-yz(x: -1, {
       checkerboard()
@@ -78,5 +87,63 @@
     on-xz(y: -1, {
       checkerboard()
     })
+  })
+})
+
+// Ordering
+#test-case({
+  import draw: *
+  ortho(sorted: true, {
+    scope({ translate((0, 0, +1)); rect((-1, -1), (1, 1), fill: blue) })
+    scope({ translate((0, 0,  0)); rect((-1, -1), (1, 1), fill: red) })
+    scope({ translate((0, 0, -1)); rect((-1, -1), (1, 1), fill: green) })
+  })
+})
+
+// Fully visible
+#test-case({
+  import draw: *
+  ortho(x: 0deg, y: 0deg, cull-face: "cw", {
+    line((-1, -1), (1, -1), (1, 1), (-1, 1), close: true)
+    line((-1,-1), (1,-1), (0,1), close: true)
+  })
+})
+
+// Nothing visible
+#test-case({
+  import draw: *
+  ortho(x: 0deg, y: 0deg, cull-face: "cw", {
+    line((-1, -1), (1, -1), (1, 1), (-1, 1), close: true)
+    rotate(y: 120deg)
+    line((-1,-1), (1,-1), (0,1), close: true)
+  })
+})
+
+// Face order of library shapes
+#test-case({
+  import draw: *
+  ortho(cull-face: "cw", {
+    rect((-1, -1), (1, 1), radius: .5)
+  })
+})
+
+#test-case({
+  import draw: *
+  ortho(cull-face: "cw", {
+    circle((0,0))
+  })
+})
+
+#test-case({
+  import draw: *
+  ortho(cull-face: "cw", {
+    arc((0,0), start: 0deg, stop: 270deg, mode: "PIE")
+  })
+})
+
+#test-case({
+  import draw: *
+  ortho(cull-face: "cw", {
+    content((0,0), [Text])
   })
 })
