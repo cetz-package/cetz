@@ -2,18 +2,23 @@
 title: Styling
 ---
 
-import Parameter from "@site/src/components/Parameter"
-import Type from "@site/src/components/Type"
+import Parameter from "@site/src/components/Parameter";
+import Type from "@site/src/components/Type";
 
 You can style draw elements by passing the relevant named arguments to their draw functions. All elements that draw something have stroke and fill styling unless said otherwise.
 
 <Parameter name="fill" types="color,none" default_value="none">
-How to fill the drawn element.
+  How to fill the drawn element.
 </Parameter>
-<Parameter name="stroke" types="none,auto,length,color,dictionary,stroke" default_value="black">
-How to stroke the border or the path of the draw element. [See Typst's line documentation for more details.](https://typst.app/docs/reference/visualize/line/#parameters-stroke)
+<Parameter
+  name="stroke"
+  types="none,auto,length,color,dictionary,stroke"
+  default_value="black"
+>
+  How to stroke the border or the path of the draw element. [See Typst's line
+  documentation for more
+  details.](https://typst.app/docs/reference/visualize/line/#parameters-stroke)
 </Parameter>
-
 
 ```typc example
 // Draws a red circle with a blue border
@@ -33,11 +38,11 @@ rect((-1, -1), (1, 1))
 set-style(stroke: blue, fill: red)
 circle((0,0))
 
-// Draws a green line despite the global stroke is blue
+// Draws a green line despite the global stroke being blue
 line((), (1,1), stroke: green)
 ```
 
-When using a dictionary for a style, it is important to onte that they update each other instead of overriding the entire option like a non-dictionary value would. For example, if the stroke is set to `(paint: red, thickness: 5pt)` and you pass `(paint: blue)`, the stroke would become `(paint: blue, thickness: 5pt)`.
+When using a dictionary for a style, it is important to note that they update each other instead of overriding the entire option like a non-dictionary value would. For example, if the stroke is set to `(paint: red, thickness: 5pt)` and you pass `(paint: blue)`, the stroke would become `(paint: blue, thickness: 5pt)`.
 
 ```typc example
 // Sets the stroke to red with a thickness of 5pt

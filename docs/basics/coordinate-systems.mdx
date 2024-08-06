@@ -8,18 +8,19 @@ import Type from "@site/src/components/Type";
 A <Type>coordinate</Type> is a position on the canvas on which the picture is drawn. They take the form of dictionaries and the following sub-sections define the key value pairs for each system. Some systems have a more implicit form as an array of values and CeTZ attempts to infer the system based on the element types.
 
 ## XYZ
+
 Defines a point `x` units right, `y` units upward and `z` units away.
 
 <Parameter name="x" types="number" default_value="0">
-The number of units in the `x` direction.
+  The number of units in the `x` direction.
 </Parameter>
 
 <Parameter name="y" types="number" default_value="0">
-The number of units in the `y` direction.
+  The number of units in the `y` direction.
 </Parameter>
 
 <Parameter name="z" types="number" default_value="0">
-The number of units in the `z` direction.
+  The number of units in the `z` direction.
 </Parameter>
 
 The implicit form can be given as an array of two or three <Type>number</Type>s, as in `(x, y)` or `(x, y, z)`
@@ -36,6 +37,7 @@ line((2, 0), (2, 0, 1))
 ```
 
 ## Previous
+
 Use this to reference the position of the previous coordinate passed to a draw function. It takes the form of an empty array `()` and the previous position initially will be `(0, 0, 0)`. This will never reference the position of a coordinate used to define another coordinate.
 
 ```typc example
@@ -45,20 +47,20 @@ line((0,0), (1, 1))
 circle(())
 ```
 
-
 ## Relative
+
 Places the given coordinate relative to the previous coordinate. Or in other words, for the given coordinate, the previous coordinate will be used as the origin. Another coordinate can be given to act as the previous coordinate instead.
 
 <Parameter name="rel" types="coordinate">
-The coordinate to place relative to the previous coordinate.
+  The coordinate to place relative to the previous coordinate.
 </Parameter>
 
 <Parameter name="update" types="bool" default_value="true">
-When false the previous the previous position will not be updated.
+  When false the previous the previous position will not be updated.
 </Parameter>
 
 <Parameter name="to" types="coordinate" default_value="()">
-The coordinate to treat as the previous coordinate.
+  The coordinate to treat as the previous coordinate.
 </Parameter>
 
 In the example below, the red circle is placed one unit to the right of the blue circle. If the blue circle was to be moved a different position, the red circle will move with the blue circle to stay one unit to the right.
@@ -69,14 +71,18 @@ circle((rel: (1, 0)), stroke: red)
 ```
 
 ## Polar
+
 Defines a point that is `radius` distance away from the origin at the given angle.
 
 <Parameter name="angle" types="angle">
-The angle of the coordinate. An angle of `0deg` is to the right, a degree of `90deg` is upward.
+  The angle of the coordinate. An angle of `0deg` is to the right, a degree of
+  `90deg` is upward.
 </Parameter>
 
 <Parameter name="radius" types="number,array">
-The distance from the origin. An array of <Type>number</Type> can be given, in the form `(x, y)`, to define the `x` and `y` radii of an ellipse instead of a circle.
+  The distance from the origin. An array of <Type>number</Type> can be given, in
+  the form `(x, y)`, to define the `x` and `y` radii of an ellipse instead of a
+  circle.
 </Parameter>
 
 ```typc example
@@ -97,15 +103,18 @@ line(
 )
 ```
 
-
 ## Barycentric
-In the barycentric coordinate system a point is expressed as the linear combination of multiple vectors. The idea is that you specify vectors $v_1, v_2, ..., v_n$ and numbers $\alpha_1, \alpha_2, ..., \alpha_n$. Then the barycentric coordinate specified by these vectors and numbers is 
+
+In the barycentric coordinate system a point is expressed as the linear combination of multiple vectors. The idea is that you specify vectors $v_1, v_2, ..., v_n$ and numbers $\alpha_1, \alpha_2, ..., \alpha_n$. Then the barycentric coordinate specified by these vectors and numbers is
+
 $$
 \frac{\alpha_1 v_1 + \alpha_2 v_2 + \cdots + \alpha_n v_n}{\alpha_1 + \alpha_2 + \cdots + \alpha_n}
 $$
 
 <Parameter name="bary" types="dictionary">
-A dictionary where the key is a named element and the value is a <Type>float</Type>. The `center` anchor of the named element is used as $v$ and the value is used as $\alpha$
+  A dictionary where the key is a named element and the value is a{" "}
+  <Type>float</Type>. The `center` anchor of the named element is used as $v$
+  and the value is used as $\alpha$
 </Parameter>
 
 ```typc example
@@ -138,8 +147,8 @@ for (c, s, f, cont) in (
 ) {
   content(
     (bary: (
-      content: c, 
-      structure: s, 
+      content: c,
+      structure: s,
       form: f
     )),
     cont,
@@ -151,14 +160,22 @@ for (c, s, f, cont) in (
 ```
 
 ## Anchor
+
 Defines a point relative to a named element using anchors, see [Anchors](/basics/anchors).
 
 <Parameter name="name" types="str">
-The name of the element that you wish to use to specify a coordinate.
+  The name of the element that you wish to use to specify a coordinate.
 </Parameter>
 
-<Parameter name="anchor" types="str,angle,number,ratio,none" default_value="none">
-The anchor of the element. Strings are named anchors, angles are border anchors and numbers and ratios are path anchors. If not given, the default anchor will be used, on most elements this is `center` but it can be different or not exist at all!
+<Parameter
+  name="anchor"
+  types="str,angle,number,ratio,none"
+  default_value="none"
+>
+  The anchor of the element. Strings are named anchors, angles are border
+  anchors and numbers and ratios are path anchors. If not given, the default
+  anchor will be used, on most elements this is `center` but it can be different
+  or not exist at all!
 </Parameter>
 
 ```typc example
@@ -180,18 +197,19 @@ rect("line.start", "circle.east")
 ```
 
 ## Tangent
+
 This system allows you to compute the point that lies tangent to a shape. In detail, consider an element and a point. Now draw a straight line from the point so that it "touches" the element (more formally, so that it is _tangent_ to this element). The point where the line touches the shape is the point referred to by this coordinate system.
 
 <Parameter name="element" types="str">
-The name of the element on whose border the tangent should lie.
+  The name of the element on whose border the tangent should lie.
 </Parameter>
 
 <Parameter name="point" types="coordinate">
-The point through which the tangent should go.
+  The point through which the tangent should go.
 </Parameter>
 
 <Parameter name="solution" types="int">
-Which solution should be used if there are more than one.
+  Which solution should be used if there are more than one.
 </Parameter>
 
 A special algorithm is needed in order to compute the tangent for a given shape. Currently it does this by assuming the distance between the center and top anchor (See [Anchors](/basics/anchors)) is the radius of a circle.
@@ -218,14 +236,15 @@ line(
 ```
 
 ## Perpendicular
+
 Can be used to find the intersection of a vertical line going through a point $p$ and a horizontal line going through some other point $q$.
 
 <Parameter name="horizontal" types="coordinate">
-The coordinate through which the horizontal line passes.
+  The coordinate through which the horizontal line passes.
 </Parameter>
 
 <Parameter name="vertical" types="coordinate">
-The coordinate through which the vertical line passes.
+  The coordinate through which the vertical line passes.
 </Parameter>
 
 You can use the implicit syntax of `(horizontal, "-|", vertical)` or `(vertical, "|-", horizontal)`.
@@ -248,22 +267,27 @@ line("p2.south-east", ((), "-|", "yline.end")) // Short form
 ```
 
 ## Interpolation
-Use this to linearly interpolate between two coordinates `a` and `b` with a given distance `number`. If `number` is a <Type>number</Type> the position will be at the absolute distance away from `a` towards `b`, a <Type>ratio</Type> can be given instead to be the relative distance between `a` and `b`. An <Type>angle</Type> can also be given for the general meaning: "First consider the line from `a` to `b`. Then rotate this line by `angle` around point `a`. Then the two endpoints of this lien will be `a` and some point `c`. Use the point `c` for the subsequent computation."
+
+Use this to linearly interpolate between two coordinates `a` and `b` with a given distance `number`. If `number` is a <Type>number</Type> the position will be at the absolute distance away from `a` towards `b`, a <Type>ratio</Type> can be given instead to be the relative distance between `a` and `b`. An <Type>angle</Type> can also be given for the general meaning: "First consider the line from `a` to `b`. Then rotate this line by `angle` around point `a`. Then the two endpoints of this line will be `a` and some point `c`. Use the point `c` for the subsequent computation."
 
 <Parameter name="a" types="coordinate">
-The coordinate to interpolate from.
+  The coordinate to interpolate from.
 </Parameter>
 
 <Parameter name="b" types="coordinate">
-The coordinate to interpolate to.
+  The coordinate to interpolate to.
 </Parameter>
 
 <Parameter name="number" types="ratio,number">
-The distance between `a` and `b`. A <Type>ratio</Type> will be the relative distance between the two points, a <Type>number</Type> will be the absolute distance between the two points.
+  The distance between `a` and `b`. A <Type>ratio</Type> will be the relative
+  distance between the two points, a <Type>number</Type> will be the absolute
+  distance between the two points.
 </Parameter>
 
 <Parameter name="angle" types="angle" default_value="0deg">
-Angle between $\vec{AB}$ and $\vec{AP}$, where $P$ is the resulting coordinate. This can be used to get the _normal_ for a tangent between two points.
+  Angle between $\vec{AB}$ and $\vec{AP}$, where $P$ is the resulting
+  coordinate. This can be used to get the _normal_ for a tangent between two
+  points.
 </Parameter>
 
 Can be used implicitly as an array in the form `(a, number, b)` or `(a, number, angle, b)`.
@@ -347,11 +371,11 @@ circle(a, radius: .1, fill: black)
 line((a, .7, b), (a: (), b: a, number: .5, angle: 90deg), stroke: red)
 ```
 
-
 ## Function
+
 An array where the first element is a function and the rest are coordinates will cause the function to be called with the resolved coordinates. The resolved coordinates will be given as a <Type>vector</Type> that represents an xyz point in space.
 
-The example below shows how to use this system to create an offset from an anchor, however this could easily be replaced with a [relative coordinate](#relative) with the `to` argument set. 
+The example below shows how to use this system to create an offset from an anchor, however this could easily be replaced with a [relative coordinate](#relative) with the `to` argument set.
 
 ```typc example
 circle((0, 0), name: "c")
