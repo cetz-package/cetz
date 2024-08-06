@@ -41,10 +41,8 @@ export default [
     label: "Advanced",
     link: {
       type: "doc",
-      id: "advanced/advanced"
+      id: "advanced/advanced",
     },
-    items: [
-      "advanced/custom-types"
-    ]
-  }
+    items: ["advanced/custom-types"],
+  },
 ];

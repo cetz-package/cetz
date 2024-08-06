@@ -137,7 +137,7 @@ export default [
   {
     type: "category",
     label: "Internal",
-    link: { type: "doc", id: "api/internal/internal"},
+    link: { type: "doc", id: "api/internal/internal" },
     items: [
       "api/internal/canvas",
       "api/internal/drawable",
@@ -155,6 +155,6 @@ export default [
       "api/internal/path-util",
       "api/internal/styles",
       "api/internal/util",
-    ]
-  }
+    ],
+  },
 ];

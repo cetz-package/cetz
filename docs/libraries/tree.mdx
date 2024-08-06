@@ -2,14 +2,16 @@
 title: Tree
 ---
 
-import Type from "@site/src/components/Type"
+import Type from "@site/src/components/Type";
 
 The tree library allows the drawing of diagrams with simple tree layout algorithms.
 
 ## Nodes
+
 A tree node is an array consisting of the node's value at index 0 followed by its child nodes. For the default `draw-node` function, the value (the first item) of a node must be of type <Type>content</Type>.
 
 Example of a list of nodes:
+
 ```typc example
 cetz.tree.tree(
   (
@@ -27,6 +29,7 @@ cetz.tree.tree(
 ```
 
 Example of a tree of nodes:
+
 ```typc example
 cetz.tree.tree(
   (
@@ -45,6 +48,7 @@ cetz.tree.tree(
 ```
 
 ## Drawing and Styling Tree Nodes
+
 The `tree()` function takes an optional `draw-node:` and `draw-edge:` callback function that can be used to customice node and edge drawing.
 
 The `draw-node` function must take the current node and its parents node anchor as arguments and return one or more elements.

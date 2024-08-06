@@ -2,7 +2,7 @@
 title: Anchors
 ---
 
-import Type from "@site/src/components/Type"
+import Type from "@site/src/components/Type";
 
 You can refer to a position relative to an element by using its anchors. Anchors come in three different variations but can all be used in two ways.
 
@@ -31,11 +31,13 @@ circle("circle.east", radius: 0.3)
 ```
 
 ## Named
+
 Named anchors are normally unique to the type of element, such as a bezier curve's control points. Other border and path anchors specify their own named anchors that are available to all elements that support border or path anchors.
 
 Elements that have an `anchor` argument also have a "default" named anchor. You can use it by just giving the element's name without an anchor.
 
 ## Border
+
 A border anchor refers to a point on the element's border where a ray is cast from the element's center at a given angle and hits the border.
 
 They are given as angles where `0deg` is towards the right and `90deg` is up.
@@ -54,6 +56,7 @@ content("circle.south-west", [South West], anchor: "north-east")
 ```
 
 ## Path
+
 A path anchor refers to a point along the path of an element. They can be given as either a <Type>number</Type> for an absolute distance along the path, or a <Type>ratio</Type> for a relative distance along the path.
 
 Path anchors also specify three anchors "start", "mid" and "end".

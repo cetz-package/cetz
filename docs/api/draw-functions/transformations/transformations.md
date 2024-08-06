@@ -7,4 +7,3 @@ Transformation matrices get multiplied in the following order:
 $$
 M_{\text{world}} = M_\text{world} \cdot M_\text{local}
 $$
-
