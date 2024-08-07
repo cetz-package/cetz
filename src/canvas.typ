@@ -6,6 +6,7 @@
 #import "styles.typ"
 #import "process.typ"
 #import "version.typ"
+#import "modifiers.typ"
 
 #import util: typst-length
 
@@ -34,6 +35,8 @@
   assert(length / 1cm != 0,
     message: "Canvas length must be != 0!")
 
+  import "/src/lib/decorations.typ": wave, zigzag, coil
+
   let ctx = (
     version: version.version,
     length: length,
@@ -51,8 +54,16 @@
        (0, 0, .0, 1)),
     // Nodes, stores anchors and paths
     nodes: (:),
-    // group stack
+    // Group stack
     groups: (),
+    // Registeretd modifier functions
+    path-modifiers: (
+      linearize: modifiers.linearize,
+      wave: modifiers.wave,
+      //zigzag: modifiers.zigzag,
+      //coil: modifiers.coil,
+      ticks: modifiers.ticks,
+    ),
   )
 
   let (ctx, bounds, drawables) = process.many(ctx, body)
