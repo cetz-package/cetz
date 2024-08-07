@@ -585,3 +585,30 @@
   }
   return pts
 }
+
+/// Find the closest point on a bezier to a given point
+/// by using a binary search along the curve.
+#let cubic-closest-point(pt, s, e, c1, c2, max-recursion: 1) = {
+  let probe(low, high, depth) = {
+    let min = calc.inf
+    let min-t = 0
+
+    for t in range(0, 11) {
+      t = low + t / 10 * (high - low)
+      let d = vector.dist(pt, cubic-point(s, e, c1, c2, t))
+      if d < min {
+        min = d
+        min-t = t
+      }
+    }
+
+    if depth < max-recursion {
+      let step = (high - low) / 10
+      return probe(calc.max(0, min-t - step), calc.min(min-t + step, 1), depth + 1)
+    }
+
+    return cubic-point(s, e, c1, c2, min-t)
+  }
+
+  return probe(0, 1, 0)
+}
