@@ -23,6 +23,8 @@ package called `cetz-plot`.
 
 ## Draw
 - Added `floating` function for drawing elements without affecting bounding boxes.
+- Added `closest-point` for creating an anchor at the closest point between a
+  reference point and one or more elements.
 
 ## Marks
 - Added support for mark `anchor` style key, to adjust mark placement and
