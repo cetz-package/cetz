@@ -29,40 +29,35 @@
 
 /// Draw a curly brace between two points.
 ///
-/// #example(```
+/// ```typc example
 /// cetz.decorations.brace((0,1),(2,1))
 ///
 /// cetz.decorations.brace((0,0),(2,0),
 ///   pointiness: 45deg, outer-pointiness: 45deg)
 /// cetz.decorations.brace((0,-1),(2,-1),
 ///   pointiness: 90deg, outer-pointiness: 90deg)
-/// ```)
-///
-/// *Style Root:* `brace`. \
-/// *Style Keys:*
-///   #show-parameter-block("amplitude", ("number"), [
-///     Sets the height of the brace, from its baseline to its middle tip.], default: .5)
-///   #show-parameter-block("pointiness", ("ratio", "angle"), [
-///     How pointy the spike should be. #0deg or `100%` for maximum pointiness, #90deg or `0%` for minimum.], default: 15deg)
-///   #show-parameter-block("outer-pointiness", ("ratio", "angle"), [
-///     How pointy the outer edges should be. #0deg or `100%` for maximum pointiness (allowing for a smooth transition to a straight line), #90deg or `0%` for minimum. Setting this to #auto will use the value set for `pointiness`.], default: 15deg)
-///   #show-parameter-block("content-offset", ("number"), [
-///     Offset of the `"content"` anchor from the spike of the brace.], default: .3)
-///   #show-parameter-block("flip", ("bool"), [
-///     Mirror the brace along the line between start and end], default: false)
-///
-/// *Anchors:*
-///   / start:   Where the brace starts, same as the `start` parameter.
-///   / end:     Where the brace end, same as the `end` parameter.
-///   / spike:   Point of the spike, halfway between `start` and `end` and shifted
-///     by `amplitude` towards the pointing direction.
-///   / content: Point to place content/text at, in front of the spike.
-///   / center:  Center of the enclosing rectangle.
+/// ```
 ///
 /// - start (coordinate): Start point
 /// - end (coordinate): End point
 /// - name (string, none): Element name used for querying anchors
 /// - ..style (style): Style key-value pairs
+///
+/// ## Styling
+///
+/// *Root:* `brace`
+/// - amplitude (number) = 0.5: Sets the height of the brace, from its baseline to its middle tip.
+/// - pointiness (ratio, angle) = 15deg: How pointy the spike should be. `0deg` or `100%` for maximum pointiness, `90deg` or `0%` for minimum.
+/// - outer-pointiness (ratio, angle) = 15deg: How pointy the outer edges should be. `0deg` or `100%` for maximum pointiness (allowing for a smooth transition to a straight line), `90deg` or `0%` for minimum. Setting this to <Type>auto</Type> will use the value set for `pointiness`.
+/// - content-offset (number) = 0.3: Offset of the `"content"` anchor from the spike of the brace.
+/// - flip (bool) = false: Mirror the brace along the line between start and end.
+///
+/// ## Anchors
+/// - **start** Where the brace starts, same as the `start` parameter.
+/// - **end** Where the brace end, same as the `end` parameter.
+/// - **spike** Point of the spike, halfway between `start` and `end` and shifted by `amplitude` towards the pointing direction.
+/// - **content** Point to place content/text at, in front of the spike.
+/// - **center** Center of the enclosing rectangle.
 #let brace(start, end, ..style, name: none) = {
   assert.eq(style.pos().len(), 0,
     message: "Brace takes no additional positional arugments.")
@@ -157,7 +152,7 @@
 
 /// Draw a flat curly brace between two points.
 ///
-/// #example(```
+/// ```
 /// cetz.decorations.flat-brace((0,1),(2,1))
 ///
 /// cetz.decorations.flat-brace((0,0),(2,0),
@@ -166,35 +161,32 @@
 /// cetz.decorations.flat-brace((0,-1),(2,-1),
 ///   outer-curves: 0,
 ///   aspect: 75%)
-/// ```)
+/// ```
 ///
-/// This mimics the braces from TikZ's `decorations.pathreplacing` library#footnote[https://github.com/pgf-tikz/pgf/blob/6e5fd71581ab04351a89553a259b57988bc28140/tex/generic/pgf/libraries/decorations/pgflibrarydecorations.pathreplacing.code.tex#L136-L185].
-/// In contrast to @@brace(), these braces use straight line segments, resulting
-/// in better looks for long braces with a small amplitude.
-///
-/// *Style Root:* `flat-brace` \
-/// *Style Keys:*
-///   #show-parameter-block("amplitude", ("number"), [
-///     Determines how much the brace rises above the base line.], default: .3)
-///   #show-parameter-block("aspect", ("ratio"), [
-///     Determines the fraction of the total length where the spike will be placed.], default: 50%)
-///   #show-parameter-block("curves", ("number"), [
-///     Curviness factor of the brace, a factor of 0 means no curves.], default: auto)
-///   #show-parameter-block("outer-curves", ("auto", "number"), [
-///     Curviness factor of the outer curves of the brace. A factor of 0 means no curves.], default: auto)
-///
-/// *Anchors:*
-///   / start:   Where the brace starts, same as the `start` parameter.
-///   / end:     Where the brace end, same as the `end` parameter.
-///   / spike:   Point of the spike's top.
-///   / content: Point to place content/text at, in front of the spike.
-///   / center:  Center of the enclosing rectangle.
+/// This mimics the braces from TikZ's [`decorations.pathreplacing` library](https://github.com/pgf-tikz/pgf/blob/6e5fd71581ab04351a89553a259b57988bc28140/tex/generic/pgf/libraries/decorations/pgflibrarydecorations.pathreplacing.code.tex#L136-L185).
+/// In contrast to the `brace` function, these braces use straight line segments, resulting in better looks for long braces with a small amplitude.
 ///
 /// - start (coordinate): Start point
 /// - end (coordinate): End point
 /// - flip (bool): Flip the brace around
-/// - name (string, none): Element name for querying anchors
+/// - name (str, none): Element name for querying anchors
+/// - debug (bool):
 /// - ..style (style): Style key-value pairs
+///
+/// ## Styling
+///
+/// *Root:* `flat-brace`
+/// - amplitude (number) = 0.3: Determines how much the brace rises above the base line.
+/// - aspect (ratio) = 50% Determines the fraction of the total length where the spike will be placed.
+/// - curves (number, auto, array) = auto: Curviness factor of the brace, a factor of 0 means no curves.
+/// - outer-curves (number, auto, array) = auto: Curviness factor of the outer curves of the brace. A factor of 0 means no curves.
+///
+/// ## Anchors
+/// - **start** Where the brace starts, same as the `start` parameter.
+/// - **end** Where the brace end, same as the `end` parameter.
+/// - **spike** Point of the spike's top.
+/// - **content** Point to place content/text at, in front of the spike.
+/// - **center**  Center of the enclosing rectangle.
 #let flat-brace(
   start,
   end,

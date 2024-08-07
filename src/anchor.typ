@@ -36,7 +36,7 @@
 /// - y-dist (number): The furthest distance the test line should go in the y direction.
 /// - drawables (drawables): Drawables to test for an intersection against. Ideally should be of type path but all others are ignored.
 /// - angle (angle): The angle to check for a border anchor at.
-/// -> (vector, none)
+/// -> vector,none
 #let border(center, x-dist, y-dist, drawables, angle) = {
   x-dist += util.float-epsilon
   y-dist += util.float-epsilon
@@ -82,17 +82,17 @@
 /// The transform is calculated by translating the given transform by the distance between the position of `offset-anchor` and `default`. It can then be used to correctly transform an element's drawables. If either are none the calculation won't happen but the transform will still be returned.
 /// The function can be used to get the transformed anchors of an element by passing it a string. An empty array can be passed to get the list of valid anchors.
 ///
-/// - callback (function, auto): The function to call to get a named anchor's position. The anchor's name will be passed and it should return a vector (str => vector). If no named anchors exist on the element `auto` can be passed instead.
-/// - anchor-names (array<str>): A list of valid anchor names. This list will be used to validate an anchor exists before `callback` is used.
-/// - default (str): The name of the default anchor.
-/// - transform (matrix): The current transformation matrix to apply to an anchor's position before returning it. If `offset-anchor` and `default` is set, it will be first translated by the distance between them.
-/// - name (str): The name of the element, this is only used in the error message in the event an anchor is invalid.
-/// - offset-anchor (str): The name of an anchor to offset the transform by.
+/// - callback (function, auto): The function to call to get a named anchor's position. The anchor's name will be passed and it should return a <Type>vector</Type> (`str => vector`). If no named anchors exist on the element `auto` can be given instead of a function.
+/// - anchor-names (array): A list of valid anchor names. This list will be used to validate an anchor exists before `callback` is used.
+/// - default (str,none): The name of the default anchor, if one exists.
+/// - transform (matrix,none): The current transformation matrix to apply to an anchor's position before returning it. If `offset-anchor` and `default` is set, it will be first translated by the distance between them.
+/// - name (str, none): The name of the element, this is only used in the error message in the event an anchor is invalid.
+/// - offset-anchor (str, none): The name of an anchor to offset the transform by.
 /// - border-anchors (bool): If true, add border anchors.
 /// - path-anchors (bool): If true, add path anchors.
-/// - radii (none,tuple): Radius tuple used for border anchor calculation
-/// - path (none,drawable): Path used for path and border anchor calculation
-/// -> (matrix, function)
+/// - radii (none,array): Radius tuple used for border anchor calculation.
+/// - path (none,drawable): Path used for path and border anchor calculation.
+/// -> array
 #let setup(
     callback,
     anchor-names,

@@ -8,8 +8,18 @@
 
 #import util: typst-length
 
+/// Checks if a mark should be drawn according to the current style.
+/// - style (style): The current style.
+/// -> bool
 #let check-mark(style) = style != none and (style.start, style.end, style.symbol).any(v => v != none)
 
+/// Processes the mark styling.
+/// TODO: remember what is actually going on here.
+///
+/// - ctx (context): The context object.
+/// - style (style): The current style.
+/// - root (str): Where the mark is being placed, normally either `"start"` or `"end"`. Allows different styling for marks in different directions.
+/// - path-length (float): The length of the path. This is used for relative offsets.
 #let process-style(ctx, style, root, path-length) = {
   let base-style = (
     symbol: auto,
@@ -141,6 +151,18 @@
   return mark
 }
 
+/// Places a mark on the given path. Returns a {{dictionary}} with the following keys:
+/// - drawables (drawable): The mark drawables.
+/// - distance (float): The length to shorten the path by.
+/// - pos (float): The position of the mark, can be used to snap the end of the path to after shortening.
+///
+/// ---
+///
+/// - ctx (context): The canvas context object.
+/// - styles (style): A processed mark styling.
+/// - segments (drawable): The path to place the mark on.
+/// - is-end (bool): TODO
+/// -> dictionary
 #let place-mark-on-path(ctx, styles, segments, is-end: false) = {
   if type(styles) != array {
     styles = (styles,)
@@ -272,6 +294,14 @@
   )
 }
 
+/// Places marks along a path. Returns them as an {{array}} of {{drawable}}.
+///
+/// - ctx (context): The context object.
+/// - style (style): The current mark styling.
+/// - transform (matrix): The current transformation matrix.
+/// - path (drawable): The path to place the marks on. 
+/// - add-path (bool): When `true` the shortened path will returned as the first {{drawable}} in the {{array}}
+/// -> array
 #let place-marks-along-path(ctx, style, transform, path, add-path: true) = {
   let distance = (0, 0)
   let snap-to = (none, none)

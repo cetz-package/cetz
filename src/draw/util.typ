@@ -1,5 +1,4 @@
-/// Assert that the cetz version of the canvas
-/// matches the given version (range).
+/// Assert that the cetz version of the canvas matches the given version (range).
 ///
 /// min (version): Minimum version (current >= min)
 /// max (none, version): First unsupported version (current < max)

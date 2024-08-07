@@ -4,6 +4,11 @@
 #import "drawable.typ"
 #import "vector.typ"
 
+
+/// Processes an element's function to get its drawables and bounds. Returns a {{dictionary}} with the key-values: `ctx` The modified context object, `bounds` The {{aabb}} of the element's drawables, `drawables` An {{array}} of the element's {{drawable}}s.
+///
+/// - ctx (ctx): The current context object.
+/// - element-func (function): A function that when passed {{ctx}}, it should return an element dictionary.
 #let element(ctx, element-func) = {
   let bounds = none
   let element
@@ -64,6 +69,10 @@
   )
 }
 
+/// Runs the `element` function for a list of element functions and aggregates the results.
+/// - ctx (ctx): The current context object.
+/// - body (array): The array of element functions to process.
+/// -> dictionary
 #let many(ctx, body) = {
   let drawables = ()
   let bounds = none

@@ -1,0 +1,37 @@
+# Path Decorations
+
+Path decorations are elements that accept a path as input and generate one or more shapes that follow that path.
+
+All path decoration functions support the following style keys:
+
+<Parameter name="start" types="ratio,length" default_value="0%">
+  Absolute or relative start of the decoration on the path.
+</Parameter>
+
+<Parameter name="end" types="ratio,length" default_value="100%">
+  Absolute or relative end of the decoration on the path.
+</Parameter>
+
+<Parameter name="rest" types="str" default_value="LINE">
+  If set to `"LINE"`, generate lines between the path's start/end and the
+  decoration's start/end if the path is *not closed*.
+</Parameter>
+
+<Parameter name="width" types="number" default_value="1">
+  Width or thickness of the decoration.
+</Parameter>
+
+<Parameter name="segments" types="int" default_value="10">
+  The number of repetitions/phases to generate. This key is ignored if
+  `segment-length` is not <Type>none</Type>
+</Parameter>
+
+<Parameter name="segment-length" types="none,number" default_value="none">
+  Length of one repetion/phase of the decoration.
+</Parameter>
+
+<Parameter name="align" types="str" default_value="'START'">
+  Alignment of the decoration on the path *if `segment-length` is set* and the
+  decoration does not fill up the full range between start and stop. Can be one
+  of `"START"`, `"MID"`, `"END`.
+</Parameter>

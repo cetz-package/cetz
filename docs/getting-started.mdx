@@ -1,0 +1,27 @@
+---
+title: Getting Started
+sidebar_position: 1
+---
+
+## Usage
+
+This is the minimal starting point in a `.typ` file:
+
+```typ
+#import "@preview/cetz:0.2.2"
+#cetz.canvas({
+  import cetz.draw: *
+  ...
+})
+```
+
+Note that draw functions are imported inside the scope of the `canvas` block. This is recommended as some draw functions override Typst's functions such as `line`.
+
+## Examples
+
+From this point on only the code inside the `canvas` block will be shown in examples unless specified otherwise.
+
+```typc example
+circle((0, 0))
+line((0, 0), (2, 1))
+```

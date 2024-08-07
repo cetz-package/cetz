@@ -85,15 +85,15 @@
   return vector.sub(y, vector.scale(z, vector.dot(v,y) / (1 + vector.dot(v, z))))
 }
 
-/// Calculate bezier spline for open Hobby curve through a list of points
+/// Calculates a bezier spline for an open Hobby curve through a list of points. Returns an {{array}} of {{bezier}}s
 ///
 /// - points (array): List of points
 /// - ta (auto,array): Outgoing tension per point
 /// - tb (auto,array): Incoming tension per point
-/// - rho (auto,array): The rho function of the form `(a, b) => <float>`
+/// - rho (auto,function): The rho function of the form `(float, float) => float`
 /// - omega (auto,array): Tuple of the curl at the start end end of the curve `(start, end)` as floats
 ///
-/// -> array List of cubic bezier curves (start, end, c0, c1)
+/// -> array
 #let hobby-to-cubic-open(points, ta: auto, tb: auto, rho: auto, omega: auto) = {
   let n = points.len() - 1
 
@@ -163,14 +163,14 @@
   return range(n).map(i => (points.at(i), points.at(i+1), ca.at(i), cb.at(i)))
 }
 
-/// Calculate bezier spline for closed Hobby curve through a list of points
+/// Calculates a bezier spline for a closed Hobby curve through a list of points. Returns an {{array}} of {{bezier}}s.
 ///
 /// - points (array): List of points
 /// - ta (auto,array): Outgoing tension per point
 /// - tb (auto,array): Incoming tension per point
-/// - rho (auto,array): The rho function of the form `(a, b) => <float>`
+/// - rho (auto,array): The rho function of the form `(float, b) => float`
 ///
-/// -> array List of cubic bezier curves (start, end, c0, c1)
+/// -> array
 #let hobby-to-cubic-closed(points, ta: auto, tb: auto, rho: auto) = {
   if points.first() != points.last() {
     points.push(points.first())
@@ -246,16 +246,16 @@
   return range(n).map(i => (points.at(i), points.at(i+1), ca.at(i), cb.at(i)))
 }
 
-/// Calculate bezier spline for open Hobby curve through a list of points
+/// Calculates a bezier spline for a Hobby curve through a list of points. Returns an {{array}} of {{bezier}}s.
 ///
 /// - points (array): List of points
 /// - ta (auto,array): Outgoing tension per point
 /// - tb (auto,array): Incoming tension per point
-/// - rho (auto,array): The rho function of the form `(a, b) => <float>`
+/// - rho (auto,array): The rho function of the form `(float, float) => float`
 /// - omega (auto,array): Tuple of the curl at the start end end of the curve `(start, end)` as floats
 /// - close (bool): Close the curve
 ///
-/// -> array List of cubic bezier curves (start, end, c0, c1)
+/// -> array
 #let hobby-to-cubic(points, ta: auto, tb: auto, rho: auto, omega: auto, close: false) = {
   let omega = if omega == auto {
     (1, 1)

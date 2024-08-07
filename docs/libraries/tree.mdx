@@ -1,0 +1,73 @@
+---
+title: Tree
+---
+
+import Type from "@site/src/components/Type";
+
+The tree library allows the drawing of diagrams with simple tree layout algorithms.
+
+## Nodes
+
+A tree node is an array consisting of the node's value at index 0 followed by its child nodes. For the default `draw-node` function, the value (the first item) of a node must be of type <Type>content</Type>.
+
+Example of a list of nodes:
+
+```typc example
+cetz.tree.tree(
+  (
+    [A],
+    (
+      [B],
+      (
+        [C],
+        ([D],)
+      )
+    )
+  ),
+  direction: "right"
+)
+```
+
+Example of a tree of nodes:
+
+```typc example
+cetz.tree.tree(
+  (
+    [A],
+    (
+      [B],
+      [C]
+    ),
+    (
+      [D],
+      [E]
+    )
+  ),
+  direction: "right"
+)
+```
+
+## Drawing and Styling Tree Nodes
+
+The `tree()` function takes an optional `draw-node:` and `draw-edge:` callback function that can be used to customice node and edge drawing.
+
+The `draw-node` function must take the current node and its parents node anchor as arguments and return one or more elements.
+
+For drawing edges between nodes, the `draw-edge` function must take two node anchors and the target node as arguments and return one or more elements.
+
+```typc example
+import cetz.tree
+let data = ([\*], ([A], [A.A], [A.B]), ([B], [B.A]))
+tree.tree(
+  data,
+  direction: "right",
+  draw-node: (node, ..) => {
+    circle((), radius: .35, fill: blue, stroke: none)
+    content((), text(white, [#node.content]))
+  },
+  draw-edge: (from, to, ..) => {
+    let (a, b) = (from + ".center", to + ".center")
+    line((a, .4, b), (b, .4, a))
+  }
+)
+```

@@ -15,8 +15,5 @@ test *filter:
 update-test *filter:
   typst-test update {{filter}}
 
-manual:
-  typst c manual.typ manual.pdf
-
 gallery:
   for f in "{{gallery_dir}}"/*.typ; do typst c "$f" "${f/typ/png}"; done

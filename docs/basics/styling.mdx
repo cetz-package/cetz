@@ -1,0 +1,74 @@
+---
+title: Styling
+---
+
+import Parameter from "@site/src/components/Parameter";
+import Type from "@site/src/components/Type";
+
+You can style draw elements by passing the relevant named arguments to their draw functions. All elements that draw something have stroke and fill styling unless said otherwise.
+
+<Parameter name="fill" types="color,none" default_value="none">
+  How to fill the drawn element.
+</Parameter>
+<Parameter
+  name="stroke"
+  types="none,auto,length,color,dictionary,stroke"
+  default_value="black"
+>
+  How to stroke the border or the path of the draw element. [See Typst's line
+  documentation for more
+  details.](https://typst.app/docs/reference/visualize/line/#parameters-stroke)
+</Parameter>
+
+```typc example
+// Draws a red circle with a blue border
+circle((0, 0), fill: red, stroke: blue)
+
+// Draws a green line
+line((0, 0), (1, 1), stroke: green)
+```
+
+Instead of having to specify the same styling for each time you want to draw an element, you can use the `set-style()` function to change the style for all elements after it, like a Typst `set` rule. You can still pass styling to a draw function to override what has been set with `set-style()`. You can also use the `fill()` and `stroke()` functions as a shorthand to set the fill and stroke respectively.
+
+```typc example
+// Draws an empty square with a black border
+rect((-1, -1), (1, 1))
+
+// Sets the global style to have a fill of red and a stroke of blue
+set-style(stroke: blue, fill: red)
+circle((0,0))
+
+// Draws a green line despite the global stroke being blue
+line((), (1,1), stroke: green)
+```
+
+When using a dictionary for a style, it is important to note that they update each other instead of overriding the entire option like a non-dictionary value would. For example, if the stroke is set to `(paint: red, thickness: 5pt)` and you pass `(paint: blue)`, the stroke would become `(paint: blue, thickness: 5pt)`.
+
+```typc example
+// Sets the stroke to red with a thickness of 5pt
+set-style(stroke: (paint: red, thickness: 5pt))
+
+// Draws a line with the global stroke
+line((0,0), (1,0))
+
+// Draws a blue line with a thickness of 5pt because dictionaries update the style
+line((0,0), (1,1), stroke: (paint: blue))
+
+// Draws a yellow line with a thickness of 1pt because other values override the style
+line((0,0), (0,1), stroke: yellow)
+```
+
+You can also specify styling for each type of element. Note that dictionary values will still update with its global value, the full hierarchy is `function > element type > global`. When the value of a style is <Type>auto</Type>, it will become exactly its parent style.
+
+```typc example
+set-style(
+  // Global fill and stroke
+  fill: green,
+  stroke: (thickness: 5pt),
+  // Stroke and fill for only rectangles
+  rect: (stroke: (dash: "dashed"), fill: blue),
+)
+rect((0,0), (1,1))
+circle((2.5, 0.5))
+rect((4, 0), (5, 1), stroke: (thickness: 1pt))
+```

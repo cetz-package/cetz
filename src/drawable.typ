@@ -2,6 +2,10 @@
 #import "util.typ"
 #import "path-util.typ"
 
+/// Applies a transform to drawables. If a single drawable is given it will be returned in a single element <Type>array</Type>.
+/// - transform (matrix): The transformation matrix.
+/// - drawables (drawable): The drawables to transform.
+/// -> drawable
 #let apply-transform(transform, drawables) = {
   if type(drawables) == dictionary {
     drawables = (drawables,)
@@ -28,6 +32,12 @@
   }
 }
 
+/// Creates a path drawable from path segements.
+/// - segments (array): The segments to create the path from.
+/// - close (bool): If `true` the path will be closed.
+/// - fill (color,none): The color to fill the path with.
+/// - stroke (stroke): The stroke of the path.
+/// -> drawable
 #let path(close: false, fill: none, stroke: none, segments) = {
   let segments = segments
   // Handle case where only one segment has been passed
@@ -54,6 +64,14 @@
   )
 }
 
+
+/// Creates a content drawable.
+/// - pos (vector): The position of the drawable.
+/// - width (float): The width of the drawable.
+/// - height (float): The height of the drawable.
+/// - border (segment): A segment to define the border of the drawable with.
+/// - body (content): The content of the drawable.
+/// -> drawable
 #let content(pos, width, height, border, body) = {
   return (
     type: "content",
@@ -67,6 +85,15 @@
   )
 }
 
+/// Creates a path drawable in the shape of an ellipse.
+/// - x (float): The $x$ position of the ellipse.
+/// - y (float): The $y$ position of the ellipse.
+/// - z (float): The $z$ position of the ellipse.
+/// - rx (float): The radius of the ellipse in the $x$ axis.
+/// - ry (float): The radius of the ellipse in the $y$ axis.
+/// - fill (color,none): The color to fill the ellipse with.
+/// - stroke (stroke): The stroke of the ellipse's path.
+/// -> drawable
 #let ellipse(x, y, z, rx, ry, fill: none, stroke: none) = {
   let m = 0.551784
   let mx = m * rx
@@ -104,6 +131,18 @@
   )
 }
 
+/// Creates a path drawable in the shape of an arc.
+/// - x (float): The $x$ position of the start of the arc.
+/// - y (float): The $y$ position of the start of the arc.
+/// - z (float): The $z$ position of the start of the arc.
+/// - start (angle): The angle along an ellipse to start drawing the arc from.
+/// - stop (angle): The angle along an ellipse to stop drawing the arc at.
+/// - rx (float): The radius of the arc in the $x$ axis.
+/// - ry (float): The radius of the arc in the $y$ axis.
+/// - mode (str): How to draw the arc: `"OPEN"` leaves the path open, `"CLOSED"` closes the arc by drawing a straight line between the end of the arc and its start, `"PIE"` also closes the arc by drawing a line from its end to its origin then to its start.
+/// - fill (color,none): The color to fill the arc with.
+/// - stroke (stroke): The stroke of the arc's path.
+/// -> drawable
 #let arc(x, y, z, start, stop, rx, ry, mode: "OPEN", fill: none, stroke: none) = {
   let delta = calc.max(-360deg, calc.min(stop - start, 360deg))
   let num-curves = calc.max(1, calc.min(calc.ceil(calc.abs(delta) / 90deg), 4))

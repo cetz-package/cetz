@@ -181,27 +181,23 @@
   return pts
 }
 
-/// Draw a zig-zag or saw-tooth wave along a path
+/// Draw a zig-zag or saw-tooth wave along a path.
 ///
-/// The number of tooths can be controlled via the `segments` or `segment-length` style key,
-/// and the width via `amplitude`.
+/// The number of tooths can be controlled via the `segments` or `segment-length` style key, and the width via `amplitude`.
 ///
-/// ```example
+/// ```typc example
 /// line((0,0), (2,1), stroke: gray)
 /// cetz.decorations.zigzag(line((0,0), (2,1)), amplitude: .25, start: 10%, stop: 90%)
 /// ```
-///
-/// = Styling
-/// *Root* `zigzag`
-/// == Keys
-///   #show-parameter-block("factor", ("ratio",), default: 100%, [
-///     Triangle mid between its start and end. Setting this to 0% leads to
-///     a falling sawtooth shape, while 100% results in a raising sawtooth])
 ///
 /// - target (drawable): Target path
 /// - close (auto,bool): Close the path
 /// - name (none,string): Element name
 /// - ..style (style): Style
+///
+/// ## Styling
+/// *Root*: `zigzag`
+/// - factor (ratio) = 100%: Triangle mid between its start and end. Setting this to 0% leads to a falling sawtooth shape, while 100% results in a raising sawtooth.
 #let zigzag(target, name: none, close: auto, ..style) = draw.get-ctx(ctx => {
   let style = styles.resolve(ctx, merge: style.named(),
     base: zigzag-default-style, root: "zigzag")
@@ -254,24 +250,20 @@
 
 /// Draw a stretched coil/loop spring along a path
 ///
-/// The number of windings can be controlled via the `segments` or `segment-length` style key,
-/// and the width via `amplitude`.
+/// The number of windings can be controlled via the `segments` or `segment-length` style key, and the width via `amplitude`.
 ///
-/// ```example
+/// ```typc example
 /// line((0,0), (2,1), stroke: gray)
 /// cetz.decorations.coil(line((0,0), (2,1)), amplitude: .25, start: 10%, stop: 90%)
 /// ```
-///
-/// = Styling
-/// *Root* `coil`
-/// == Keys
-///   #show-parameter-block("factor", ("ratio",), default: 150%, [
-///     Factor of how much the coil overextends its length to form a curl.])
-///
 /// - target (drawable): Target path
 /// - close (auto,bool): Close the path
 /// - name (none,string): Element name
 /// - ..style (style): Style
+///
+/// ## Styling
+/// *Root*: `coil`
+/// - factor (ratio) = 150%: Factor of how much the coil overextends its length to form a curl.
 #let coil(target, close: auto, name: none, ..style) = draw.get-ctx(ctx => {
   let style = styles.resolve(ctx, merge: style.named(),
     base: coil-default-style, root: "coil")
@@ -355,24 +347,22 @@
 
 /// Draw a wave along a path using a catmull-rom curve
 ///
-/// The number of phases can be controlled via the `segments` or `segment-length` style key,
-/// and the width via `amplitude`.
+/// The number of phases can be controlled via the `segments` or `segment-length` style key, and the width via `amplitude`.
 ///
-/// ```example
+/// ```typc example
 /// line((0,0), (2,1), stroke: gray)
 /// cetz.decorations.wave(line((0,0), (2,1)), amplitude: .25, start: 10%, stop: 90%)
 /// ```
-///
-/// = Styling
-/// *Root* `wave`
-/// == Keys
-///   #show-parameter-block("tension", ("float",), default: .5, [
-///     Catmull-Rom curve tension, see @@catmull().])
 ///
 /// - target (drawable): Target path
 /// - close (auto,bool): Close the path
 /// - name (none,string): Element name
 /// - ..style (style): Style
+///
+/// ## Styling
+/// *Root*: `wave`
+///
+/// - tension (float) = 0.5 Catmull-Rom curve tension, see [Catmull](/api/draw-functions/shapes/catmull)
 #let wave(target, close: auto, name: none, ..style) = draw.get-ctx(ctx => {
   let style = styles.resolve(ctx, merge: style.named(),
     base: wave-default-style, root: "wave")
