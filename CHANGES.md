@@ -20,6 +20,7 @@ package called `cetz-plot`.
 - The center anchor of `content()` with two coordinates got fixed when using
   negative cordinates.
 - Element names are now checked to not contain a "." character.
+- Fixed intersection bug for content with `anchor:` set.
 
 ## Draw
 - Added `floating` function for drawing elements without affecting bounding boxes.

@@ -19,3 +19,31 @@
     })
   })
 })
+
+#test-case({
+  import draw: *
+
+  draw.content(name: "test1", frame: "rect", (0,0))[Test 1]
+  draw.content(name: "test2", frame: "rect", (-1,-1))[Test 2]
+  draw.line("test1", "test2")
+})
+
+#test-case({
+  let thide = hide
+  import draw: *
+
+  draw.content(name: "test1", (0,0))[Test 1]
+  draw.content((-1,-1))[#box(stroke: 1pt + red, thide[Test 2])]
+  draw.content(name: "test2", frame: "rect", anchor: "north-east", (-1,-1))[Test 2]
+  draw.line("test1", "test2")
+})
+
+#test-case({
+  let thide = hide
+  import draw: *
+
+  draw.content(name: "test1", (0,0))[Test 1]
+  draw.content((-1,-1))[#box(stroke: 1pt + red, thide[Test 2])]
+  draw.content(name: "test2", frame: "rect", anchor: "south", (-1,-1))[Test 2]
+  draw.line("test1", "test2")
+})
