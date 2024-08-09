@@ -21,6 +21,7 @@ package called `cetz-plot`.
   negative cordinates.
 - Element names are now checked to not contain a "." character.
 - Fixed intersection bug for content with `anchor:` set.
+- **BREAKING** The winding order of _all_ elements has been changed to CCW.
 
 ## Draw
 - Added `floating` function for drawing elements without affecting bounding boxes.
