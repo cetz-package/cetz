@@ -10,6 +10,7 @@
 #import "/src/anchor.typ" as anchor_
 #import "/src/matrix.typ"
 #import "/src/deps.typ"
+#import "/src/modifier.typ": apply-path-modifier
 #import deps.oxifmt: strfmt
 
 #import "transformations.typ": move-to
@@ -545,6 +546,34 @@
     return (
       ctx: ctx,
       drawables: drawables
+    )
+  },)
+}
+
+/// Apply one or more element modifiers
+///
+/// - modifier (string,function): Modifier name or function
+/// - body (element):
+/// - ..style (style):
+#let apply-modifier(modifier, body, close: false, ..style) = {
+  assert.eq(style.pos(), (),
+    message: "Unexpected positional argumnets.")
+
+  if type(modifier) != array {
+    modifier = (modifier,)
+  }
+
+  (ctx => {
+    let (ctx, drawables, ..) = process.many(ctx, util.resolve-body(ctx, body))
+
+    let style = styles.resolve(ctx.style, merge: style.named())
+    style.modifier = modifier
+
+    drawables = apply-path-modifier(ctx, style, drawables, close)
+
+    return (
+      ctx: ctx,
+      drawables: drawables,
     )
   },)
 }
