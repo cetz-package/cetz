@@ -705,7 +705,7 @@
 /// ```typc example
 /// line((0, 0), (3, 1), name: "line")
 /// content(
-///   ("line.start", 0.5, "line.end"),
+///   ("line.start", 50%, "line.end"),
 ///   angle: "line.end",
 ///   padding: .1,
 ///   anchor: "south", 
