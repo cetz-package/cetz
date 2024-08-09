@@ -20,6 +20,7 @@ package called `cetz-plot`.
 - The center anchor of `content()` with two coordinates got fixed when using
   negative cordinates.
 - Element names are now checked to not contain a "." character.
+- **BREAKINK** The winding order of _all_ elements has been changed to CCW.
 
 ## Draw
 - Added `floating` function for drawing elements without affecting bounding boxes.
