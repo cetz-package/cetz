@@ -21,7 +21,6 @@
   (0, 0, 0, 1),
 )
 
-// Sort drawables by median or max segment z-value
 #let _sort-by-distance(drawables) = {
   return drawables.sorted(key: d => {
     let z = none
@@ -54,7 +53,7 @@
 // - projection-matrix (matrix): Projection matrix
 // - reset-transform (bool): Ignore the current transformation matrix
 // - sorted (bool): Sort drawables by maximum distance (front to back)
-// - cull-face (none,string): Enable back-face culling if set to `"cw"` for clockwise
+// - cull-face (none,str): Enable back-face culling if set to `"cw"` for clockwise
 //   or `"ccw"` for counter-clockwise. Polygons of the specified order will not get drawn.
 #let _projection(body, view-matrix, projection-matrix, reset-transform: true, sorted: true, cull-face: "cw") = {
   (ctx => {
@@ -122,7 +121,7 @@
 /// - y (angle): Y-axis rotation angle
 /// - z (angle): Z-axis rotation angle
 /// - sorted (bool): Sort drawables by maximum distance (front to back)
-/// - cull-face (none,string): Enable back-face culling if set to `"cw"` for clockwise
+/// - cull-face (none,str): Enable back-face culling if set to `"cw"` for clockwise
 ///   or `"ccw"` for counter-clockwise. Polygons of the specified order will not get drawn.
 /// - reset-transform (bool): Ignore the current transformation matrix
 /// - body (element): Elements to draw

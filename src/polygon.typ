@@ -3,9 +3,9 @@
 ///
 /// Cubic segments get linearized by sampling.
 ///
-/// - segment (list): List of segments
+/// - segment (array): List of segments
 /// - samples (int): Number of samples
-/// -> List of vectors
+/// -> array
 #let from-segments(segments, samples: 10) = {
   import "/src/bezier.typ": cubic-point
   let poly = ()
@@ -24,10 +24,10 @@
 /// Computes the signed area of a 2D polygon.
 ///
 /// The formula used is the following:
-/// $ 1/2 sum_i=0^n-1 x_i*y_i+1 - x_i+1*y_i $
+/// $ 1/2 \sum_{i}=0^{n-1} x_i*y_i+1 - x_i+1*y_i $
 ///
-/// - points (list): List of Vectors of dimension >= 2
-/// -> Signed area
+/// - points (array): List of Vectors of dimension >= 2
+/// -> float
 #let signed-area(points) = {
   let a = 0
   let n = points.len()
@@ -45,8 +45,10 @@
 /// Returns the winding order of a 2D polygon
 /// by using it's signed area.
 ///
-/// - point (list): List of polygon points
-/// -> "ccw" (counter clock-wise) or "cw" (clock-wise) or none
+/// Returns either "ccw" (counter clock-wise) or "cw" (clock-wise) or none.
+///
+/// - point (array): List of polygon points
+/// -> str,none
 #let winding-order(points) = {
   let area = signed-area(points)
   if area > 0 {
