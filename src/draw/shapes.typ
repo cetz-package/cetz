@@ -515,7 +515,7 @@
     let (ta, tb) = util.apply-transform(ctx.transform, a, b)
 
     let pts = ()
-    for drawable in elem.at("drawables", default: ()) {
+    for drawable in elem.at("drawables", default: ()).filter(d => d.type == "path") {
       pts += intersection.line-path(ta, tb, drawable)
     }
     return if pts == () {
