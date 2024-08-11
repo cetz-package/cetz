@@ -191,12 +191,12 @@
 ///
 /// ## Anchors
 /// Supports border and path anchors.
-/// - **arc-start** The position at which the arc's curve starts, this is the default.
-/// - **arc-end** The position of the arc's curve end.
-/// - **arc-center** The midpoint of the arc's curve.
-/// - **center** The center of the arc, this position changes depending on if the arc is closed or not.
-/// - **chord-center** Center of chord of the arc drawn between the start and end point.
-/// - **origin** The origin of the arc's circle.
+/// - **arc-start**: The position at which the arc's curve starts, this is the default.
+/// - **arc-end**: The position of the arc's curve end.
+/// - **arc-center**: The midpoint of the arc's curve.
+/// - **center**: The center of the arc, this position changes depending on if the arc is closed or not.
+/// - **chord-center**: Center of chord of the arc drawn between the start and end point.
+/// - **origin**: The origin of the arc's circle.
 #let arc(
   position,
   start: auto,
@@ -496,13 +496,9 @@
 ///
 /// Supports mark styling.
 ///
-/// = Anchors
+/// ## Anchors
 ///   Supports path anchors.
-///   / centroid: The centroid anchor is calculated for _closed non self-intersecting_ polygons if all vertices share the same z value.
-///
-/// - ..pts-style (coordinates, style): Positional two or more coordinates to draw lines between. Accepts style key-value pairs.
-/// - close (bool): If true, the line-strip gets closed to form a polygon
-/// - name (none,string):
+///   - **centroid**: The centroid anchor is calculated for _closed non self-intersecting_ polygons if all vertices share the same z value.
 #let line(..pts-style, close: false, name: none) = {
   // Extra positional arguments from the pts-style sink are interpreted as coordinates.
   let pts = pts-style.pos()
@@ -561,17 +557,14 @@
       close: close
     )
 
-    // Find center for simple polygons, might return none
-    let centroid = if close {
-      polygon.simple-centroid(pts)
-    }
-
     // Get bounds
     let (transform, anchors) = anchor_.setup(
       name => {
-        if name == "centroid" { return centroid }
+        if name == "centroid" {
+          return polygon.simple-centroid(pts)
+        }
       },
-      if centroid != none { ("centroid",) } else { () },
+      if close != none { ("centroid",) } else { () },
       name: name,
       transform: ctx.transform,
       path-anchors: true,
@@ -1398,19 +1391,14 @@
 ///
 /// Elements hidden via @@hide() are ignored.
 ///
-/// = parameters
-///
-/// = Anchors
-///   / centroid: Centroid of the _closed and non self-intersecting_ shape. Only exists if `close` is true.
+/// ## Anchors
+///   **centroid**: Centroid of the _closed and non self-intersecting_ shape. Only exists if `close` is true.
 ///   Supports path anchors and shapes where all vertices share the same z-value.
 ///
 /// - body (elements): Elements with paths to be merged together.
 /// - close (bool): Close the path with a straight line from the start of the path to its end.
 /// - name (none,str):
 /// - ..style (style):
-///
-/// ## Anchors
-///   Supports path anchors.
 #let merge-path(body, close: false, name: none, ..style) = {
   // No extra positional arguments from the style sink
   assert.eq(
@@ -1447,17 +1435,15 @@
       let style = styles.resolve(ctx.style, merge: style)
       let drawables = drawable.path(fill: style.fill, stroke: style.stroke, close: close, segments)
 
-      // Try finding a closed shapes center by
-      // Sampling it to a polygon.
-      let centroid = if close {
-        polygon.simple-centroid(polygon.from-segments(drawables.segments))
-      }
-
       let (transform, anchors) = anchor_.setup(
         name => {
-          if name == "centroid" { return centroid }
+          if name == "centroid" {
+            // Try finding a closed shapes center by
+            // Sampling it to a polygon.
+            return polygon.simple-centroid(polygon.from-segments(drawables.segments))
+          }
         },
-        if centroid != none { ("centroid",) } else { () },
+        if close != none { ("centroid",) } else { () },
         name: name,
         transform: none,
         path-anchors: true,
