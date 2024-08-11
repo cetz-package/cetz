@@ -337,16 +337,23 @@
   )
 },)
 
-/// Creates a new anchor for the current group. This element can only be used inside a group otherwise it will panic. The new anchor will be accessible from inside the group by using just the anchor's name as a coordinate.
+/// Creates a new anchor.
 ///
 /// ```typc example
-/// // Create group
+/// // Inside a group
 /// group(name: "g", {
 ///   circle((0,0))
 ///   anchor("x", (.4, .1))
 ///   circle("x", radius: .2)
 /// })
 /// circle("g.x", radius: .1)
+/// ```
+
+/// ```typc example
+/// // At the root scope
+/// anchor("x", (1, 1))
+/// // ...
+/// circle("x", radius: .1)
 /// ```
 ///
 /// - name (str): The name of the anchor
@@ -357,10 +364,6 @@
 
   coordinate.resolve-system(position)
   return (ctx => {
-    assert(
-      ctx.groups.len() > 0,
-      message: "Anchor '" + name + "' created outside of group!",
-    )
     let (ctx, position) = coordinate.resolve(ctx, position)
     position = util.apply-transform(ctx.transform, position)
     return (
