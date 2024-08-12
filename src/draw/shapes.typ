@@ -14,6 +14,7 @@
 #import "/src/anchor.typ" as anchor_
 #import "/src/mark.typ" as mark_
 #import "/src/mark-shapes.typ" as mark-shapes_
+#import "/src/polygon.typ"
 #import "/src/aabb.typ"
 
 #import "transformations.typ": *
@@ -37,11 +38,11 @@
 /// *Root*: `circle`
 ///
 /// - radius (number, array) = 1: A number that defines the size of the circle's radius. Can also be set to a tuple of two numbers to define the radii of an ellipse, the first number is the `x` radius and the second is the `y` radius.
-/// 
+///
 /// ### Anchors
 ///   Supports border and path anchors. The "center" anchor is the default.
 ///
-#let circle(position, name: none, anchor: none, ..style) = {  
+#let circle(position, name: none, anchor: none, ..style) = {
   // No extra positional arguments from the style sink
   assert.eq(
     style.pos(),
@@ -49,7 +50,7 @@
     message: "Unexpected positional arguments: " + repr(style.pos()),
   )
   let style = style.named()
-  
+
   (ctx => {
     let (ctx, pos) = coordinate.resolve(ctx, position)
     let style = styles.resolve(ctx.style, merge: style, root: "circle")
@@ -163,7 +164,7 @@
   },)
 }
 
-/// Draws a circular segment. 
+/// Draws a circular segment.
 ///
 /// ```typc example
 /// arc((0,0), start: 45deg, stop: 135deg)
@@ -210,7 +211,7 @@
     (start, stop, delta).filter(it => { it == auto }).len() == 1,
     message: "Exactly two of three options start, stop and delta should be defined.",
   )
-  
+
   // No extra positional arguments from the style sink
   assert.eq(
     style.pos(),
@@ -218,10 +219,10 @@
     message: "Unexpected positional arguments: " + repr(style.pos()),
   )
   let style = style.named()
-  
+
   // Coordinate check
   let t = coordinate.resolve-system(position)
-  
+
   let start-angle = if start == auto { stop - delta } else { start }
   let stop-angle = if stop == auto { start + delta } else { stop }
   // Border angles can break if the angle is 0.
@@ -272,7 +273,7 @@
     let center = if style.mode != "CLOSE" {
       // A circular sector's center anchor is placed half way between the sector-center and arc-center when the angle is 180deg. At 60deg it is placed 1/3 of the way between, this is mirrored at 300deg.
       vector.lerp(
-        arc-center, 
+        arc-center,
         sector-center,
         if (stop-angle + start-angle) > 180deg { (stop-angle + start-angle) } else { (stop-angle + start-angle) + 180deg } / 720deg
       )
@@ -335,9 +336,9 @@
 /// - name (none, str):
 /// - ..style (style):
 ///
-/// ### Styling 
+/// ### Styling
 /// *Root*: `arc`
-/// 
+///
 /// Uses the same styling as @@arc()
 ///
 /// ### Anchors
@@ -435,7 +436,7 @@
     (),
     message: "Unexpected positional arguments: " + repr(style.pos()),
   )
-  
+
   let style = style.named()
 
   if type(to) == angle {
@@ -445,7 +446,7 @@
   }
 
   (from, to).map(coordinate.resolve-system)
-  
+
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, from, to)
     let style = styles.resolve(ctx.style, merge: style, root: "mark")
@@ -469,7 +470,7 @@
 }
 
 /// Draws a line, more than two points can be given to create a line-strip.
-/// 
+///
 /// ```typc example
 /// line((-1.5, 0), (1.5, 0))
 /// line((0, -1.5), (0, 1.5))
@@ -490,20 +491,25 @@
 /// - close (bool): If true, the line-strip gets closed to form a polygon
 /// - name (none,str):
 ///
-/// ## Styling 
+/// ## Styling
 /// *Root:* `line`
 ///
 /// Supports mark styling.
-/// 
-/// ## Anchors
-/// Supports path anchors.
+///
+/// = Anchors
+///   Supports path anchors.
+///   / centroid: The centroid anchor is calculated for _closed non self-intersecting_ polygons if all vertices share the same z value.
+///
+/// - ..pts-style (coordinates, style): Positional two or more coordinates to draw lines between. Accepts style key-value pairs.
+/// - close (bool): If true, the line-strip gets closed to form a polygon
+/// - name (none,string):
 #let line(..pts-style, close: false, name: none) = {
   // Extra positional arguments from the pts-style sink are interpreted as coordinates.
   let pts = pts-style.pos()
   let style = pts-style.named()
-  
+
   assert(pts.len() >= 2, message: "Line must have a minimum of two points")
-  
+
   // Coordinate check
   let pts-system = pts.map(coordinate.resolve-system)
 
@@ -528,7 +534,7 @@
       return util.revert-transform(ctx.transform, pt)
     }
   }
-  
+
   return (ctx => {
     let first-elem = pts.first()
     let last-elem = pts.last()
@@ -555,10 +561,17 @@
       close: close
     )
 
+    // Find center for simple polygons, might return none
+    let centroid = if close {
+      polygon.simple-centroid(pts)
+    }
+
     // Get bounds
     let (transform, anchors) = anchor_.setup(
-      auto,
-      (),
+      name => {
+        if name == "centroid" { return centroid }
+      },
+      if centroid != none { ("centroid",) } else { () },
       name: name,
       transform: ctx.transform,
       path-anchors: true,
@@ -586,7 +599,7 @@
 /// ```typc example
 /// // Draw a grid
 /// grid((0,0), (2,2))
-/// 
+///
 /// // Draw a smaller blue grid
 /// grid((1,1), (2,2), stroke: blue, step: .25)
 /// ```
@@ -700,7 +713,7 @@
 /// ```typc example
 /// content((0,0), [Hello World!])
 /// ```
-/// To put text on a line you can let the function calculate the angle between its position and a second coordinate by passing it to `angle`: 
+/// To put text on a line you can let the function calculate the angle between its position and a second coordinate by passing it to `angle`:
 ///
 /// ```typc example
 /// line((0, 0), (3, 1), name: "line")
@@ -708,7 +721,7 @@
 ///   ("line.start", 50%, "line.end"),
 ///   angle: "line.end",
 ///   padding: .1,
-///   anchor: "south", 
+///   anchor: "south",
 ///   [Text on a line]
 /// )
 /// ```
@@ -727,19 +740,19 @@
 /// *Root*: `content`
 /// - padding (number, dictionary) = 0: Sets the spacing around content. Can be a single number to set padding on all sides or a dictionary to specify each side specifically. The dictionary follows Typst's `pad` function: https://typst.app/docs/reference/layout/pad/
 /// - frame (str, none) = none: Sets the frame style. Can be `none`, "rect" or "circle" and inherits the `stroke` and `fill` style.
-///   
+///
 /// ## Anchors
 /// Supports border anchors.
 #let content(
     ..args-style,
     angle: 0deg,
-    anchor: none, 
-    name: none, 
+    anchor: none,
+    name: none,
   ) = {
   let (args, style) = (args-style.pos(), args-style.named())
 
   let (a, b, body) = if args.len() == 2 {
-    args.insert(1, auto) 
+    args.insert(1, auto)
     args
   } else if args.len() == 3 {
     args
@@ -961,7 +974,7 @@
     message: "Unexpected positional arguments: " + repr(style.pos()),
   )
   let style = style.named()
-  
+
   return (
     ctx => {
       let ctx = ctx
@@ -1111,7 +1124,7 @@
 /// let (a, b, c) = ((0, 0), (2, 0), (1, 1))
 /// line(a, c,  b, stroke: gray)
 /// bezier(a, b, c)
-/// 
+///
 /// let (a, b, c, d) = ((0, -1), (2, -1), (.5, -2), (1.5, 0))
 /// line(a, c, d, b, stroke: gray)
 /// bezier(a, b, c, d)
@@ -1121,12 +1134,12 @@
 /// - end (coordinate): End position (last coordinate)
 /// - name (none,str):
 /// - ..ctrl-style (coordinate,style): The first two positional arguments are taken as cubic bezier control points, where the first is the start control point and the second is the end control point. One control point can be given for a quadratic bezier curve instead. Named arguments are for styling.
-/// 
-/// ## Styling 
+///
+/// ## Styling
 /// *Root* `bezier`
-/// 
+///
 /// Supports marks.
-///   
+///
 /// ## Anchors
 /// Supports path anchors.
 /// - **ctrl-n**: nth control point where n is an integer starting at 0
@@ -1134,7 +1147,7 @@
 #let bezier(start, end, ..ctrl-style, name: none) = {
   // Extra positional arguments are treated like control points.
   let (ctrl, style) = (ctrl-style.pos(), ctrl-style.named())
-  
+
   // Control point check
   let len = ctrl.len()
   assert(
@@ -1142,7 +1155,7 @@
     message: "Bezier curve expects 1 or 2 control points. Got " + str(len),
   )
   let coordinates = (start, ..ctrl, end)
-  
+
   // Coordinates check
   let t = coordinates.map(coordinate.resolve-system)
 
@@ -1181,7 +1194,7 @@
       }
 
       return (
-        ctx: ctx, 
+        ctx: ctx,
         name: name,
         anchors: anchors,
         drawables: drawables,
@@ -1230,11 +1243,11 @@
 /// - close (bool): Closes the curve with a straight line between the start and end of the curve.
 /// - name (none,str):
 ///
-/// ## Styling 
+/// ## Styling
 /// *Root*: `catmull`
 ///
 /// Supports marks.
-/// 
+///
 /// - tension (float) = 0.5: How tight the curve should fit to the points. The higher the tension the less curvy the curve.
 ///
 /// ## Anchors
@@ -1305,11 +1318,11 @@
 /// - ta (auto, array): Outgoing tension at `pts.at(n)` from `pts.at(n)` to `pts.at(n+1)`. The number given must be one less than the number of points.
 /// - close (bool): Closes the curve with a proper smooth curve between the start and end of the curve.
 /// - name (none,str):
-/// 
+///
 /// ## Styling
 /// *Root* `hobby`
 ///
-/// Supports marks. 
+/// Supports marks.
 /// - omega (array) = (1, 1): A tuple of floats that describe how curly the curve should be at each endpoint. When the curl is close to zero, the spline approaches a straight line near the endpoints. When the curl is close to one, it approaches a circular arc.
 ///
 /// ## Anchors
@@ -1385,6 +1398,12 @@
 ///
 /// Elements hidden via @@hide() are ignored.
 ///
+/// = parameters
+///
+/// = Anchors
+///   / centroid: Centroid of the _closed and non self-intersecting_ shape. Only exists if `close` is true.
+///   Supports path anchors and shapes where all vertices share the same z-value.
+///
 /// - body (elements): Elements with paths to be merged together.
 /// - close (bool): Close the path with a straight line from the start of the path to its end.
 /// - name (none,str):
@@ -1400,7 +1419,7 @@
     message: "Unexpected positional arguments: " + repr(style.pos()),
   )
   let style = style.named()
-  
+
   return (
     ctx => {
       let ctx = ctx
@@ -1428,9 +1447,17 @@
       let style = styles.resolve(ctx.style, merge: style)
       let drawables = drawable.path(fill: style.fill, stroke: style.stroke, close: close, segments)
 
+      // Try finding a closed shapes center by
+      // Sampling it to a polygon.
+      let centroid = if close {
+        polygon.simple-centroid(polygon.from-segments(drawables.segments))
+      }
+
       let (transform, anchors) = anchor_.setup(
-        auto,
-        (),
+        name => {
+          if name == "centroid" { return centroid }
+        },
+        if centroid != none { ("centroid",) } else { () },
         name: name,
         transform: none,
         path-anchors: true,

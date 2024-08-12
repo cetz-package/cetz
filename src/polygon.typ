@@ -1,3 +1,5 @@
+#import "/src/vector.typ"
+
 /// Returns a list of polygon points from
 /// a list of segments.
 ///
@@ -57,5 +59,50 @@
     "ccw"
   } else {
     none
+  }
+}
+
+// Calculate triangle centroid
+#let triangle-centroid(points) = {
+  assert.eq(points.len(), 3)
+
+  let (mx, my, mz) = (0, 0, 0)
+  for p in points {
+    let (x, y, z) = p
+    mx += x
+    my += y
+    mz += z
+  }
+  return (mx / 3, my / 3, mz / 3)
+}
+
+// Calculate the centroid of a line, triangle or simple polygon
+// Formulas:
+//   https://en.wikipedia.org/wiki/Centroid
+#let simple-centroid(points) = {
+  return if points.len() <= 1 {
+    none
+  } else if points.len() == 2 {
+    vector.lerp(..points, .5)
+  } else if points.len() == 3 {
+    triangle-centroid(points)
+  } else if points.len() >= 3 {
+    // Skip polygons with multiple z values
+    let z = points.first().at(2, default: 0)
+    if points.any(p => p.at(2) != z) {
+      return none
+    }
+
+    let a = 0
+    let n = points.len()
+    let (cx, cy) = (0, 0)
+    for i in range(0, n) {
+      let (x0, y0, ..) = points.at(i)
+      let (x1, y1, ..) = points.at(calc.rem(i + 1, n))
+      cx += (x0 + x1) * (x0 * y1 - x1 * y0)
+      cy += (y0 + y1) * (x0 * y1 - x1 * y0)
+      a += x0 * y1 - x1 * y0
+    }
+    return (cx/(3*a), cy/(3*a), z)
   }
 }

@@ -104,8 +104,8 @@
 #test-case({
   import draw: *
   ortho(x: 0deg, y: 0deg, cull-face: "cw", {
-    line((-1, -1), (1, -1), (1, 1), (-1, 1), close: true)
-    line((-1,-1), (1,-1), (0,1), close: true)
+    rect((-1, -1), (1, 1))
+    circle((0,0))
   })
 })
 
