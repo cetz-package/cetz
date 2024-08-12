@@ -4,11 +4,7 @@
 #import "/src/matrix.typ"
 #import "/src/drawable.typ"
 #import "/src/util.typ"
-
-#let ortho-projection-matrix = ((1, 0, 0, 0),
-                                (0, 1, 0, 0),
-                                (0, 0, 0, 0),
-                                (0, 0, 0, 1))
+#import "/src/polygon.typ"
 
 // Get an orthographic view matrix for 3 angles
 #let ortho-matrix(x, y, z) = matrix.mul-mat(
@@ -18,23 +14,71 @@
   matrix.transform-rotate-z(z),
 )
 
-// Pushes a view- and projection-matrix to transform all `body` elements. The current context transform is not modified.
+#let ortho-projection-matrix = (
+  (1, 0, 0, 0),
+  (0, 1, 0, 0),
+  (0, 0, 0, 0),
+  (0, 0, 0, 1),
+)
+
+#let _sort-by-distance(drawables) = {
+  return drawables.sorted(key: d => {
+    let z = none
+    for ((kind, ..pts)) in d.segments {
+      pts = pts.map(p => p.at(2))
+      z = if z == none {
+        calc.max(..pts)
+      } else {
+        calc.max(z, ..pts)
+      }
+    }
+    return z
+  })
+}
+
+// Filter out all clock-wise polygons, or if `invert` is true,
+// all counter clock-wise ones.
+#let _filter-cw-faces(drawables, mode: "cw") = {
+  return drawables.filter(d => {
+    let poly = polygon.from-segments(d.segments)
+    poly.first() != poly.last() or polygon.winding-order(poly) == mode
+  })
+}
+
+// Sets up a view matrix to transform all `body` elements. The current context
+// transform is not modified.
 //
 // - body (element): Elements
 // - view-matrix (matrix): View matrix
 // - projection-matrix (matrix): Projection matrix
-// - reset-transform (bool): If true, override (and thus ignore)
-//   the current transformation with the new matrices instead
-//   of multiplying them.
-#let _projection(body, view-matrix, projection-matrix, reset-transform: false) = {
+// - reset-transform (bool): Ignore the current transformation matrix
+// - sorted (bool): Sort drawables by maximum distance (front to back)
+// - cull-face (none,str): Enable back-face culling if set to `"cw"` for clockwise
+//   or `"ccw"` for counter-clockwise. Polygons of the specified order will not get drawn.
+#let _projection(body, view-matrix, projection-matrix, reset-transform: true, sorted: true, cull-face: "cw") = {
   (ctx => {
     let transform = ctx.transform
-    ctx.transform = matrix.mul-mat(projection-matrix, view-matrix)
-    if not reset-transform {
-      ctx.transform = matrix.mul-mat(transform, ctx.transform)
-    }
+    ctx.transform = view-matrix
+
     let (ctx, drawables, bounds) = process.many(ctx, util.resolve-body(ctx, body))
+
+    if cull-face != none {
+      assert(cull-face in ("cw", "ccw"),
+        message: "cull-face must be none, cw or ccw.")
+      drawables = _filter-cw-faces(drawables, mode: cull-face)
+    }
+    if sorted {
+      drawables = _sort-by-distance(drawables)
+    }
+
+    if projection-matrix != none {
+      drawables = drawable.apply-transform(projection-matrix, drawables)
+    }
+
     ctx.transform = transform
+    if not reset-transform {
+      drawables = drawable.apply-transform(ctx.transform, drawables)
+    }
 
     return (
       ctx: ctx,
@@ -76,12 +120,16 @@
 /// - x (angle): X-axis rotation angle
 /// - y (angle): Y-axis rotation angle
 /// - z (angle): Z-axis rotation angle
+/// - sorted (bool): Sort drawables by maximum distance (front to back)
+/// - cull-face (none,str): Enable back-face culling if set to `"cw"` for clockwise
+///   or `"ccw"` for counter-clockwise. Polygons of the specified order will not get drawn.
 /// - reset-transform (bool): Ignore the current transformation matrix
 /// - body (element): Elements to draw
-/// - name (none,str):
-#let ortho(x: 35.264deg, y: 45deg, z: 0deg, reset-transform: false, body, name: none) = group(name: name, ctx => {
-  _projection(body, ortho-matrix(x, y, z),
-    ortho-projection-matrix, reset-transform: reset-transform)
+#let ortho(x: 35.264deg, y: 45deg, z: 0deg, sorted: true, cull-face: none, reset-transform: false, body, name: none) = group(name: name, ctx => {
+  _projection(body, ortho-matrix(x, y, z), ortho-projection-matrix,
+    sorted: sorted,
+    cull-face: cull-face,
+    reset-transform: reset-transform)
 })
 
 /// Draw elements on the xy-plane with optional z offset.

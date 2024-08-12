@@ -21,9 +21,12 @@ package called `cetz-plot`.
   negative cordinates.
 - Element names are now checked to not contain a "." character.
 - Fixed intersection bug for content with `anchor:` set.
+- **BREAKING** The winding order of _all_ elements has been changed to CCW.
 
 ## Draw
 - Added `floating` function for drawing elements without affecting bounding boxes.
+- The `ortho` function gained a `sorted` and `cull-face` argument to enable
+  depth ordering and face culling of drawables. Ordering is enabled by default.
 
 ## Marks
 - Added support for mark `anchor` style key, to adjust mark placement and
