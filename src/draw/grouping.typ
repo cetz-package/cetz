@@ -337,7 +337,7 @@
   )
 },)
 
-/// Creates a new anchor.
+/// Creates a new anchor for the current group. The new anchor will be accessible from inside the group by using just the anchor's name as a coordinate.
 ///
 /// ```typc example
 /// // Inside a group
