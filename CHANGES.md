@@ -27,6 +27,8 @@ package called `cetz-plot`.
 - Added `floating` function for drawing elements without affecting bounding boxes.
 - The `ortho` function gained a `sorted` and `cull-face` argument to enable
   depth ordering and face culling of drawables. Ordering is enabled by default.
+- Closed `line` and `merge-path` elements now have a `"centroid"` anchor that
+  is the calculated centroid of the (non self-intersecting!) shape.
 
 ## Marks
 - Added support for mark `anchor` style key, to adjust mark placement and
