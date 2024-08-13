@@ -81,6 +81,14 @@ export default [
           "api/draw-functions/projections/on-yz",
         ],
       },
+      {
+        type: "category",
+        label: "Stying",
+        link: {
+          type: "doc",
+          id: "api/draw-functions/styling/styling"
+        }
+      }
     ],
   },
   {

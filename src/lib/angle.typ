@@ -39,8 +39,8 @@
 /// ## Styling
 /// *Root:* `angle` \
 ///
-///   - radius (number) = 0.5: The radius of the angles arc. If of type `ratio`, it is relative to the smaller distance of either origin to a or origin to b.
-///   - label-radius (number, ratio) = 50%: The radius of the angles label origin. If of type `ratio`, it is relative to `radius`.
+/// - radius (number) = 0.5: The radius of the angles arc. If of type `ratio`, it is relative to the smaller distance of either origin to a or origin to b.
+/// - label-radius (number, ratio) = 50%: The radius of the angles label origin. If of type `ratio`, it is relative to `radius`.
 ///
 /// ## Anchors
 /// - **a** Point a
@@ -132,14 +132,18 @@
 
 /// Draw a right angle between `a` and `b` through origin `origin`
 ///
-/// ```
+/// ```typc example
 /// line((0,0), (1,2), name: "a")
 /// line((0,0), (2,-1), name: "b")
 ///
 /// // Draw an angle between the two lines
-/// cetz.angle.right-angle("a.start", "a.end", "b.end",
-///   radius: 1.5)
-/// ```)
+/// cetz.angle.right-angle(
+///   "a.start",
+///   "a.end",
+///   "b.end",
+///   radius: 1.5
+/// )
+/// ```
 ///
 /// - origin (coordinate): Angle origin
 /// - a (coordinate): Coordinate of side `a`, containing an angle between `origin` and `b`.

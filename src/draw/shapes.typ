@@ -40,7 +40,7 @@
 /// - radius (number, array) = 1: A number that defines the size of the circle's radius. Can also be set to a tuple of two numbers to define the radii of an ellipse, the first number is the `x` radius and the second is the `y` radius.
 ///
 /// ### Anchors
-///   Supports border and path anchors. The "center" anchor is the default.
+///   Supports border and path anchors. The `"center"` anchor is the default.
 ///
 #let circle(position, name: none, anchor: none, ..style) = {
   // No extra positional arguments from the style sink
@@ -105,10 +105,10 @@
 /// ### Styling
 /// *Root*: `circle`
 ///
-///   `circle-through` has the same styling as [circle](#circle) except for `radius` as the circle's radius is calculated by the given coordinates.
+///   `circle-through` has the same styling as [circle](./circle#styling) except for `radius` as the circle's radius is calculated by the given coordinates.
 ///
 /// ### Anchors
-/// Supports the same anchors as `circle` as well as:
+/// Supports the same anchors as [circle](./circle#anchors) as well as:
 /// - **a**: Coordinate a
 /// - **b**: Coordinate b
 /// - **c**: Coordinate c
@@ -186,7 +186,7 @@
 /// ## Styling
 /// *Root*: `arc`\
 /// - radius (number, array) = 1: The radius of the arc. An elliptical arc can be created by passing a tuple of numbers where the first element is the x radius and the second element is the y radius.
-/// - mode (str) = "OPEN": The options are: "OPEN" no additional lines are drawn so just the arc is shown; "CLOSE" a line is drawn from the start to the end of the arc creating a circular segment; "PIE" lines are drawn from the start and end of the arc to the origin creating a circular sector.
+/// - mode (str) = "OPEN": The options are: `"OPEN"` no additional lines are drawn so just the arc is shown; `"CLOSE"` a line is drawn from the start to the end of the arc creating a circular segment; `"PIE"` lines are drawn from the start and end of the arc to the origin creating a circular sector.
 /// - update-position (bool) = true: Update the current canvas position to the arc's end point (anchor `"arc-end"`). This overrides the default of `true`, that allows chaining of (arc) elements.
 ///
 /// ## Anchors
@@ -339,10 +339,10 @@
 /// ### Styling
 /// *Root*: `arc`
 ///
-/// Uses the same styling as @@arc()
+/// Uses the same styling as [arc](./arc#styling)
 ///
 /// ### Anchors
-///   For anchors see @@arc().
+///   For anchors see [arc](./arc#anchors).
 ///
 #let arc-through(
   a,
@@ -605,7 +605,7 @@
 /// ## Styling
 /// *Root*: `grid`
 /// - step (number, array, dictionary) = 1: Distance between grid lines. A distance of $1$ means to draw a grid line every $1$ length units in x- and y-direction. If given a dictionary with `x` and `y` keys or a tuple, the step is set per axis.
-/// - help-lines (bool) = false: [If true, force the stroke style to `gray + 0.2pt`
+/// - help-lines (bool) = false: If true, force the stroke style to `gray + 0.2pt`
 ///
 /// ## Anchors
 ///   Supports border anchors.
@@ -721,9 +721,19 @@
 ///
 /// ```typc example
 /// // Place content in a rect between two coordinates
-/// content((0, 0), (2, 2), box(par(justify: false)[This is a long text.], stroke: 1pt, width: 100%, height: 100%, inset: 1em))
+/// content(
+///   (0, 0),
+///   (2, 2),
+///   box(
+///     par(justify: false)[This is a long text.],
+///     stroke: 1pt,
+///     width: 100%,
+///     height: 100%,
+///     inset: 1em
+///   )
+/// )
 /// ```
-///
+/// 
 /// - ..args-style (coordinate, content, style): When one coordinate is given as a positional argument, the content will be placed at that position. When two coordinates are given as positional arguments, the content will be placed inside a rectangle between the two positions. All named arguments are styling and any additional positional arguments will panic.
 /// - angle (angle,coordinate): Rotates the content by the given angle. A coordinate can be given to rotate the content by the angle between it and the first coordinate given in `args`. This effectively points the right hand side of the content towards the coordinate. This currently exists because Typst's rotate function does not change the width and height of content.
 /// - anchor (none, str):
@@ -732,7 +742,7 @@
 /// ## Styling
 /// *Root*: `content`
 /// - padding (number, dictionary) = 0: Sets the spacing around content. Can be a single number to set padding on all sides or a dictionary to specify each side specifically. The dictionary follows Typst's `pad` function: https://typst.app/docs/reference/layout/pad/
-/// - frame (str, none) = none: Sets the frame style. Can be `none`, "rect" or "circle" and inherits the `stroke` and `fill` style.
+/// - frame (str, none) = none: Sets the frame style. Can be {{none}}, `"rect"` or `"circle"` and inherits the `stroke` and `fill` style.
 ///
 /// ## Anchors
 /// Supports border anchors, the default anchor is set to **center**.
@@ -964,10 +974,16 @@
 /// Draws a rectangle between two coordinates.
 /// ```typc example
 /// rect((0,0), (1,1))
-/// rect((-.5, -.5), (rel: (2, 2)),
-///   radius: (north-east: (100%, .5),
-///            south-west: (100%, .5), rest: .2),
-///   stroke: red)
+/// rect(
+///   (-.5, -.5),
+///   (rel: (2, 2)),
+///   radius: (
+///     north-east: (100%, .5),
+///     south-west: (100%, .5),
+///     rest: .2
+///   ),
+///   stroke: red
+/// )
 /// rect((-1, -1), (rel: (3, 3)), radius: .5, stroke: blue)
 /// ```
 ///
@@ -980,11 +996,11 @@
 /// ## Styling
 /// *Root*: `rect`
 /// <Parameter name="radius" types="number,ratio,dictionary" default_value="0">
-/// The rectangles corner radius. If set to a single number, that radius is applied to all four corners of the rectangle. If passed a dictionary you can set the radii per corner. The following keys support either a <Type>number</Type>, <Type>ratio</Type> or an array of <Type>number</Type>, <Type>ratio</Type> for specifying a different x- and y-radius: `north`, `east`, `south`, `west`, `north-west`, `north-east`, `south-west` and `south-east`. To set a default value for remaining corners, the `rest` key can be used.
+/// The rectangle's corner radius. If set to a single number, that radius is applied to all four corners of the rectangle. If passed a dictionary you can set the radii per corner. The following keys support either a <Type>number</Type>, <Type>ratio</Type> or an array of <Type>number</Type> or <Type>ratio</Type> for specifying a different x- and y-radius: `north`, `east`, `south`, `west`, `north-west`, `north-east`, `south-west` and `south-east`. To set a default value for remaining corners, the `rest` key can be used.
 ///
-/// Ratio values are relative to the rects width/height.
+/// Ratio values are relative to the rectangle's width and height.
 ///
-/// ```typc example
+/// ```typc example vertical
 /// rect((0,0), (rel: (1,1)), radius: 0)
 /// rect((2,0), (rel: (1,1)), radius: 25%)
 /// rect((4,0), (rel: (1,1)), radius: (north: 50%))
@@ -995,7 +1011,7 @@
 /// </Parameter>
 ///
 /// ## Anchors
-///   Supports border and path anchors.
+///   Supports border and path anchors. It's default is the `"center"` anchor.
 ///
 #let rect(a, b, name: none, anchor: none, ..style) = {
   // Coordinate check
@@ -1237,7 +1253,7 @@
   )
 }
 
-/// Draws a cubic bezier curve through a set of three points. See `bezier` for style and anchor details.
+/// Draws a cubic bezier curve through a set of three points. See [bezier](./bezier) for style and anchor details.
 ///
 /// ```typc example
 /// let (a, b, c) = ((0, 0), (1, 1), (2, -1))

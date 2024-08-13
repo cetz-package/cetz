@@ -152,7 +152,7 @@
 
 /// Draw a flat curly brace between two points.
 ///
-/// ```
+/// ```typc example
 /// cetz.decorations.flat-brace((0,1),(2,1))
 ///
 /// cetz.decorations.flat-brace((0,0),(2,0),
