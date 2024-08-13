@@ -24,39 +24,18 @@ CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https:
   <td>Karl's Picture</td>
   <td>Tree Layout</td>
   <td>Waves</td>
-</tr><tr>
-  <td>
-    <a href="gallery/pie-chart.typ">
-      <img src="gallery/pie-chart.png" width="250px">
-    </a>
-  </td>
-  <td>
-    <a href="gallery/plot.typ">
-      <img src="gallery/plot.png" width="250px">
-    </a>
-  </td>
-  <td>
-    <a href="gallery/barchart.typ">
-      <img src="gallery/barchart.png" width="250px">
-    </a>
-  </td>
-</tr><tr>
-  <td>Pie Chart</td>
-  <td>Plot</td>
-  <td>Clustered Barchart</td>
 </tr>
-
 </table>
 
 *Click on the example image to jump to the code.*
 
 ## Usage
 
-For information, see the [manual](https://github.com/cetz-package/cetz/blob/v0.2.2/manual.pdf?raw=true) for the current version. Future versions will use the new documentation website: https://cetz-package.github.io/docs
+For information, see the [online manual](https://cetz-package.github.io/docs).
 
 To use this package, simply add the following code to your document:
 ```
-#import "@preview/cetz:0.2.2"
+#import "@preview/cetz:0.3.0"
 
 #cetz.canvas({
   import cetz.draw: *
@@ -80,7 +59,7 @@ just install
 The installed version can be imported by prefixing the package name with `@local`.
 
 ```typ
-#import "@local/cetz:0.2.2"
+#import "@local/cetz:0.3.0"
 
 #cetz.canvas({
   import cetz.draw: *
