@@ -742,6 +742,7 @@
 /// - **base**: Horizontally centered baseline of the content
 /// - **base-east**: Baseline height extended to the east
 /// - **base-west**: Baseline height extended to the west
+/// - **text**: Position at the content start on the baseline of the content
 #let content(
     ..args-style,
     angle: 0deg,
@@ -795,7 +796,7 @@
     angle = angle * -1
 
     // Height from the baseline to content-north
-    let (_, baseline-height) = util.measure(ctx, text(top-edge: "bounds", bottom-edge: "baseline", body))
+    let (content-width, baseline-height) = util.measure(ctx, text(top-edge: "bounds", bottom-edge: "baseline", body))
 
     // Size of the bounding box
     let (width, height, ..) = if auto-size {
@@ -851,6 +852,7 @@
         0.5)
       let base-east = vector.add(base, east-scaled)
       let base-west = vector.add(base, west-scaled)
+      let text = vector.add(base, vector.scale(east-dir, -content-width / 2))
       let mid-east = vector.add(mid, east-scaled)
       let mid-west = vector.add(mid, west-scaled)
 
@@ -862,6 +864,7 @@
         base: base,
         base-east: base-east,
         base-west: base-west,
+        text: text,
         north: north,
         north-east: north-east,
         north-west: north-west,
