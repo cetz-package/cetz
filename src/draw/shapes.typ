@@ -735,7 +735,7 @@
 /// - frame (str, none) = none: Sets the frame style. Can be `none`, "rect" or "circle" and inherits the `stroke` and `fill` style.
 ///
 /// ## Anchors
-/// Supports border anchors.
+/// Supports border anchors, the default anchor is set to **center**.
 /// - **mid**: Content center, from baseline to top bounds
 /// - **mid-east**: Content center extended to the east
 /// - **mid-west**: Content center extended to the west
