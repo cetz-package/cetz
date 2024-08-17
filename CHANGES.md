@@ -22,6 +22,8 @@ package called `cetz-plot`.
 - Element names are now checked to not contain a "." character.
 - Fixed intersection bug for content with `anchor:` set.
 - **BREAKING** The winding order of _all_ elements has been changed to CCW.
+- You can now add custom marks via `register-mark`.
+- Mark anchor (tip, base, center) calcuation got fixed.
 
 ## Draw
 - Added `floating` function for drawing elements without affecting bounding boxes.
