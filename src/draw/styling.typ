@@ -35,8 +35,7 @@
 ///
 /// - symbol (string): Mark name
 /// - mnemonic (none,string): Mark short name
-/// - body (function): Mark drawing callback, receiving the mark style as
-///   argument. Format (styles) => elements.
+/// - body (function): Mark drawing callback, receiving the mark style as argument and returning elements. Format `(styles) => elements`.
 #let register-mark(symbol, body, mnemonic: none) = {
   assert(type(symbol) == str)
   assert(type(body) == function)
