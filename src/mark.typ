@@ -178,10 +178,6 @@
       bezier: (mark: none),
       arc: (mark: none),
     )
-    draw.set-ctx(ctx => {
-      ctx.testtest = "hello"
-      return ctx
-    })
     mark
   }, name: "mark")
   let (ctx: ctx, bounds: bounds, drawables: drawables) = process.many(ctx, body)

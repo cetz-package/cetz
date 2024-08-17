@@ -33,6 +33,9 @@
 
 /// Register a custom mark to the canvas
 ///
+/// The mark should contain both anchors called **tip** and **base** that are used to determine the marks orientation. If unset both default to `(0, 0)`.
+/// An anchor named **center** is used as center of the mark, if present. Otherwise the mid between **tip** and **base** is used.
+///
 /// - symbol (string): Mark name
 /// - mnemonic (none,string): Mark short name
 /// - body (function): Mark drawing callback, receiving the mark style as argument and returning elements. Format `(styles) => elements`.
