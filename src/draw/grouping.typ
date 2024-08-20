@@ -551,13 +551,3 @@
     )
   },)
 }
-
-// DEPRECATED TODO: Remove
-#let place-anchors(path, name, ..anchors) = {
-  panic("place-anchors got removed. Use path anchors `(name: <element>, anchor: <number, ratio>)` instead.")
-}
-
-// DEPRECATED TODO: Remove
-#let place-marks(path, ..marks-style, name: none) = {
-  panic("place-marks got removed. Use the `pos:` key of marks for manual mark positioning.")
-}
