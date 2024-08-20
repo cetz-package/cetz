@@ -41,7 +41,7 @@ package called `cetz-plot`.
   depth ordering and face culling of drawables. Ordering is enabled by default.
 - Closed `line` and `merge-path` elements now have a `"centroid"` anchor that
   is the calculated centroid of the (non self-intersecting!) shape.
-- Added `closest-point` for creating an anchor at the closest point between a
+- Added `find-closest-point` for creating an anchor at the closest point between a
   reference point and one or more elements.
 
 ## Marks

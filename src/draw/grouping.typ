@@ -194,24 +194,33 @@
 /// creates an anchor. Transformations insides the body are scoped and do
 /// not get applied outsides.
 ///
-/// - name (string): Anchor name.
+/// - name (str): Anchor name.
 /// - reference-point (coordinate): Coordinate to find the closest point to.
-/// - body (element): One or more elements to consider. A least one is required. A function that accepts `ctx` and returns elements is also accepted.
-#let closest-point(name, reference-point, body) = {
+/// - body (element,str): One or more elements to consider. A least one is required. A function that accepts `ctx` and returns elements is also accepted. If a string is passed, the existing named element is used.
+#let find-closest-point(name, reference-point, body) = {
   import "/src/bezier.typ": cubic-closest-point
 
   assert(type(name) == str,
     message: "Anchor name must be of type string, got " + repr(name))
+  assert(type(body) in (array, function, str),
+    message: "Expected body to be a list of elements, a callback or an elements name")
   coordinate.resolve-system(reference-point)
 
   return (ctx => {
     let (_, pt) = coordinate.resolve(ctx, reference-point)
     pt = util.apply-transform(ctx.transform, pt)
 
-    let group-ctx = ctx
-    group-ctx.groups.push(())
-    let (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, util.resolve-body(ctx, body))
-    ctx.nodes += group-ctx.nodes
+    let (sub-ctx, drawables, output-drawables) = if type(body) == str {
+      let node = ctx.nodes.at(body)
+      (ctx, node.drawables, false)
+    } else {
+      let group-ctx = ctx
+      group-ctx.groups.push(())
+      let node = process.many(group-ctx, util.resolve-body(ctx, body))
+      (node.ctx, node.drawables, true)
+    }
+
+    ctx.nodes += sub-ctx.nodes
 
     let min = calc.inf
     let min-pt = none
@@ -268,8 +277,7 @@
       ctx: ctx,
       name: name,
       anchors: anchors,
-      drawables: drawables,
-      bounds: bounds
+      drawables: if output-drawables { drawables } else { () },
     )
   },)
 }
