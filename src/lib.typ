@@ -21,3 +21,6 @@
 #import "lib/angle.typ"
 #import "lib/tree.typ"
 #import "lib/decorations.typ"
+
+// Stubs
+#import "lib/plot-stub.typ" as plot
