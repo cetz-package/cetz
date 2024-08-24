@@ -40,20 +40,20 @@
 /// register-mark(":)", style => {
 ///   circle((0,0), radius: .5, fill: yellow)
 ///   arc((0,0), start: 180deg + 30deg, delta: 180deg - 60deg, anchor: "origin", radius: .3)
-///   circle((-.15, +.15), radius: .1, fill: white)
-///   circle((-.10, +.10), radius: .025, fill: black)
-///   circle((+.15, +.15), radius: .1, fill: white)
-///   circle((+.20, +.10), radius: .025, fill: black)
+///   circle((-0.15, 0.15), radius: .1, fill: white)
+///   circle((-0.10, 0.10), radius: .025, fill: black)
+///   circle(( 0.15, 0.15), radius: .1, fill: white)
+///   circle(( 0.20, 0.10), radius: .025, fill: black)
 ///
-///   anchor("tip", (+.5, 0))
-///   anchor("base", (-.5, 0))
+///   anchor("tip",  ( 0.5, 0))
+///   anchor("base", (-0.5, 0))
 /// })
 ///
 /// line((0,0), (3,0), mark: (end: ":)"))
 /// ```
 ///
-/// - symbol (string): Mark name
-/// - mnemonic (none,string): Mark short name
+/// - symbol (str): Mark name
+/// - mnemonic (none,str): Mark short name
 /// - body (function): Mark drawing callback, receiving the mark style as argument and returning elements. Format `(styles) => elements`.
 #let register-mark(symbol, body, mnemonic: none) = {
   assert(type(symbol) == str)

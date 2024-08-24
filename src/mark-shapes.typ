@@ -34,7 +34,7 @@
   return calc.sin(angle/2) * (style.stroke.thickness / 2)
 }
 
-#let tip-base(style, tip, base, center: none) = {
+#let create-tip-and-base-anchor(style, tip, base, center: none) = {
   if base == tip { base = vector.add(tip, (1e-8, 0, 0)) }
   let dir = vector.norm(vector.sub(tip, base))
 
@@ -43,7 +43,7 @@
   anchor("base", vector.sub(base, vector.scale(dir, style.stroke.thickness / 2)))
 }
 
-#let triangle-tip-base(style, tip, base, center: none) = {
+#let create-triangle-tip-and-base-anchor(style, tip, base, center: none) = {
   if base == tip { base = vector.add(tip, (1e-8, 0, 0)) }
   let dir = vector.norm(vector.sub(tip, base))
 
@@ -56,7 +56,7 @@
   anchor("base", vector.sub(base, vector.scale(dir, style.stroke.thickness / 2)))
 }
 
-#let diamond-tip-base(style, tip, base, center: none, ratio: 50%) = {
+#let create-diamond-tip-and-base-anchor(style, tip, base, center: none, ratio: 50%) = {
   if base == tip { base = vector.add(tip, (1e-8, 0, 0)) }
   let dir = vector.norm(vector.sub(tip, base))
 
@@ -89,8 +89,9 @@
       line((0,0), (style.length, -style.width / 2), (style.length, +style.width / 2), close: true)
     }
 
-    triangle-tip-base(style, (0, 0), (style.length, 0))
+    create-triangle-tip-and-base-anchor(style, (0, 0), (style.length, 0))
   },
+  // A mark in the shape of an arrow tip.
   stealth: (style) => {
     import "/src/draw.typ": *
 
@@ -102,7 +103,7 @@
       line((0,0), (l, w / 2), (l - i, 0), (l, -w / 2), close: true)
     }
 
-    triangle-tip-base(style, (0, 0), (l - i, 0))
+    create-triangle-tip-and-base-anchor(style, (0, 0), (l - i, 0))
   },
   bar: (style) => {
     import "/src/draw.typ": *
@@ -115,7 +116,7 @@
       line((0, w / 2), (0, -w / 2))
     }
 
-    tip-base(style, (0, 0), (0, 0))
+    create-tip-and-base-anchor(style, (0, 0), (0, 0))
   },
   ellipse: (style) => {
     import "/src/draw.typ": *
@@ -128,7 +129,7 @@
       circle((0, 0), radius: r)
     }
 
-    tip-base(style, (r.at(0), 0), (-r.at(0), 0))
+    create-tip-and-base-anchor(style, (r.at(0), 0), (-r.at(0), 0))
   },
   circle: (style) => {
     import "/src/draw.typ": *
@@ -141,7 +142,7 @@
       circle((0, 0), radius: r)
     }
 
-    tip-base(style, (r, 0), (-r, 0))
+    create-tip-and-base-anchor(style, (r, 0), (-r, 0))
   },
   bracket: (style) => {
     import "/src/draw.typ": *
@@ -154,7 +155,7 @@
       line((-l - i, w / 2), (0, w / 2), (0, -w / 2), (-l - i, -w / 2), fill: none)
     }
 
-    tip-base(style, (0, 0), (-1e-8, 0), center: ((-l - i) / 2, 0))
+    create-tip-and-base-anchor(style, (0, 0), (-1e-8, 0), center: ((-l - i) / 2, 0))
   },
   diamond: (style) => {
     import "/src/draw.typ": *
@@ -167,7 +168,7 @@
       line((0,0), (l / 2, w / 2), (l, 0), (l / 2, -w / 2), close: true)
     }
 
-    diamond-tip-base(style, (0, 0), (l, 0))
+    create-diamond-tip-and-base-anchor(style, (0, 0), (l, 0))
   },
   rect: (style) => {
     import "/src/draw.typ": *
@@ -180,7 +181,7 @@
       rect((0, -w / 2), (-l, +w / 2))
     }
 
-    tip-base(style, (0, 0), (-l, 0))
+    create-tip-and-base-anchor(style, (0, 0), (-l, 0))
   },
   hook: (style) => {
     import "/src/draw.typ": *
@@ -199,8 +200,9 @@
 
     line((0, 0), (l - r, 0))
 
-    tip-base(style, (-r, 0), (l - r, 0), center: ((-r + i) / 2, 0))
+    create-tip-and-base-anchor(style, (-r, 0), (l - r, 0), center: ((-r + i) / 2, 0))
   },
+  // An unfilled mark in the shape of an angle bracket (>).
   straight: (style) => {
     import "/src/draw.typ": *
 
@@ -212,7 +214,7 @@
       line((l, w / 2), (0, 0), (l, -w / 2), fill: none)
     }
 
-    triangle-tip-base(style, (0, 0), (0, 0))
+    create-triangle-tip-and-base-anchor(style, (0, 0), (0, 0))
   },
   barbed: (style) => {
     import "/src/draw.typ": *
@@ -222,7 +224,6 @@
 
     let (l, w) = (style.length, style.width)
 
-    // Force join to "round" as other joins look bad
     let ctrl-a = (l, 0)
     let ctrl-b = (0, 0)
 
@@ -233,7 +234,7 @@
       }
     }, ..style)
 
-    tip-base(style, (0, 0), (1e-6, 0))
+    create-tip-and-base-anchor(style, (0, 0), (1e-6, 0))
   },
   plus: (style) => {
     import "/src/draw.typ": *
@@ -246,7 +247,7 @@
     line((-l / 2, 0), (+l / 2, 0))
     line((0, -w / 2), (0, +w / 2))
 
-    tip-base(style, (0, 0), (l / 2, 0))
+    create-tip-and-base-anchor(style, (0, 0), (l / 2, 0))
   },
   x: (style) => {
     import "/src/draw.typ": *
@@ -259,7 +260,7 @@
     line((-l / 2, w / 2), (+l / 2, -w / 2))
     line((-l / 2, -w / 2), (+l / 2, +w / 2))
 
-    tip-base(style, (0, 0), (0, 0))
+    create-tip-and-base-anchor(style, (0, 0), (0, 0))
   },
   star: (style) => {
     import "/src/draw.typ": *
@@ -272,7 +273,7 @@
       line((0, 0), (calc.cos(a) * l / 2, calc.sin(a) * w / 2))
     }
 
-    tip-base(style, (0, 0), (l / 2, 0))
+    create-tip-and-base-anchor(style, (0, 0), (l / 2, 0))
   },
 )
 #let names = marks.keys()

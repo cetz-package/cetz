@@ -117,12 +117,12 @@
   mark.offset = vector.dist(origin, tip)
 
   let t = (
-    /* Translate & rotate to the target coordinate & direction */
+    // Translate & rotate to the target coordinate & direction
     matrix.transform-translate(..pos),
     matrix.transform-rotate-dir(dir, up),
     matrix.transform-rotate-z(-90deg),
 
-    /* Apply mark transformations */
+    // Apply mark transformations
     if reverse {
       matrix.transform-translate(-mark.length, 0, 0)
     },
@@ -158,7 +158,7 @@
   return mark
 }
 
-#let _eval-mark(ctx, mark, style) = {
+#let _eval-mark-shape-and-anchors(ctx, mark, style) = {
   if "eval-mark-guard" in ctx {
     panic("Recursive mark drawing is not allowed")
   }
@@ -258,7 +258,7 @@
     style = merge-flag(style, "flip")
     style = merge-flag(style, "harpoon")
 
-    let mark = _eval-mark(ctx, mark-fn(style), style)
+    let mark = _eval-mark-shape-and-anchors(ctx, mark-fn(style), style)
 
     let pos = if style.flex {
       path-util.point-on-path(
