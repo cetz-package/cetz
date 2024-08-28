@@ -208,8 +208,6 @@
       type(amplitude) in (int, float),
       message: "amplitude must be a number, got " + repr(amplitude),
     )
-    // we achieve flipping by inverting the amplitude
-    if flip { amplitude *= -1 }
 
     let aspect = style.aspect
     assert(
@@ -263,6 +261,12 @@
     let (_, start, end) = coordinate.resolve(ctx, start, end)
     set-origin(start)
     rotate(vector.angle2(start, end))
+
+    // we achieve flipping by inverting the amplitude
+    if flip {
+      amplitude *= -1
+      content-offset *= -1
+    }
 
     let length = vector.dist(start, end)
     let middle = aspect * length

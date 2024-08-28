@@ -45,3 +45,20 @@
   (amplitude: 3),
   (amplitude: 4),
 ))
+
+// Bug #687
+#test-case(args => {
+  decorations.flat-brace((-1,-1), (1,1), ..args, name: "brace")
+  draw.circle("brace.content", radius: 0.1);
+}, args: (
+  (flip: false),
+  (flip: true),
+))
+
+#test-case(args => {
+  decorations.brace((-1,-1), (1,1), ..args, name: "brace")
+  draw.circle("brace.content", radius: 0.1);
+}, args: (
+  (flip: false),
+  (flip: true),
+))
