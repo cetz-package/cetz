@@ -83,12 +83,17 @@ export default [
       },
       {
         type: "category",
-        label: "Stying",
+        label: "Styling",
         link: {
           type: "doc",
-          id: "api/draw-functions/styling/styling"
-        }
-      }
+          id: "api/draw-functions/styling/styling",
+        },
+        items: [
+          "api/draw-functions/styling/set-style",
+          "api/draw-functions/styling/fill",
+          "api/draw-functions/styling/stroke",
+        ],
+      },
     ],
   },
   {

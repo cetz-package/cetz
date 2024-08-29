@@ -2,7 +2,7 @@
 title: The Canvas
 ---
 
-The `canvas` function is what handles all of the logic and processing in order to produce drawings. It's usually called with a code block `{...}` as argument. The content of the curly braces is the _body_ of the canvas. Import all the draw functions you need at the top of the body:
+The [`canvas`](/api/internal/canvas) function is what handles all of the logic and processing in order to produce drawings. It's usually called with a code block `{...}` as argument. The content of the curly braces is the _body_ of the canvas. Import all the draw functions you need at the top of the body:
 
 ```typ
 #cetz.canvas({
