@@ -5,6 +5,7 @@
 #import "path-util.typ"
 #import "styles.typ"
 #import "mark-shapes.typ": get-mark
+#import "process.typ"
 
 #import util: typst-length
 
@@ -102,53 +103,112 @@
   return out
 }
 
-#let get-anchor-offset(style, mark) = {
-  let anchor = style.anchor
-  return if anchor == "center" {
-    .5 * mark.length + mark.at("tip-offset", default: 0)
-  } else if anchor == "base" {
-    mark.length + mark.at("base-offset", default: 0)
-  } else if anchor == "tip" {
-    0
-  } else {
-    assert("Invalid mark anchor: " + repr(anchor))
-  }
-}
-
 #let transform-mark(style, mark, pos, dir, flip: false, reverse: false, slant: none, harpoon: false) = {
   let up = style.xy-up
   if dir.at(2) != 0 {
     up = style.z-up
   }
 
-  mark.drawables = drawable.apply-transform(
-    matrix.mul-mat(
-      ..(
-        matrix.transform-translate(..pos),
-        matrix.transform-rotate-dir(dir, up),
-        matrix.transform-rotate-z(90deg),
-        matrix.transform-translate(if reverse { mark.length } else { mark.tip-offset } - get-anchor-offset(style, mark), 0, 0),
-        if slant not in (none, 0%) {
-          if type(slant) == ratio {
-            slant /= 100%
-          }
-          matrix.transform-shear-x(slant)
-        },
-        if flip or reverse {
-          matrix.transform-scale({
-            if flip {
-              (y: -1)
-            }
-            if reverse {
-              (x: -1)
-            }
-          })
+  assert(style.anchor in ("tip", "base", "center"))
+  let tip = mark.tip
+  let base = mark.base
+  let origin = mark.at(style.anchor)
+
+  mark.offset = vector.dist(origin, tip)
+
+  let t = (
+    // Translate & rotate to the target coordinate & direction
+    matrix.transform-translate(..pos),
+    matrix.transform-rotate-dir(dir, up),
+    matrix.transform-rotate-z(-90deg),
+
+    // Apply mark transformations
+    if reverse {
+      matrix.transform-translate(-mark.length, 0, 0)
+    },
+    if slant not in (none, 0%) {
+      if type(slant) == ratio {
+        slant /= 100%
+      }
+      matrix.transform-shear-x(slant)
+    },
+    if flip or reverse {
+      matrix.transform-scale({
+        if flip {
+          (y: -1)
         }
-      ).filter(e => e != none)
-    ),
+        if reverse {
+          (x: -1)
+        }
+      })
+    },
+
+    /* Rotate mark to have base->tip on the x-axis */
+    matrix.transform-rotate-z(vector.angle2(base, tip)),
+
+    /* Translate mark to have its anchor (tip, base, center) at (0,0) */
+    matrix.transform-translate(..vector.scale(origin, -1)),
+  )
+
+  mark.drawables = drawable.apply-transform(
+    matrix.mul-mat(..t.filter(m => m != none)),
     mark.drawables
   )
+
   return mark
+}
+
+#let _eval-mark-shape-and-anchors(ctx, mark, style) = {
+  if "eval-mark-guard" in ctx {
+    panic("Recursive mark drawing is not allowed")
+  }
+  ctx.eval-mark-guard = true
+
+  ctx.groups = ()
+  ctx.nodes = (:)
+  ctx.transform = matrix.ident()
+
+  import "/src/draw.typ"
+  let body = draw.group({
+    draw.set-style(
+      stroke: style.at("stroke", default: none),
+      fill: style.at("fill", default: none),
+      mark: none,
+      line: (mark: none),
+      bezier: (mark: none),
+      arc: (mark: none),
+    )
+    mark
+  }, name: "mark")
+  let (ctx: ctx, bounds: bounds, drawables: drawables) = process.many(ctx, body)
+  let anchor-fn = ctx.nodes.at("mark").anchors
+
+  // Check if the mark has named anchor
+  let has-anchor(name) = {
+    return name in (anchor-fn)(())
+  }
+
+  // Fetch special mark anchors
+  let get-anchor(name, default: none) = {
+    if default != none {
+      if not has-anchor(name) {
+        return default
+      }
+    }
+    return (anchor-fn)(name)
+  }
+
+  let tip = get-anchor("tip", default: (0, 0, 0))
+  let base = get-anchor("base", default: tip)
+  let center = get-anchor("center", default: vector.lerp(tip, base, .5))
+
+  return (
+    tip: tip,
+    base: base,
+    center: center,
+    length: vector.dist(tip, base),
+    drawables: drawables,
+  )
 }
 
 /// Places a mark on the given path. Returns a {{dictionary}} with the following keys:
@@ -185,15 +245,20 @@
     // Apply mark offset
     distance += style.offset
 
-    let (mark-fn, reverse) = get-mark(ctx, style.symbol)
-    style.reverse = (style.reverse or reverse) and not (style.reverse and reverse)
+    let (mark-fn, defaults) = get-mark(ctx, style.symbol)
 
-    let mark = mark-fn(style)
-    mark.length = mark.distance + if style.reverse {
-      mark.at("base-offset", default: style.stroke.thickness / 2)
-    } else {
-      mark.at("tip-offset", default: style.stroke.thickness / 2)
+    let merge-flag(style, key, default: false) = {
+      let old = style.at(key)
+      let def = defaults.at(key, default: default)
+      style.insert(key, (old or def) and not (old and def))
+      return style
     }
+
+    style = merge-flag(style, "reverse")
+    style = merge-flag(style, "flip")
+    style = merge-flag(style, "harpoon")
+
+    let mark = _eval-mark-shape-and-anchors(ctx, mark-fn(style), style)
 
     let pos = if style.flex {
       path-util.point-on-path(
@@ -272,7 +337,7 @@
     // Shorten path to this mark
     let inset = mark.at("inset", default: 0)
     if style.shorten-to != none and (style.shorten-to == auto or i <= style.shorten-to) {
-      let offset = get-anchor-offset(style, mark)
+      let offset = mark.offset
       inset += offset
 
       shorten-distance = distance + mark.length - inset
@@ -299,7 +364,7 @@
 /// - ctx (context): The context object.
 /// - style (style): The current mark styling.
 /// - transform (matrix): The current transformation matrix.
-/// - path (drawable): The path to place the marks on. 
+/// - path (drawable): The path to place the marks on.
 /// - add-path (bool): When `true` the shortened path will returned as the first {{drawable}} in the {{array}}
 /// -> array
 #let place-marks-along-path(ctx, style, transform, path, add-path: true) = {
