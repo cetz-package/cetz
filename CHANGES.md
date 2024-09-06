@@ -24,6 +24,8 @@ package called `cetz-plot`.
 - **BREAKING** The winding order of _all_ elements has been changed to CCW.
 - You can now add custom marks via `register-mark`.
 - Mark anchor (tip, base, center) calcuation got fixed.
+- Content border anchors for `text` now default to the texts bounds.
+- Content emit new anchors for accessing the baseline of the content.
 
 ## Draw
 - Added `floating` function for drawing elements without affecting bounding boxes.

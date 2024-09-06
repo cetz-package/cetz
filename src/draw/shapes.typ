@@ -735,7 +735,14 @@
 /// - frame (str, none) = none: Sets the frame style. Can be `none`, "rect" or "circle" and inherits the `stroke` and `fill` style.
 ///
 /// ## Anchors
-/// Supports border anchors.
+/// Supports border anchors, the default anchor is set to **center**.
+/// - **mid**: Content center, from baseline to top bounds
+/// - **mid-east**: Content center extended to the east
+/// - **mid-west**: Content center extended to the west
+/// - **base**: Horizontally centered baseline of the content
+/// - **base-east**: Baseline height extended to the east
+/// - **base-west**: Baseline height extended to the west
+/// - **text**: Position at the content start on the baseline of the content
 #let content(
     ..args-style,
     angle: 0deg,
@@ -788,23 +795,29 @@
     // Typst's `rotate` function is clockwise relative to x-axis, which is backwards from us
     angle = angle * -1
 
+    // Height from the baseline to content-north
+    let (content-width, baseline-height) = util.measure(ctx, text(top-edge: "bounds", bottom-edge: "baseline", body))
+
+    // Size of the bounding box
     let (width, height, ..) = if auto-size {
-      util.measure(ctx, body)
+      util.measure(ctx, text(top-edge: "bounds", bottom-edge: "bounds", body))
     } else {
       vector.sub(b, a)
     }
 
-    width = (calc.abs(width)
-      + padding.at("left", default: 0)
-      + padding.at("right", default: 0))
-    height = (calc.abs(height)
-      + padding.at("top", default: 0)
-      + padding.at("bottom", default: 0))
+    let bounds-width = calc.abs(width)
+    let bounds-height = calc.abs(height)
+    baseline-height = bounds-height - baseline-height
+
+    width = bounds-width + padding.left + padding.right
+    height = bounds-height + padding.top + padding.bottom
 
     let anchors = {
-      let w = width/2
-      let h = height/2
-      let center = if auto-size {
+      let w = width / 2
+      let h = height / 2
+      let bh = (baseline-height - padding.top - padding.bottom) / 2
+
+      let bounds-center = if auto-size {
         a
       } else {
         vector.lerp(a, b, .5)
@@ -812,23 +825,54 @@
 
       // Only the center anchor gets transformed. All other anchors
       // must be calculated relative to the transformed center!
-      center = matrix.mul4x4-vec3(ctx.transform,
-        vector.as-vec(center, init: (0,0,0)))
+      bounds-center = matrix.mul4x4-vec3(ctx.transform,
+        vector.as-vec(bounds-center, init: (0,0,0)))
 
-      let north = (calc.sin(angle)*h, -calc.cos(angle)*h,0)
-      let east = (calc.cos(-angle)*w, -calc.sin(-angle)*w,0)
-      let south = vector.scale(north, -1)
-      let west = vector.scale(east, -1)
+      let east-dir = vector.rotate-z((1, 0, 0), angle)
+      let north-dir = vector.rotate-z((-1, 0, 0), angle + 90deg)
+      let east-scaled = vector.scale(east-dir, +w)
+      let west-scaled = vector.scale(east-dir, -w)
+      let north-scaled = vector.scale(north-dir, +h)
+      let south-scaled = vector.scale(north-dir, -h)
+
+      let north = vector.add(bounds-center, north-scaled)
+      let south = vector.add(bounds-center, south-scaled)
+      let east = vector.add(bounds-center, east-scaled)
+      let west = vector.add(bounds-center, west-scaled)
+      let north-east = vector.add(bounds-center, vector.add(north-scaled, east-scaled))
+      let north-west = vector.sub(bounds-center, vector.add(south-scaled, east-scaled))
+      let south-east = vector.add(bounds-center, vector.add(south-scaled, east-scaled))
+      let south-west = vector.sub(bounds-center, vector.add(north-scaled, east-scaled))
+
+      let base = vector.add(south,
+        vector.scale(north-dir, padding.bottom + baseline-height))
+      let mid = vector.lerp(
+        vector.sub(north, vector.scale(north-dir, padding.top)),
+        base,
+        0.5)
+      let base-east = vector.add(base, east-scaled)
+      let base-west = vector.add(base, west-scaled)
+      let text = vector.add(base, vector.scale(east-dir, -content-width / 2))
+      let mid-east = vector.add(mid, east-scaled)
+      let mid-west = vector.add(mid, west-scaled)
+
       (
-        center: center,
-        north: vector.add(center, north),
-        north-east: vector.add(center, vector.add(north, east)),
-        east: vector.add(center, east),
-        south-east: vector.add(center, vector.add(south, east)),
-        south: vector.add(center, south),
-        south-west: vector.add(center, vector.add(south, west)),
-        west: vector.add(center, west),
-        north-west: vector.add(center, vector.add(north, west)),
+        center: bounds-center,
+        mid: mid,
+        mid-east: mid-east,
+        mid-west: mid-west,
+        base: base,
+        base-east: base-east,
+        base-west: base-west,
+        text: text,
+        north: north,
+        north-east: north-east,
+        north-west: north-west,
+        south: south,
+        south-east: south-east,
+        south-west: south-west,
+        east: east,
+        west: west,
       )
     }
 
@@ -857,9 +901,6 @@
     let (aabb-width, aabb-height, ..) = aabb.size(aabb.aabb(
       (anchors.north-west, anchors.north-east,
        anchors.south-west, anchors.south-east)))
-
-    let corners = (anchors.north-east, anchors.north-west,
-                   anchors.south-west, anchors.south-east)
 
     let drawables = ()
     if style.frame != none {

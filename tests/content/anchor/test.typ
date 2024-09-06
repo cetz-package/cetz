@@ -3,7 +3,17 @@
 #import "/tests/helper.typ": *
 #import draw: content, rotate, scale, translate
 
-#for a in ("center", "north", "south", "east", "west", "north-east", "north-west", "south-east", "south-west") {
+#test-case({
+  import draw: *
+  content((0, 0), text(size: 40pt)[Yogurt], padding: (rest: 1, top: 2), frame: "rect", name: "content")
+  line("content.base-west", "content.base-east", stroke: green)
+  for-each-anchor("content", name => {
+    content((), text(size: 6pt)[#name], frame: "rect",
+      fill: white, stroke: none)
+  })
+})
+
+#for a in ("center", "north", "south", "east", "west", "north-east", "north-west", "south-east", "south-west", "mid", "base") {
   test-case({
     cross((0,0))
     content((0,0), [#a], anchor: a)
@@ -28,5 +38,4 @@
     cross((0,0))
     content((0,0), [#a (scale)], anchor: a)
   })
-  [\ ]
 }
