@@ -216,8 +216,6 @@
 /// ## Anchors
 /// Supports border and path anchors. However they are created based on the axis aligned bounding box of all the child elements of the group.
 ///
-/// You can add custom anchors to the group by using the `anchor` element while in the scope of said group, see `anchor` for more details. You can also copy over anchors from named child element by using the `copy-anchors` element as they are not accessible from outside the group.
-///
 /// The default anchor is "center" but this can be overridden by using `anchor` to place a new anchor called "default".
 ///
 /// Named elements within a group can also be accessed as string anchors, see [Coordinate Anchors](/docs/basics/coordinate-systems#anchor).
