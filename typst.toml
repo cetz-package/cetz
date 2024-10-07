@@ -3,6 +3,7 @@ name = "cetz"
 version = "0.3.0"
 compiler = "0.11.0"
 repository = "https://github.com/cetz-package/cetz"
+homepage = "https://cetz-package.github.io/"
 entrypoint = "src/lib.typ"
 authors = [
   "Johannes Wolf <https://github.com/johannes-wolf>",
