@@ -52,6 +52,19 @@ export default [
       },
       {
         type: "category",
+        label: "Styling",
+        link: {
+          type: "doc",
+          id: "api/draw-functions/styling/styling",
+        },
+        items: [
+          "api/draw-functions/styling/set-style",
+          "api/draw-functions/styling/fill",
+          "api/draw-functions/styling/stroke",
+        ],
+      },
+      {
+        type: "category",
         label: "Transformations",
         link: {
           type: "doc",
@@ -80,20 +93,7 @@ export default [
           "api/draw-functions/projections/on-xz",
           "api/draw-functions/projections/on-yz",
         ],
-      },
-      {
-        type: "category",
-        label: "Styling",
-        link: {
-          type: "doc",
-          id: "api/draw-functions/styling/styling",
-        },
-        items: [
-          "api/draw-functions/styling/set-style",
-          "api/draw-functions/styling/fill",
-          "api/draw-functions/styling/stroke",
-        ],
-      },
+      }
     ],
   },
   {

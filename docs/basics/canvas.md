@@ -15,4 +15,4 @@ You can now call the draw functions within the body and they'll produce some gra
 
 The canvas does not have typical `width` and `height` parameters. Instead its size will grow and shrink to fit the drawn graphic.
 
-By default 1 [coordinate](/basics/coordinate-systems) unit is `1cm`, this can be changed by setting the `length` parameter. If a ratio is given, the length will be the size of the canvas parent's width!
+By default 1 [coordinate](/basics/coordinate-systems) unit is `1cm`, this can be changed by setting the `length` parameter. If a ratio is given, the length will be the size of the canvas' parent's width!
