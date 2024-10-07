@@ -213,13 +213,20 @@
 /// - padding (none, number, array, dictionary) = none: How much padding to add around the group's bounding box. `none` applies no padding. A number applies padding to all sides equally. A dictionary applies padding following Typst's `pad` function: https://typst.app/docs/reference/layout/pad/. An array follows CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`.
 ///
 /// ## Anchors
-/// Supports border and path anchors. However they are created based on the axis aligned bounding box of all the child elements of the group.
+/// Supports border and path anchors of the axis aligned bounding box of all the child elements of the group.
 ///
-/// You can add custom anchors to the group by using the [anchor](./anchor) element while in the scope of said group, see [anchor](./anchor) for more details. You can also copy over anchors from named child element by using the [copy-anchor](./copy-anchor) element as they are not accessible from outside the group.
+/// You can add custom named anchors to the group by using the [anchor](./anchor) element while in the scope of said group, see [anchor](./anchor) for more details.
 ///
 /// The default anchor is `"center"` but this can be overridden by using [anchor](./anchor) to place a new anchor called `"default"`.
 ///
-/// Named elements within a group can also be accessed as string anchors, see [Coordinate Anchors](/docs/basics/coordinate-systems#anchor).
+/// When using named elements within a group, you can access the element's anchors outside of the group by using the implicit anchor coordinate. e.g. `"a.b.north"`
+/// ```typc example
+/// group(name: "a", {
+///   circle((), name: "b")
+/// })
+/// circle("a.b.south", radius: 0.2)
+/// circle((name: "a", anchor: "b.north"), radius: 0.2)
+/// ```
 #let group(body, name: none, anchor: none, ..style) = {
   // No extra positional arguments from the style sink
   assert.eq(style.pos(), (),

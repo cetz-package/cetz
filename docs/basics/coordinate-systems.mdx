@@ -171,8 +171,7 @@ Defines a point relative to a named element using anchors, see [Anchors](/basics
 >
   The anchor of the element. Strings are named anchors, angles are border
   anchors and numbers and ratios are path anchors. If not given, the default
-  anchor will be used, on most elements this is `center` but it can be different
-  or not exist at all!
+  anchor will be used, on most elements this is `center` but it can be different or not exist at all!
 </Parameter>
 
 ```typc example
@@ -191,6 +190,15 @@ You can also use implicit syntax of a dot separated string in the form `"name.an
 line((0, 0), (4, 3), name: "line")
 circle("line.75%", name: "circle")
 rect("line.start", "circle.east")
+```
+
+When using named elements within a group, you can access the element's anchors outside of the group by using the implicit anchor coordinate. e.g. `"a.b.north"`
+```typc example
+group(name: "a", {
+  circle((), name: "b")
+})
+circle("a.b.south", radius: 0.2)
+circle((name: "a", anchor: "b.north"), radius: 0.2)
 ```
 
 ## Tangent
