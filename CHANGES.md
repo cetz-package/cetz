@@ -26,6 +26,7 @@ package called `cetz-plot`.
 - Mark anchor (tip, base, center) calcuation got fixed.
 - Content border anchors for `text` now default to the texts bounds.
 - Content emit new anchors for accessing the baseline of the content.
+- Added a new `padding` parameter to the canvas element.
 
 ## Draw
 - Added `floating` function for drawing elements without affecting bounding boxes.
