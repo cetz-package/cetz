@@ -931,6 +931,8 @@
         aabb-height,
         border.segments,
         typst-rotate(angle,
+          reflow: true,
+          origin: center + horizon,
           block(
             width: round-up(width) * ctx.length,
             height: round-up(height) * ctx.length,
