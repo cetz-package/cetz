@@ -16,7 +16,7 @@ Marks are arrow tips that can be added to the end of path based elements that su
     let name-to-mnemonic = (:)
     for (name, item) in cetz.mark-shapes.mnemonics {
       let list = name-to-mnemonic.at(item.at(0), default: ())
-      list += (raw(name) + if item.at(1) { " (reversed)" },)
+      list += (raw(name) + if item.at(1).at("reverse", default: false) { " (reversed)" },)
       name-to-mnemonic.insert(item.at(0), list)
     }
     (
