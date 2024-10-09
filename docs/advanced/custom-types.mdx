@@ -2,7 +2,12 @@
 
 ## <Type>context</Type>
 
-A CeTZ context object that holds the internal state of the canvas.
+A {{dictionary}} that holds the internal state of the canvas such as the element dictionary, the current transformation matrix, group and canvas unit length.
+The following fields are considered stable:
+- length (length): Length of one canvas unit as typst length
+- transform (matrix): Current 4x4 transformation matrix
+- debug (bool): True if the canvas' debug flag is set
+
 
 ## <Type>element</Type>
 

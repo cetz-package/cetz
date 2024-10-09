@@ -16,7 +16,7 @@
 
 /// Hides an element.
 ///
-/// Hidden elements are not drawn to the canvas, are ignored when calculating bounding boxes and discarded by `merge-path`. All other behaviours remain the same as a non-hidden element.
+/// Hidden elements are not drawn to the canvas, are ignored when calculating bounding boxes and discarded by [merge-path](../shapes/merge-path). All other behaviours remain the same as a non-hidden element.
 ///
 /// ```typc example
 /// set-style(radius: .5)
@@ -85,7 +85,7 @@
 
 /// Calculates the intersections between multiple paths and creates one anchor per intersection point.
 ///
-/// All resulting anchors will be named numerically, starting at 0. i.e., a call `intersections("a", ...)` will generate the anchors `"a.0"`, `"a.1"`, `"a.2"` to `"a.n"`, depending of the number of intersections.
+/// All resulting anchors will be named numerically, starting at `0`. i.e., a call `intersections("a", ...)` will generate the anchors `"a.0"`, `"a.1"`, `"a.2"` to `"a.n"`, depending of the number of intersections.
 ///
 /// ```typc example
 /// intersections("i", {
@@ -110,11 +110,10 @@
 /// })
 /// ```
 ///
-/// You can calculate intersections with hidden elements by using @@hide().
+/// You can calculate intersections with hidden elements by using [hide](./hide).
 ///
 /// - name (str): Name to prepend to the generated anchors. (Not to be confused with other `name` arguments that allow the use of anchor coordinates.)
-/// - ..elements (elements,str): Elements and/or element names to calculate intersections with.
-///   Elements referred to by name are (unlike elements passed) not drawn by the intersections function!
+/// - ..elements (elements,str): Elements and/or element names to calculate intersections with. Elements referred to by name are (unlike elements passed) not drawn by the intersections function!
 /// - samples (int): Number of samples to use for non-linear path segments. A higher sample count can give more precise results but worse performance.
 #let intersections(name, ..elements, samples: 10) = {
   samples = calc.clamp(samples, 2, 2500)
@@ -214,13 +213,20 @@
 /// - padding (none, number, array, dictionary) = none: How much padding to add around the group's bounding box. `none` applies no padding. A number applies padding to all sides equally. A dictionary applies padding following Typst's `pad` function: https://typst.app/docs/reference/layout/pad/. An array follows CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`.
 ///
 /// ## Anchors
-/// Supports border and path anchors. However they are created based on the axis aligned bounding box of all the child elements of the group.
+/// Supports border and path anchors of the axis aligned bounding box of all the child elements of the group.
 ///
-/// You can add custom anchors to the group by using the `anchor` element while in the scope of said group, see `anchor` for more details. You can also copy over anchors from named child element by using the `copy-anchors` element as they are not accessible from outside the group.
+/// You can add custom named anchors to the group by using the [anchor](./anchor) element while in the scope of said group, see [anchor](./anchor) for more details.
 ///
-/// The default anchor is "center" but this can be overridden by using `anchor` to place a new anchor called "default".
+/// The default anchor is `"center"` but this can be overridden by using [anchor](./anchor) to place a new anchor called `"default"`.
 ///
-/// Named elements within a group can also be accessed as string anchors, see [Coordinate Anchors](/docs/basics/coordinate-systems#anchor).
+/// When using named elements within a group, you can access the element's anchors outside of the group by using the implicit anchor coordinate. e.g. `"a.b.north"`
+/// ```typc example
+/// group(name: "a", {
+///   circle((), name: "b")
+/// })
+/// circle("a.b.south", radius: 0.2)
+/// circle((name: "a", anchor: "b.north"), radius: 0.2)
+/// ```
 #let group(body, name: none, anchor: none, ..style) = {
   // No extra positional arguments from the style sink
   assert.eq(style.pos(), (),
@@ -422,15 +428,7 @@
   },)
 }
 
-/// An advanced element that allows you to modify the current canvas context. 
-///
-/// A context object holds the canvas' state, such as the element dictionary,
-/// the current transformation matrix, group and canvas unit length. The following
-/// fields are considered stable:
-/// - length (length): Length of one canvas unit as typst length
-/// - transform (matrix): Current 4x4 transformation matrix
-/// - debug (bool): True if the canvas' debug flag is set
-///
+/// An advanced element that allows you to modify the current canvas {{context}}. 
 /// Note: The transformation matrix (`transform`) is rounded after calling the `callback` function and therefore might be not exactly the matrix specified. This is due to rounding errors and should not cause any problems.
 ///
 /// ```typc example
@@ -463,7 +461,7 @@
   },)
 }
 
-/// An advanced element that allows you to read the current canvas context through a callback and return elements based on it.
+/// An advanced element that allows you to read the current {{context}} through a callback and return {{element}}s based on it.
 ///
 /// ```typc example
 /// // Print the transformation matrix
@@ -472,7 +470,7 @@
 /// })
 /// ```
 ///
-/// - callback (function): A function that accepts the context dictionary and can return elements.
+/// - callback (function): A function that accepts the {{context}} and can return elements.
 #let get-ctx(callback) = {
   assert(type(callback) == function)
   (ctx => {

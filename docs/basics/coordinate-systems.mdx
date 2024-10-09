@@ -23,7 +23,7 @@ Defines a point `x` units right, `y` units upward and `z` units away.
   The number of units in the `z` direction.
 </Parameter>
 
-The implicit form can be given as an array of two or three <Type>number</Type>s, as in `(x, y)` or `(x, y, z)`
+The implicit form can be given as an {{array}} of two or three <Type>number</Type>s, as in `(x, y)` or `(x, y, z)`
 
 ```typc example
 line((0,0), (x: 1))
@@ -38,7 +38,7 @@ line((2, 0), (2, 0, 1))
 
 ## Previous
 
-Use this to reference the position of the previous coordinate passed to a draw function. It takes the form of an empty array `()` and the previous position initially will be `(0, 0, 0)`. This will never reference the position of a coordinate used to define another coordinate.
+Use this to reference the position of the previous coordinate passed to a draw function. It takes the form of an empty {{array}} `()` and the previous position initially will be `(0, 0, 0)`. This will never reference the position of a coordinate used to define another coordinate.
 
 ```typc example
 line((0,0), (1, 1))
@@ -75,14 +75,11 @@ circle((rel: (1, 0)), stroke: red)
 Defines a point that is `radius` distance away from the origin at the given angle.
 
 <Parameter name="angle" types="angle">
-  The angle of the coordinate. An angle of `0deg` is to the right, a degree of
-  `90deg` is upward.
+  The angle of the coordinate. An value of `0deg` is to the right, a degree of `90deg` is upward.
 </Parameter>
 
 <Parameter name="radius" types="number,array">
-  The distance from the origin. An array of <Type>number</Type> can be given, in
-  the form `(x, y)`, to define the `x` and `y` radii of an ellipse instead of a
-  circle.
+  The distance from the origin. An {{array}} of <Type>number</Type> can be given, in the form `(x, y)`, to define the `x` and `y` radii of an ellipse instead of a circle.
 </Parameter>
 
 ```typc example
@@ -174,8 +171,7 @@ Defines a point relative to a named element using anchors, see [Anchors](/basics
 >
   The anchor of the element. Strings are named anchors, angles are border
   anchors and numbers and ratios are path anchors. If not given, the default
-  anchor will be used, on most elements this is `center` but it can be different
-  or not exist at all!
+  anchor will be used, on most elements this is `center` but it can be different or not exist at all!
 </Parameter>
 
 ```typc example
@@ -194,6 +190,15 @@ You can also use implicit syntax of a dot separated string in the form `"name.an
 line((0, 0), (4, 3), name: "line")
 circle("line.75%", name: "circle")
 rect("line.start", "circle.east")
+```
+
+When using named elements within a group, you can access the element's anchors outside of the group by using the implicit anchor coordinate. e.g. `"a.b.north"`
+```typc example
+group(name: "a", {
+  circle((), name: "b")
+})
+circle("a.b.south", radius: 0.2)
+circle((name: "a", anchor: "b.north"), radius: 0.2)
 ```
 
 ## Tangent

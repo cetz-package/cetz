@@ -2,6 +2,7 @@
 title: Styling
 ---
 
+
 import Parameter from "@site/src/components/Parameter";
 import Type from "@site/src/components/Type";
 
@@ -20,6 +21,8 @@ You can style draw elements by passing the relevant named arguments to their dra
   details.](https://typst.app/docs/reference/visualize/line/#parameters-stroke)
 </Parameter>
 
+
+
 ```typc example
 // Draws a red circle with a blue border
 circle((0, 0), fill: red, stroke: blue)
@@ -28,7 +31,7 @@ circle((0, 0), fill: red, stroke: blue)
 line((0, 0), (1, 1), stroke: green)
 ```
 
-Instead of having to specify the same styling for each time you want to draw an element, you can use the `set-style()` function to change the style for all elements after it, like a Typst `set` rule. You can still pass styling to a draw function to override what has been set with `set-style()`. You can also use the `fill()` and `stroke()` functions as a shorthand to set the fill and stroke respectively.
+Instead of having to specify the same styling for each time you want to draw an element, you can use the [`set-style`](/api/draw-functions/styling/set-style) function to change the style for all elements after it, like a Typst `set` rule. You can still pass styling to a draw function to override what has been set with `set-style`. You can also use the [`fill`](/api/draw-functions/styling/fill) and [`stroke`](/api/draw-functions/styling/stroke) functions as a shorthand to set the fill and stroke respectively.
 
 ```typc example
 // Draws an empty square with a black border
