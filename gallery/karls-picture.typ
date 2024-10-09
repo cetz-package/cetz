@@ -1,5 +1,4 @@
-#import "@preview/cetz:0.2.2"
-
+#import "@preview/cetz:0.3.0"
 #set page(width: auto, height: auto, margin: .5cm)
 
 #show math.equation: block.with(fill: white, inset: 1pt)

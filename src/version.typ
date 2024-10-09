@@ -1,1 +1,1 @@
-#let version = version(0,2,2)
+#let version = version(0,3,0)
