@@ -11,14 +11,14 @@ CeTZ' plotting and charting functionality has been moved to a separate
 package called `cetz-plot`.
 
 ## Canvas
-- Add runtime cetz version check support (see `assert-version`)
+- Add runtime cetz version check support (see `assert-version`).
 - Fixed a bug with `#set place(float: true)` affecting the canvas.
-- Transformation matrices are now rounded
+- Transformation matrices are now rounded.
 - The default coordinate system changed to a right-hand side system.
   Use `scale(z: -1)` if you want to change back to a left-hand system.
 - The `on-<axes>` functions lead to wrong anchors and got fixed. The offset
-  argument is now behaving as tranlation instead of hard setting the coordinate!
-- A new `scope(...)` element got added that behaves like a unnamed group but
+  argument is now behaving as translation instead of hard setting the coordinate!
+- A new `scope(...)` element got added that behaves like an unnamed group but
   leaking child elements to the outside. This element can be used for scoping
   transformations, without having to scope children under a group name.
 - The center anchor of `content()` with two coordinates got fixed when using
