@@ -71,3 +71,9 @@
   content((0, 0, 0), [Z=0])
   content((0, 0, 1), [Z=1])
 }))
+
+// Test inline math measuring
+#context box(stroke: 2pt + red, canvas(length: 1cm, {
+  import draw: *
+  content((0, 0), $x=1$)
+}))
