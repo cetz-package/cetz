@@ -57,7 +57,9 @@
     marks: (
       mnemonics: (:),
       marks: (:),
-    )
+    ),
+    // coordinate resolver
+    resolve-coordinate: none,
   )
 
   let (ctx, bounds, drawables) = process.many(ctx, body)
