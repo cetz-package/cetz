@@ -248,11 +248,6 @@
   name: none,
   ..style,
 ) = {
-  import draw: *
-
-  // Validate coordinates
-  let _ = (start, end).map(coordinate.resolve-system)
-
   group(name: name, ctx => {
     // Get styles and validate their types and values
     let style = styles.resolve(ctx.style, merge: style.named(),

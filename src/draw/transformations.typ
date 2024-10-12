@@ -225,8 +225,6 @@
 ///
 /// - pt (coordinate): The coordinate to move to.
 #let move-to(pt) = {
-  let t = coordinate.resolve-system(pt)
-  
   return (ctx => {
     let (ctx, pt) = coordinate.resolve(ctx, pt)
     return (ctx: ctx)
@@ -246,8 +244,6 @@
 /// - bounds (vector): Viewport bounds vector that describes the inner width,
 ///   height and depth of the viewport
 #let set-viewport(from, to, bounds: (1, 1, 1)) = {
-  (from, to).map(coordinate.resolve-system)
-
   return (ctx => {
     let bounds = vector.as-vec(bounds, init: (1, 1, 1))
     

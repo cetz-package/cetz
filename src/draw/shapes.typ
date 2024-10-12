@@ -133,8 +133,6 @@
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
   style = style.named()
 
-  (a, b, c).map(coordinate.resolve-system)
-
   return (ctx => {
     let (ctx, a, b, c) = coordinate.resolve(ctx, a, b, c)
 
@@ -236,9 +234,6 @@
     message: "Unexpected positional arguments: " + repr(style.pos()),
   )
   let style = style.named()
-
-  // Coordinate check
-  let t = coordinate.resolve-system(position)
 
   let start-angle = if start == auto { stop - delta } else { start }
   let stop-angle = if stop == auto { start + delta } else { stop }
@@ -462,8 +457,6 @@
     to = ((rel: (to, 1), to: from))
   }
 
-  (from, to).map(coordinate.resolve-system)
-
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, from, to)
     let style = styles.resolve(ctx.style, merge: style, root: "mark")
@@ -523,9 +516,6 @@
 
   assert(pts.len() >= 2, message: "Line must have a minimum of two points")
 
-  // Coordinate check
-  let pts-system = pts.map(coordinate.resolve-system)
-
   // Find the intersection between line a-b next to b
   // if no intersection could be found, return a.
   let element-line-intersection(ctx, elem, a, b) = {
@@ -551,6 +541,7 @@
   return (ctx => {
     let first-elem = pts.first()
     let last-elem = pts.last()
+    let pts-system = pts.map(coordinate.resolve-system.with(ctx))
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
 
     // If the first/last element, test for intersection
@@ -708,8 +699,6 @@
 /// ## Anchors
 ///   Supports border anchors.
 #let grid(from, to, name: none, ..style) = {
-  (from, to).map(coordinate.resolve-system)
-
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
   style = style.named()
 
@@ -857,16 +846,6 @@
     args
   } else {
     panic("Expected 2 or 3 positional arguments, got " + str(args.len()))
-  }
-
-  coordinate.resolve-system(a)
-
-  if b != auto {
-    coordinate.resolve-system(b)
-  }
-
-  if type(angle) != typst-angle {
-    coordinate.resolve-system(angle)
   }
 
   return (ctx => {
@@ -1114,9 +1093,6 @@
 ///   Supports border and path anchors. It's default is the `"center"` anchor.
 ///
 #let rect(a, b, name: none, anchor: none, ..style) = {
-  // Coordinate check
-  let t = (a, b).map(coordinate.resolve-system)
-
   // No extra positional arguments from the style sink
   assert.eq(
     style.pos(),
@@ -1320,9 +1296,6 @@
   )
   let coordinates = (start, ..ctrl, end)
 
-  // Coordinates check
-  let t = coordinates.map(coordinate.resolve-system)
-
   return (
     ctx => {
       let (ctx, start, ..ctrl, end) = coordinate.resolve(ctx, ..coordinates)
@@ -1423,8 +1396,6 @@
 
   assert(pts.len() >= 2, message: "Catmull-rom curve requires at least two points. Got " + repr(pts.len()) + "instead.")
 
-  pts.map(coordinate.resolve-system)
-
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
     let style = styles.resolve(ctx.style, merge: style, root: "catmull")
@@ -1496,8 +1467,6 @@
   let (pts, style)  = (pts-style.pos(), pts-style.named())
 
   assert(pts.len() >= 2, message: "Hobby curve requires at least two points. Got " + repr(pts.len()) + "instead.")
-
-  pts.map(coordinate.resolve-system)
 
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
