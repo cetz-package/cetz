@@ -368,7 +368,6 @@
   assert(name != none and name != "" and not name.starts-with("."),
     message: "Anchors must not be none, \"\" or start with \".\"!")
 
-  coordinate.resolve-system(position)
   return (ctx => {
     let (ctx, position) = coordinate.resolve(ctx, position)
     position = util.apply-transform(ctx.transform, position)

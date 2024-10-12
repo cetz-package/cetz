@@ -251,7 +251,7 @@
 /// Figures out what system a coordinate belongs to and returns the corresponding string.
 /// - c (coordinate): The coordinate to find the system of.
 /// -> str
-#let resolve-system(c) = {
+#let resolve-system(ctx, c) = {
   let t = if type(c) == dictionary {
     let keys = c.keys()
     let len = c.len()
@@ -294,6 +294,9 @@
     } else {
       "element"
     }
+  } else if ctx.at("resolve-system", default: none) != none {
+    ctx.resolve-system = none
+    resolve-system(ctx, c)
   }
 
   if t == none {
@@ -319,9 +322,16 @@
 /// - update (bool): Update the context's last position
 /// -> array
 #let resolve(ctx, ..coordinates, update: true) = {
+  let ctx-resolver = ctx.at("resolve-coordinate", default: none)
+  let coordinates = if ctx-resolver != none {
+    coordinates.pos().map(ctx-resolver.with(ctx))
+  } else {
+    coordinates.pos()
+  }
+
   let result = ()
-  for c in coordinates.pos() {
-    let t = resolve-system(c)
+  for c in coordinates {
+    let t = resolve-system(ctx, c)
     let out = if t == "xyz" {
       resolve-xyz(c)
     } else if t == "previous" {
