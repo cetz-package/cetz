@@ -322,17 +322,21 @@
 /// - update (bool): Update the context's last position
 /// -> array
 #let resolve(ctx, ..coordinates, update: true) = {
-  let ctx-resolver = ctx.at("resolve-coordinate", default: none)
-  let coordinates = if ctx-resolver != none {
-    coordinates.pos().map(ctx-resolver.with(ctx))
-  } else {
-    coordinates.pos()
+  let resolver = ()
+  if type(ctx.resolve-coordinate) == array {
+    resolver += ctx.resolve-coordinate
+  } else if type(ctx.resolve-coordinate) == function {
+    resolver.push(ctx.resolve-coordinate)
   }
 
   let result = ()
-  for c in coordinates {
+  for c in coordinates.pos() {
+    for i in range(1, resolver.len() + 1) {
+      c = (resolver.at(resolver.len() - i))(ctx, c)
+    }
+
     let t = resolve-system(ctx, c)
-    let out = if t == "xyz" {
+    c = if t == "xyz" {
       resolve-xyz(c)
     } else if t == "previous" {
       ctx.prev.pt
@@ -358,9 +362,10 @@
     }.map(util.resolve-number.with(ctx))
 
     if update {
-      ctx.prev.pt = out
+      ctx.prev.pt = c
     }
-    result.push(out)
+
+    result.push(c)
   }
 
   return (ctx, ..result)
