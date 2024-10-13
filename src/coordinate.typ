@@ -322,11 +322,10 @@
 /// - update (bool): Update the context's last position
 /// -> array
 #let resolve(ctx, ..coordinates, update: true) = {
-  let resolver = ()
-  if type(ctx.resolve-coordinate) == array {
-    resolver += ctx.resolve-coordinate
-  } else if type(ctx.resolve-coordinate) == function {
-    resolver.push(ctx.resolve-coordinate)
+  let resolver = if type(ctx.resolve-coordinate) == array {
+    ctx.resolve-coordinate
+  } else {
+    ()
   }
 
   let result = ()
