@@ -15,10 +15,7 @@
     return coordinate
   }
 
-  set-ctx(ctx => {
-    ctx.resolve-coordinate = log-resolver
-    return ctx
-  })
+  register-coordinate-resolver(log-resolver)
 
   set-style(circle: (radius: .1))
   for i in (.1, 1, 10, 100, 1000, 10000) {
