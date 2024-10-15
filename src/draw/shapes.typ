@@ -942,7 +942,7 @@
               bottom: padding.at("bottom", default: 0) * ctx.length,
               right: padding.at("right", default: 0) * ctx.length,
             ),
-            body
+            text(top-edge: "bounds", bottom-edge: "bounds", body)
           )
         )
       )
