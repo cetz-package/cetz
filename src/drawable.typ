@@ -36,9 +36,10 @@
 /// - segments (array): The segments to create the path from.
 /// - close (bool): If `true` the path will be closed.
 /// - fill (color,none): The color to fill the path with.
+/// - fill-rule (string): One of "even-odd" or "non-zero".
 /// - stroke (stroke): The stroke of the path.
 /// -> drawable
-#let path(close: false, fill: none, stroke: none, segments) = {
+#let path(close: false, fill: none, stroke: none, fill-rule: "non-zero", segments) = {
   let segments = segments
   // Handle case where only one segment has been passed
   if type(segments.first()) == str {
@@ -58,6 +59,7 @@
     close: close,
     segments: segments,
     fill: fill,
+    fill-rule: fill-rule,
     stroke: stroke,
     hidden: false,
     bounds: true,

@@ -553,6 +553,7 @@
     let drawables = drawable.path(
       (path-util.line-segment(pts),),
       fill: style.fill,
+      fill-rule: style.fill-rule,
       stroke: style.stroke,
       close: close
     )
@@ -1223,6 +1224,7 @@
       let drawables = drawable.path(
         (path-util.cubic-segment(start, end, ..ctrl),),
         fill: style.fill,
+        fill-rule: style.fill-rule,
         stroke: style.stroke,
       )
 
@@ -1325,6 +1327,7 @@
     let drawables = drawable.path(
       segments,
       fill: style.fill,
+      fill-rule: style.fill-rule,
       stroke: style.stroke,
       close: close)
 
@@ -1402,6 +1405,7 @@
     let drawables = drawable.path(
       segments,
       fill: style.fill,
+      fill-rule: style.fill-rule,
       stroke: style.stroke,
       close: close)
 
@@ -1492,7 +1496,7 @@
       }
 
       let style = styles.resolve(ctx.style, merge: style)
-      let drawables = drawable.path(fill: style.fill, stroke: style.stroke, close: close, segments)
+      let drawables = drawable.path(fill: style.fill, fill-rule: style.fill-rule, stroke: style.stroke, close: close, segments)
 
       let (transform, anchors) = anchor_.setup(
         name => {
