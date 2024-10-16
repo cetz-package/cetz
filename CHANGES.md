@@ -1,3 +1,7 @@
+# 0.3.1
+
+- Added a new `padding` parameter to the canvas element.
+
 # 0.3.0
 
 CeTZ 0.3.0 requires Typst 0.11.0
@@ -243,3 +247,4 @@ CeTZ requires Typst 0.8.0.
 
 ## Plot
 - Added new library `plot` for drawing line charts (of functions), replacing `typst-plot`.
+
