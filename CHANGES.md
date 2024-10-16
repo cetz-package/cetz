@@ -1,3 +1,7 @@
+# 0.3.1
+
+- Added a new `padding` parameter to the canvas element.
+
 # 0.3.0
 
 CeTZ 0.3.0 requires Typst 0.11.0
@@ -26,7 +30,6 @@ package called `cetz-plot`.
 - Mark anchor (tip, base, center) calcuation got fixed.
 - Content border anchors for `text` now default to the texts bounds.
 - Content emit new anchors for accessing the baseline of the content.
-- Added a new `padding` parameter to the canvas element.
 
 ## Draw
 - Added `floating` function for drawing elements without affecting bounding boxes.
@@ -244,3 +247,4 @@ CeTZ requires Typst 0.8.0.
 
 ## Plot
 - Added new library `plot` for drawing line charts (of functions), replacing `typst-plot`.
+
