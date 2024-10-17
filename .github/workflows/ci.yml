@@ -36,7 +36,7 @@ jobs:
           tag: ci-semi-stable
       - uses: typst-community/setup-typst@v3
         with:
-          typst-version: '0.12.0-rc1'
+          typst-version: '0.12.0-rc2'
           cache-dependency-path: src/deps.typ
       - run: |
           just install @local
