@@ -49,11 +49,12 @@
 
   import "/src/draw.typ": *
   if style.reverse {
-    anchor("tip", tip)
+    anchor("tip", vector.add(tip, vector.scale(dir, style.stroke.thickness / 2)))
+    anchor("base", base)
   } else {
     anchor("tip", vector.add(tip, vector.scale(dir, _calculate-tip-offset(style))))
+    anchor("base", vector.sub(base, vector.scale(dir, style.stroke.thickness / 2)))
   }
-  anchor("base", vector.sub(base, vector.scale(dir, style.stroke.thickness / 2)))
 }
 
 #let create-diamond-tip-and-base-anchor(style, tip, base, center: none, ratio: 50%) = {
