@@ -114,6 +114,13 @@
   let base = mark.base
   let origin = mark.at(style.anchor)
 
+  // Mirror anchors on mark center
+  if reverse {
+    tip = vector.add(mark.center, vector.sub(mark.center, tip))
+    base = vector.add(mark.center, vector.sub(mark.center, base))
+    origin = vector.add(mark.center, vector.sub(mark.center, origin))
+  }
+
   mark.offset = vector.dist(origin, tip)
 
   let t = (
@@ -122,16 +129,17 @@
     matrix.transform-rotate-dir(dir, up),
     matrix.transform-rotate-z(-90deg),
 
-    // Apply mark transformations
-    if reverse {
-      matrix.transform-translate(-mark.length, 0, 0)
-    },
-    if slant not in (none, 0%) {
-      if type(slant) == ratio {
-        slant /= 100%
-      }
-      matrix.transform-shear-x(slant)
-    },
+    /* Rotate mark to have base->tip on the x-axis */
+    matrix.transform-rotate-z(if reverse {
+      vector.angle2(tip, base)
+    } else {
+      vector.angle2(base, tip)
+    }),
+
+    /* Translate mark to have its anchor (tip, base, center) at (0,0) */
+    matrix.transform-translate(..vector.scale(origin, if reverse {1} else {-1})),
+
+    /* Mirror on x and/or y axis */
     if flip or reverse {
       matrix.transform-scale({
         if flip {
@@ -143,11 +151,13 @@
       })
     },
 
-    /* Rotate mark to have base->tip on the x-axis */
-    matrix.transform-rotate-z(vector.angle2(base, tip)),
-
-    /* Translate mark to have its anchor (tip, base, center) at (0,0) */
-    matrix.transform-translate(..vector.scale(origin, -1)),
+    /* Slant on x axis */
+    if slant not in (none, 0%) {
+      if type(slant) == ratio {
+        slant /= 100%
+      }
+      matrix.transform-shear-x(slant)
+    },
   )
 
   mark.drawables = drawable.apply-transform(
