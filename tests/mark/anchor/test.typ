@@ -49,3 +49,21 @@
   (symbol: "x"),
   (symbol: ">"),
 ))
+
+#test-case({
+  import draw: *
+
+  anchor("a", (-1,0))
+  anchor("b", (+1,0))
+
+  line("a", "b")
+  mark("a", "b", symbol: "<", fill: black, anchor: "center")
+  mark("b", "a", symbol: "<", fill: black, anchor: "center")
+
+  anchor("c", (-1,-1))
+  anchor("d", (+1,-1))
+
+  line("c", "d")
+  mark("c", "d", symbol: ">", fill: black, anchor: "center")
+  mark("d", "c", symbol: ">", fill: black, anchor: "center")
+})
