@@ -75,6 +75,18 @@
 // Test inline math measuring
 #context box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
-  //content((0, 0), $x=1$)
   content((0, 0), $x$)
+}))
+
+#context box(stroke: 2pt + red, canvas(length: 1cm, {
+  import draw: *
+
+  let elements = ("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l")
+
+  line((1, 4), (13, 4), (13, 3), (1, 3), close: true)
+
+  for i in range(1, 13) {
+    line((i, 4), (i, 3))
+    content((i + 0.5, 3.5), text(bottom-edge:"descender", top-edge: "ascender")[#elements.at(i - 1)])
+  }
 }))

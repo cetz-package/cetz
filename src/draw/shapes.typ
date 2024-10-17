@@ -806,11 +806,11 @@
     angle = angle * -1
 
     // Height from the baseline to content-north
-    let (content-width, baseline-height) = util.measure(ctx, text(top-edge: "bounds", bottom-edge: "baseline", body))
+    let (content-width, baseline-height) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "baseline", body))
 
     // Size of the bounding box
     let (width, height, ..) = if auto-size {
-      util.measure(ctx, text(top-edge: "bounds", bottom-edge: "bounds", body))
+      util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "bounds", body))
     } else {
       vector.sub(b, a)
     }
@@ -942,7 +942,7 @@
               bottom: padding.at("bottom", default: 0) * ctx.length,
               right: padding.at("right", default: 0) * ctx.length,
             ),
-            text(top-edge: "bounds", bottom-edge: "bounds", body)
+            text(top-edge: "cap-height", bottom-edge: "baseline", body)
           )
         )
       )
