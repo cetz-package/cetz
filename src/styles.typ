@@ -2,6 +2,7 @@
 
 #let default = (
   fill: none,
+  fill-rule: "non-zero",
   stroke: black + 1pt,
   radius: 1,
   /// Bezier shortening mode:
@@ -69,11 +70,13 @@
   line: (
     mark: auto,
     fill: auto,
+    fill-rule: auto,
     stroke: auto,
   ),
   bezier: (
     stroke: auto,
     fill: auto,
+    fill-rule: auto,
     mark: auto,
     shorten: auto,
   ),
@@ -82,7 +85,8 @@
     mark: auto,
     shorten: auto,
     stroke: auto,
-    fill: auto
+    fill: auto,
+    fill-rule: auto,
   ),
   hobby: (
     /// Curve start and end omega (curlyness)
@@ -90,7 +94,8 @@
     mark: auto,
     shorten: auto,
     stroke: auto,
-    fill: auto
+    fill: auto,
+    fill-rule: auto,
   ),
   rect: (
     /// Rect corner radius that supports the following types:

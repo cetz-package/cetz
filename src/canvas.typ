@@ -126,6 +126,7 @@
         path(
           stroke: drawable.stroke,
           fill: drawable.fill,
+          fill-rule: drawable.at("fill-rule", default: "non-zero"),
           closed: drawable.at("close", default: false),
           ..vertices,
         )
