@@ -116,9 +116,8 @@
 
   // Mirror anchors on mark center
   if reverse {
-    tip = vector.add(mark.center, vector.sub(mark.center, tip))
-    base = vector.add(mark.center, vector.sub(mark.center, base))
-    origin = vector.add(mark.center, vector.sub(mark.center, origin))
+    (tip, base) = (base, tip)
+    origin = vector.sub(mark.center, vector.sub(origin, mark.center))
   }
 
   mark.offset = vector.dist(origin, tip)
