@@ -49,6 +49,9 @@
 
   import "/src/draw.typ": *
   if style.reverse {
+    // Since tip and base are now "swapped", we add the stroke thickness to the triangle
+    // base. To get smooth looking connections between the triangle tip and a connecting line,
+    // we do not add the tip-offset.
     anchor("tip", vector.add(tip, vector.scale(dir, style.stroke.thickness / 2)))
     anchor("base", base)
   } else {

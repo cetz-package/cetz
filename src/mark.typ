@@ -128,17 +128,17 @@
     matrix.transform-rotate-dir(dir, up),
     matrix.transform-rotate-z(-90deg),
 
-    /* Rotate mark to have base->tip on the x-axis */
+    // Rotate mark to have base->tip on the x-axis
     matrix.transform-rotate-z(if reverse {
       vector.angle2(tip, base)
     } else {
       vector.angle2(base, tip)
     }),
 
-    /* Translate mark to have its anchor (tip, base, center) at (0,0) */
+    // Translate mark to have its anchor (tip, base, center) at (0,0)
     matrix.transform-translate(..vector.scale(origin, if reverse {1} else {-1})),
 
-    /* Mirror on x and/or y axis */
+    // Mirror on x and/or y axis
     if flip or reverse {
       matrix.transform-scale({
         if flip {
@@ -150,7 +150,7 @@
       })
     },
 
-    /* Slant on x axis */
+    // Slant on x axis
     if slant not in (none, 0%) {
       if type(slant) == ratio {
         slant /= 100%
