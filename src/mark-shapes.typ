@@ -49,11 +49,15 @@
 
   import "/src/draw.typ": *
   if style.reverse {
-    anchor("tip", tip)
+    // Since tip and base are now "swapped", we add the stroke thickness to the triangle
+    // base. To get smooth looking connections between the triangle tip and a connecting line,
+    // we do not add the tip-offset.
+    anchor("tip", vector.add(tip, vector.scale(dir, style.stroke.thickness / 2)))
+    anchor("base", base)
   } else {
     anchor("tip", vector.add(tip, vector.scale(dir, _calculate-tip-offset(style))))
+    anchor("base", vector.sub(base, vector.scale(dir, style.stroke.thickness / 2)))
   }
-  anchor("base", vector.sub(base, vector.scale(dir, style.stroke.thickness / 2)))
 }
 
 #let create-diamond-tip-and-base-anchor(style, tip, base, center: none, ratio: 50%) = {
