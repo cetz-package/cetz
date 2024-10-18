@@ -294,9 +294,6 @@
     } else {
       "element"
     }
-  } else if ctx.at("resolve-system", default: none) != none {
-    ctx.resolve-system = none
-    resolve-system(ctx, c)
   }
 
   if t == none {
@@ -322,7 +319,7 @@
 /// - update (bool): Update the context's last position
 /// -> array
 #let resolve(ctx, ..coordinates, update: true) = {
-  let resolver = if type(ctx.resolve-coordinate) == array {
+  let resolvers = if type(ctx.resolve-coordinate) == array {
     ctx.resolve-coordinate
   } else {
     ()
@@ -330,8 +327,8 @@
 
   let result = ()
   for c in coordinates.pos() {
-    for i in range(1, resolver.len() + 1) {
-      c = (resolver.at(resolver.len() - i))(ctx, c)
+    for resolver in resolvers.rev() {
+      c = resolver(ctx, c)
     }
 
     let t = resolve-system(ctx, c)
