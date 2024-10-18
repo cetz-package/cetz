@@ -1,6 +1,3 @@
-#let typst-angle = angle
-#let typst-rotate = rotate
-
 #import "/src/coordinate.typ"
 #import "/src/drawable.typ"
 #import "/src/styles.typ"
@@ -16,6 +13,7 @@
 #import "/src/mark-shapes.typ" as mark-shapes_
 #import "/src/polygon.typ"
 #import "/src/aabb.typ"
+#import "/src/error.typ"
 
 #import "transformations.typ": *
 #import "styling.typ": *
@@ -52,6 +50,8 @@
   let style = style.named()
 
   (ctx => {
+    ctx = error.add-element-backtrace(ctx, "circle", name)
+
     let (ctx, pos) = coordinate.resolve(ctx, position)
     let style = styles.resolve(ctx.style, merge: style, root: "circle")
     let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
@@ -773,7 +773,7 @@
       (ctx, b) = coordinate.resolve(ctx, b)
     }
 
-    let angle = if type(angle) != typst-angle {
+    let angle = if type(angle) != std.angle {
       let c
       (ctx, c) = coordinate.resolve(ctx, angle)
       vector.angle2(a, c)
@@ -909,7 +909,7 @@
         aabb-width,
         aabb-height,
         border.segments,
-        typst-rotate(angle,
+        std.rotate(angle,
           reflow: true,
           origin: center + horizon,
           block(

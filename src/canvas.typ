@@ -7,8 +7,6 @@
 #import "process.typ"
 #import "version.typ"
 
-#import util: typst-length
-
 /// Sets up a canvas for drawing on.
 ///
 /// - length (length, ratio): Used to specify what 1 coordinate unit is. If given a ratio, that ratio is relative to the containing elements width!
@@ -26,7 +24,7 @@
     message: "Incorrect type for body: " + repr(type(body)),
   )
 
-  assert(type(length) in (typst-length, ratio), message: "Expected `length` to be of type length or ratio, got " + repr(length))
+  assert(type(length) in (std.length, ratio), message: "Expected `length` to be of type length or ratio, got " + repr(length))
   let length = if type(length) == ratio {
     length * ly.width
   } else {
@@ -39,6 +37,8 @@
     version: version.version,
     length: length,
     debug: debug,
+    // Backtrace info (list of strings)
+    backtrace: (),
     // Previous element position & bbox
     prev: (pt: (0, 0, 0)),
     style: styles.default,
@@ -122,7 +122,7 @@
             vertices += pts
           }
         }
-        if type(drawable.stroke) == dictionary and "thickness" in drawable.stroke and type(drawable.stroke.thickness) != typst-length {
+        if type(drawable.stroke) == dictionary and "thickness" in drawable.stroke and type(drawable.stroke.thickness) != std.length {
           drawable.stroke.thickness *= length
         }
         path(
@@ -132,7 +132,7 @@
           ..vertices,
         )
       } else if drawable.type == "content" {
-        let (width, height) = util.typst-measure(drawable.body)
+        let (width, height) = std.measure(drawable.body)
         move(
           dx: (drawable.pos.at(0) - bounds.low.at(0)) * length - width / 2,
           dy: (drawable.pos.at(1) - bounds.low.at(1)) * length - height / 2,

@@ -7,8 +7,6 @@
 #import "mark-shapes.typ": get-mark
 #import "process.typ"
 
-#import util: typst-length
-
 /// Checks if a mark should be drawn according to the current style.
 /// - style (style): The current style.
 /// -> bool
