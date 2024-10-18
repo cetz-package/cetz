@@ -9,10 +9,6 @@
 /// Constant to be used as float rounding error
 #let float-epsilon = 0.000001
 
-#let typst-measure = measure
-#let typst-length = length
-
-
 /// Multiplies vectors by a transformation matrix. If multiple vectors are given they are returned as an array, if only one vector is given only one will be returned, if a dictionary is given they will be returned in the dictionary with the same keys.
 ///
 /// - transform (matrix,function): The $4 \times 4$ transformation matrix or a function that accepts and returns a vector.
@@ -200,7 +196,7 @@
 /// - cnt (content): The content to measure.
 /// -> vector
 #let measure(ctx, cnt) = {
-  let size = typst-measure(cnt)
+  let size = std.measure(cnt)
   return (
     calc.abs(size.width / ctx.length),
     calc.abs(size.height / ctx.length)
@@ -275,11 +271,11 @@
     let east = radii.at("east", default: auto)
 
     if north != auto or south != auto {
-      assert(west == auto and east == auto,
+      assert(ctx, west == auto and east == auto,
         message: "Corner radius north/south and west/east are mutually exclusive! Use per corner radii: north-west, .. instead.")
     }
     if west != auto or east != auto {
-      assert(north == auto and south == auto,
+      assert(ctx, north == auto and south == auto,
         message: "Corner radius north/south and west/east are mutually exclusive! Use per corner radii: north-west, .. instead.")
     }
 

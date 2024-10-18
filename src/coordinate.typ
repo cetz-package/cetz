@@ -1,5 +1,6 @@
 #import "vector.typ"
 #import "util.typ"
+#import "error.typ"
 #import "deps.typ"
 #import deps.oxifmt: strfmt
 
@@ -68,7 +69,7 @@
   }
 
   // Check if node is known
-  assert(name in ctx.nodes,
+  error.assert(ctx, name in ctx.nodes,
     message: "Unknown element '" + name + "' in elements " + repr(ctx.nodes.keys()))
 
   // Resolve length anchors
@@ -137,7 +138,7 @@
   // Distance between C and P
   let pc = vector.len(D)
   if pc < r {
-    panic("No tangent solution for element " + c.element + " and point " + repr(c.point))
+    error.panic(ctx, "No tangent solution for element " + c.element + " and point " + repr(c.point))
   }
   // Distance between P and X0
   let d = r*r / pc
@@ -297,7 +298,7 @@
   }
 
   if t == none {
-    panic("Failed to resolve coordinate: " + repr(c))
+    error.panic(ctx, "Failed to resolve coordinate: " + repr(c))
   }
   return t
 }
@@ -354,7 +355,7 @@
     } else if t == "function" {
       resolve-function(resolve, ctx, c)
     } else {
-      panic("Failed to resolve coordinate of format: " + repr(c))
+      error.panic(ctx, "Failed to resolve coordinate of format: " + repr(c))
     }.map(util.resolve-number.with(ctx))
 
     if update {
