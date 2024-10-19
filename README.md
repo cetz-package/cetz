@@ -35,7 +35,7 @@ For information, see the [online manual](https://cetz-package.github.io/docs).
 
 To use this package, simply add the following code to your document:
 ```
-#import "@preview/cetz:0.3.0"
+#import "@preview/cetz:0.3.1"
 
 #cetz.canvas({
   import cetz.draw: *
@@ -59,7 +59,7 @@ just install
 The installed version can be imported by prefixing the package name with `@local`.
 
 ```typ
-#import "@local/cetz:0.3.0"
+#import "@local/cetz:0.3.1"
 
 #cetz.canvas({
   import cetz.draw: *
