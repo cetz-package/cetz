@@ -4,6 +4,7 @@ CeTZ 0.3.1 requires Typst 0.12.0.
 
 - Added a new `padding` parameter to the canvas element.
 - Some elements now support Typst 0.12.0 `fill-rule` style.
+- Fixed an issue with reversed marks and `anchor: "center"`. 
 
 # 0.3.0
 
