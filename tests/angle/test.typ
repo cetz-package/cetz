@@ -1,7 +1,8 @@
 #set page(width: auto, height: auto)
 #import "/src/lib.typ": *
+#import "/tests/helper.typ": *
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   import angle: angle
 
@@ -16,7 +17,7 @@
   }
 }))
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   import angle: angle
 
@@ -31,7 +32,7 @@
   }
 }))
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   import angle: angle
 
@@ -46,7 +47,7 @@
   }
 }))
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   import angle: angle
 
@@ -61,7 +62,7 @@
   }
 }))
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   import angle: angle
 
@@ -69,7 +70,7 @@
 
   line(a, b, c)
   set-style(angle: (stroke: red, label-radius: 1))
-  angle(b, a, c, mark: (start: ">", end: ">"),
+  angle(b, c, a, mark: (start: ">", end: ">"),
     inner: true, label: $omega$)
 
   translate((2,0,0))
@@ -77,7 +78,7 @@
   line(a, b, c)
   set-style(stroke: blue)
   set-style(angle: (stroke: auto, radius: 1, label-radius: .5))
-  angle(b, c, a, mark: (start: ">", end: ">"),
+  angle(b, c, a, mark: (start: "|", end: ">"),
     inner: false, label: $alpha$, name: "alpha")
 
   set-style(stroke: black)
@@ -86,3 +87,17 @@
   circle("alpha.start", radius: .25)
   circle("alpha.end", radius: .25)
 }))
+
+#test-case({
+  import draw: *
+  import angle: *
+
+  angle((0,0), (1,0), (0,1), mark: (end: ">"))
+})
+
+#test-case({
+  import draw: *
+  import angle: *
+
+  angle((0,0), (1,0), (0,1), mark: (end: ">"), inner: false)
+})

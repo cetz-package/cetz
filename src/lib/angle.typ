@@ -15,7 +15,7 @@
   mark: auto,
 )
 
-/// Draw an angle between `a` and `b` through origin `origin`
+/// Draw an angle counter-clock-wise between `a` and `b` through origin `origin`
 ///
 /// ```typc example
 /// line((0,0), (1,1.5), name: "a")
@@ -31,7 +31,7 @@
 /// - origin (coordinate): Angle origin
 /// - a (coordinate): Coordinate of side `a`, containing an angle between `origin` and `b`.
 /// - b (coordinate): Coordinate of side `b`, containing an angle between `origin` and `a`.
-/// - inner (bool): Draw the smaller (inner) angle if true, otherwise the outer angle gets drawn.
+/// - inner (bool): Draw the angle angle a-origin-b if true, otherwise the angle from b-origin-a gets drawn.
 /// - label (none,content,function): Draw a label at the angles "label" anchor. If label is a function, it gets the angle value passed as argument. The function must be of the format `angle => content`.
 /// - name (none,str): Element name, used for querying anchors.
 /// - ..style (style): Style key-value pairs.
@@ -65,31 +65,25 @@
   assert(origin.at(2) == a.at(2) and a.at(2) == b.at(2),
     message: "Angle z coordinates of all three points must be equal")
 
-  let (s, e, ss) = {
+  let (start, delta, inner) = {
     let s = vector.angle2(origin, a)
     if s < 0deg { s += 360deg }
+
     let e = vector.angle2(origin, b)
     if e < 0deg { e += 360deg }
 
-    if s > e {
-      (s, e) = (e, s)
+    if e < s {
+      e += 360deg
     }
 
-    if inner == true {
-      let d = vector.angle(a, origin, b)
-      if e - s > 180deg {
-        (s, e) = (e, e + d)
-      } else {
-        (s, e) = (s, s + d)
-      }
-    } else if inner == false {
-      if e - s < 180deg {
-        let d = 360deg - vector.angle(a, origin, b)
-        (s, e) = (e, e + d)
-      }
+    if inner {
+      (s, (e - s), inner)
+    } else {
+      (s, -(360deg - (e - s)), inner)
     }
-    (s, e, (s + e) / 2)
   }
+
+  let mid = start + delta / 2
 
   // Radius can be relative to the min-distance between origin-a and origin-b
   if type(style.radius) == ratio {
@@ -103,9 +97,9 @@
   }
   let (ra, _) = util.resolve-radius(style.label-radius).map(util.resolve-number.with(ctx))
 
-  let label-pt = vector.add(origin, (calc.cos(ss) * ra, calc.sin(ss) * ra, 0))
-  let start-pt = vector.add(origin, (calc.cos(s) * r, calc.sin(s) * r, 0))
-  let end-pt = vector.add(origin, (calc.cos(e) * r, calc.sin(e) * r, 0))
+  let label-pt = vector.add(origin, (calc.cos(mid) * ra, calc.sin(mid) * ra, 0))
+  let start-pt = vector.add(origin, (calc.cos(start) * r, calc.sin(start) * r, 0))
+  let end-pt = vector.add(origin, (calc.cos(start + delta) * r, calc.sin(start + delta) * r, 0))
   draw.anchor("origin", origin)
   draw.anchor("label", label-pt)
   draw.anchor("start", start-pt)
@@ -113,18 +107,18 @@
   draw.anchor("a", a)
   draw.anchor("b", b)
 
-  if s != e {
+  if delta != 0deg {
     if style.fill != none {
-      draw.arc(origin, start: s, stop: e, anchor: "origin",
+      draw.arc(origin, start: start, delta: delta, anchor: "origin",
         name: "arc", ..style, radius: r, mode: "PIE", mark: none, stroke: none)
     }
     if style.stroke != none {
-      draw.arc(origin, start: s, stop: e, anchor: "origin",
+      draw.arc(origin, start: start, delta: delta, anchor: "origin",
         name: "arc", ..style, radius: r, fill: none)
     }
   }
 
-  let label = if type(label) == function { label(e - s) } else { label }
+  let label = if type(label) == function { label(calc.abs(delta)) } else { label }
   if label != none {
     draw.content(label-pt, label)
   }
