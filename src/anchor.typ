@@ -2,8 +2,6 @@
 #import deps.oxifmt: strfmt
 
 #import "util.typ"
-#import util: typst-length
-
 #import "intersection.typ"
 #import "drawable.typ"
 #import "path-util.typ"

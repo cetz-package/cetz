@@ -5,13 +5,8 @@
 #import "vector.typ"
 #import "bezier.typ"
 
-
 /// Constant to be used as float rounding error
 #let float-epsilon = 0.000001
-
-#let typst-measure = measure
-#let typst-length = length
-
 
 /// Multiplies vectors by a transformation matrix. If multiple vectors are given they are returned as an array, if only one vector is given only one will be returned, if a dictionary is given they will be returned in the dictionary with the same keys.
 ///
@@ -200,7 +195,7 @@
 /// - cnt (content): The content to measure.
 /// -> vector
 #let measure(ctx, cnt) = {
-  let size = typst-measure(cnt)
+  let size = std.measure(cnt)
   return (
     calc.abs(size.width / ctx.length),
     calc.abs(size.height / ctx.length)
