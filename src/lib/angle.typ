@@ -25,13 +25,13 @@
 /// cetz.angle.angle("a.start", "a.end", "b.end", label: $ alpha $,
 ///   mark: (end: ">"), radius: 1.5)
 /// cetz.angle.angle("a.start", "b.end", "a.end", label: $ alpha' $,
-///   radius: 50%, inner: false)
+///   radius: 50%, direction: "cw")
 /// ```
 ///
 /// - origin (coordinate): Angle origin
 /// - a (coordinate): Coordinate of side `a`, containing an angle between `origin` and `b`.
 /// - b (coordinate): Coordinate of side `b`, containing an angle between `origin` and `a`.
-/// - inner (bool): Draw the angle angle a-origin-b if true, otherwise the angle from b-origin-a gets drawn.
+/// - direction (string): Direction of the angle. Accepts "cw" (clockwise) and "ccw" (counter-clockwise), the latter being the default.
 /// - label (none,content,function): Draw a label at the angles "label" anchor. If label is a function, it gets the angle value passed as argument. The function must be of the format `angle => content`.
 /// - name (none,str): Element name, used for querying anchors.
 /// - ..style (style): Style key-value pairs.
@@ -53,7 +53,7 @@
   origin,
   a,
   b,
-  inner: true,
+  direction: "ccw",
   label: none,
   name: none,
   ..style
@@ -65,7 +65,12 @@
   assert(origin.at(2) == a.at(2) and a.at(2) == b.at(2),
     message: "Angle z coordinates of all three points must be equal")
 
-  let (start, delta, inner) = {
+  assert(direction in ("cw", "ccw"),
+    message: "Invalid angle direction " + repr(direction))
+
+  let (start, delta, ccw) = {
+    let ccw = direction == "ccw"
+
     let s = vector.angle2(origin, a)
     if s < 0deg { s += 360deg }
 
@@ -76,10 +81,10 @@
       e += 360deg
     }
 
-    if inner {
-      (s, (e - s), inner)
+    if ccw {
+      (s, (e - s), ccw)
     } else {
-      (s, -(360deg - (e - s)), inner)
+      (s, -(360deg - (e - s)), ccw)
     }
   }
 

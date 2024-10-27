@@ -12,7 +12,7 @@
     group({
       let (o, a, b) = ((0,0), (1,0), (calc.cos(a), calc.sin(a)))
       line(a, o, b)
-      angle(o, a, b, label: $alpha$, inner: true)
+      angle(o, a, b, label: $alpha$)
     })
   }
 }))
@@ -27,7 +27,7 @@
     group({
       let (o, a, b) = ((0,0), (1,0), (calc.cos(a), calc.sin(a)))
       line(a, o, b)
-      angle(o, a, b, label: $alpha$, inner: false)
+      angle(o, a, b, label: $alpha$, direction: "cw")
     })
   }
 }))
@@ -42,7 +42,7 @@
     group({
       let (o, a, b) = ((0,0), (calc.cos(a+90deg), calc.sin(a+90deg)), (calc.cos(a), calc.sin(a)))
       line(a, o, b)
-      angle(o, b, a, label: $alpha$, inner: true)
+      angle(o, b, a, label: $alpha$)
     })
   }
 }))
@@ -57,7 +57,7 @@
     group({
       let (o, a, b) = ((0,0), (calc.cos(a+90deg), calc.sin(a+90deg)), (calc.cos(a), calc.sin(a)))
       line(a, o, b)
-      angle(o, b, a, label: $alpha$, inner: false)
+      angle(o, b, a, label: $alpha$, direction: "cw")
     })
   }
 }))
@@ -70,8 +70,7 @@
 
   line(a, b, c)
   set-style(angle: (stroke: red, label-radius: 1))
-  angle(b, c, a, mark: (start: ">", end: ">"),
-    inner: true, label: $omega$)
+  angle(b, c, a, mark: (start: ">", end: ">"), label: $omega$)
 
   translate((2,0,0))
 
@@ -79,7 +78,7 @@
   set-style(stroke: blue)
   set-style(angle: (stroke: auto, radius: 1, label-radius: .5))
   angle(b, c, a, mark: (start: "|", end: ">"),
-    inner: false, label: $alpha$, name: "alpha")
+    direction: "cw", label: $alpha$, name: "alpha")
 
   set-style(stroke: black)
   circle("alpha.origin", radius: .15)
@@ -99,5 +98,5 @@
   import draw: *
   import angle: *
 
-  angle((0,0), (1,0), (0,1), mark: (end: ">"), inner: false)
+  angle((0,0), (1,0), (0,1), mark: (end: ">"), direction: "cw")
 })
