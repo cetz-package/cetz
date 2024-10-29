@@ -1,7 +1,8 @@
 #set page(width: auto, height: auto)
 #import "/src/lib.typ": *
+#import "/tests/helper.typ": *
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   import angle: angle
 
@@ -11,12 +12,12 @@
     group({
       let (o, a, b) = ((0,0), (1,0), (calc.cos(a), calc.sin(a)))
       line(a, o, b)
-      angle(o, a, b, label: $alpha$, inner: true)
+      angle(o, a, b, label: $alpha$)
     })
   }
 }))
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   import angle: angle
 
@@ -26,12 +27,12 @@
     group({
       let (o, a, b) = ((0,0), (1,0), (calc.cos(a), calc.sin(a)))
       line(a, o, b)
-      angle(o, a, b, label: $alpha$, inner: false)
+      angle(o, a, b, label: $alpha$, direction: "cw")
     })
   }
 }))
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   import angle: angle
 
@@ -41,12 +42,12 @@
     group({
       let (o, a, b) = ((0,0), (calc.cos(a+90deg), calc.sin(a+90deg)), (calc.cos(a), calc.sin(a)))
       line(a, o, b)
-      angle(o, b, a, label: $alpha$, inner: true)
+      angle(o, b, a, label: $alpha$)
     })
   }
 }))
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   import angle: angle
 
@@ -56,12 +57,12 @@
     group({
       let (o, a, b) = ((0,0), (calc.cos(a+90deg), calc.sin(a+90deg)), (calc.cos(a), calc.sin(a)))
       line(a, o, b)
-      angle(o, b, a, label: $alpha$, inner: false)
+      angle(o, b, a, label: $alpha$, direction: "cw")
     })
   }
 }))
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   import angle: angle
 
@@ -69,16 +70,15 @@
 
   line(a, b, c)
   set-style(angle: (stroke: red, label-radius: 1))
-  angle(b, a, c, mark: (start: ">", end: ">"),
-    inner: true, label: $omega$)
+  angle(b, c, a, mark: (start: ">", end: ">"), label: $omega$)
 
   translate((2,0,0))
 
   line(a, b, c)
   set-style(stroke: blue)
   set-style(angle: (stroke: auto, radius: 1, label-radius: .5))
-  angle(b, c, a, mark: (start: ">", end: ">"),
-    inner: false, label: $alpha$, name: "alpha")
+  angle(b, c, a, mark: (start: "|", end: ">"),
+    direction: "cw", label: $alpha$, name: "alpha")
 
   set-style(stroke: black)
   circle("alpha.origin", radius: .15)
@@ -86,3 +86,17 @@
   circle("alpha.start", radius: .25)
   circle("alpha.end", radius: .25)
 }))
+
+#test-case({
+  import draw: *
+  import angle: *
+
+  angle((0,0), (1,0), (0,1), mark: (end: ">"))
+})
+
+#test-case({
+  import draw: *
+  import angle: *
+
+  angle((0,0), (1,0), (0,1), mark: (end: ">"), direction: "cw")
+})
