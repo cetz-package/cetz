@@ -90,7 +90,7 @@
   ),
   hobby: (
     /// Curve start and end omega (curlyness)
-    omega: (1,1),
+    omega: (0,0),
     mark: auto,
     shorten: auto,
     stroke: auto,
