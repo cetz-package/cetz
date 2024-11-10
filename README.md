@@ -86,3 +86,6 @@ To run all tests you can run the `just test` target. You need to have
 - [finite](https://github.com/jneug/typst-finite) Finite is a Typst package for rendering finite automata.
 - [fletcher](https://github.com/Jollywatt/typst-fletcher) Package for drawing commutative diagrams and figures with arrows.
 - [riesketcher](https://github.com/ThatOneCalculator/riesketcher) Package for drawing Riemann sums.
+- [chronos](https://git.kb28.ch/HEL/chronos) Package for drawing sequence diagrams.
+- [circuiteria](https://git.kb28.ch/HEL/circuiteria) Package for drawing circuits.
+- [rivet](https://git.kb28.ch/HEL/rivet-typst) Package for drawing instruction / register diagrams.
