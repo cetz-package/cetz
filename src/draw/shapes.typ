@@ -887,7 +887,13 @@
       )
     }
 
-    let border = if style.frame in (none, "rect") {
+    let frame-stroke = if style.frame != none {
+      style.stroke
+    }
+    let frame-fill = if style.frame != none {
+      style.fill
+    }
+    let frame-shape = if style.frame in (none, "rect") {
       drawable.path(
         path-util.line-segment((
           anchors.north-west,
@@ -896,17 +902,16 @@
           anchors.south-west
         )),
         close: true,
-        stroke: style.stroke,
-        fill: style.fill)
+        stroke: frame-stroke,
+        fill: frame-fill,)
     } else if style.frame == "circle" {
       let (x, y, z) = util.calculate-circle-center-3pt(anchors.north-west, anchors.south-west, anchors.south-east)
       let r = vector.dist((x, y, z), anchors.north-west)
       drawable.ellipse(
         x, y, z,
         r, r,
-        stroke: style.stroke,
-        fill: style.fill
-      )
+        stroke: frame-stroke,
+        fill: frame-fill,)
     }
 
     let (aabb-width, aabb-height, ..) = aabb.size(aabb.aabb(
@@ -914,8 +919,8 @@
        anchors.south-west, anchors.south-east)))
 
     let drawables = ()
-    if style.frame != none {
-      drawables.push(border)
+    if frame-shape != none {
+      drawables.push(frame-shape)
     }
 
     // Because of precision problems with some fonts (e.g. "Source Sans 3")
@@ -930,7 +935,7 @@
         anchors.center,
         aabb-width,
         aabb-height,
-        border.segments,
+        frame-shape.segments,
         typst-rotate(angle,
           reflow: true,
           origin: center + horizon,

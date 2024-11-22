@@ -47,3 +47,10 @@
   draw.content(name: "test2", frame: "rect", anchor: "south", (-1,-1))[Test 2]
   draw.line("test1", "test2")
 })
+
+#test-case({
+  import draw:*
+  content((-1,0), [Text], name: "a")
+  content((+1,0), [Text], name: "b")
+  line("a", "b")
+})
