@@ -237,8 +237,8 @@
     let ab = vector.sub(b, a)
     let f = .25 - (50% - style.factor) / 50% * .25
     let q-dir = vector.scale(ab, f)
-    let up = vector.scale(norm, resolve-amplitude(style.amplitude, i, num-segments) / 2)
-    let down = vector.scale(up, -1)
+    let up = vector.scale(norm, resolve-amplitude(style.amplitude, i + .25, num-segments) / 2)
+    let down = vector.scale(up, -resolve-amplitude(style.amplitude, i + .75, num-segments) / 2)
 
     let m1 = vector.add(vector.add(a, q-dir), up)
     let m2 = vector.add(vector.sub(b, q-dir), down)
@@ -395,9 +395,8 @@
   //
   let fn(i, a, b, norm) = {
     let ab = vector.sub(b, a)
-    let up = vector.scale(norm, resolve-amplitude(style.amplitude, i, num-segments) / 2)
-    let down = vector.scale(
-      up, -1)
+    let up = vector.scale(norm, resolve-amplitude(style.amplitude, i + .25, num-segments) / 2)
+    let down = vector.scale(norm, -resolve-amplitude(style.amplitude, i + .75, num-segments) / 2)
 
     let ma = vector.add(vector.add(a, vector.scale(ab, .25)), up)
     let m  = vector.add(a, vector.scale(ab, .50))
