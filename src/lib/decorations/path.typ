@@ -14,7 +14,11 @@
   /// Length of a single segments
   segment-length: none,
 
-  /// Amplitude of a segment in the direction of the segments normal
+  /// Amplitude of a segment in the direction of the segments normal.
+  /// The following types are supported:
+  ///   - float
+  ///   - function ratio -> float (the segment ratio is given as argument)
+  ///   - array of floats (the rounded segment ratio is used as index)
   amplitude: 1,
   /// Decoration start
   start: 0%,
@@ -58,6 +62,16 @@
   /// Coil "overshoot" factor
   factor: 150%,
 )
+
+#let resolve-amplitude(amplitude, segment, num-segments) = {
+  return if type(amplitude) == function {
+    (amplitude)(segment / (num-segments - 1) * 100%)
+  } else if type(amplitude) == array {
+    amplitude.at(int(calc.max(0, calc.round(segment / (num-segments - 1) * (amplitude.len() - 1)))), default: 0)
+  } else {
+    amplitude
+  }
+}
 
 #let resolve-style(ctx, segments, style) = {
   assert(not (style.segments == none and style.segment-length == none),
@@ -221,10 +235,9 @@
   // list of points for the line-strip.
   let fn(i, a, b, norm) = {
     let ab = vector.sub(b, a)
-
     let f = .25 - (50% - style.factor) / 50% * .25
     let q-dir = vector.scale(ab, f)
-    let up = vector.scale(norm, style.amplitude / 2)
+    let up = vector.scale(norm, resolve-amplitude(style.amplitude, i, num-segments) / 2)
     let down = vector.scale(up, -1)
 
     let m1 = vector.add(vector.add(a, q-dir), up)
@@ -301,7 +314,8 @@
   //
   let fn(i, a, b, norm) = {
     let ab = vector.sub(b, a)
-    let up = vector.scale(norm, style.amplitude / 2)
+    let amplitude = resolve-amplitude(style.amplitude, i, num-segments)
+    let up = vector.scale(norm, amplitude / 2)
     let dist = vector.dist(a, b)
 
     let d = vector.norm(ab)
@@ -381,7 +395,7 @@
   //
   let fn(i, a, b, norm) = {
     let ab = vector.sub(b, a)
-    let up = vector.scale(norm, style.amplitude / 2)
+    let up = vector.scale(norm, resolve-amplitude(style.amplitude, i, num-segments) / 2)
     let down = vector.scale(
       up, -1)
 

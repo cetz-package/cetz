@@ -9,6 +9,8 @@
 
   zigzag(line((0,0), (4,0)))
   zigzag(line((0,1), (4,1)), amplitude: .5)
+  zigzag(line((0,2), (4,2)), amplitude: t => { 1 - .5 * t / 50% })
+  zigzag(line((0,3), (4,3)), amplitude: (0, 1, 0, 1, 0))
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
@@ -16,6 +18,8 @@
 
   wave(line((0,0), (4,0)))
   wave(line((0,1), (4,1)), amplitude: .5)
+  wave(line((0,2), (4,2)), amplitude: t => { 1 - .5 * t / 50% })
+  wave(line((0,3), (4,3)), amplitude: (0, 1, 0, 1, 0))
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
@@ -23,6 +27,8 @@
 
   coil(line((0,0), (4,0)))
   coil(line((0,1), (4,1)), amplitude: .5)
+  coil(line((0,2), (4,2)), amplitude: t => { 1 - .5 * t / 50% })
+  coil(line((0,3), (4,3)), amplitude: (0, 1, 0, 1, 0))
 }))
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
