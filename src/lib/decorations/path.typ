@@ -18,7 +18,7 @@
   /// The following types are supported:
   ///   - float
   ///   - function ratio -> float (the segment ratio is given as argument)
-  ///   - array of floats (the rounded segment ratio is used as index)
+  ///   - array of floats (the rounded down segment number is used as index modulo the array length)
   amplitude: 1,
   /// Decoration start
   start: 0%,
@@ -63,11 +63,19 @@
   factor: 150%,
 )
 
+// Square default style
+#let square-default-style = (
+  ..default-style,
+  /// Midpoint factor
+  factor: 50%,
+)
+
 #let resolve-amplitude(amplitude, segment, num-segments) = {
+  segment = calc.max(0, calc.min(segment, num-segments))
   return if type(amplitude) == function {
-    (amplitude)(segment / (num-segments - 1) * 100%)
+    (amplitude)(segment / num-segments * 100%)
   } else if type(amplitude) == array {
-    amplitude.at(int(calc.max(0, calc.round(segment / (num-segments - 1) * (amplitude.len() - 1)))), default: 0)
+    amplitude.at(calc.rem(int(segment), amplitude.len()), default: 0)
   } else {
     amplitude
   }
@@ -183,12 +191,12 @@
 
     (p0, p1) = util.revert-transform(ctx.transform, p0, p1)
 
-    let dir = vector.sub(p1, p0)
-    let norm = vector.norm(vector.cross(dir, if p0.at(2) != p1.at(2) {
+    let dir = vector.norm(vector.sub(p1, p0))
+    let norm = vector.cross(dir, if p0.at(2) != p1.at(2) {
       style.z-up
     } else {
       style.xy-up
-    }))
+    })
 
     pts += fn(i, p0, p1, norm)
   }
@@ -238,7 +246,7 @@
     let f = .25 - (50% - style.factor) / 50% * .25
     let q-dir = vector.scale(ab, f)
     let up = vector.scale(norm, resolve-amplitude(style.amplitude, i + .25, num-segments) / 2)
-    let down = vector.scale(up, -resolve-amplitude(style.amplitude, i + .75, num-segments) / 2)
+    let down = vector.scale(norm, -resolve-amplitude(style.amplitude, i + .75, num-segments) / 2)
 
     let m1 = vector.add(vector.add(a, q-dir), up)
     let m2 = vector.add(vector.sub(b, q-dir), down)
@@ -395,7 +403,7 @@
   //
   let fn(i, a, b, norm) = {
     let ab = vector.sub(b, a)
-    let up = vector.scale(norm, resolve-amplitude(style.amplitude, i + .25, num-segments) / 2)
+    let up = vector.scale(norm, +resolve-amplitude(style.amplitude, i + .25, num-segments) / 2)
     let down = vector.scale(norm, -resolve-amplitude(style.amplitude, i + .75, num-segments) / 2)
 
     let ma = vector.add(vector.add(a, vector.scale(ab, .25)), up)
@@ -415,6 +423,73 @@
 
   return draw.merge-path(
     finalize-path(ctx, segments, style, draw.catmull(
+      .._path-effect(ctx, segments, fn, close: close, style),
+      close: close), close: close) ,
+    name: name,
+    close: close,
+    ..style)
+})
+
+/// Draw a square-wave along a path using a line-strip
+///
+/// The number of phases can be controlled via the `segments` or `segment-length` style key, and the width via `amplitude`.
+///
+/// ```typc example
+/// line((0,0), (2,1), stroke: gray)
+/// cetz.decorations.square(line((0,0), (2,1)), amplitude: .25, start: 10%, stop: 90%)
+/// ```
+///
+/// - target (drawable): Target path
+/// - close (auto,bool): Close the path
+/// - name (none,string): Element name
+/// - ..style (style): Style
+///
+/// ## Styling
+/// *Root*: `squre`
+///
+/// - factor (ratio) = 50% Square-Wave midpoint
+#let square(target, close: auto, name: none, ..style) = draw.get-ctx(ctx => {
+  let style = styles.resolve(ctx, merge: style.named(),
+    base: square-default-style, root: "square")
+
+  let (segments, close) = get-segments(ctx, target)
+  let style = resolve-style(ctx, segments, style)
+  let num-segments = style.segments
+  let factor = calc.max(0, calc.min(style.factor / 100%, 1))
+
+  // Return a list of points for the line-strip
+  //
+  //   +----+        ▲
+  //   |    |        │ Up
+  // ..a....m....b.. '
+  //        |    |
+  //        +----+
+  //
+  let fn(i, a, b, norm) = {
+    let ab = vector.sub(b, a)
+    let up = vector.scale(norm, +resolve-amplitude(style.amplitude, i + .25, num-segments) / 2)
+    let down = vector.scale(norm, -resolve-amplitude(style.amplitude, i + .75, num-segments) / 2)
+    let m  = vector.add(a, vector.scale(ab, factor))
+
+    if not close {
+      if i == 0 {
+        return (a, vector.add(a, up),
+                vector.add(m, up), vector.add(m, down),
+                vector.add(b, down))
+      } else if i == num-segments - 1 {
+        return (vector.add(a, up),
+                vector.add(m, up), vector.add(m, down),
+                vector.add(b, down), b)
+      }
+    }
+
+    return (vector.add(a, up),
+            vector.add(m, up), vector.add(m, down),
+            vector.add(b, down))
+  }
+
+  return draw.merge-path(
+    finalize-path(ctx, segments, style, draw.line(
       .._path-effect(ctx, segments, fn, close: close, style),
       close: close), close: close) ,
     name: name,
