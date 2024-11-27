@@ -115,7 +115,13 @@
 /// - name (str): Name to prepend to the generated anchors. (Not to be confused with other `name` arguments that allow the use of anchor coordinates.)
 /// - ..elements (elements,str): Elements and/or element names to calculate intersections with. Elements referred to by name are (unlike elements passed) not drawn by the intersections function!
 /// - samples (int): Number of samples to use for non-linear path segments. A higher sample count can give more precise results but worse performance.
-#let intersections(name, ..elements, samples: 10) = {
+/// - sort (none,function): A function of the form `(context, array<vector>) -> array<vector>`
+///   that gets called with the list of intersection points.
+///
+///   CeTZ provides the following sorting functions:
+///     - sorting.points-by-distace(points, reference: (0, 0, 0))
+///     - sorting.points-by-angle(points, reference: (0, 0, 0))
+#let intersections(name, ..elements, samples: 10, sort: none) = {
   samples = calc.clamp(samples, 2, 2500)
 
   assert(type(name) == str and name != "",
@@ -169,6 +175,11 @@
         }
       }
     }
+
+    if sort != none {
+      pts = (sort)(ctx, pts)
+    }
+
     let anchors = (:)
     for (i, pt) in pts.enumerate() {
       anchors.insert(str(i), pt)
