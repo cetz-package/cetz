@@ -820,8 +820,8 @@
     let bounds-height = calc.abs(height)
     baseline-height = bounds-height - baseline-height
 
-    width = bounds-width + padding.left + padding.right
-    height = bounds-height + padding.top + padding.bottom
+    width = calc.max(0, bounds-width + padding.left + padding.right)
+    height = calc.max(0, bounds-height + padding.top + padding.bottom)
 
     let anchors = {
       let w = width / 2
