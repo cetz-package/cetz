@@ -100,3 +100,12 @@
 
   angle((0,0), (1,0), (0,1), mark: (end: ">"), direction: "cw")
 })
+
+#test-case({
+  import draw: *
+  import angle: *
+
+  angle((0,0), (1,0), (0,1), radius: .5cm)
+  angle((0,0), (1,0), (0,1), radius: 75%, stroke: blue)
+  angle((0,0), (1,0), (0,1), radius: 1, stroke: green)
+})

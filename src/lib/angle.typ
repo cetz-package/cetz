@@ -59,6 +59,9 @@
   ..style
 ) = draw.group(name: name, ctx => {
   let style = styles.resolve(ctx.style, merge: style.named(), base: default-style, root: "angle")
+  let radius = util.resolve-number(ctx, style.radius)
+  let label-radius = util.resolve-number(ctx, style.label-radius)
+
   let (ctx, origin) = coordinate.resolve(ctx, origin)
   let (ctx, a, b) = coordinate.resolve(ctx, a, b, update: false)
 
@@ -91,20 +94,18 @@
   let mid = start + delta / 2
 
   // Radius can be relative to the min-distance between origin-a and origin-b
-  if type(style.radius) == ratio {
-    style.radius = style.radius * calc.min(vector.dist(origin, a), vector.dist(origin, b)) / 100%
+  if type(radius) == ratio {
+    radius = radius * calc.min(vector.dist(origin, a), vector.dist(origin, b)) / 100%
   }
-  let (r, _) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
 
   // Label radius can be relative to radius
-  if type(style.label-radius) == ratio {
-    style.label-radius = style.label-radius * style.radius / 100%
+  if type(label-radius) == ratio {
+    label-radius = label-radius * radius / 100%
   }
-  let (ra, _) = util.resolve-radius(style.label-radius).map(util.resolve-number.with(ctx))
 
-  let label-pt = vector.add(origin, (calc.cos(mid) * ra, calc.sin(mid) * ra, 0))
-  let start-pt = vector.add(origin, (calc.cos(start) * r, calc.sin(start) * r, 0))
-  let end-pt = vector.add(origin, (calc.cos(start + delta) * r, calc.sin(start + delta) * r, 0))
+  let label-pt = vector.add(origin, (calc.cos(mid) * label-radius, calc.sin(mid) * label-radius, 0))
+  let start-pt = vector.add(origin, (calc.cos(start) * radius, calc.sin(start) * radius, 0))
+  let end-pt = vector.add(origin, (calc.cos(start + delta) * radius, calc.sin(start + delta) * radius, 0))
   draw.anchor("origin", origin)
   draw.anchor("label", label-pt)
   draw.anchor("start", start-pt)
@@ -115,11 +116,11 @@
   if delta != 0deg {
     if style.fill != none {
       draw.arc(origin, start: start, delta: delta, anchor: "origin",
-        name: "arc", ..style, radius: r, mode: "PIE", mark: none, stroke: none)
+        name: "arc", ..style, radius: radius, mode: "PIE", mark: none, stroke: none)
     }
     if style.stroke != none {
       draw.arc(origin, start: start, delta: delta, anchor: "origin",
-        name: "arc", ..style, radius: r, fill: none)
+        name: "arc", ..style, radius: radius, fill: none)
     }
   }
 
