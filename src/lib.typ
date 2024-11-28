@@ -15,6 +15,7 @@
 #import "path-util.typ"
 #import "mark.typ"
 #import "mark-shapes.typ"
+#import "sorting.typ"
 
 // Libraries
 #import "lib/palette.typ"
