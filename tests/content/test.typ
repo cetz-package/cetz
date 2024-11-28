@@ -1,5 +1,6 @@
 #set page(width: auto, height: auto)
 #import "/src/lib.typ": *
+#import "/tests/helper.typ": *
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
@@ -90,3 +91,9 @@
     content((i + 0.5, 3.5), text(bottom-edge:"descender", top-edge: "ascender")[#elements.at(i - 1)])
   }
 }))
+
+#test-case({
+  import draw: *
+  rect((-1,-1), (1,1))
+  content((0,0), [Test], padding: -1, frame: "rect")
+})
