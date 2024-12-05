@@ -6,7 +6,7 @@
   [A], ([B], [C], [D]), ([E], [F])
 )
 
-#canvas(length: 1cm, {
+#canvas({
   import draw: *
 
   set-style(content: (padding: .2),
