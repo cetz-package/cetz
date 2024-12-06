@@ -75,7 +75,7 @@
   return if type(amplitude) == function {
     (amplitude)(segment / num-segments * 100%)
   } else if type(amplitude) == array {
-    amplitude.at(calc.rem(int(segment), amplitude.len()), default: 0)
+    amplitude.at(calc.rem(int(2*segment), amplitude.len()), default: 0)
   } else {
     amplitude
   }
