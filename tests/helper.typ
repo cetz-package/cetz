@@ -1,5 +1,11 @@
 #import "/src/lib.typ" as cetz
 
+/// Draw a point + label
+#let point(pt, name) = {
+  cetz.draw.circle(pt, radius: .05cm, fill: black, stroke: none, name: "pt")
+  cetz.draw.content((rel: (.2cm, 0), to: "pt"), [#name], anchor: "west")
+}
+
 /// Draw a cross at position pt
 #let cross(pt, size: .25, ..style) = {
   import cetz.draw: *
