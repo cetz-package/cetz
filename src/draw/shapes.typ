@@ -27,12 +27,16 @@
 /// circle((0,0))
 /// // Draws an ellipse
 /// circle((0,-2), radius: (0.75, 0.5))
+/// // Draws a circle at (0, 2) through point (1, 3)
+/// circle((0,2), (rel: (1,1)))
 /// ```
 ///
-/// - position (coordinate): The position to place the circle on.
+/// - ..points-style (coordinate, style): The position to place the circle on.
+///   If given two coordinates, the distance between them is used as radius.
+///   If given a single coordinate, the radius can be set via the `radius` (style)
+///   argument.
 /// - name (none,str):
 /// - anchor (none, str):
-/// - ..style (style):
 ///
 /// ### Styling
 /// *Root*: `circle`
@@ -42,20 +46,33 @@
 /// ### Anchors
 ///   Supports border and path anchors. The `"center"` anchor is the default.
 ///
-#let circle(position, name: none, anchor: none, ..style) = {
-  // No extra positional arguments from the style sink
-  assert.eq(
-    style.pos(),
-    (),
-    message: "Unexpected positional arguments: " + repr(style.pos()),
-  )
-  let style = style.named()
+#let circle(..points-style, name: none, anchor: none) = {
+  let style = points-style.named()
+  let points = points-style.pos()
+  assert(points.len() in (1, 2),
+    message: "circle expects one or two points, got " + repr(points))
+  assert(points.len() != 2 or "radius" not in style,
+    message: "unexpected radius for circle constructed by two points")
 
   (ctx => {
-    let (ctx, pos) = coordinate.resolve(ctx, position)
+    let (center, outer) = if points.len() == 1 {
+      (points.at(0), none)
+    } else {
+      points
+    }
+
+    let (ctx, center) = coordinate.resolve(ctx, center)
     let style = styles.resolve(ctx.style, merge: style, root: "circle")
-    let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
-    let (cx, cy, cz) = pos
+
+    // If we got two points, use the second one to calculate
+    // the radius.
+    let (rx, ry) = if outer != none {
+      (ctx, outer) = coordinate.resolve(ctx, outer, update: false)
+      (vector.dist(center, outer),) * 2
+    } else {
+      util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
+    }
+    let (cx, cy, cz) = center
 
     let drawables = drawable.ellipse(
       cx, cy, cz,
@@ -65,7 +82,7 @@
     )
 
     let (transform, anchors) = anchor_.setup(
-      (_) => pos,
+      (_) => center,
       ("center",),
       default: "center",
       name: name,
