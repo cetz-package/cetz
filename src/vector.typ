@@ -112,6 +112,11 @@
 /// -> vector
 #let norm(v) = div(v, len(v))
 
+/// Multiply two vectors component-wise
+/// - a (vector): First vector.
+/// - b (vector): Second vector.
+#let element-product(a, b) = a.enumerate().map(((i, v)) => v * b.at(i))
+
 /// Calculates the dot product between two vectors.
 /// - v1 (vector): The vector on the left hand side.
 /// - v2 (vector): The vector on the right hand side.
