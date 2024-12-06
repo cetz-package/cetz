@@ -72,3 +72,13 @@
       segment-length: .22, amplitude: .8)
   }
 })
+
+#test-case(fn => {
+  import draw: *
+
+  // Amplitudes of type length
+  fn(line((0,0), (4,0)), amplitude: 0.25)
+  fn(line((0,1), (4,1)), amplitude: 2.5mm)
+  fn(line((0,2), (4,2)), amplitude: t => 1em*calc.sin(float(t)*calc.pi))
+  fn(line((0,3), (4,3)), amplitude: (5mm, 0, 2mm, 0))
+}, args: all-fns)

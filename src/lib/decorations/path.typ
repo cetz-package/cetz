@@ -70,15 +70,16 @@
   factor: 50%,
 )
 
-#let resolve-amplitude(amplitude, segment, num-segments) = {
+#let resolve-amplitude(ctx, amplitude, segment, num-segments) = {
   segment = calc.max(0, calc.min(segment, num-segments))
-  return if type(amplitude) == function {
+  let amp = if type(amplitude) == function {
     (amplitude)(segment / num-segments * 100%)
   } else if type(amplitude) == array {
     amplitude.at(calc.rem(int(2*segment), amplitude.len()), default: 0)
   } else {
     amplitude
   }
+  return util.resolve-number(ctx, amp)
 }
 
 #let resolve-style(ctx, segments, style) = {
@@ -245,8 +246,8 @@
     let ab = vector.sub(b, a)
     let f = .25 - (50% - style.factor) / 50% * .25
     let q-dir = vector.scale(ab, f)
-    let up = vector.scale(norm, resolve-amplitude(style.amplitude, i + .25, num-segments) / 2)
-    let down = vector.scale(norm, -resolve-amplitude(style.amplitude, i + .75, num-segments) / 2)
+    let up = vector.scale(norm, resolve-amplitude(ctx, style.amplitude, i + .25, num-segments) / 2)
+    let down = vector.scale(norm, -resolve-amplitude(ctx, style.amplitude, i + .75, num-segments) / 2)
 
     let m1 = vector.add(vector.add(a, q-dir), up)
     let m2 = vector.add(vector.sub(b, q-dir), down)
@@ -322,7 +323,7 @@
   //
   let fn(i, a, b, norm) = {
     let ab = vector.sub(b, a)
-    let amplitude = resolve-amplitude(style.amplitude, i, num-segments)
+    let amplitude = resolve-amplitude(ctx, style.amplitude, i, num-segments)
     let up = vector.scale(norm, amplitude / 2)
     let dist = vector.dist(a, b)
 
@@ -403,8 +404,8 @@
   //
   let fn(i, a, b, norm) = {
     let ab = vector.sub(b, a)
-    let up = vector.scale(norm, +resolve-amplitude(style.amplitude, i + .25, num-segments) / 2)
-    let down = vector.scale(norm, -resolve-amplitude(style.amplitude, i + .75, num-segments) / 2)
+    let up = vector.scale(norm, +resolve-amplitude(ctx, style.amplitude, i + .25, num-segments) / 2)
+    let down = vector.scale(norm, -resolve-amplitude(ctx, style.amplitude, i + .75, num-segments) / 2)
 
     let ma = vector.add(vector.add(a, vector.scale(ab, .25)), up)
     let m  = vector.add(a, vector.scale(ab, .50))
@@ -467,8 +468,8 @@
   //
   let fn(i, a, b, norm) = {
     let ab = vector.sub(b, a)
-    let up = vector.scale(norm, +resolve-amplitude(style.amplitude, i + .25, num-segments) / 2)
-    let down = vector.scale(norm, -resolve-amplitude(style.amplitude, i + .75, num-segments) / 2)
+    let up = vector.scale(norm, +resolve-amplitude(ctx, style.amplitude, i + .25, num-segments) / 2)
+    let down = vector.scale(norm, -resolve-amplitude(ctx, style.amplitude, i + .75, num-segments) / 2)
     let m  = vector.add(a, vector.scale(ab, factor))
 
     if not close {
