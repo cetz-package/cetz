@@ -4,15 +4,16 @@ CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https:
 
 ## Examples
 <!-- img width is set so the table gets evenly spaced by GitHubs css -->
-<table><tr>
+<table>
+<tr>
   <td>
     <a href="gallery/karls-picture.typ">
       <img src="gallery/karls-picture.png" width="250px">
     </a>
   </td>
   <td>
-    <a href="gallery/tree.typ">
-      <img src="gallery/tree.png" width="250px">
+    <a href="gallery/paciolis.typ">
+      <img src="gallery/paciolis.png" width="250px">
     </a>
   </td>
   <td>
@@ -20,10 +21,21 @@ CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https:
       <img src="gallery/waves.png" width="250px">
     </a>
   </td>
-</tr><tr>
+</tr>
+<tr>
   <td>Karl's Picture</td>
-  <td>Tree Layout</td>
+  <td>Pacioli's construction of the icosahedron</td>
   <td>Waves</td>
+</tr>
+<tr>
+  <td>
+    <a href="gallery/tree.typ">
+      <img src="gallery/tree.png" width="250px">
+    </a>
+  </td>
+</tr>
+<tr>
+  <td>Tree Layout</td>
 </tr>
 </table>
 
