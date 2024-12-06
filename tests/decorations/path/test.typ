@@ -2,55 +2,23 @@
 #import "/src/lib.typ": *
 #import "/tests/helper.typ": *
 
-#import decorations: zigzag, coil, wave
+#import decorations: zigzag, coil, wave, square
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#let all-fns = (zigzag, coil, wave, square)
+
+#test-case(fn => {
   import draw: *
 
-  zigzag(line((0,0), (4,0)))
-  zigzag(line((0,1), (4,1)), amplitude: .5)
-}))
+  fn(line((0,0), (4,0)))
+  fn(line((0,1), (4,1)), amplitude: .5)
+  fn(line((0,2), (4,2)), amplitude: t => { 1 - .5 * t / 50% })
+  fn(line((0,3), (4,3)), amplitude: (0, .5, 1))
+}, args: all-fns)
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case(fn => {
   import draw: *
-
-  wave(line((0,0), (4,0)))
-  wave(line((0,1), (4,1)), amplitude: .5)
-}))
-
-#box(stroke: 2pt + red, canvas(length: 1cm, {
-  import draw: *
-
-  coil(line((0,0), (4,0)))
-  coil(line((0,1), (4,1)), amplitude: .5)
-}))
-
-#box(stroke: 2pt + red, canvas(length: 1cm, {
-  import draw: *
-
-  zigzag(hobby((0,0), (4,0), (6,2)))
-}))
-
-#box(stroke: 2pt + red, canvas(length: 1cm, {
-  import draw: *
-
-  coil(hobby((0,0), (4,0), (6,2)))
-}))
-
-#box(stroke: 2pt + red, canvas(length: 1cm, {
-  import draw: *
-
-  wave(hobby((0,0), (4,0), (6,2)))
-}))
-
-#box(stroke: 2pt + red, canvas(length: 1cm, {
-  import draw: *
-
-  set-style(radius: .9)
-  zigzag(circle((0,0)), amplitude: .2, segments: 20, factor: 0%)
-  zigzag(circle((0,2)), amplitude: .2, segments: 20, factor: 50%, stroke: blue)
-  zigzag(circle((0,4)), amplitude: .2, segments: 20, factor: 100%, stroke: red)
-}))
+  fn(hobby((0,0), (4,0), (6,2)))
+}, args: all-fns)
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
@@ -70,33 +38,30 @@
   wave(circle((0,4)), amplitude: .2, segments: 20, tension: 1, stroke: red)
 }))
 
-
-#test-case({
+#box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
 
-  zigzag(line((0,0), (3,0)), start: 10%, stop: 90%)
-  zigzag(line((0,2), (3,2)), start: 1, stop: 2)
-})
+  set-style(radius: .9)
+  square(circle((0,2)), amplitude: .2, segments: 20)
+}))
 
-#test-case({
+#test-case(fn => {
   import draw: *
 
-  coil(line((0,0), (3,0)), start: 10%, stop: 90%)
-  coil(line((0,2), (3,2)), start: 1, stop: 2)
-})
+  fn(line((0,0), (3,0)), start: 10%, stop: 90%, amplitude: .5)
+  fn(line((0,1), (3,1)), start: 1, stop: 2, amplitude: .5)
+}, args: all-fns)
 
-#test-case({
+#test-case(fn => {
   import draw: *
 
-  wave(line((0,0), (3,0)), start: 10%, stop: 90%)
-  wave(line((0,2), (3,2)), start: 1, stop: 2)
-})
+  fn(line((0,0,-1), (0,0,1)), start: 10%, stop: 90%)
+}, args: all-fns)
 
-#test-case({
+#test-case(factor => {
   import draw: *
-
-  wave(line((0,0,-1), (0,0,1)), start: 10%, stop: 90%)
-})
+  square(line((0,0), (3,0)), factor: factor)
+}, args: (25%, 50%, 75%))
 
 #test-case({
   import draw: *
