@@ -62,9 +62,6 @@
   assert.eq(style.pos().len(), 0,
     message: "Brace takes no additional positional arugments.")
 
-  // Validate coordinates
-  let _ = (start, end).map(coordinate.resolve-system)
-
   group(name: name, ctx => {
     // Resolve all coordinates
     let (ctx, start, end) = coordinate.resolve(ctx, start, end)
@@ -195,9 +192,6 @@
   name: none,
   ..style,
 ) = {
-  // Validate coordinates
-  let _ = (start, end).map(coordinate.resolve-system)
-
   group(name: name, ctx => {
     // Get styles and validate their types and values
     let style = styles.resolve(ctx.style, merge: style.named(),
