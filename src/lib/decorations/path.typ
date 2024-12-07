@@ -412,7 +412,9 @@
     let mb = vector.add(vector.sub(b, vector.scale(ab, .25)), down)
 
     if not close {
-      if i == 0 {
+      if num-segments == 1 {
+        return (a, ma, mb, b)
+      } else if i == 0 {
         return (a, ma, mb)
       } else if i == num-segments - 1 {
         return (ma, mb, b,)

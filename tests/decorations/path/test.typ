@@ -82,3 +82,11 @@
   fn(line((0,2), (4,2)), amplitude: t => 1em*calc.sin(float(t)*calc.pi))
   fn(line((0,3), (4,3)), amplitude: (5mm, 0, 2mm, 0))
 }, args: all-fns)
+
+// Bug #736: Waves with a single segment
+// have are sharp on the second peak.
+#test-case({
+  import draw: *
+
+  wave(line((0,0), (4,0)), segments: 1)
+})
