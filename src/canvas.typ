@@ -32,6 +32,8 @@
   }
   assert(length / 1cm != 0,
     message: "Canvas length must be != 0!")
+  assert(not float.is-infinite(length / 1cm),
+    message: "Length must not be infinite!")
 
   let ctx = (
     version: version.version,
