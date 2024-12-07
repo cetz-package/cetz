@@ -92,9 +92,9 @@
 })
 
 // Bug #757: Coil only works with specific order
-#test-case({
+#block(width: 10cm, canvas(length:10cm,{
   import draw: *
   let a = (1, 0)
-  let b = (0.12, 0.4)
-  coil(hobby(b, a), amplitude:0.21, segment-length:0.05112, align:"MID")
-})
+  let b = (0.12, 0.3)
+  coil(hobby(b,a),amplitude:0.051,segment-length:0.05112,align:"MID")
+}))
