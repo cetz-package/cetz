@@ -90,3 +90,11 @@
 
   wave(line((0,0), (4,0)), segments: 1)
 })
+
+// Bug #757: Coil only works with specific order
+#test-case({
+  import draw: *
+  let a = (1, 0)
+  let b = (0.12, 0.4)
+  coil(hobby(b, a), amplitude:0.21, segment-length:0.05112, align:"MID")
+})
