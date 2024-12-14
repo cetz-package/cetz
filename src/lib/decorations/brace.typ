@@ -142,6 +142,8 @@
 
 
 #let flat-brace-default-style = (
+  stroke: auto,
+  fill: none,
   amplitude: .3,
   aspect: 50%,
   curves: (1, .5, .6, .15),
@@ -315,19 +317,22 @@
       bezier(e, c, elc, clc)
       bezier(c, f, crc, frc)
       bezier(g, b, grc, brc)
-    })
-    // define some named anchors
+    }, stroke: style.stroke, fill: style.fill)
+
+    // Define some named anchors
     anchor("spike", c)
     anchor("content", h)
     anchor("start", a)
     anchor("end", b)
     anchor("default", (d, 50%, g))
-    // define anchors for all points
+
+    // Define anchors for all points
     for (name, point) in points {
       anchor(name, point)
     }
+
     if debug {
-      // show bezier control points using colored lines
+      // Show bezier control points using colored lines
       line(stroke: purple, a, alc)
       line(stroke: blue,   d, dlc)
       line(stroke: olive,  e, elc)
@@ -336,12 +341,13 @@
       line(stroke: olive,  f, frc)
       line(stroke: blue,   g, grc)
       line(stroke: purple, b, brc)
-      // show all named points
+      // Show all named points
       for (name, point) in points {
         content(point, box(fill: luma(240), inset: .5pt, text(style.debug-text-size, raw(name))))
       }
     }
   })
-  // move to end point so the current position after this is the end position
+
+  // Move to end point so the current position after this is the end position
   move-to(end)
 }
