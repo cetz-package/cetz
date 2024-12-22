@@ -1,4 +1,5 @@
 // This file contains functions related to bezier curve calculation
+// Many functions are ports from https://github.com/Pomax/bezierjs
 #import "vector.typ"
 
 // Map number v from range (ds, de) to (ts, te)
@@ -118,18 +119,31 @@
 /// - deg (int): Bezier degree (2 or 3)
 /// -> array
 #let to-abc(s, e, B, t, deg: 2) = {
-  let tt = calc.pow(t, deg)
-  let u(t) = {
-    (calc.pow(1 - t, deg) /
-     (tt + calc.pow(1 - t, deg)))
-  }
-  let ratio(t) = {
-    calc.abs((tt + calc.pow(1 - t, deg) - 1) /
-             (tt + calc.pow(1 - t, deg)))
+  let abc-ratio(t) = {
+    if t == 0 or t == 1 { return t }
+    let bottom = calc.pow(t, deg) + calc.pow(1 - t, deg)
+    let top = bottom - 1
+    return calc.abs(top / bottom)
   }
 
-  let C = vector.add(vector.scale(s, u(t)), vector.scale(e, 1 - u(t)))
-  let A = vector.sub(B, vector.scale(vector.sub(C, B), 1 / ratio(t)))
+  let projection-ratio(t) = {
+    if t == 0 or t == 1 { return t }
+    let top = calc.pow(1 - t, deg)
+    let bottom = calc.pow(t, deg) + top
+    return top / bottom
+  }
+
+  let u = projection-ratio(t)
+  let um = 1 - u
+
+  let C = vector.add(
+    vector.scale(s, u),
+    vector.scale(e, um))
+
+  let s = abc-ratio(t)
+  let A = vector.add(
+    B,
+    vector.scale(vector.sub(B, C), 1/s))
 
   return (A, B, C)
 }
@@ -151,38 +165,6 @@
   return (s, e, A)
 }
 
-/// Compute the control points for a cubic bezier through 3 points.
-///
-/// - s (vector): Curve start
-/// - e (vector): Curve end
-/// - B (vector): A point which the curve passes through
-/// -> bezier
-#let cubic-through-3points(s, B, e) = {
-  let d1 = vector.dist(s, B)
-  let d2 = vector.dist(e, B)
-  let t = d1 / (d1 + d2)
-
-  let (A, B, C) = to-abc(s, e, B, t, deg: 3)
-
-  let d = vector.sub(B, C)
-  if vector.len(d) == 0 {
-    return (s, e, s, e)
-  }
-
-  d = vector.norm(d)
-  d = (-d.at(1), d.at(0))
-  d = vector.scale(d, vector.dist(s, e) / 3)
-  let c1 = vector.add(A, vector.scale(d, t))
-  let c2 = vector.sub(A, vector.scale(d, (1 - t)))
-
-  let is-right = ((e.at(0) - s.at(0))*(B.at(1) - s.at(1)) -
-                  (e.at(1) - s.at(1))*(B.at(0) - s.at(0))) < 0
-  if is-right {
-    (c1, c2) = (c2, c1)
-  }
-
-  return (s, e, c1, c2)
-}
 
 /// Convert a quadratic bezier to a cubic bezier.
 ///
@@ -193,6 +175,75 @@
 #let quadratic-to-cubic(s, e, c) = {
   let c1 = vector.add(s, vector.scale(vector.sub(c, s), 2/3))
   let c2 = vector.add(e, vector.scale(vector.sub(c, e), 2/3))
+  return (s, e, c1, c2)
+}
+
+/// Compute the control points for a cubic bezier through 3 points.
+///
+/// - s (vector): Curve start
+/// - e (vector): Curve end
+/// - B (vector): A point which the curve passes through
+/// -> bezier
+#let cubic-through-3points(s, B, e) = {
+  if s == B or e == B {
+    return (s, e, s, e)
+  }
+
+  let d1 = vector.dist(s, B)
+  let d2 = vector.dist(e, B)
+  let t = d1 / (d1 + d2)
+
+  let (A, _, C) = to-abc(s, e, B, t, deg: 3)
+
+  let angle = vector.angle2(s, e) - vector.angle2(s, B)
+  if angle == 0deg or calc.abs(angle) == 180deg {
+    let se = vector.dist(s, e)
+    let sB = vector.dist(s, B)
+    let eB = vector.dist(e, B)
+
+    if sB >= se and sB >= eB {
+      return (s, B, s, B)
+    } else if eB >= se and eB >= sB {
+      return (e, B, e, B)
+    }
+    return (s, e, s, e)
+  }
+
+  let bc = (if angle < 0deg or angle > 180deg { -1 } else { 1 }) * vector.dist(s, e) / 3
+  let de1 = t * bc
+  let de2 = (1 - t) * bc
+
+  let (ax, ay, az) = A
+  let (sx, sy, sz) = s
+  let (ex, ey, ez) = e
+  let (bx, by, bz) = B
+
+  import "/src/util.typ": calculate-circle-center-3pt
+  let (cx, cy, cz) = calculate-circle-center-3pt(s, B, e)
+  let tangent = (
+    (bx - (by - cy), by + (bx - cx), bz),
+    (bx + (by - cy), by - (bx - cx), bz))
+  let (dx, dy, dz) = vector.norm(vector.sub(tangent.at(1), tangent.at(0)))
+
+  let (e1x, e1y) = (
+    bx + de1 * dx,
+    by + de1 * dy)
+  let (e2x, e2y) = (
+    bx - de2 * dx,
+    by - de2 * dy)
+  let (v1x, v1y) = (
+    ax + (e1x - ax) / (1 - t),
+    ay + (e1y - ay) / (1 - t))
+  let (v2x, v2y) = (
+    ax + (e2x - ax) / t,
+    ay + (e2y - ay) / t)
+  let c1 = (
+    sx + (v1x - sx) / t,
+    sy + (v1y - sy) / t)
+  let c2 = (
+    ex + (v2x - ex) / (1 - t),
+    ey + (v2y - ey) / (1 - t))
+
   return (s, e, c1, c2)
 }
 
