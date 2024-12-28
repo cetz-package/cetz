@@ -14,7 +14,7 @@
 #import "/src/anchor.typ" as anchor_
 #import "/src/mark.typ" as mark_
 #import "/src/mark-shapes.typ" as mark-shapes_
-#import "/src/polygon.typ"
+#import "/src/polygon.typ" as polygon_
 #import "/src/aabb.typ"
 
 #import "transformations.typ": *
@@ -562,7 +562,7 @@
     let (transform, anchors) = anchor_.setup(
       name => {
         if name == "centroid" {
-          return polygon.simple-centroid(pts)
+          return polygon_.simple-centroid(pts)
         }
       },
       if close != none { ("centroid",) } else { () },
@@ -584,6 +584,80 @@
       name: name,
       anchors: anchors,
       drawables: drawables,
+    )
+  },)
+}
+
+/// Draws a regular polygon.
+///
+/// - origin (coordinate): Coordinate to draw the polygon at
+/// - sides (int): Number of sides of the polygon (>= 3)
+/// - angle (angle) = 0deg: Angle angle to rotate the polygon arround its origin
+/// - name (none, str):
+///
+/// ## Styling
+/// *Root*: `polygon`
+/// - radius (number) = 1: Radius of the polygon
+#let polygon(origin, sides, angle: 0deg, name: none, anchor: none, ..style) = {
+  coordinate.resolve-system(origin)
+
+  assert(type(sides) == int and sides >= 3,
+    message: "Invalid number of sides: " + repr(sides))
+
+  let style = style.named()
+  return (ctx => {
+    let anchors = ()
+
+    let style = styles.resolve(ctx.style, merge: style, root: "polygon")
+
+    let (ctx, origin) = coordinate.resolve(ctx, origin)
+    let (rx, ry) = util.resolve-radius(style.radius)
+
+    let points = range(0, sides).map(i => {
+      let alpha = angle + 360deg / sides * i
+      vector.add(origin, (calc.cos(alpha) * rx, calc.sin(alpha) * ry, 0))
+    })
+
+    let drawables = drawable.path(
+      (path-util.line-segment(points),),
+      fill: style.fill,
+      stroke: style.stroke,
+      close: true)
+
+    let edge-anchors = range(0, sides).map(i => "edge-" + str(i))
+    let corner-anchors = range(0, sides).map(i => "corner-" + str(i))
+
+    let (transform, anchors) = anchor_.setup(
+      name => {
+        return if name == "center" or name == "default" {
+          origin
+        } else if name in edge-anchors {
+          let idx = edge-anchors.position(item => item == name)
+          vector.lerp(
+            points.at(idx),
+            points.at(idx + 1, default: points.first()),
+            .5)
+        } else if name in corner-anchors {
+          let idx = corner-anchors.position(item => item == name)
+          points.at(idx)
+        }
+      },
+      ("center",) + edge-anchors + corner-anchors,
+      name: name,
+      transform: ctx.transform,
+      path-anchors: false,
+      border-anchors: true,
+      radii: (rx*2, ry*2),
+      path: drawables,
+      offset-anchor: anchor,
+      default: "center",
+    )
+
+    return (
+      ctx: ctx,
+      name: name,
+      anchors: anchors,
+      drawables: drawable.apply-transform(transform, drawables),
     )
   },)
 }
@@ -1508,7 +1582,7 @@
           if name == "centroid" {
             // Try finding a closed shapes center by
             // Sampling it to a polygon.
-            return polygon.simple-centroid(polygon.from-segments(drawables.segments))
+            return polygon_.simple-centroid(polygon_.from-segments(drawables.segments))
           }
         },
         if close != none { ("centroid",) } else { () },
