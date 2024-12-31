@@ -566,6 +566,7 @@
         }
       },
       if close != none { ("centroid",) } else { () },
+      default: if close != none { "centroid" },
       name: name,
       transform: ctx.transform,
       path-anchors: true,
