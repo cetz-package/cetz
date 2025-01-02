@@ -242,7 +242,7 @@
     type(t) in (int, float, ratio),
     message: "Distance t must be of type int, float or ratio"
   )
-  let rev = if type(t) == ratio and t < 0% or type(t) in ("int", "float") and t < 0 {
+  let rev = if type(t) == ratio and t < 0% or type(t) in (int, float) and t < 0 {
     true
   } else {
     false
