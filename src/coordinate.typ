@@ -277,15 +277,15 @@
     let types = c.map(type)
     if len == 0 {
       "previous"
-    } else if len in (2, 3) and types.all(t => t in ("integer", "float", "length")) {
+    } else if len in (2, 3) and types.all(t => t in (int, float, length)) {
       "xyz"
-    } else if len == 2 and types.first() == "angle" {
+    } else if len == 2 and types.first() == angle {
       "polar"
     } else if len == 3 and c.at(1) in ("-|", "|-") {
       "perpendicular"
-    } else if len in (3, 4) and types.at(1) in ("integer", "float", "length", "ratio") and (len == 3 or (len == 4 and types.at(2) == "angle")) {
+    } else if len in (3, 4) and types.at(1) in (int, float, length, ratio) and (len == 3 or (len == 4 and types.at(2) == angle)) {
       "lerp"
-    } else if len >= 2 and types.first() == "function" {
+    } else if len >= 2 and types.first() == function {
       "function"
     }
   } else if type(c) == str {

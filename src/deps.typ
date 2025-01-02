@@ -1,1 +1,1 @@
-#import "@preview/oxifmt:0.2.0"
+#import "@preview/oxifmt:0.2.1"
