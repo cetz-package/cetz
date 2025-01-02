@@ -42,3 +42,14 @@
   })
   h(.1cm)
 }
+
+#test-case(edge-layer => {
+  import cetz.draw: *
+  cetz.tree.tree(data, edge-layer: edge-layer, draw-node: (node, ..) => {
+    circle((), radius: .3, fill: white)
+    content((), node.content)
+  }, draw-edge: (from, to, ..) => {
+    line((anchor: "center", name: from),
+         (anchor: "center", name: to), stroke: red + 2pt)
+  })
+}, args: (0, 1))
