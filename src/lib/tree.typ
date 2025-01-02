@@ -52,6 +52,8 @@
 /// - grow (float): Depth grow factor
 /// - spread (float): Sibling spread factor
 /// - name (none,str): The tree element's name
+/// - node-layer (int): Layer to draw nodes on
+/// - edge-layer (int): Layer to draw edges on
 #let tree(
   root, 
   draw-node: auto,
@@ -60,7 +62,9 @@
   parent-position: "center",
   grow: 1,
   spread: 1,
-  name: none
+  name: none,
+  node-layer: 1,
+  edge-layer: 0
   ) = {
   assert(parent-position in ("begin", "center","end", "after-end"))
   assert(grow > 0)
@@ -225,13 +229,13 @@
   // Render node recursive
   let render(node) = {
     if node.element != none {
-      node.element
+      draw.on-layer(node-layer, node.element)
       if "children" in node {
         for child in node.children {
           render(child)
         }
       }
-      node.edges
+      draw.on-layer(edge-layer, node.edges)
     }
   }
 
