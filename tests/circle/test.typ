@@ -1,31 +1,28 @@
 #set page(width: auto, height: auto)
 #import "/src/lib.typ": *
+#import "/tests/helper.typ": *
 
-#box(stroke: 2pt + red, canvas(length: .5cm, {
-    import draw: *
-
-    set-style(radius: (4, .5), stroke: none)
-    for r in range(0, 6) {
-      group({
-        translate((4.5, 4.5))
-        rotate(r * 30deg)
-
-        circle((0,0), fill: (red, green, blue, yellow).at(calc.rem(r, 4)))
-      })
-    }
-
-    set-style(radius: 0.45, stroke: black, fill: none)
-    for x in range(0, 10) {
-      for y in range(0, 10) {
-        circle((x, y))
-      }
-    }
-}))
-
-#box(stroke: 2pt + red, canvas(length: .5cm, {
+#test-case(radius => {
   import draw: *
 
-  for z in range(-2, 2) {
+  circle((0, 0), radius: radius, name: "c")
+  point("c.center", "M")
+}, args: (1, 1cm, (1, .5), (1cm, .5), (.5, 1), (.5, 1cm)))
+
+#test-case(outer => {
+  import draw: *
+
+  let center = (1, 1)
+  circle(center, outer)
+  move-to(center)
+  point(outer, "O")
+  point(center, "M")
+}, args: ((2, 1), (rel: (1, 0)), (rel: (1, 1))))
+
+#test-case({
+  import draw: *
+
+  for z in range(-1, 2) {
     circle((0,0,z))
   }
-}))
+})
