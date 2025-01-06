@@ -585,3 +585,36 @@
   }
   return pts
 }
+
+/// Find the closest point on a bezier to a given point.
+///
+/// - pt (vector): Reference point to find the closest point to
+/// - s (vector): Bezier start
+/// - e (vector): Bezier end
+/// - c1 (vector): Bezier control point 1
+/// - c2 (vector): Bezier control point 2
+/// - max-recursion (int): Max recursion depth
+#let cubic-closest-point(pt, s, e, c1, c2, max-recursion: 1) = {
+  let probe(low, high, depth) = {
+    let min = calc.inf
+    let min-t = 0
+
+    for t in range(0, 11) {
+      t = low + t / 10 * (high - low)
+      let d = vector.dist(pt, cubic-point(s, e, c1, c2, t))
+      if d < min {
+        min = d
+        min-t = t
+      }
+    }
+
+    if depth < max-recursion {
+      let step = (high - low) / 10
+      return probe(calc.max(0, min-t - step), calc.min(min-t + step, 1), depth + 1)
+    }
+
+    return cubic-point(s, e, c1, c2, min-t)
+  }
+
+  return probe(0, 1, 0)
+}
