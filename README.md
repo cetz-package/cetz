@@ -38,10 +38,16 @@ CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https:
       <img src="gallery/periodic-table.png" width="250px">
     </a>
   </td>
+  <td>
+    <a href="gallery/plate-capacitor.typ">
+      <img src="gallery/plate-capacitor.png" width="250px">
+    </a>
+  </td>
 </tr>
 <tr>
   <td>Tree Layout</td>
   <td>Periodic Table of Elements</td>
+  <td>Plate Capacitor</td>
 </tr>
 </table>
 
