@@ -124,6 +124,11 @@
     fill: auto,
     radius: auto
   ),
+  polygon: (
+    radius: auto,
+    stroke: auto,
+    fill: auto,
+  ),
   content: (
     padding: auto,
     // Supported values
