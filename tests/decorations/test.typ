@@ -62,3 +62,8 @@
   (flip: false),
   (flip: true),
 ))
+
+#test-case({
+  decorations.flat-brace((0,0), (1,0), stroke: blue, fill: gray)
+  decorations.brace((0,1), (1,1), stroke: blue, fill: gray)
+})
