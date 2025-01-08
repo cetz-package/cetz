@@ -260,7 +260,7 @@
     }
   }
 
-  let segment = segment-at-t(segments, t, samples: samples, rev: rev)
+  let segment = segment-at-t(segments, t, samples: samples, rev: rev, clamp: true)
   return if segment != none {
     let (distance, segment, length, ..) = segment
     _point-on-segment(segment, if rev { length - distance } else { distance }, samples: samples, extrapolate: extrapolate)
