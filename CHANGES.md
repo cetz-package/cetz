@@ -1,3 +1,17 @@
+# 0.3.2
+
+- Added a new `polygon` element for drawing regular polygons
+- Closed lines now have a default anchor
+- You can now sort `intersections`
+- Added back the invisible default frame for `content`
+- Fixed some type checks using strings
+- Fixed some angle library bugs
+- Fixed `bezier-through` calculation
+- Fixed `tree` node/edge order
+- Support variable decoration amplitude
+- Fixed `hobby` default omega value
+- Fixed `flat-brace` missing `fill`
+
 # 0.3.1
 
 CeTZ 0.3.1 requires Typst 0.12.0.
