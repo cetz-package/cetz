@@ -165,9 +165,9 @@
     } else if direction == "north" {
       return (node.x, node.y)
     } else if direction == "west" {
-      return (-node.y, node.x)
+      return (-node.y, -node.x)
     } else if direction == "east" {
-      return (node.y, node.x)
+      return (node.y, -node.x)
     } else {
       panic(message: "Invalid tree direction.")
     }
