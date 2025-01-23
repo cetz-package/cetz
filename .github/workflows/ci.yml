@@ -1,4 +1,4 @@
-name: Tests
+name: Test
 on:
   push:
     branches:
@@ -16,27 +16,19 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
-      - uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: imagemagick cargo parallel
-          version: 1.0
-      - name: Install typos-cli from crates.io
-        uses: baptiste0928/cargo-install@v2.2.0
-        with:
-          crate: typos-cli
       - name: Install just from crates.io
-        uses: baptiste0928/cargo-install@v2.2.0
+        uses: baptiste0928/cargo-install@v3
         with:
           crate: just
       - name: Install typst-test from github
-        uses: baptiste0928/cargo-install@v2.2.0
+        uses: baptiste0928/cargo-install@v3
         with:
           crate: typst-test
           git: https://github.com/tingerrr/typst-test.git
           tag: ci-semi-stable
       - uses: typst-community/setup-typst@v3
         with:
-          typst-version: '0.12.0-rc2'
+          typst-version: '0.12.0'
           cache-dependency-path: src/deps.typ
       - run: |
           just install @local
