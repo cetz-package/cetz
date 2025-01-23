@@ -226,9 +226,8 @@ circle((3,2), name: "a", radius: 2pt)
 circle((1,1), name: "c", radius: 0.75)
 content("c", $ c $, anchor: "north-east", padding: .1)
 
-stroke(red)
 line(
-  // The starting point
+  // The starting point or element
   "a",
   // The tangent coordinate
   (element: "c", point: "a", solution: 1),
@@ -236,7 +235,8 @@ line(
   "c",
   // The other tangent coordinate
   (element: "c", point: "a", solution: 2),
-  close: true
+  "a",
+  stroke: red
 )
 ```
 
