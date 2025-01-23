@@ -819,6 +819,7 @@
 /// *Root*: `content`
 /// - padding (number, dictionary) = 0: Sets the spacing around content. Can be a single number to set padding on all sides or a dictionary to specify each side specifically. The dictionary follows Typst's `pad` function: https://typst.app/docs/reference/layout/pad/
 /// - frame (str, none) = none: Sets the frame style. Can be {{none}}, `"rect"` or `"circle"` and inherits the `stroke` and `fill` style.
+/// - auto-scale (bool): If `true`, apply current canvas scaling to the content. Defaults to `false`.
 ///
 /// ## Anchors
 /// Supports border anchors, the default anchor is set to **center**.
@@ -857,6 +858,7 @@
   }
 
   return (ctx => {
+    let body = body
     let style = styles.resolve(ctx.style, merge: style, root: "content")
     let padding = util.as-padding-dict(style.padding)
     for (k, v) in padding {
@@ -880,6 +882,14 @@
 
     // Typst's `rotate` function is clockwise relative to x-axis, which is backwards from us
     angle = angle * -1
+
+    // Optionally scale content with current canvas scaling
+    if style.auto-scale == true {
+      let sx = vector.len(matrix.column(ctx.transform, 0))
+      let sy = vector.len(matrix.column(ctx.transform, 1))
+
+      body = std.scale(x: sx * 100%, y: sy * 100%, body, reflow: true)
+    }
 
     // Height from the baseline to content-north
     let (content-width, baseline-height) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "baseline", body))

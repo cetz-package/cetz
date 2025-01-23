@@ -138,6 +138,8 @@
     frame: none,
     fill: auto,
     stroke: auto,
+    // Apply canvas scaling to content
+    auto-scale: false,
   ),
 )
 

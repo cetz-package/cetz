@@ -99,6 +99,16 @@
   line("a", "b")
 })
 
+// #792 Scaling
+#test-case({
+  import draw:*
+  scale(2)
+  set-style(content: (auto-scale: false))
+  content((0,0), [Text])
+  set-style(content: (auto-scale: true))
+  content((0,1), [Text])
+})
+
 // Compiler crash
 #test-case({
   import draw: *
