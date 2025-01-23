@@ -11,6 +11,7 @@
 - Support variable decoration amplitude
 - Fixed `hobby` default omega value
 - Fixed `flat-brace` missing `fill`
+- Added canvas content scaling via style key `auto-scale`
 
 # 0.3.1
 
