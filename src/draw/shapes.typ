@@ -591,6 +591,12 @@
 
 /// Draws a regular polygon.
 ///
+/// ```typc example
+/// polygon((0,0), 3, angle: 90deg)
+/// polygon((2,0), 5)
+/// polygon((4,0), 7)
+/// ```
+///
 /// - origin (coordinate): Coordinate to draw the polygon at
 /// - sides (int): Number of sides of the polygon (>= 3)
 /// - angle (angle) = 0deg: Angle angle to rotate the polygon arround its origin
