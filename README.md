@@ -53,6 +53,8 @@ CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https:
 
 *Click on the example image to jump to the code.*
 
+You can explore an example gallery of scientific diagrams at [janosh.github.io/diagrams](https://janosh.github.io/diagrams).
+
 ## Usage
 
 For information, see the [online manual](https://cetz-package.github.io/docs).
