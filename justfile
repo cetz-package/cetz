@@ -10,10 +10,10 @@ install target="@local":
   ./common/scripts/package "{{target}}"
 
 test *filter:
-  typst-test run {{filter}}
+  tt run {{filter}}
 
 update-test *filter:
-  typst-test update {{filter}}
+  tt update {{filter}}
 
 gallery:
   for f in "{{gallery_dir}}"/*.typ; do typst c "$f" "${f/typ/png}"; done

@@ -102,7 +102,7 @@ To install `just` on your system, use your systems package manager. On Windows, 
 
 This package comes with some unit tests under the `tests` directory.
 To run all tests you can run the `just test` target. You need to have
-[`typst-test`](https://github.com/tingerrr/typst-test/) in your `PATH`: `cargo install typst-test --git https://github.com/tingerrr/typst-test`.
+[`tytanic`](https://github.com/tingerrr/tytanic/) in your `PATH`: `cargo install tytanic`.
 
 ## Projects using CeTZ
 - [cirCeTZ](https://github.com/fenjalien/cirCeTZ) A port of [circuitikz](https://github.com/circuitikz/circuitikz) to Typst.
