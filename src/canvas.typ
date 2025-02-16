@@ -76,6 +76,8 @@
   let padding = util.as-padding-dict(padding)
   bounds = aabb.padded(bounds, padding)
 
+  let (offset-x, offset-y, ..) = bounds.low
+
   // Final canvas size
   let (width, height, ..) = vector.scale(aabb.size(bounds), length)
 
@@ -87,7 +89,7 @@
     for drawable in drawables {
       // Typst path elements have strange bounding boxes. We need to
       // offset all paths to start at (0, 0) to make gradients work.
-      let (x, y, _) = if drawable.type == "path" {
+      let (segment-x, segment-y, _) = if drawable.type == "path" {
         vector.sub(
           aabb.aabb(path-util.bounds(drawable.segments)).low,
           bounds.low)
@@ -97,45 +99,53 @@
 
       place(top + left, float: false, if drawable.type == "path" {
         let vertices = ()
-        for ((kind, ..pts)) in drawable.segments {
-          pts = pts.map(c => {
-            ((c.at(0) - bounds.low.at(0) - x) * length,
-             (c.at(1) - bounds.low.at(1) - y) * length)
-          })
-          assert(
-            kind in ("line", "cubic"),
-            message: "Path segments must be of type line, cubic")
 
-          if kind == "cubic" {
-            let a = pts.at(0)
-            let b = pts.at(1)
-            let ctrla = relative(a, pts.at(2))
-            let ctrlb = relative(b, pts.at(3))
+        let transform-point((x, y, _)) = {
+          ((x - offset-x - segment-x) * length,
+           (y - offset-y - segment-y) * length)
+        }
 
-            vertices.push((a, (0pt, 0pt), ctrla))
-            vertices.push((b, ctrlb, (0pt, 0pt)))
+        for ((kind, ..rest)) in drawable.segments {
+          if kind == "sub" {
+            // TODO: Support sub-paths by converting
+            //       Also support move commands.
+            //       Refactor path arrays to typst style curves.
+          } else if kind == "cubic" {
+            let pts = rest.map(transform-point)
+
+            vertices.push(curve.move(pts.at(0)))
+            vertices.push(curve.cubic(pts.at(2), pts.at(3), pts.at(1)))
           } else {
-            vertices += pts
+            let pts = rest.map(transform-point)
+
+            vertices.push(curve.move(pts.at(0)))
+            for i in range(1, pts.len()) {
+              vertices.push(curve.line(pts.at(i)))
+            }
           }
         }
+
+        if (drawable.at("close", default: false)) {
+          vertices.push(curve.close(mode: "straight"))
+        }
+
         if type(drawable.stroke) == dictionary and "thickness" in drawable.stroke and type(drawable.stroke.thickness) != std.length {
           drawable.stroke.thickness *= length
         }
-        path(
+        std.curve(
           stroke: drawable.stroke,
           fill: drawable.fill,
           fill-rule: drawable.at("fill-rule", default: "non-zero"),
-          closed: drawable.at("close", default: false),
           ..vertices,
         )
       } else if drawable.type == "content" {
         let (width, height) = std.measure(drawable.body)
         move(
-          dx: (drawable.pos.at(0) - bounds.low.at(0)) * length - width / 2,
-          dy: (drawable.pos.at(1) - bounds.low.at(1)) * length - height / 2,
+          dx: (drawable.pos.at(0) - offset-x) * length - width / 2,
+          dy: (drawable.pos.at(1) - offset-y) * length - height / 2,
           drawable.body,
         )
-      }, dx: x * length, dy: y * length)
+      }, dx: segment-x * length, dy: segment-y * length)
     }
   }))
 })}
