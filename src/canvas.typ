@@ -46,7 +46,7 @@
     transform:
       ((1, 0,-.5, 0),
        (0,-1,+.5, 0),
-       (0, 0, .0, 0),
+        (0, 0,  0, 0), // FIXME: This should not be zero for Z! Changing it destroys mark & decorations in 3D space.
        (0, 0, .0, 1)),
     // Nodes, stores anchors and paths
     nodes: (:),

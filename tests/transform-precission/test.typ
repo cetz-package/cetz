@@ -27,7 +27,7 @@
     set-ctx(ctx => {
       ctx.transform = ((calc.cos(th), -calc.sin(th), 0, 0),
        (-calc.sin(th), -calc.cos(th), 0, 0),
-       (0, 0, 0, 0),
+       (0, 0, 1, 0),
        (0, 0, 0, 1),)
        return ctx
     })
