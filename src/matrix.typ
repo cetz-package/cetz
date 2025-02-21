@@ -248,15 +248,17 @@
 /// -> vector
 #let mul4x4-vec3(mat, vec, w: 1) = {
   assert(vec.len() <= 4)
-  let out = (0, 0, 0)
-  for m in range(0, 3) {
-    let v = (mat.at(m).at(0) * vec.at(0, default: 0)
-           + mat.at(m).at(1) * vec.at(1, default: 0)
-           + mat.at(m).at(2) * vec.at(2, default: 0)
-           + mat.at(m).at(3) * vec.at(3, default: w))
-    out.at(m) = v
-  }
-  return out
+
+  let x = vec.at(0)
+  let y = vec.at(1)
+  let z = vec.at(2, default: 0)
+  let w = vec.at(3, default: w)
+
+  let ((a1,a2,a3,a4), (b1,b2,b3,b4), (c1,c2,c3,c4), _) = mat
+  return (
+    a1 * x + a2 * y + a3 * z + a4 * w,
+    b1 * x + b2 * y + b3 * z + b4 * w,
+    c1 * x + c2 * y + c3 * z + c4 * w)
 }
 
 // Multiply matrix with vector
@@ -319,7 +321,7 @@
   return inverted
 }
 
-/// Swaps the ath column with the bth column.
+/// Swaps the a-th column with the b-th column.
 ///
 /// - mat (matrix): Matrix
 /// - a (int): The index of column a.
