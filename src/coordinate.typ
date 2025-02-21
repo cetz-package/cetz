@@ -92,7 +92,7 @@
   // dictionary of numbers
   return vector.scale(
     c.bary.pairs().fold(
-      vector.new(3),
+      (0, 0, 0),
       (vec, (k, v)) => {
           vector.add(
             vec,

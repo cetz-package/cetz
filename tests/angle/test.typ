@@ -2,65 +2,52 @@
 #import "/src/lib.typ": *
 #import "/tests/helper.typ": *
 
-#test-case({
+#let angles = range(0, 360, step: 36).map(v => v * 1deg)
+
+#test-case(a => {
   import draw: *
   import angle: angle
 
-  for a in range(0, 360, step: 36) {
-    a *= 1deg
-    translate((1.5, 0, 0))
-    group({
-      let (o, a, b) = ((0,0), (1,0), (calc.cos(a), calc.sin(a)))
-      line(a, o, b)
-      angle(o, a, b, label: $alpha$)
-    })
-  }
-}))
+  let (o, a, b) = ((0,0), (1,0), (calc.cos(a), calc.sin(a)))
+  line(a, o, b)
+  angle(o, a, b, label: $alpha$)
+}, args: angles)
 
-#test-case({
+#test-case(a => {
   import draw: *
   import angle: angle
 
-  for a in range(0, 360, step: 36) {
-    a *= 1deg
-    translate((1.5, 0, 0))
-    group({
-      let (o, a, b) = ((0,0), (1,0), (calc.cos(a), calc.sin(a)))
-      line(a, o, b)
-      angle(o, a, b, label: $alpha$, direction: "cw")
-    })
-  }
-}))
+  let (o, a, b) = ((0,0), (1,0), (calc.cos(a), calc.sin(a)))
+  line(a, o, b)
+  angle(o, a, b, label: $alpha$, direction: "cw")
+}, args: angles)
 
-#test-case({
+#test-case(a => {
   import draw: *
   import angle: angle
 
-  for a in range(0, 360, step: 36) {
-    a *= 1deg
-    translate((1.5, 0, 0))
-    group({
-      let (o, a, b) = ((0,0), (calc.cos(a+90deg), calc.sin(a+90deg)), (calc.cos(a), calc.sin(a)))
-      line(a, o, b)
-      angle(o, b, a, label: $alpha$)
-    })
-  }
-}))
+  let (o, a, b) = (
+    (0, 0),
+    (calc.cos(a+90deg), calc.sin(a+90deg)), (calc.cos(a), calc.sin(a))
+  )
 
-#test-case({
+  line(a, o, b)
+  angle(o, a, b, label: $alpha$, direction: "cw")
+}, args: angles)
+
+#test-case(a => {
   import draw: *
   import angle: angle
 
-  for a in range(0, 360, step: 36) {
-    a *= 1deg
-    translate((1.5, 0, 0))
-    group({
-      let (o, a, b) = ((0,0), (calc.cos(a+90deg), calc.sin(a+90deg)), (calc.cos(a), calc.sin(a)))
-      line(a, o, b)
-      angle(o, b, a, label: $alpha$, direction: "cw")
-    })
-  }
-}))
+  let (o, a, b) = (
+    (0, 0),
+    (calc.cos(a+90deg), calc.sin(a+90deg)), (calc.cos(a), calc.sin(a))
+  )
+
+  line(a, o, b)
+  angle(o, a, b, label: $alpha$, direction: "ccw")
+}, args: angles)
+
 
 #test-case({
   import draw: *
@@ -85,7 +72,7 @@
   circle("alpha.label", radius: .25)
   circle("alpha.start", radius: .25)
   circle("alpha.end", radius: .25)
-}))
+})
 
 #test-case({
   import draw: *
