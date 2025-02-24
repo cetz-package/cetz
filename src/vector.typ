@@ -1,25 +1,3 @@
-/// Returns a new vector of dimension `dim` with all fields set to `init` (defaults to 0).
-///
-/// - dim (int): Vector dimension
-/// - init (float): Initial value of all fields
-/// -> vector
-#let new(dim, init: 0) = {
-  return range(0, dim).map(x => init)
-}
-
-/// Returns the dimension of a vector. 
-///
-/// - v (vector): The vector to find the dimension of.
-/// -> int
-#let dim(v) = {
-  assert(
-    type(v) == array,
-    message: "Expected vector to be of array type, got: " + repr(v)
-  )
-  return v.len() 
-}
-
-
 /// Converts a vector to a row or column matrix.
 ///
 /// - v (vector): The vector to convert.
@@ -35,13 +13,13 @@
   }
 }
 
-/// Ensures a vector has an exact dimension. This is done by passing another vector `init` that has the required dimension. If the original vector does not have enough dimensions, the values from `init` will be inserted. It is recommended to use a zero vector for `init`.
+/// Ensures a vector has an exact number of components. This is done by passing another vector `init` that has the required dimension. If the original vector does not have enough dimensions, the values from `init` will be inserted. It is recommended to use a zero vector for `init`.
 ///
 /// - v (vector): The vector to ensure.
 /// - init (vector): The vector to check the dimension against.
 /// -> vector
 #let as-vec(v, init: (0, 0, 0)) = {
-  for i in range(0, calc.min(dim(v), dim(init))) {
+  for i in range(0, calc.min(v.len(), init.len())) {
     init.at(i) = v.at(i)
   }
   return init
@@ -62,12 +40,9 @@
 /// - v2 (vector): The vector on the right hand side.
 /// -> vector
 #let add(v1, v2) = {
-  if dim(v1) != dim(v2) {
-    v1 = as-vec(v1)
-    v2 = as-vec(v2)
-  }
-  assert(dim(v1) == dim(v2), message: "Cannot add vectors, " + repr(v1) + " and " + repr(v2) + " are not of the same dimensions.")
-  return v1.zip(v2).map(((a, b)) => a + b)
+  range(0, calc.max(v1.len(), v2.len())).map(i => {
+    v1.at(i, default: 0) + v2.at(i, default: 0)
+  })
 }
 
 /// Subtracts two vectors of the same dimension
@@ -76,12 +51,9 @@
 /// - v2 (vector): The vector on the right hand side.
 /// -> vector
 #let sub(v1, v2) = {
-  if dim(v1) != dim(v2) {
-    v1 = as-vec(v1)
-    v2 = as-vec(v2)
-  }
-  assert(dim(v1) == dim(v2), message: "Cannot subtract vectors, " + repr(v1) + " and " + repr(v2) + " are not of the same dimensions.")
-  return v1.zip(v2).map(((a, b)) => a - b)
+  range(0, calc.max(v1.len(), v2.len())).map(i => {
+    v1.at(i, default: 0) - v2.at(i, default: 0)
+  })
 }
 
 /// Calculates the distance between two vectors by subtracting the length of vector `a` from vector `b`.
@@ -122,7 +94,7 @@
 /// - v2 (vector): The vector on the right hand side.
 /// -> float
 #let dot(v1, v2) = {
-  assert(dim(v1) == dim(v2))
+  assert(v1.len() == v2.len())
   return v1.enumerate().fold(0, (s, t) => s + t.at(1) * v2.at(t.at(0)))
 }
 
@@ -131,11 +103,14 @@
 /// - v2 (vector): The vector on the right hand side.
 /// -> vector
 #let cross(v1, v2) = {
-  assert(dim(v1) == 3 and dim(v2) == 3)
-  let x = v1.at(1) * v2.at(2) - v1.at(2) * v2.at(1)
-  let y = v1.at(2) * v2.at(0) - v1.at(0) * v2.at(2)
-  let z = v1.at(0) * v2.at(1) - v1.at(1) * v2.at(0)
-  return (x, y, z)
+  assert(v1.len() == 3 and v2.len() == 3)
+
+  let (x1, y1, z1) = v1
+  let (x2, y2, z2) = v2
+
+  return (y1 * z2 - z1 * y2,
+    z1 * x2 - x1 * z2,
+    x1 * y2 - y1 * x2)
 }
 
 /// Calculates the angle between two vectors and the x-axis in 2d space
@@ -152,8 +127,9 @@
 /// - c (vector): The vector to measure the angle at.
 /// - v2 (vector): The vector to measure the angle to.
 #let angle(v1, c, v2) = {
-  assert(dim(v1) == dim(v2), message: "Vectors " + repr(v1) + " and " + repr(v2) + " do not have the same dimensions.")
-  if dim(v1) == 2 or dim(v1) == 3 {
+  assert(v1.len() == v2.len(),
+    message: "Vectors " + repr(v1) + " and " + repr(v2) + " do not have the same dimensions.")
+  if v1.len() == 2 or v1.len() == 3 {
     v1 = sub(v1, c)
     v2 = sub(v2, c)
     return calc.acos(dot(norm(v1), norm(v2)))

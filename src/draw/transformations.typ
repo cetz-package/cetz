@@ -148,6 +148,8 @@
 /// circle((0,0))
 /// ```
 ///
+/// Note that content like text does not scale automatically. See `auto-scale` styling of content for that.
+///
 /// - ..args (float, ratio): A single value to scale the transformation matrix by or per axis
 ///   scaling factors. Accepts a single float or ratio value or any combination of the named arguments
 ///   `x`, `y` and `z` to set per axis scaling factors. A ratio of 100% is the same as the value $1$.

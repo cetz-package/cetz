@@ -3,7 +3,6 @@
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
-  import palette
 
   let p = palette.pink
   for i in range(0, p("len")) {
@@ -15,7 +14,6 @@
 
 #box(stroke: 2pt + red, canvas(length: 1cm, {
   import draw: *
-  import palette
 
   let p = palette.new(
     base: (stroke: (paint: none, dash: "dashed")),
