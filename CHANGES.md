@@ -1,4 +1,5 @@
 # 0.3.3
+- Circle supports two-point construction, using the distance as radius
 - Require Typst 0.13.0, port test cases over to Tytanic
 - Add note about contents `auto-scale` feature
 - Various performance improvements
