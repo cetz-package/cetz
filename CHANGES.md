@@ -1,3 +1,9 @@
+# 0.3.3
+- Require Typst 0.13.0, port test cases over to Tytanic
+- Add note about contents `auto-scale` feature
+- Various performance improvements
+- Make use of the new `curve` API
+
 # 0.3.2
 
 - Added a new `polygon` element for drawing regular polygons
