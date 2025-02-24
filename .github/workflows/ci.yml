@@ -27,7 +27,7 @@ jobs:
           git: https://github.com/tingerrr/tytanic.git
       - uses: typst-community/setup-typst@v3
         with:
-          typst-version: '0.13.0-rc1'
+          typst-version: '0.13.0'
           cache-dependency-path: src/deps.typ
       - run: |
           just install @local
