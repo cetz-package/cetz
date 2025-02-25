@@ -30,6 +30,18 @@
     }})
 }
 
+/// Create a square matrix with the diagonal set to the
+/// given values.
+///
+/// - ..diag (float): Diagonal values
+/// -> matrix
+#let diag(..diag) = {
+  let diag = diag.pos()
+  range(0, diag.len()).map(m => range(0, diag.len()).map(n => {
+    if n == m { diag.at(m) } else { 0 }
+  }))
+}
+
 /// Returns the dimension of the given matrix as `(m, n)`
 /// - m (matrix): The matrix
 /// -> array
