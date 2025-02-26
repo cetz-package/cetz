@@ -4,6 +4,7 @@
 - Add note about contents `auto-scale` feature
 - Various performance improvements
 - Make use of the new `curve` API
+- Added a `background` to the context, set to the canvas background
 
 # 0.3.2
 
