@@ -7,6 +7,8 @@
 - **BREAKING** Matrix `ident` function signature changed
 - New `matrix.diag` function
 - Added a `background` to the context, set to the canvas background
+- Fixed mark styling issues with empty or incomplete style dictionaries
+
 # 0.3.2
 
 - Added a new `polygon` element for drawing regular polygons
