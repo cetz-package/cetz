@@ -3,6 +3,8 @@
 - Add note about contents `auto-scale` feature
 - Various performance improvements
 - Make use of the new `curve` API
+- **BREAKING** Matrix `ident` function signature changed
+- New `matrix.diag` function
 
 # 0.3.2
 

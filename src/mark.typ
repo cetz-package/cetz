@@ -173,7 +173,7 @@
 
   ctx.groups = ()
   ctx.nodes = (:)
-  ctx.transform = matrix.ident()
+  ctx.transform = matrix.ident(4)
 
   import "/src/draw.typ"
   let body = draw.group({

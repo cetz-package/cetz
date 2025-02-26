@@ -15,27 +15,27 @@
 
 #let pi = calc.pi
 
-/// Create identity matrix with dimensions $m \times n$
+/// Create a (square) identity matrix with dimensions $size \times size$
 ///
-/// - m (int): The number of rows
-/// - n (int): The number of columns
-/// - one (float): Value to set as $1$
-/// - zero (float): Value to set as $0$
+/// - size (int): Size of the matrix
 /// -> matrix
-#let ident(m: 4, n: 4, one: 1, zero: 0) = {
-  ({for m in range(0, m) {
-    ({for n in range(0, n) {
-        if m == n { (one,) } else { (zero,) }
-     }},)
-    }})
+#let ident(size) = {
+  assert(size >= 1, message: "Invalid dimension")
+
+  range(0, size).map(j => range(0, size).map(k => {
+    if j == k { 1 } else { 0 }
+  }))
 }
 
 /// Create a square matrix with the diagonal set to the
-/// given values.
+/// given values
 ///
 /// - ..diag (float): Diagonal values
 /// -> matrix
 #let diag(..diag) = {
+  assert(diag.pos().len() >= 1, message: "Invalid dimension")
+  assert.eq(diag.named(), (), messaged: "Unexpected named argument")
+
   let diag = diag.pos()
   range(0, diag.len()).map(m => range(0, diag.len()).map(n => {
     if n == m { diag.at(m) } else { 0 }
@@ -303,7 +303,7 @@
   }
 
   let N = range(n)
-  let inverted = ident(m: n, n: n)
+  let inverted = ident(n)
   let p
   for j in N {
     for i in range(j, n) {
