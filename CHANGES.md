@@ -5,6 +5,7 @@
 - Various performance improvements
 - Make use of the new `curve` API
 - Added a `background` to the context, set to the canvas background
+- Fixed mark styling issues with empty or incomplete style dictionaries
 
 # 0.3.2
 
