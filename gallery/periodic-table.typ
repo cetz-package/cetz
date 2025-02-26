@@ -38,8 +38,6 @@
     none,
     none,
     none,
-    none,
-    none,
     ("2", "4.0025", "He", "Helium", colors.noble-gas),
   ),
   // Period 2
@@ -248,7 +246,7 @@
     let col = num - (if is-actinide { 89 } else { 57 }) + 3
     let y-offset = lanthanide-gap
     (
-      start-x + (col - 1) * cell-size,
+      start-x + col * cell-size,
       start-y - (row - 1) * cell-size - y-offset,
     )
   }
@@ -318,8 +316,8 @@
 
   // Find first element in each column
   for (num, label) in groups.enumerate(start: 1) {
-    let first_period = if num == 1 { 1 } else if num == 2 { 2 } else if num <= 12 { 4 } else { 2 }
-    let (x, y) = pos(num, first_period)
+    let first-period = if num == 1 or num == 18 { 1 } else if num == 2 or num > 12 { 2 } else { 4 }
+    let (x, y) = pos(num, first-period)
     content(
       (x, y + cell-size * 0.7),
       box(width: 3cm)[
@@ -358,12 +356,13 @@
   }
 
   // Element key
+  let key-pos = (12, -4)
   content(
-    (12, -4),
+    key-pos,
     element("Z", "mass", text("Symbol", size: 22pt), "Name"),
   )
   content(
-    (legend-start.at(0) + 10, legend-start.at(1)),
+    (key-pos.at(0) + 3.3, key-pos.at(1)),
     text(size: 12pt)[
       black: natural\
       #text(fill: colors.synthetic)[gray: man-made]
