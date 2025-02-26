@@ -37,6 +37,7 @@
     version: version.version,
     length: length,
     debug: debug,
+    background: background,
     // Previous element position & bbox
     prev: (pt: (0, 0, 0)),
     style: styles.default,
