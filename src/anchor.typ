@@ -206,7 +206,7 @@
     }
   }
 
-  return (if transform == none { matrix.ident() } else { transform }, calculate-anchor.with(transform: transform))
+  return (if transform == none { matrix.ident(4) } else { transform }, calculate-anchor.with(transform: transform))
 }
 
 

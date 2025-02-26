@@ -8,7 +8,7 @@
 
 // Get an orthographic view matrix for 3 angles
 #let ortho-matrix(x, y, z) = matrix.mul-mat(
-  matrix.ident(),
+  matrix.ident(4),
   matrix.transform-rotate-x(x),
   matrix.transform-rotate-y(y),
   matrix.transform-rotate-z(z),
@@ -148,7 +148,7 @@
   let z = util.resolve-number(ctx, z)
   scoped-transform(body, if z != 0 {
     matrix.transform-translate(0, 0, z)
-  }, matrix.ident())
+  }, matrix.ident(4))
 })
 
 /// Draw elements on the xz-plane with optional y offset.
