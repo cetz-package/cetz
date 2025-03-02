@@ -8,6 +8,7 @@
 - New `matrix.diag` function
 - Added a `background` to the context, set to the canvas background
 - Fixed mark styling issues with empty or incomplete style dictionaries
+- Fixes a division by zero bug when trying to calculate some intersections
 
 # 0.3.2
 
