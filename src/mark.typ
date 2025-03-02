@@ -10,7 +10,10 @@
 /// Checks if a mark should be drawn according to the current style.
 /// - style (style): The current style.
 /// -> bool
-#let check-mark(style) = style != none and (style.start, style.end, style.symbol).any(v => v != none)
+#let check-mark(style) = {
+  style != none and ("start", "end", "symbol").any(key =>
+    style.at(key, default: none) != none)
+}
 
 /// Processes the mark styling.
 /// TODO: remember what is actually going on here.
@@ -173,7 +176,7 @@
 
   ctx.groups = ()
   ctx.nodes = (:)
-  ctx.transform = matrix.ident()
+  ctx.transform = matrix.ident(4)
 
   import "/src/draw.typ"
   let body = draw.group({
@@ -379,14 +382,22 @@
   let snap-to = (none, none)
   let drawables = ()
 
-  let (path, is-transformed) = if not style.transform-shape and transform != none {
+  if style == none {
+    style = (start: none, end: none, symbol: none)
+  }
+  let start-symbol = style.at("start",
+    default: style.at("symbol", default: none))
+  let end-symbol = style.at("end",
+    default: style.at("symbol", default: none))
+
+  let (path, is-transformed) = if not style.at("transform-shape", default: true) and transform != none {
     (drawable.apply-transform(transform, path).first(), true)
   } else {
     (path, false)
   }
 
   let segments = path.segments
-  if style.start != none or style.symbol != none {
+  if start-symbol != none {
     let (drawables: start-drawables, distance: start-distance, pos: pt) = place-mark-on-path(
       ctx,
       process-style(ctx, style, "start", path-util.length(segments)),
@@ -396,7 +407,7 @@
     distance.first() = start-distance
     snap-to.first() = pt
   }
-  if style.end != none or style.symbol != none {
+  if end-symbol != none {
     let (drawables: end-drawables, distance: end-distance, pos: pt) = place-mark-on-path(
       ctx,
       process-style(ctx, style, "end", path-util.length(segments)),

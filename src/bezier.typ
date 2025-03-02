@@ -531,9 +531,9 @@
 ///
 /// -> array Array of roots
 #let _cubic-roots(a, b, c, d) = {
-  let epsilon = 0.000001
-  if calc.abs(a) < 1e-6 {
-    if calc.abs(b) < 1e-6 {
+  let epsilon = 1e-6
+  if calc.abs(a) < epsilon {
+    if calc.abs(b) < epsilon {
       // Constant
       if c == 0 {
         return ()
@@ -554,6 +554,9 @@
       let roots = (-1 * (dq + c) / (2 * b),
                         (dq - c) / (2 * b))
       return roots.filter(t => t >= 0 - epsilon and t <= 1 + epsilon)
+    } else {
+      // No real roots
+      return ()
     }
   }
 

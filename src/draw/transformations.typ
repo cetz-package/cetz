@@ -26,7 +26,7 @@
 /// - mat (none, matrix): The 4x4 transformation matrix to set. If `none` is passed, the transformation matrix is set to the identity matrix (`matrix.ident()`).
 #let set-transform(mat) = {
   let mat = if mat == none {
-    matrix.ident()
+    matrix.ident(4)
   } else {
     matrix.round(mat)
   }
