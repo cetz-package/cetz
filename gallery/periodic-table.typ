@@ -128,7 +128,7 @@
   (
     ("55", "132.91", "Cs", "Caesium", colors.alkali-metal),
     ("56", "137.33", "Ba", "Barium", colors.alkaline-earth),
-    ("57-71", "", text("La-Lu", size: 28pt), "Lanthanide", colors.lanthanide),
+    ("57-71", "", text(size: 27pt)[La--Lu], "Lanthanide", colors.lanthanide),
     ("72", "178.49", "Hf", "Hafnium", colors.metal),
     ("73", "180.95", "Ta", "Tantalum", colors.metal),
     ("74", "183.84", "W", "Tungsten", colors.metal),
@@ -149,7 +149,7 @@
   (
     ("87", "223", "Fr", "Francium", colors.alkali-metal),
     ("88", "226", "Ra", "Radium", colors.alkaline-earth),
-    ("89-103", "", text("Ac-Lr", size: 28pt), "Actinide", colors.lanthanide),
+    ("89-103", "", text(size: 27pt)[Ac--#text(colors.synthetic)[Lr]], "Actinide", colors.lanthanide),
     ("104", "261", "Rf", "Rutherfordium", colors.metal),
     ("105", "262", "Db", "Dubnium", colors.metal),
     ("106", "266", "Sg", "Seaborgium", colors.metal),
@@ -257,7 +257,8 @@
       let data = elements.at(period - 1).at(group - 1)
       if data != none {
         if data.len() == 5 {
-          content(pos(group, period), element(..data.slice(0, 4), fill: data.at(4)))
+          let elem = if period == 7 and group >= 4 { synthetic-element } else { element }
+          content(pos(group, period), elem(..data.slice(0, 4), fill: data.at(4)))
         } else {
           content(pos(group, period), element(..data))
         }
@@ -274,7 +275,7 @@
   for (idx, data) in actinides.enumerate() {
     content(
       special-pos(89 + idx, is-actinide: true),
-      if idx <= 3 { element(..data, fill: colors.lanthanide) } else {
+      if idx <= 5 { element(..data, fill: colors.lanthanide) } else {
         synthetic-element(..data, fill: colors.lanthanide)
       },
     )
