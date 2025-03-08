@@ -106,6 +106,7 @@
            (y - offset-y - segment-y) * length)
         }
 
+        let last-point = none
         for ((kind, ..rest)) in drawable.segments {
           if kind == "sub" {
             // TODO: Support sub-paths by converting
@@ -114,15 +115,21 @@
           } else if kind == "cubic" {
             let pts = rest.map(transform-point)
 
-            vertices.push(curve.move(pts.at(0)))
+            if last-point != pts.at(0) {
+              vertices.push(curve.move(pts.at(0)))
+            }
             vertices.push(curve.cubic(pts.at(2), pts.at(3), pts.at(1)))
+            last-point = pts.at(1)
           } else {
             let pts = rest.map(transform-point)
 
-            vertices.push(curve.move(pts.at(0)))
+            if last-point != pts.at(0) {
+              vertices.push(curve.move(pts.at(0)))
+            }
             for i in range(1, pts.len()) {
               vertices.push(curve.line(pts.at(i)))
             }
+            last-point = pts.at(1)
           }
         }
 
