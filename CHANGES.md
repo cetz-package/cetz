@@ -1,3 +1,6 @@
+# 0.3.4
+- Fixed a bug with rendering curves with Typst 0.13.1
+
 # 0.3.3
 - Circle supports two-point construction, using the distance as radius
 - Require Typst 0.13.0, port test cases over to Tytanic
@@ -8,7 +11,7 @@
 - New `matrix.diag` function
 - Added a `background` to the context, set to the canvas background
 - Fixed mark styling issues with empty or incomplete style dictionaries
-- Fixes a division by zero bug when trying to calculate some intersections
+- Fixed a division by zero bug when trying to calculate some intersections
 
 # 0.3.2
 
