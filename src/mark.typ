@@ -385,10 +385,17 @@
   if style == none {
     style = (start: none, end: none, symbol: none)
   }
+  let both-symbol = style.at("symbol", default: none)
   let start-symbol = style.at("start",
-    default: style.at("symbol", default: none))
+    default: both-symbol)
+  if start-symbol == none {
+    start-symbol = both-symbol
+  }
   let end-symbol = style.at("end",
-    default: style.at("symbol", default: none))
+    default: both-symbol)
+  if end-symbol == none {
+    end-symbol = both-symbol
+  }
 
   let (path, is-transformed) = if not style.at("transform-shape", default: true) and transform != none {
     (drawable.apply-transform(transform, path).first(), true)
