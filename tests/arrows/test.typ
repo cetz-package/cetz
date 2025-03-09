@@ -1,7 +1,8 @@
 #set page(width: auto, height: auto)
 #import "/src/lib.typ": *
+#import "/tests/helper.typ": *
 
-#box(stroke: 2pt + red, canvas({
+#test-case({
     import draw: *
 
     let next(mark) = {
@@ -31,9 +32,9 @@
     for m in marks {
         next((start: m))
     }
-}))
+} )
 
-#box(stroke: 2pt + red, canvas({
+#test-case({
   import draw: *
 
   line((0,0), (9,0), stroke: blue + 1pt)
@@ -48,9 +49,9 @@
     line((x * .5, -1), (x * .5, 0), mark: (start: ">", end: ">",
       width: (x / 50 + .05)))
   }
-}))
+})
 
-#box(stroke: 2pt + red, canvas({
+#test-case({
   import draw: *
 
   line((0,0), (9,0), stroke: blue + 1pt)
@@ -65,9 +66,9 @@
     line((x * .5, -1), (x * .5, 0), mark: (start: "<", end: "<",
       width: (x / 50 + .05)))
   }
-}))
+})
 
-#box(stroke: 2pt + red, canvas({
+#test-case({
   import draw: *
 
   line((0,0), (9,0), stroke: blue + 1pt)
@@ -82,9 +83,9 @@
     line((x * .5, -1), (x * .5, 0), mark: (start: "<", end: ">",
       width: (x / 50 + .05)))
   }
-}))
+})
 
-#box(stroke: 2pt + red, canvas({
+#test-case({
   import draw: *
 
   line((0,0), (9,0), stroke: blue + 1pt)
@@ -99,4 +100,13 @@
     line((x * .5, -1), (x * .5, 0), mark: (start: "<", end: ">",
       width: (x / 50 + .05)))
   }
-}))
+})
+
+// Issue #830
+#test-case({
+  import draw: *
+  line((0, 0), (1, 0), mark: (start: "stealth"))
+  line((0, -1), (1, -1), mark: (end: "stealth"))
+  line((0, -2), (1, -2), mark: (start: "stealth", end: "stealth"))
+  line((0, -3), (1, -3), mark: (symbol: "stealth",))
+})

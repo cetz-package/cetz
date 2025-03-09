@@ -129,7 +129,7 @@
             for i in range(1, pts.len()) {
               vertices.push(curve.line(pts.at(i)))
             }
-            last-point = pts.at(1)
+            last-point = pts.last()
           }
         }
 
