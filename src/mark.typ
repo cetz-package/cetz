@@ -270,68 +270,51 @@
 
     let mark = _eval-mark-shape-and-anchors(ctx, mark-fn(style), style)
 
-    let pos = if style.flex {
-      path-util.point-on-path(
-        segments,
-        if distance != 0 {
-          distance * if is-end { -1 } else { 1 }
-        } else {
-          if is-end {
-            100%
-          } else {
-            0%
-          }
-        }, extrapolate: true)
-    } else {
-      let (_, dir) = path-util.direction(
-        segments,
-        if is-end {
-          100%
-        } else {
-          0%
-        },
-        clamp: true)
-      let pt = if is-end {
-        path-util.segment-end(segments.last())
-      } else {
-        path-util.segment-start(segments.first())
-      }
-      vector.sub(pt, vector.scale(vector.norm(dir), distance * if is-end { 1 } else { -1 }))
-    }
-    assert.ne(pos, none,
-      message: "Could not determine mark position")
+    let mark-point-info = path-util.point-at(
+        segments, distance + mark.length, reverse: is-end)
 
-    let dir = if style.flex {
-      let a = pos
-      let b = path-util.point-on-path(
-        segments,
-        (mark.length + distance) * if is-end { -1 } else { 1 },
-        samples: style.position-samples,
-        extrapolate: true)
-      if b != none and a != b {
-        vector.sub(b, a)
+    let pos = if is-end {
+      path-util.last-subpath-end(segments)
+    } else {
+      path-util.first-subpath-start(segments)
+    }
+
+    let dir = if is-end {
+      if style.flex {
+        vector.sub(mark-point-info.point,
+          path-util.last-subpath-end(segments))
       } else {
-        let (_, dir) = path-util.direction(
-          segments,
-          distance,
-          clamp: true)
-        vector.scale(dir, if is-end { -1 } else { 1 })
+        path-util.last-subpath-direction(segments)
       }
     } else {
-      let (_, dir) = path-util.direction(
-        segments,
-        if is-end {
-          100%
-        } else {
-          0%
-        },
-        clamp: true)
-      if dir != none {
-        vector.scale(dir, if is-end { -1 } else { 1 })
+      if style.flex {
+        vector.sub(mark-point-info.point,
+          path-util.first-subpath-start(segments))
+      } else {
+        path-util.first-subpath-direction(segments)
       }
     }
-    assert.ne(pos, none,
-      message: "Could not determine mark direction")
+
+    if vector.len(dir) == 0 {
+      dir = (1, 0, 0)
+    }
+
+    //let pos = if style.flex {
+    //} else {
+    //  let (_, dir) = path-util.direction(
+    //    segments,
+    //    if is-end {
+    //      100%
+    //    } else {
+    //      0%
+    //    })
+    //  let pt = if is-end {
+    //    path-util.last-subpath-end(segments.last())
+    //  } else {
+    //    path-util.first-subpath-start(segments.first())
+    //  }
+    //  vector.sub(pt, vector.scale(vector.norm(dir), distance * if is-end { 1 } else { -1 }))
+    //}
 
     mark = transform-mark(
       style,
@@ -352,7 +335,7 @@
 
       shorten-distance = distance + mark.length - inset
       shorten-pos = vector.add(pos,
-        vector.scale(vector.norm(dir), mark.length - inset))
+        vector.scale(dir, mark.length - inset))
     }
 
     drawables += mark.drawables
@@ -426,9 +409,9 @@
     snap-to.last() = pt
   }
   if distance != (0, 0) {
-    segments = path-util.shorten-path(
+    segments = path-util.shorten-to(
       segments,
-      ..distance,
+      distance,
       mode: if style.flex { "CURVED" } else { "LINEAR" },
       samples: style.position-samples,
       snap-to: snap-to)
