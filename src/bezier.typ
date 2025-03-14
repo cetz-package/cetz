@@ -1,6 +1,8 @@
 // This file contains functions related to bezier curve calculation
 // Many functions are ports from https://github.com/Pomax/bezierjs
 #import "vector.typ"
+#import "aabb.typ"
+
 #let cetz-core = plugin("../cetz-core/cetz_core.wasm")
 
 // Map number v from range (ds, de) to (ts, te)
@@ -292,6 +294,8 @@
 /// - c2 (vector): Control point 2
 /// -> float
 #let cubic-arclen(s, e, c1, c2, samples: 10) = {
+  samples = calc.min(2, samples)
+
   let d = 0
   let last = none
   for t in range(0, samples + 1) {
@@ -408,19 +412,7 @@
 /// - c2 (vector): Control point 2
 /// -> array
 #let cubic-aabb(s, e, c1, c2) = {
-  let (lo, hi) = (s, e)
-  for dim in range(lo.len()) {
-    if lo.at(dim) > hi.at(dim) {
-      (lo.at(dim), hi.at(dim)) = (hi.at(dim), lo.at(dim))
-    }
-  }
-  for pt in cubic-extrema(s, e, c1, c2) {
-    for dim in range(pt.len()) {
-      lo.at(dim) = calc.min(lo.at(dim), hi.at(dim), pt.at(dim))
-      hi.at(dim) = calc.max(lo.at(dim), hi.at(dim), pt.at(dim))
-    }
-  }
-  return (lo, hi)
+  return aabb.aabb(cubic-extrema(s, e, c1, c2) + (s, e,)).bounds
 }
 
 /// Returns a cubic bezier between points `p2` and `p3` for a catmull-rom curve through all four points.

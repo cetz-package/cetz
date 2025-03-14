@@ -106,35 +106,24 @@
            (y - offset-y - segment-y) * length)
         }
 
-        let last-point = none
-        for ((kind, ..rest)) in drawable.segments {
-          if kind == "sub" {
-            // TODO: Support sub-paths by converting
-            //       Also support move commands.
-            //       Refactor path arrays to typst style curves.
-          } else if kind == "cubic" {
-            let pts = rest.map(transform-point)
+        for ((origin, closed, segments)) in drawable.segments {
+          vertices.push(curve.move(transform-point(origin)))
 
-            if last-point != pts.at(0) {
-              vertices.push(curve.move(pts.at(0)))
+          for ((kind, ..args)) in segments {
+            if kind == "l" {
+              for pt in args {
+                vertices.push(curve.line(transform-point(pt)))
+              }
+            } else if kind == "c" {
+              vertices.push(curve.cubic(..args.map(transform-point)))
+            } else {
+              panic(kind, args)
             }
-            vertices.push(curve.cubic(pts.at(2), pts.at(3), pts.at(1)))
-            last-point = pts.at(1)
-          } else {
-            let pts = rest.map(transform-point)
-
-            if last-point != pts.at(0) {
-              vertices.push(curve.move(pts.at(0)))
-            }
-            for i in range(1, pts.len()) {
-              vertices.push(curve.line(pts.at(i)))
-            }
-            last-point = pts.last()
           }
-        }
 
-        if (drawable.at("close", default: false)) {
-          vertices.push(curve.close(mode: "straight"))
+          if closed {
+            vertices.push(curve.close(mode: "straight"))
+          }
         }
 
         if type(drawable.stroke) == dictionary and "thickness" in drawable.stroke and type(drawable.stroke.thickness) != std.length {
