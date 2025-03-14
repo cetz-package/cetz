@@ -292,9 +292,9 @@
         },
         clamp: true)
       let pt = if is-end {
-        path-util.segment-end(segments.last())
+        path-util.last-subpath-end(segments.last())
       } else {
-        path-util.segment-start(segments.first())
+        path-util.first-subpath-start(segments.first())
       }
       vector.sub(pt, vector.scale(vector.norm(dir), distance * if is-end { 1 } else { -1 }))
     }

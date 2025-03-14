@@ -5,72 +5,135 @@
 #import "deps.typ"
 #import deps.oxifmt: strfmt
 
-#let default-samples = 25
-
-/// Returns the first position vector of a path segment.
+/// Create a new subpath. A path is an array of subpaths.
 ///
-/// - s (segment): Path segment
-/// -> vector
-#let segment-start(s) = {
-  return s.at(1)
+/// - origin (vector): Origin
+/// - segments (array): Segments
+/// - closed (bool): Closed
+/// -> subpath
+#let make-subpath(origin, segments, closed: false) = {
+  (origin, closed, segments)
 }
 
-/// Returns the last position vector of a path segment
-///
-/// - s (segment): Path segment
-/// -> vector
-#let segment-end(s) = {
-  if s.at(0) == "line" {
-    return s.last()
+#let number-of-samples(n) = {
+  let default = 25
+  return if n == auto {
+    default
+  } else {
+    n
   }
-  return s.at(2)
+}
+
+/// Get the start position of the first path
+/// -> vector
+#let first-subpath-start(path) = {
+  if path.len() > 0 {
+    let (origin, ..) = path.first()
+    return origin
+  }
+  return none
+}
+
+/// Get the end position of the last path
+/// -> vector
+#let last-subpath-end(path) = {
+  if path.len() > 0 {
+    let (origin, close, segments) = path.last()
+    if close {
+      return origin
+    }
+    return segments.last().last()
+  }
+  return none
 }
 
 /// Calculates the bounding points for a list of path segments
 ///
-/// - segments (array): List of path segments
+/// - path (array): Path
 /// -> array
-#let bounds(segments) = {
+#let bounds(path) = {
   let bounds = ()
 
-  for s in segments {
-    let (kind, ..pts) = s
-    if kind == "line" {
-      bounds += pts
-    } else if kind == "cubic" {
-      bounds.push(pts.at(0))
-      bounds.push(pts.at(1))
-      bounds += bezier.cubic-extrema(..pts)
+  for ((origin, closed, segments)) in path {
+    bounds.push(origin)
+
+    for ((kind, ..args)) in segments {
+      if kind == "l" {
+        bounds += args
+      } else if kind == "c" {
+        let (c1, c2, e) = args
+        bounds += bezier.cubic-extrema(bounds.last(), c1, c2, e)
+        bounds.push(e)
+      }
     }
   }
+
   return bounds
 }
 
-/// Calculates the length of a single path segment
+/// Returns an array with the lengths of all path segments.
+/// Move commands always have length 0.
 ///
-/// - s (array): Path segment
-/// -> float
-#let _segment-length(s, samples: default-samples) = {
-  let (kind, ..pts) = s
-  if kind == "line" {
-    let len = 0
-    for i in range(1, pts.len()) {
-      len += vector.len(vector.sub(pts.at(i - 1), pts.at(i)))
+/// - segments (path): Input path
+/// - samples (auto, int): Number of samples to use for curves
+/// -> array Array of floats containing the segment lengths
+#let segment-lengths(segments, samples: auto) = {
+  let cur = none
+  let start = none
+
+  let lengths = ()
+  for ((kind, ..args)) in segments {
+    let length = 0
+    if kind == "m" {
+      start = args.first()
+      cur = start
+    } else if kind == "z" {
+      length += vector.dist(cur, start)
+      cur = start
+    } else if kind == "l" {
+      for pt in args {
+        length += vector.dist(cur, pt)
+        cur = pt
+      }
+    } else if kind == "c" {
+      let (c1, c2, e) = args
+      length += bezier.cubic-arclen(
+        cur, e, c1, c2, samples: number-of-samples(samples))
     }
-    return len
-  } else if kind == "cubic" {
-    return bezier.cubic-arclen(..pts, samples: samples)
-  } else {
-    panic("Invalid segment: " + kind, s)
+
+    lengths.push(length)
+  }
+  return lengths
+}
+
+/// Returns the sum of all segment lengths of a path.
+///
+/// - segments (path): Path segments
+/// - samples (auto, int): Number of samples to take for curves
+/// -> float Length
+#let length(segments, samples: auto) = {
+  return segment-lengths(segments, samples).sum()
+}
+
+/// Get the sub-path that contains the segment at index.
+///
+///
+#let find-sub-path(segments, index) = {
+  let start = 0
+  let end = 0
+  for ((kind, ..args)) in segments {
+    if kind == "m" {
+
+    }
   }
 }
 
-/// Calculates the length of a path
+/// Get the start and end point of a single path segment.
 ///
-/// - segments (array): List of path segments
-/// -> float
-#let length(segments) = {
-  return segments.map(_segment-length).sum()
+/// - segments (path): Path
+/// - index (int): Segment index
+/// -> array Tuple of the start- end end-point
+#let segment-points(segments, index) = {
 }
 
 /// Finds the two points that enclose a distance along a line segment.
@@ -133,11 +196,11 @@
 /// - distance (float): The distance along the path segment to find the point
 /// - extrapolate (bool): If true, use linear extrapolation for distances outsides the path
 /// -> vector
-#let _point-on-segment(segment, distance, samples: default-samples, extrapolate: false) = {
+#let _point-on-segment(segment, distance, samples: auto, extrapolate: false) = {
   let (kind, ..pts) = segment
-  if kind == "line" {
+  if kind == "l" {
     return _point-on-line-segment(segment, distance)
-  } else if kind == "cubic" {
+  } else if kind == "l" {
     return bezier.cubic-point(
       ..pts,
       bezier.cubic-t-for-distance(
@@ -163,7 +226,7 @@
 /// - travelled (float): The absolute distance travelled along the path to find the segment.
 /// - distance (float): The distance left to travel along the path.
 /// - length (float): The length of the returned segment.
-#let segment-at-t(segments, t, rev: false, samples: default-samples, clamp: false) = {
+#let segment-at-t(segments, t, rev: false, samples: auto, clamp: false) = {
   let lengths = segments.map(_segment-length.with(samples: samples))
   let total = lengths.sum()
 
@@ -237,7 +300,7 @@
 /// - t (int,float,ratio): Absolute position on the path if given an float or integer, or relative position if given a ratio from 0% to 100%. When this value is negative, the point will be found from the end of the path instaed of the start.
 /// - extrapolate (bool): If true, use linear extrapolation if distance is outsides the path's range
 /// -> none,vector
-#let point-on-path(segments, t, samples: default-samples, extrapolate: false) = {
+#let point-on-path(segments, t, samples: auto, extrapolate: false) = {
   assert(
     type(t) in (int, float, ratio),
     message: "Distance t must be of type int, float or ratio"
@@ -274,7 +337,7 @@
 /// - extrapolate (bool): If true, use linear extrapolation if distance is outsides the path's range
 /// - clamp (bool): Clamps the distance between the start and end of a path.
 /// -> array
-#let direction(segments, t, samples: default-samples, clamp: false) = {
+#let direction(segments, t, samples: auto, clamp: false) = {
   let (segment, distance, length, ..) = segment-at-t(segments, t, samples: samples, clamp: clamp)
   let (kind, ..pts) = segment
   return (
@@ -294,61 +357,12 @@
   )
 }
 
-/// Creates a line segment with points
-///
-/// - points (array): List of points
-/// -> segment
-#let line-segment(points) = {
-  ("line",) + points
-}
-
-/// Creates a cubic bezier segment
-///
-/// - a (vector): Start
-/// - b (vector): End
-/// - ctrl-a (vector): Control point a
-/// - ctrl-b (vector): Control point b
-/// -> segment
-#let cubic-segment(a, b, ctrl-a, ctrl-b) = {
-  ("cubic", a, b, ctrl-a, ctrl-b)
-}
-
 /// Normalize segments by connecting gaps via straight line segments and merging multiple line segments into a single one.
 ///
 /// - segments (array): The path segments to normalize.
 /// -> array
 #let normalize(segments) = {
-  let new = ()
-  for s in segments {
-    if new == () {
-      new.push(s)
-    } else {
-      let head = new.last()
-      let (kind, ..pts) = s
-
-      if kind == "line" and head.at(0) == kind {
-        // Merge consecutive line segments
-        if new.last().len() > 0 and new.last().last() == pts.first() {
-          new.last() += pts.slice(1)
-        } else {
-          new.last() += pts
-        }
-      } else if segment-start(s) != segment-end(head) {
-        // Push a new line or line point if the current segment
-        // does not start where the previous segment ended
-        if head.at(0) == "line" {
-          new.last().push(pts.first())
-        } else {
-          new.push(line-segment((segment-end(head), segment-start(s))))
-        }
-        // Push the segment
-        new.push(s)
-      } else {
-        new.push(s)
-      }
-    }
-  }
-  return new
+  return segments
 }
 
 /// Shortens a segment by a given distance.
@@ -358,7 +372,7 @@
 /// - mode (str): How cubic segments should be shortned. Can be `"LINEAR"` to use `bezier.cubic-shorten-linear` or `"CURVED"` to use `bezier.cubic-shorten`.
 /// - samples (int): The number of samples to use when shortening a cubic segment.
 /// -> segment
-#let shorten-segment(segment, distance, snap-to: none, mode: "CURVED", samples: default-samples) = {
+#let shorten-segment(segment, distance, snap-to: none, mode: "CURVED", samples: auto) = {
   let rev = distance < 0
   if distance >= _segment-length(segment) {
     return line-segment(if rev {
@@ -405,7 +419,7 @@
 /// - end-distance (int, float): The distance to shorten from the end of the path
 /// - pos (none, tuple): Tuple of points to "snap" the path ends to
 /// -> segments Segments of the path that have been shortened
-#let shorten-path(segments, start-distance, end-distance, snap-to: none, mode: "CURVED", samples: default-samples) = {
+#let shorten-path(segments, start-distance, end-distance, snap-to: none, mode: "CURVED", samples: auto) = {
   let total = length(segments)
   let (snap-start, snap-end) = if snap-to == none {
     (none, none)

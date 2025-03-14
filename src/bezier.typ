@@ -291,6 +291,8 @@
 /// - c2 (vector): Control point 2
 /// -> float
 #let cubic-arclen(s, e, c1, c2, samples: 10) = {
+  samples = calc.min(2, samples)
+
   let d = 0
   let last = none
   for t in range(0, samples + 1) {

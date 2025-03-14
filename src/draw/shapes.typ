@@ -568,11 +568,10 @@
     let style = styles.resolve(ctx.style, merge: style, root: "line")
 
     let drawables = drawable.path(
-      (path-util.line-segment(pts),),
+      (path-util.make-subpath(pts.first(), pts.slice(1).map(pt => ("l", pt)), closed: close),),
       fill: style.fill,
       fill-rule: style.fill-rule,
       stroke: style.stroke,
-      close: close
     )
 
     // Get bounds
@@ -643,10 +642,9 @@
     })
 
     let drawables = drawable.path(
-      (path-util.line-segment(points),),
+      (((points.first(), true, ("l", points.slice(1)))),),
       fill: style.fill,
-      stroke: style.stroke,
-      close: true)
+      stroke: style.stroke)
 
     let edge-anchors = range(0, sides).map(i => "edge-" + str(i))
     let corner-anchors = range(0, sides).map(i => "corner-" + str(i))
@@ -1003,13 +1001,10 @@
     }
     let frame-shape = if style.frame in (none, "rect") {
       drawable.path(
-        path-util.line-segment((
-          anchors.north-west,
-          anchors.north-east,
-          anchors.south-east,
-          anchors.south-west
-        )),
-        close: true,
+        ((anchors.north-west, true,
+          ("l", anchors.north-east,
+            anchors.south-east,
+            anchors.south-west)),),
         stroke: frame-stroke,
         fill: frame-fill,)
     } else if style.frame == "circle" {
@@ -1221,9 +1216,7 @@
                       p0.at(1) * m * ry)
             let p1 = (p1.at(0) * m * rx,
                       p1.at(1) * m * ry)
-            (path-util.cubic-segment(s, e,
-              vector.add(s, p0),
-              vector.add(e, p1)),)
+            ("c", vector.add(s, p0), vector.add(e, p1), e)
           }
         }
 
@@ -1246,16 +1239,17 @@
         let (p6, p7) = get-corner-pts(sw, (x1, y1, z), ( 1, 0), ( 0, 1))
 
         let segments = ()
-        segments += corner-arc(nw, p1, p0, (-1,0), (0, 1))
-        if p0 != p7 { segments += (path-util.line-segment((p0, p7)),) }
-        segments += corner-arc(sw, p7, p6, (0,-1), (-1,0))
-        if p6 != p5 { segments += (path-util.line-segment((p6, p5)),) }
-        segments += corner-arc(se, p5, p4, (1, 0), (0,-1))
-        if p4 != p3 { segments += (path-util.line-segment((p4, p3)),) }
-        segments += corner-arc(ne, p3, p2, (0, 1), (1, 0))
-        if p2 != p1 { segments += (path-util.line-segment((p2, p1)),) }
+        segments.push(corner-arc(nw, p1, p0, (-1,0), (0, 1)))
+        if p0 != p7 { segments.push(("l", p7)) }
+        segments.push(corner-arc(sw, p7, p6, (0,-1), (-1,0)))
+        if p6 != p5 { segments.push(("l", p5)) }
+        segments.push(corner-arc(se, p5, p4, (1, 0), (0,-1)))
+        if p4 != p3 { segments.push(("l", p3)) }
+        segments.push(corner-arc(ne, p3, p2, (0, 1), (1, 0)))
+        if p2 != p1 { segments.push(("l", p1)) }
 
-        drawable.path(segments, fill: style.fill, stroke: style.stroke, close: true)
+        drawable.path(((p1, true, segments),),
+          fill: style.fill, stroke: style.stroke)
       }
 
       // Calculate border anchors
@@ -1335,7 +1329,7 @@
 
       let style = styles.resolve(ctx.style, merge: style, root: "bezier")
       let drawables = drawable.path(
-        (path-util.cubic-segment(start, end, ..ctrl),),
+        (path-util.make-subpath(start, (("c", ..ctrl, end),)),),
         fill: style.fill,
         fill-rule: style.fill-rule,
         stroke: style.stroke,
@@ -1436,9 +1430,8 @@
       style.tension,
       close: close)
 
-    let segments = curves.map(c => path-util.cubic-segment(..c))
     let drawables = drawable.path(
-      segments,
+      ((curves.first().first(), close, curves.map(((s, e, c1, c2)) => ("c", c1, c2, e))),),
       fill: style.fill,
       fill-rule: style.fill-rule,
       stroke: style.stroke,
@@ -1514,9 +1507,8 @@
       omega: style.omega,
       close: close)
 
-    let segments = curves.map(c => path-util.cubic-segment(..c))
     let drawables = drawable.path(
-      segments,
+      ((curves.first().first(), close, curves.map(((s, e, c1, c2)) => ("c", c1, c2, e))),),
       fill: style.fill,
       fill-rule: style.fill-rule,
       stroke: style.stroke,
@@ -1572,10 +1564,11 @@
 ///   Supports path anchors and shapes where all vertices share the same z-value.
 ///
 /// - body (elements): Elements with paths to be merged together.
+/// - join (bool): Connect all sup-paths with a straight line
 /// - close (bool): Close the path with a straight line from the start of the path to its end.
 /// - name (none,str):
 /// - ..style (style):
-#let merge-path(body, close: false, name: none, ..style) = {
+#let merge-path(body, join: true, close: false, name: none, ..style) = {
   // No extra positional arguments from the style sink
   assert.eq(
     style.pos(),
@@ -1587,29 +1580,33 @@
   return (
     ctx => {
       let ctx = ctx
-      let segments = ()
+      let subpaths = ()
+
       for element in body {
         let r = process.element(ctx, element)
         if r != none {
           ctx = r.ctx
-          if segments != () and r.drawables != () {
-            assert.eq(r.drawables.first().type, "path")
-            let start = path-util.segment-end(segments.last())
-            let end = path-util.segment-start(r.drawables.first().segments.first())
-            if vector.dist(start, end) > 0 {
-              segments.push(path-util.line-segment((start, end,)))
-            }
-          }
-          for drawable in r.drawables {
-            if drawable.hidden { continue }
-            assert.eq(drawable.type, "path")
-            segments += drawable.segments
+
+          if join and subpaths.len() > 0 {
+            let (origin, closed, segments) = subpaths.last()
+            let (next-origin, _, next-segments) = r.drawables.first().segments.first()
+            segments.push(("l", next-origin))
+            segments += next-segments
+
+            subpaths.last() = (origin, closed, segments)
+            subpaths += r.drawables.slice(1).filter(d => {
+              d.type == "path"
+            }).map(d => d.segments).join()
+          } else {
+            subpaths += r.drawables.filter(d => {
+              d.type == "path"
+            }).map(d => d.segments).join()
           }
         }
       }
 
       let style = styles.resolve(ctx.style, merge: style)
-      let drawables = drawable.path(fill: style.fill, fill-rule: style.fill-rule, stroke: style.stroke, close: close, segments)
+      let drawables = drawable.path(fill: style.fill, fill-rule: style.fill-rule, stroke: style.stroke, close: close, subpaths)
 
       let (transform, anchors) = anchor_.setup(
         name => {
