@@ -16,12 +16,24 @@
   if transform == none {
     return drawables
   }
+
   for drawable in drawables {
     assert(type(drawable) != array,
       message: "Expected drawable, got array: " + repr(drawable))
     if drawable.type == "path" {
-      drawable.segments = drawable.segments.map(((kind, ..pts)) => {
-        return (kind,) + util.apply-transform(transform, ..pts)
+      drawable.segments = drawable.segments.map(((origin, closed, segments)) => {
+        origin = util.apply-transform(transform, origin)
+        segments = segments.map(((kind, ..args)) => {
+          if args.len() == 1 {
+            (kind, util.apply-transform(transform, ..args))
+          } else if args.len() > 1 {
+            (kind, ..util.apply-transform(transform, ..args))
+          } else {
+            (kind,)
+          }
+        })
+
+        return (origin, closed, segments)
       })
     } else if drawable.type == "content" {
       drawable.pos = util.apply-transform(transform, drawable.pos)
@@ -39,30 +51,38 @@
 /// - fill-rule (string): One of "even-odd" or "non-zero".
 /// - stroke (stroke): The stroke of the path.
 /// -> drawable
-#let path(close: false, fill: none, stroke: none, fill-rule: "non-zero", segments) = {
-  let segments = segments
-  // Handle case where only one segment has been passed
-  if type(segments.first()) == str {
-    segments = (segments,)
-  }
+#let path(close: false, fill: none, stroke: none, fill-rule: "non-zero", path) = {
+  assert.eq(type(path), array)
 
-  segments = path-util.normalize(segments)
-  if close and path-util.segment-end(segments.last()) != path-util.segment-start(segments.first()) {
-    segments.push(path-util.line-segment((
-      path-util.segment-end(segments.last()),
-      path-util.segment-start(segments.first()),
-    )))
+  let path = path
+  for subpath in path {
+    assert.eq(subpath.len(), 3)
+    assert.eq(type(subpath.at(0)), array)
+    assert.eq(type(subpath.at(1)), bool)
+    assert.eq(type(subpath.at(2)), array)
   }
 
   return (
     type: "path",
     close: close,
-    segments: segments,
+    segments: path,
     fill: fill,
     fill-rule: fill-rule,
     stroke: stroke,
     hidden: false,
     bounds: true,
+  )
+}
+
+///
+#let line-strip(points, close: false, fill: none, stroke: none, fill-rule: "non-zero") = {
+  assert.eq(type(points), array)
+
+  return path(
+    ((points.first(), close, ("l", ..points.slice(1))),),
+    stroke: stroke,
+    fill: fill,
+    fill-rule: fill-rule,
   )
 }
 
@@ -106,35 +126,22 @@
   let bottom = y - ry
 
   path(
-    (
-      path-util.cubic-segment(
-        (x, top, z),
-        (left, y, z),
-        (x - m * rx, top, z),
-        (left, y + m * ry, z),
-      ),
-      path-util.cubic-segment(
-        (left, y, z),
-        (x, bottom, z),
-        (left, y - m * ry, z),
-        (x - m * rx, bottom, z),
-      ),
-      path-util.cubic-segment(
-        (x, bottom, z),
-        (right, y, z),
-        (x + m * rx, bottom, z),
-        (right, y - m * ry, z),
-      ),
-      path-util.cubic-segment(
-        (right, y, z),
-        (x, top, z),
-        (right, y + m * ry, z),
-        (x + m * rx, top, z)
-      ),
-    ),
+    (((x, top, z), true, (
+      ("c", (x - m * rx, top, z),
+            (left, y + m * ry, z),
+            (left, y, z)),
+      ("c", (left, y - m * ry, z),
+            (x - m * rx, bottom, z),
+            (x, bottom, z)),
+      ("c", (x + m * rx, bottom, z),
+            (right, y - m * ry, z),
+            (right, y, z)),
+      ("c", (right, y + m * ry, z),
+            (x + m * rx, top, z),
+            (x, top, z))
+    )),),
     stroke: stroke,
     fill: fill,
-    close: true,
   )
 }
 
@@ -161,6 +168,7 @@
   // Calculation of control points is based on the method described here:
   // https://pomax.github.io/bezierinfo/#circles_cubic
   let segments = ()
+  let origin = (x, y, z)
   for n in range(0, num-curves) {
     let start = start + delta / num-curves * n
     let stop = start + delta / num-curves
@@ -186,20 +194,19 @@
     )
     let e = (ex, ey, z)
 
-    segments.push(path-util.cubic-segment(s, e, c1, c2))
+    if n == 0 {
+      origin = s
+    }
+    segments.push(("c", c1, c2, e))
   }
 
   if mode == "PIE" and calc.abs(delta) < 360deg {
-    segments.push(path-util.line-segment((
-      path-util.segment-end(segments.last()),
-      (x, y, z),
-      path-util.segment-start(segments.first()))))
+    segments.push(("l", (x, y, z)))
   }
 
   return path(
     fill: fill,
     stroke: stroke,
-    close: mode != "OPEN",
-    segments
+    ((origin, mode != "OPEN", segments),),
   )
 }

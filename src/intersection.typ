@@ -75,6 +75,7 @@
 /// - path (drawable): The path.
 /// -> array
 #let line-path(la, lb, path) = {
+  // TODO: Fix
   let segment(s) = {
     let (k, ..v) = s
     if k == "line" {

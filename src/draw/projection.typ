@@ -40,8 +40,12 @@
 // all counter clock-wise ones.
 #let _filter-cw-faces(drawables, mode: "cw") = {
   return drawables.filter(d => {
-    let poly = polygon.from-segments(d.segments)
-    poly.first() != poly.last() or polygon.winding-order(poly) == mode
+    if d.segments != () {
+      let poly = polygon.from-subpath(d.segments.first())
+      poly.first() != poly.last() or polygon.winding-order(poly) == mode
+    } else {
+      d
+    }
   })
 }
 
