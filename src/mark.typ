@@ -289,12 +289,11 @@
           100%
         } else {
           0%
-        },
-        clamp: true)
+        })
       let pt = if is-end {
-        path-util.segment-end(segments.last())
+        path-util.last-subpath-end(segments.last())
       } else {
-        path-util.segment-start(segments.first())
+        path-util.first-subpath-start(segments.first())
       }
       vector.sub(pt, vector.scale(vector.norm(dir), distance * if is-end { 1 } else { -1 }))
     }
@@ -313,8 +312,7 @@
       } else {
         let (_, dir) = path-util.direction(
           segments,
-          distance,
-          clamp: true)
+          distance)
         vector.scale(dir, if is-end { -1 } else { 1 })
       }
     } else {
@@ -324,8 +322,7 @@
           100%
         } else {
           0%
-        },
-        clamp: true)
+        })
       if dir != none {
         vector.scale(dir, if is-end { -1 } else { 1 })
       }
