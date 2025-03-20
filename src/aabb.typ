@@ -6,29 +6,29 @@
 /// - init (aabb): Initial aabb
 /// -> aabb
 #let aabb(pts, init: none) = {
-  let bounds = init
-
   if type(pts) == array {
-    for (i, pt) in pts.enumerate() {
-      if bounds == none and i == 0 {
-        bounds = (low: pt, high: pt)
-      } else {
-        assert(type(pt) == array and pt.len() == 3, message: repr(init) + repr(pts))
-        let (x, y, z) = pt
+    let bounds = if init == none and 0 < pts.len() {
+      let pt = pts.at(0)
+      (low: pt, high: pt)
+    } else {
+      init
+    }
+    for pt in pts {
+      assert(type(pt) == array and pt.len() == 3, message: repr(init) + repr(pts))
+      let (x, y, z) = pt
 
-        let (lo-x, lo-y, lo-z) = bounds.low
-        bounds.low = (calc.min(lo-x, x), calc.min(lo-y, y), calc.min(lo-z, z))
+      let (lo-x, lo-y, lo-z) = bounds.low
+      bounds.low = (calc.min(lo-x, x), calc.min(lo-y, y), calc.min(lo-z, z))
 
-        let (hi-x, hi-y, hi-z) = bounds.high
-        bounds.high = (calc.max(hi-x, x), calc.max(hi-y, y), calc.max(hi-z, z))
-      }
+      let (hi-x, hi-y, hi-z) = bounds.high
+      bounds.high = (calc.max(hi-x, x), calc.max(hi-y, y), calc.max(hi-z, z))
     }
     return bounds
   } else if type(pts) == dictionary {
     if init == none {
       return pts
     } else {
-      return aabb((pts.low, pts.high,), init: bounds)
+      return aabb((pts.low, pts.high,), init: init)
     }
   }
 
