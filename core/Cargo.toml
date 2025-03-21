@@ -1,0 +1,19 @@
+[package]
+name = "cetz-core"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ciborium = "0.2.1"
+serde = "1.0.219"
+wasm-minimal-protocol = "0.1"
+
+[profile.release]
+lto = true
+strip = true
+opt-level = 'z'
+codegen-units = 1
+panic = "abort"
