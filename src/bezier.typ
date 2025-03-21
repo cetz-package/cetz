@@ -1,6 +1,7 @@
 // This file contains functions related to bezier curve calculation
 // Many functions are ports from https://github.com/Pomax/bezierjs
 #import "vector.typ"
+#import plugin("../core/cetz_core.wasm"): cubic_extrema
 
 // Map number v from range (ds, de) to (ts, te)
 #let _map(v, ds, de, ts, te) = {
@@ -392,7 +393,7 @@
 /// - c1 (vector): Control point 1
 /// - c2 (vector): Control point 2
 /// -> array
-#let cubic-extrema(s, e, c1, c2) = {
+#let cubic-extrema2(s, e, c1, c2) = {
   // Compute roots of a single dimension (x, y, z) of the
   // curve by using the abc formula for finding roots of
   // the curves first derivative.
@@ -441,6 +442,13 @@
     }
   }
   return pts
+}
+
+#let cubic-extrema(s, e, c1, c2) = {
+  let args = (s: s, e: e, c1: c1, c2: c2)
+  let encoded = cbor.encode(args)
+  let decoded = cbor(cubic_extrema(encoded))
+  decoded
 }
 
 /// Returns axis aligned bounding box coordinates `(bottom-left, top-right)` for a cubic bezier curve.
