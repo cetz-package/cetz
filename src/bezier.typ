@@ -387,6 +387,37 @@
   }
 }
 
+// Compute roots of a single dimension (x, y, z) of the
+// curve by using the abc formula for finding roots of
+// the curves first derivative.
+#let _dim-extrema(a, b, c1, c2) = {
+  let f0 = calc.round(3*(c1 - a), digits: 8)
+  let f1 = calc.round(6*(c2 - 2*c1 + a), digits: 8)
+  let f2 = calc.round(3*(b - 3*c2 + 3*c1 - a), digits: 8)
+
+  if f1 == 0 and f2 == 0 {
+    return ()
+  }
+
+  // Linear function
+  if f2 == 0 {
+    return (-f0 / f1,)
+  }
+
+  // No real roots
+  let discriminant = f1*f1 - 4*f0*f2
+  if discriminant < 0 {
+    return ()
+  }
+
+  if discriminant == 0 {
+    return (-f1 / (2*f2),)
+  }
+  
+  return ((-f1 - calc.sqrt(discriminant)) / (2*f2),
+          (-f1 + calc.sqrt(discriminant)) / (2*f2))
+}
+
 /// Find cubic curve extrema by calculating the roots of the curve's first derivative. Returns an <Type>array</Type> of <Type>vector</Type> ordered by distance along the curve from the start to its end.
 /// - s (vector): Curve start
 /// - e (vector): Curve end
@@ -394,41 +425,10 @@
 /// - c2 (vector): Control point 2
 /// -> array
 #let cubic-extrema2(s, e, c1, c2) = {
-  // Compute roots of a single dimension (x, y, z) of the
-  // curve by using the abc formula for finding roots of
-  // the curves first derivative.
-  let dim-extrema(a, b, c1, c2) = {
-    let f0 = calc.round(3*(c1 - a), digits: 8)
-    let f1 = calc.round(6*(c2 - 2*c1 + a), digits: 8)
-    let f2 = calc.round(3*(b - 3*c2 + 3*c1 - a), digits: 8)
-
-    if f1 == 0 and f2 == 0 {
-      return ()
-    }
-
-    // Linear function
-    if f2 == 0 {
-      return (-f0 / f1,)
-    }
-
-    // No real roots
-    let discriminant = f1*f1 - 4*f0*f2
-    if discriminant < 0 {
-      return ()
-    }
-
-    if discriminant == 0 {
-      return (-f1 / (2*f2),)
-    }
-    
-    return ((-f1 - calc.sqrt(discriminant)) / (2*f2),
-            (-f1 + calc.sqrt(discriminant)) / (2*f2))
-  }
-
   let pts = ()
   let dims = calc.max(s.len(), e.len())
   for dim in range(dims) {
-    let ts = dim-extrema(
+    let ts = _dim-extrema(
       s.at(dim, default: 0),
       e.at(dim, default: 0),
       c1.at(dim, default: 0),

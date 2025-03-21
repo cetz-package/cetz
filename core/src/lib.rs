@@ -5,42 +5,6 @@ use serde::Deserialize;
 
 initiate_protocol!();
 
-#[wasm_func]
-pub fn double_it(arg: &[u8]) -> Vec<u8> {
-    [arg, arg].concat()
-}
-
-#[wasm_func]
-pub fn scale(pt: &[u8]) -> Vec<u8> {
-    let pt: (u32, u32, u32) = from_reader(pt).unwrap();
-    let scaled = (pt.0 * 2, pt.1 * 2, pt.2 * 2);
-    let mut buf = Vec::new();
-    into_writer(&scaled, &mut buf).unwrap();
-    buf
-}
-
-#[derive(Deserialize)]
-struct MinimumArgs {
-    points: Vec<Vec<u32>>,
-    point: Vec<u32>,
-}
-
-#[wasm_func]
-pub fn minimum(input: &[u8]) -> Vec<u8> {
-    match from_reader::<MinimumArgs, _>(input) {
-        Ok(v) => {
-            let min = v.point.clone();
-            let mut buf = Vec::new();
-            into_writer(&min, &mut buf).unwrap();
-            buf
-        }
-        Err(e) => {
-            println!("Error: {:?}", e);
-            vec![]
-        }
-    }
-}
-
 type Point = Vec<f32>;
 
 fn round(x: f32, digits: u32) -> f32 {
