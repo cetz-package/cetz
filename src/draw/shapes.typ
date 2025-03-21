@@ -1169,7 +1169,26 @@
       let (north-west: nw, north-east: ne,
            south-west: sw, south-east: se) = util.as-corner-radius-dict(ctx, style.radius, size)
 
-      let drawables = {
+      let no-radius = style.radius == none or style.radius == 0
+      let drawables = if no-radius {
+        let segments = ()
+        // Four corner points for a non-rounded rectangle:
+        //
+        //   p0-----p3
+        //   |       |
+        //   |       |
+        //   p1-----p2
+        //
+        let p0 = (x1, y2, z1)
+        let p1 = (x1, y1, z1)
+        let p2 = (x2, y1, z1)
+        let p3 = (x2, y2, z1)
+        segments += (path-util.line-segment((p0, p1)),)
+        segments += (path-util.line-segment((p1, p2)),)
+        segments += (path-util.line-segment((p2, p3)),)
+        segments += (path-util.line-segment((p3, p0)),)
+        drawable.path(segments, fill: style.fill, stroke: style.stroke, close: true)
+      } else {
         let z = z1
 
         // Compute two corner points offset by radius from origin pt.
