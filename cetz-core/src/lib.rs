@@ -7,9 +7,6 @@ initiate_protocol!();
 
 type Point = Vec<f64>;
 
-/// Round `x` to `digits` decimal places.
-///
-/// This uses the same algorithm as Typst does.
 fn round(x: f64, digits: u32) -> f64 {
     let factor = 10.0_f64.powi(digits as i32);
     (x * factor).round() / factor
