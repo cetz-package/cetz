@@ -3,13 +3,19 @@
 # End:
 gallery_dir := "./gallery"
 
+build:
+  cd cetz-core; \
+  cargo build --release \
+    --target wasm32-unknown-unknown; \
+  cp target/wasm32-unknown-unknown/release/cetz_core.wasm cetz_core.wasm
+
 package target *options:
   ./common/scripts/package "{{target}}" {{options}}
 
-install target="@local":
+install target="@local": build
   ./common/scripts/package "{{target}}"
 
-test *filter:
+test *filter: build
   tt run {{filter}}
 
 update-test *filter:

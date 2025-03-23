@@ -1,2 +1,6 @@
 docs/_generated
 tmp*
+**/target/
+cetz-core/cetz_core.wasm
+**/.rustc_info.json
+

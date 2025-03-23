@@ -16,6 +16,8 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
+      - name: Install wasm32 target
+        run: rustup target add wasm32-unknown-unknown
       - name: Install just from crates.io
         uses: baptiste0928/cargo-install@v3
         with:
