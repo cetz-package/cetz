@@ -34,6 +34,9 @@ fn cubic_point(a: Point, b: Point, c1: Point, c2: Point, t: f32) -> Point {
   )
 }
 
+/// Compute roots of a single dimension (x, y, z) of the
+/// curve by using the abc formula for finding roots of
+/// the curves first derivative.
 fn dim_extrema(a: f32, b: f32, c1: f32, c2: f32) -> Vec<f32> {
     let f0 = round(3.0 * (c1 - a), 8);
     let f1 = round(6.0 * (c2 - 2.0 * c1 + a), 8);
@@ -62,7 +65,7 @@ fn dim_extrema(a: f32, b: f32, c1: f32, c2: f32) -> Vec<f32> {
     vec![t1, t2]
 }
 
-fn cubic_extrema_core(s: Point, e: Point, c1: Point, c2: Point) -> Vec<Point> {
+fn cubic_extrema(s: Point, e: Point, c1: Point, c2: Point) -> Vec<Point> {
     let mut pts = Vec::new();
     let dims = std::cmp::max(s.len(), e.len());
     for dim in 0..dims {
@@ -86,12 +89,11 @@ struct CubicExtremaArgs {
 }
 
 #[wasm_func]
-pub fn cubic_extrema(input: &[u8]) -> Vec<u8> {
+pub fn cubic_extrema_func(input: &[u8]) -> Vec<u8> {
     match from_reader::<CubicExtremaArgs, _>(input) {
         Ok(input) => {
             let mut buf = Vec::new();
-            let min = cubic_extrema_core(input.s, input.e, input.c1, input.c2);
-            // let min = vec![1, 2, 3, 4];
+            let min = cubic_extrema(input.s, input.e, input.c1, input.c2);
             into_writer(&min, &mut buf).unwrap();
             buf
         }

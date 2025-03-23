@@ -1,5 +1,5 @@
 docs/_generated
 tmp*
 **/target/
-core/cetz_core.wasm
+cetz-core/cetz_core.wasm
 
