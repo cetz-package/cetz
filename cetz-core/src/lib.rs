@@ -107,3 +107,37 @@ pub fn cubic_extrema_func(input: &[u8]) -> Vec<u8> {
         cubic_extrema(args.s, args.e, args.c1, args.c2)
     })
 }
+
+#[derive(Deserialize)]
+struct PathSegment {
+    kind: String,
+    points: Vec<Point>,
+}
+
+fn bounds(segments: Vec<PathSegment>) -> Vec<Point> {
+    let mut bounds = Vec::new();
+    for segment in segments {
+        if segment.kind == "line" {
+            bounds.extend(segment.points);
+        } else if segment.kind == "cubic" {
+            bounds.push(segment.points[0].clone());
+            bounds.push(segment.points[1].clone());
+            let s = segment.points[0].clone();
+            let e = segment.points[1].clone();
+            let c1 = segment.points[2].clone();
+            let c2 = segment.points[3].clone();
+            bounds.extend(cubic_extrema(s, e, c1, c2));
+        }
+    }
+    bounds
+}
+
+#[derive(Deserialize)]
+struct BoundsArgs {
+    segments: Vec<PathSegment>,
+}
+
+#[wasm_func]
+pub fn bounds_func(input: &[u8]) -> Vec<u8> {
+    handle_cbor(input, |args: BoundsArgs| bounds(args.segments))
+}
