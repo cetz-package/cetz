@@ -12,26 +12,19 @@ fn round(x: f64, digits: u32) -> f64 {
     (x * factor).round() / factor
 }
 
-fn vector_add(a: Point, b: Point) -> Point {
-    a.iter().zip(b.iter()).map(|(a, b)| a + b).collect()
-}
-
-fn vector_scale(a: Point, b: f64) -> Point {
-    a.iter().map(|a| a * b).collect()
-}
-
-fn cubic_point(a: Point, b: Point, c1: Point, c2: Point, t: f64) -> Point {
+fn cubic_point_inner(a: f64, b: f64, c1: f64, c2: f64, t: f64) -> f64 {
     // (1-t)^3*a + 3*(1-t)^2*t*c1 + 3*(1-t)*t^2*c2 + t^3*b
-    vector_add(
-        vector_add(
-            vector_scale(a, (1.0 - t).powi(3)),
-            vector_scale(c1, 3.0 * (1.0 - t).powi(2) * t),
-        ),
-        vector_add(
-            vector_scale(c2, 3.0 * (1.0 - t) * t.powi(2)),
-            vector_scale(b, t.powi(3)),
-        ),
-    )
+    let term1 = (1.0 - t).powi(3) * a;
+    let term2 = 3.0 * (1.0 - t).powi(2) * t * c1;
+    let term3 = 3.0 * (1.0 - t) * t.powi(2) * c2;
+    let term4 = t.powi(3) * b;
+    term1 + term2 + term3 + term4
+}
+
+fn cubic_point(a: &Point, b: &Point, c1: &Point, c2: &Point, t: f64) -> Point {
+    (0..a.len())
+        .map(|i| cubic_point_inner(a[i], b[i], c1[i], c2[i], t))
+        .collect()
 }
 
 /// Compute roots of a single dimension (x, y, z) of the
@@ -72,12 +65,32 @@ fn cubic_extrema(s: Point, e: Point, c1: Point, c2: Point) -> Vec<Point> {
         let ts = dim_extrema(s[dim], e[dim], c1[dim], c2[dim]);
         for t in ts {
             if t >= 0.0 && t <= 1.0 {
-                let pt = cubic_point(s.clone(), e.clone(), c1.clone(), c2.clone(), t);
+                let pt = cubic_point(&s, &e, &c1, &c2, t);
                 pts.push(pt);
             }
         }
     }
     pts
+}
+
+/// Apply `processor` to the incoming cbor data and return the result.
+fn handle_cbor<T, F, U>(input: &[u8], processor: F) -> Vec<u8>
+where
+    T: serde::de::DeserializeOwned,
+    U: serde::Serialize,
+    F: Fn(T) -> U,
+{
+    let data = match from_reader::<T, _>(input) {
+        Ok(data) => data,
+        Err(e) => {
+            println!("Error: {:?}", e);
+            return vec![];
+        }
+    };
+    let output = processor(data);
+    let mut buf = Vec::new();
+    into_writer(&output, &mut buf).unwrap();
+    buf
 }
 
 #[derive(Deserialize)]
@@ -90,16 +103,7 @@ struct CubicExtremaArgs {
 
 #[wasm_func]
 pub fn cubic_extrema_func(input: &[u8]) -> Vec<u8> {
-    match from_reader::<CubicExtremaArgs, _>(input) {
-        Ok(input) => {
-            let mut buf = Vec::new();
-            let min = cubic_extrema(input.s, input.e, input.c1, input.c2);
-            into_writer(&min, &mut buf).unwrap();
-            buf
-        }
-        Err(e) => {
-            println!("Error: {:?}", e);
-            vec![]
-        }
-    }
+    handle_cbor(input, |args: CubicExtremaArgs| {
+        cubic_extrema(args.s, args.e, args.c1, args.c2)
+    })
 }
