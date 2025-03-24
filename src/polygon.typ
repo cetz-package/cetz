@@ -11,7 +11,9 @@
 #let from-segments(segments, samples: 10) = {
   import "/src/bezier.typ": cubic-point
   let poly = ()
-  for ((kind, ..pts)) in segments {
+  for s in segments {
+    let kind = s.kind
+    let pts = s.points
     if kind == "cubic" {
       poly += range(0, samples).map(t => {
         cubic-point(..pts, t / (samples - 1))

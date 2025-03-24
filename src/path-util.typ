@@ -4,6 +4,7 @@
 #import "bezier.typ"
 #import "deps.typ"
 #import deps.oxifmt: strfmt
+#let cetz-core = plugin("../cetz-core/cetz_core.wasm")
 
 #let default-samples = 25
 
@@ -12,7 +13,7 @@
 /// - s (segment): Path segment
 /// -> vector
 #let segment-start(s) = {
-  return s.at(1)
+  return s.points.first()
 }
 
 /// Returns the last position vector of a path segment
@@ -20,10 +21,10 @@
 /// - s (segment): Path segment
 /// -> vector
 #let segment-end(s) = {
-  if s.at(0) == "line" {
-    return s.last()
+  if s.kind == "line" {
+    return s.points.last()
   }
-  return s.at(2)
+  return s.points.at(1)
 }
 
 /// Calculates the bounding points for a list of path segments
@@ -31,19 +32,9 @@
 /// - segments (array): List of path segments
 /// -> array
 #let bounds(segments) = {
-  let bounds = ()
-
-  for s in segments {
-    let (kind, ..pts) = s
-    if kind == "line" {
-      bounds += pts
-    } else if kind == "cubic" {
-      bounds.push(pts.at(0))
-      bounds.push(pts.at(1))
-      bounds += bezier.cubic-extrema(..pts)
-    }
-  }
-  return bounds
+  let encoded = cbor.encode(segments)
+  let decoded = cbor(cetz-core.bounds_func(encoded))
+  decoded
 }
 
 /// Calculates the length of a single path segment
@@ -51,7 +42,8 @@
 /// - s (array): Path segment
 /// -> float
 #let _segment-length(s, samples: default-samples) = {
-  let (kind, ..pts) = s
+  let kind = s.kind
+  let pts = s.points
   if kind == "line" {
     let len = 0
     for i in range(1, pts.len()) {
@@ -115,7 +107,7 @@
 /// - distance (float): The distance along the line segment to find the point
 /// -> vector
 #let _point-on-line-segment(segment, distance) = {
-  let pts = segment.slice(1)
+  let pts = segment.points
 
   let (start, end, distance, length) = _points-between-distance(pts, distance)
   return if length == 0 {
@@ -134,7 +126,8 @@
 /// - extrapolate (bool): If true, use linear extrapolation for distances outsides the path
 /// -> vector
 #let _point-on-segment(segment, distance, samples: default-samples, extrapolate: false) = {
-  let (kind, ..pts) = segment
+  let kind = segment.kind
+  let pts = segment.points
   if kind == "line" {
     return _point-on-line-segment(segment, distance)
   } else if kind == "cubic" {
@@ -209,7 +202,8 @@
 /// - rev (bool): If `true` the segment will be reversed, effectively extrapolating the point from its start.
 /// - samples (int): This isn't used.
 #let _extrapolated-point-on-segment(segment, distance, rev: false, samples: 100) = {
-  let (kind, ..pts) = segment
+  let kind = segment.kind
+  let pts = segment.points
   let (pt, dir) = if kind == "line" {
     let (a, b) = if rev {
       (pts.at(0), pts.at(1))
@@ -276,7 +270,8 @@
 /// -> array
 #let direction(segments, t, samples: default-samples, clamp: false) = {
   let (segment, distance, length, ..) = segment-at-t(segments, t, samples: samples, clamp: clamp)
-  let (kind, ..pts) = segment
+  let kind = segment.kind
+  let pts = segment.points
   return (
     _point-on-segment(segment, distance, samples: samples),
     if kind == "line" {
@@ -299,7 +294,7 @@
 /// - points (array): List of points
 /// -> segment
 #let line-segment(points) = {
-  ("line",) + points
+  (kind: "line", points: points)
 }
 
 /// Creates a cubic bezier segment
@@ -310,7 +305,7 @@
 /// - ctrl-b (vector): Control point b
 /// -> segment
 #let cubic-segment(a, b, ctrl-a, ctrl-b) = {
-  ("cubic", a, b, ctrl-a, ctrl-b)
+  (kind: "cubic", points: (a, b, ctrl-a, ctrl-b))
 }
 
 /// Normalize segments by connecting gaps via straight line segments and merging multiple line segments into a single one.
@@ -324,19 +319,20 @@
       new.push(s)
     } else {
       let head = new.last()
-      let (kind, ..pts) = s
+      let kind = s.kind
+      let pts = s.points
 
-      if kind == "line" and head.at(0) == kind {
+      if kind == "line" and head.kind == kind {
         // Merge consecutive line segments
-        if new.last().len() > 0 and new.last().last() == pts.first() {
-          new.last() += pts.slice(1)
+        if new.last().len() > 0 and new.last().points.last() == pts.first() {
+          new.last().points += pts.slice(1)
         } else {
-          new.last() += pts
+          new.last().points += pts
         }
       } else if segment-start(s) != segment-end(head) {
         // Push a new line or line point if the current segment
         // does not start where the previous segment ended
-        if head.at(0) == "line" {
+        if head.kind == "line" {
           new.last().push(pts.first())
         } else {
           new.push(line-segment((segment-end(head), segment-start(s))))
@@ -368,7 +364,8 @@
     })
   }
 
-  let (kind, ..s) = segment
+  let kind = segment.kind
+  let s = segment.points
   if kind == "line" {
     if rev {
       distance *= -1
@@ -395,7 +392,7 @@
       if rev { s.at(1) = snap-to } else { s.at(0) = snap-to }
     }
   }
-  return (kind,) + s
+  return (kind: kind, points: s)
 }
 
 /// Shortens a path's segments by the given distances. The start of the path is shortened first by moving the point along the path towards the end. The end of the path is then shortened in the same way. When a distance is 0 no other calculations are made.
