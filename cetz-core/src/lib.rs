@@ -112,27 +112,34 @@ struct Bounds {
 }
 
 /// Compute the axis-aligned bounding box (aabb).
-fn aabb(bounds: &mut Bounds, points: Vec<Point>) -> Result<(), String> {
+fn aabb(init: Option<Bounds>, points: Vec<Point>) -> Result<Bounds, String> {
+    let mut bounds = match init {
+        Some(init) => init,
+        None => Bounds {
+            low: points.first().unwrap().clone(),
+            high: points.first().unwrap().clone(),
+        },
+    };
     for pt in points {
         if pt.len() != 3 {
             return Err("Point must have 3 dimensions".to_string());
         }
-        for i in 0..pt.len() {
-            if pt[i] < bounds.low[i] {
-                bounds.low[i] = pt[i];
+        for dim in 0..pt.len() {
+            if pt[dim] < bounds.low[dim] {
+                bounds.low[dim] = pt[dim];
             }
-            if bounds.high[i] < pt[i] {
-                bounds.high[i] = pt[i];
+            if bounds.high[dim] < pt[dim] {
+                bounds.high[dim] = pt[dim];
             }
         }
     }
-    Ok(())
+    Ok(bounds)
 }
 
 #[derive(Deserialize)]
 struct AabbArgs {
-    bounds: Bounds,
     points: Vec<Point>,
+    init: Option<Bounds>,
 }
 
 #[wasm_func]
@@ -140,16 +147,10 @@ pub fn aabb_func(input: &[u8]) -> Result<Vec<u8>, String> {
     match from_reader::<AabbArgs, _>(input) {
         Ok(input) => {
             let mut buf = Vec::new();
-            let mut bounds = input.bounds;
-            match aabb(&mut bounds, input.points) {
-                Ok(_) => (),
-                Err(e) => return Err(e),
-            }
+            let bounds = aabb(input.init, input.points)?;
             into_writer(&bounds, &mut buf).unwrap();
             Ok(buf)
         }
-        Err(e) => {
-            Err(e.to_string())
-        }
+        Err(e) => Err(e.to_string()),
     }
 }

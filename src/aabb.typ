@@ -8,13 +8,7 @@
 /// -> aabb
 #let aabb(pts, init: none) = {
   if type(pts) == array {
-    let bounds = if init == none {
-      let pt = pts.at(0)
-      (low: pt, high: pt)
-    } else {
-      init
-    }
-    let args = (bounds: bounds, points: pts)
+    let args = (points: pts, init: init)
     let encoded = cbor.encode(args)
     let bounds = cbor(cetz-core.aabb_func(encoded))
     return bounds
