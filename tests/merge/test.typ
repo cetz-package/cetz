@@ -61,7 +61,7 @@
     let path = drawables.first()
     assert.eq(path.segments.len(), 1,
       message: "Expected a single line segment")
-    assert.eq(path.segments.first().len(), 1+4,
+    assert.eq(path.segments.first().points.len(), 4,
       message: "Expected 4 points")
   })
 })

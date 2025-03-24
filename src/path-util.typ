@@ -212,7 +212,8 @@
 /// - rev (bool): If `true` the segment will be reversed, effectively extrapolating the point from its start.
 /// - samples (int): This isn't used.
 #let _extrapolated-point-on-segment(segment, distance, rev: false, samples: 100) = {
-  let (kind, ..pts) = segment
+  let kind = segment.kind
+  let pts = segment.points
   let (pt, dir) = if kind == "line" {
     let (a, b) = if rev {
       (pts.at(0), pts.at(1))
@@ -279,7 +280,8 @@
 /// -> array
 #let direction(segments, t, samples: default-samples, clamp: false) = {
   let (segment, distance, length, ..) = segment-at-t(segments, t, samples: samples, clamp: clamp)
-  let (kind, ..pts) = segment
+  let kind = segment.kind
+  let pts = segment.points
   return (
     _point-on-segment(segment, distance, samples: samples),
     if kind == "line" {
@@ -381,7 +383,7 @@
       distance *= -1
       s = s.rev()
     }
-    let (start, end, distance, length) = _points-between-distance(pts, distance)
+    let (start, end, distance, length) = _points-between-distance(s, distance)
     if length != 0 {
       s = (vector.lerp(s.at(start), s.at(end), distance / length),) + s.slice(end)
     }
