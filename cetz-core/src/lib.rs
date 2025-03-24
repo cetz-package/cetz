@@ -111,6 +111,7 @@ struct Bounds {
     high: Point,
 }
 
+/// Compute the axis-aligned bounding box (aabb).
 fn aabb(bounds: &mut Bounds, points: Vec<Point>) -> Result<(), String> {
     for pt in points {
         if pt.len() != 3 {
