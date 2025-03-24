@@ -315,8 +315,6 @@
 #let normalize(segments) = {
   let new = ()
   for s in segments {
-    assert(type(s) == dictionary,
-      message: "Expected dictionary, got: " + repr(s))
     if new == () {
       new.push(s)
     } else {
