@@ -18,15 +18,6 @@
     } else {
       init
     }
-    assert(type(bounds) == dictionary, message: "Expected aabb dictionary, got: " + repr(bounds))
-    assert(bounds.low.len() == 3, message: "Expected aabb dictionary with low and high keys, got: " + repr(bounds))
-    assert(bounds.high.len() == 3, message: "Expected aabb dictionary with low and high keys, got: " + repr(bounds))
-    assert(pts.len() > 0, message: "Expected non-empty array of vectors, got: " + repr(pts))
-
-    for pt in pts {
-      assert(type(pt) == array and pt.len() == 3, message: repr(init) + repr(pts))
-    }
-
     let args = (bounds: bounds, points: pts)
     let encoded = cbor.encode(args)
     let bounds = cbor(cetz-core.aabb_func(encoded))

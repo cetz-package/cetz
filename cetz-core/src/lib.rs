@@ -111,35 +111,21 @@ struct Bounds {
     high: Point,
 }
 
-
-#[derive(Deserialize)]
-struct ThreeDPoint {
-    x: f64,
-    y: f64,
-    z: f64,
-}
-
-fn aabb(bounds: &mut Bounds, points: Vec<Point>) {
+fn aabb(bounds: &mut Bounds, points: Vec<Point>) -> Result<(), String> {
     for pt in points {
-        if pt[0] < bounds.low[0] {
-            bounds.low[0] = pt[0];
+        if pt.len() != 3 {
+            return Err("Point must have 3 dimensions".to_string());
         }
-        if pt[0] > bounds.high[0] {
-            bounds.high[0] = pt[0];
-        }
-        if pt[1] < bounds.low[1] {
-            bounds.low[1] = pt[1];
-        }
-        if pt[1] > bounds.high[1] {
-            bounds.high[1] = pt[1];
-        }
-        if pt[2] < bounds.low[2] {
-            bounds.low[2] = pt[2];
-        }
-        if pt[2] > bounds.high[2] {
-            bounds.high[2] = pt[2];
+        for i in 0..pt.len() {
+            if pt[i] < bounds.low[i] {
+                bounds.low[i] = pt[i];
+            }
+            if bounds.high[i] < pt[i] {
+                bounds.high[i] = pt[i];
+            }
         }
     }
+    Ok(())
 }
 
 #[derive(Deserialize)]
@@ -154,7 +140,10 @@ pub fn aabb_func(input: &[u8]) -> Result<Vec<u8>, String> {
         Ok(input) => {
             let mut buf = Vec::new();
             let mut bounds = input.bounds;
-            aabb(&mut bounds, input.points);
+            match aabb(&mut bounds, input.points) {
+                Ok(_) => (),
+                Err(e) => return Err(e),
+            }
             into_writer(&bounds, &mut buf).unwrap();
             Ok(buf)
         }
