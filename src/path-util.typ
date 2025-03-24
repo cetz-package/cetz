@@ -23,7 +23,7 @@
   if s.kind == "line" {
     return s.points.last()
   }
-  return s.points.first()
+  return s.points.at(1)
 }
 
 /// Calculates the bounding points for a list of path segments
@@ -34,12 +34,14 @@
   let bounds = ()
 
   for s in segments {
-    if s.kind == "line" {
-      bounds += s.points
+    let kind = s.kind
+    let pts = s.points
+    if kind == "line" {
+      bounds += pts
     } else if s.kind == "cubic" {
-      bounds.push(s.points.at(0))
-      bounds.push(s.points.at(1))
-      bounds += bezier.cubic-extrema(..s.points)
+      bounds.push(pts.at(0))
+      bounds.push(pts.at(1))
+      bounds += bezier.cubic-extrema(..pts)
     }
   }
   return bounds
@@ -50,17 +52,18 @@
 /// - s (array): Path segment
 /// -> float
 #let _segment-length(s, samples: default-samples) = {
+  let kind = s.kind
   let pts = s.points
-  if s.kind == "line" {
+  if kind == "line" {
     let len = 0
     for i in range(1, pts.len()) {
       len += vector.len(vector.sub(pts.at(i - 1), pts.at(i)))
     }
     return len
-  } else if s.kind == "cubic" {
+  } else if kind == "cubic" {
     return bezier.cubic-arclen(..pts, samples: samples)
   } else {
-    panic("Invalid segment: " + s.kind, s)
+    panic("Invalid segment: " + kind, s)
   }
 }
 
@@ -326,9 +329,10 @@
       new.push(s)
     } else {
       let head = new.last()
+      let kind = s.kind
       let pts = s.points
 
-      if s.kind == "line" and head.kind == s.kind {
+      if kind == "line" and head.kind == kind {
         // Merge consecutive line segments
         if new.last().len() > 0 and new.last().points.last() == pts.first() {
           new.last().points += pts.slice(1)
@@ -371,34 +375,34 @@
   }
 
   let kind = segment.kind
-  let pts = segment.points
+  let s = segment.points
   if kind == "line" {
     if rev {
       distance *= -1
-      pts = pts.rev()
+      s = s.rev()
     }
     let (start, end, distance, length) = _points-between-distance(pts, distance)
     if length != 0 {
-      pts = (vector.lerp(pts.at(start), pts.at(end), distance / length),) + pts.slice(end)
+      s = (vector.lerp(s.at(start), s.at(end), distance / length),) + s.slice(end)
     }
 
     if rev {
-      pts = pts.rev()
+      s = s.rev()
     }
   } else {
-    pts = if mode == "LINEAR" {
-      bezier.cubic-shorten-linear(..pts, distance)
+    s = if mode == "LINEAR" {
+      bezier.cubic-shorten-linear(..s, distance)
     } else {
-      bezier.cubic-shorten(..pts, distance, samples: samples)
+      bezier.cubic-shorten(..s, distance, samples: samples)
     }
 
     // Shortening beziers suffers from rounding or precision errors
     // so we "snap" the curve start/end to the snap-points, if provided.
     if snap-to != none {
-      if rev { pts.at(1) = snap-to } else { pts.at(0) = snap-to }
+      if rev { s.at(1) = snap-to } else { s.at(0) = snap-to }
     }
   }
-  return (kind: kind, points: pts)
+  return (kind: kind, points: s)
 }
 
 /// Shortens a path's segments by the given distances. The start of the path is shortened first by moving the point along the path towards the end. The end of the path is then shortened in the same way. When a distance is 0 no other calculations are made.

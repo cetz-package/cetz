@@ -12,12 +12,14 @@
   import "/src/bezier.typ": cubic-point
   let poly = ()
   for s in segments {
-    if s.kind == "cubic" {
+    let kind = s.kind
+    let pts = s.points
+    if kind == "cubic" {
       poly += range(0, samples).map(t => {
-        cubic-point(..s.points, t / (samples - 1))
+        cubic-point(..pts, t / (samples - 1))
       })
     } else {
-      poly += s.points
+      poly += pts
     }
   }
   return poly
