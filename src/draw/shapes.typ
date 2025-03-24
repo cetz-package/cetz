@@ -1558,6 +1558,64 @@
   },)
 }
 
+/// Create a new path with one or more elments used as sub-paths.
+/// This can be used to create paths with holes.
+///
+/// ```typc example
+/// multi-path({
+///   rect((-1, -1), (2, 2)),
+///   circle((0, 0), radius: .5)
+/// }, fill: blue)
+/// ```
+///
+/// - body (elements): Elements with paths to be merged together.
+/// - name (none,str):
+/// - ..style (style):
+#let multi-path(body, name: none, ..style) = {
+  let style = style.named()
+  return (
+    ctx => {
+      let subpaths = ()
+      for element in util.resolve-body(ctx, body) {
+        let r = process.element(ctx, element)
+        if r != none and "drawables" in r {
+          subpaths += r.drawables.map(d => d.segments).join()
+        }
+      }
+
+      assert.ne(subpaths, (),
+        message: "multi-path must at least contain one element!")
+
+      let (_, first-path-closed, first-path-segments) = subpaths.first()
+
+      let style = styles.resolve(ctx.style, merge: style)
+      let drawables = drawable.path(
+        fill: style.fill, fill-rule: style.fill-rule, stroke: style.stroke,
+        subpaths)
+
+      let (transform, anchors) = anchor_.setup(
+        name => {
+          if name == "centroid" {
+            return polygon_.simple-centroid(polygon_.from-subpath(first-path-segments))
+          }
+        },
+        if first-path-closed != none { ("centroid",) } else { () },
+        name: name,
+        transform: none,
+        path-anchors: true,
+        path: drawables,
+      )
+
+      return (
+        ctx: ctx,
+        name: name,
+        anchors: anchors,
+        drawables: drawables,
+      )
+    },
+  )
+}
+
 /// Merges two or more paths by concattenating their elements. Anchors and visual styling, such as `stroke` and `fill`, are not preserved. When an element's path does not start at the same position the previous element's path ended, a straight line is drawn between them so that the final path is continuous. You must then pay attention to the direction in which element paths are drawn.
 ///
 /// ```typc example
