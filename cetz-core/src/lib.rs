@@ -56,7 +56,7 @@ fn dim_extrema(a: f64, b: f64, c1: f64, c2: f64) -> Vec<f64> {
     vec![t1, t2]
 }
 
-fn cubic_extrema(s: Point, e: Point, c1: Point, c2: Point) -> Vec<Point> {
+fn cubic_extrema(s: Point, e: Point, c1: Point, c2: Point) -> Result<Vec<Point>, String> {
     let mut pts = Vec::new();
     let dims = std::cmp::max(s.len(), e.len());
     for dim in 0..dims {
@@ -68,27 +68,33 @@ fn cubic_extrema(s: Point, e: Point, c1: Point, c2: Point) -> Vec<Point> {
             }
         }
     }
-    pts
+    Ok(pts)
 }
 
 /// Apply `processor` to the incoming cbor data and return the result.
-fn handle_cbor<T, F, U>(input: &[u8], processor: F) -> Vec<u8>
+fn handle_cbor<T, F, U>(input: &[u8], processor: F) -> Result<Vec<u8>, String>
 where
     T: serde::de::DeserializeOwned,
     U: serde::Serialize,
-    F: Fn(T) -> U,
+    F: Fn(T) -> Result<U, String>,
 {
     let data = match from_reader::<T, _>(input) {
         Ok(data) => data,
         Err(e) => {
-            println!("Error: {:?}", e);
-            return vec![];
+            return Err(e.to_string());
         }
     };
-    let output = processor(data);
+    let output = match processor(data) {
+        Ok(output) => output,
+        Err(e) => {
+            return Err(e);
+        }
+    };
     let mut buf = Vec::new();
-    into_writer(&output, &mut buf).unwrap();
-    buf
+    match into_writer(&output, &mut buf) {
+        Ok(_) => Ok(buf),
+        Err(e) => Err(e.to_string()),
+    }
 }
 
 #[derive(Deserialize)]
@@ -100,7 +106,7 @@ struct CubicExtremaArgs {
 }
 
 #[wasm_func]
-pub fn cubic_extrema_func(input: &[u8]) -> Vec<u8> {
+pub fn cubic_extrema_func(input: &[u8]) -> Result<Vec<u8>, String> {
     handle_cbor(input, |args: CubicExtremaArgs| {
         cubic_extrema(args.s, args.e, args.c1, args.c2)
     })
