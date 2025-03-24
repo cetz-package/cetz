@@ -114,7 +114,7 @@
 /// - distance (float): The distance along the line segment to find the point
 /// -> vector
 #let _point-on-line-segment(segment, distance) = {
-  let pts = segment.slice(1)
+  let pts = segment.points
 
   let (start, end, distance, length) = _points-between-distance(pts, distance)
   return if length == 0 {
