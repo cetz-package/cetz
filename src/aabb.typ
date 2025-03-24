@@ -1,4 +1,5 @@
 #import "vector.typ"
+#let cetz-core = plugin("../cetz-core/cetz_core.wasm")
 
 /// Compute an axis aligned bounding box (aabb) for a list of <Type>vectors</Type>.
 ///
@@ -6,33 +7,10 @@
 /// - init (aabb): Initial aabb
 /// -> aabb
 #let aabb(pts, init: none) = {
-  if type(pts) == array {
-    let bounds = if init == none and 0 < pts.len() {
-      let pt = pts.at(0)
-      (low: pt, high: pt)
-    } else {
-      init
-    }
-    for pt in pts {
-      assert(type(pt) == array and pt.len() == 3, message: repr(init) + repr(pts))
-      let (x, y, z) = pt
-
-      let (lo-x, lo-y, lo-z) = bounds.low
-      bounds.low = (calc.min(lo-x, x), calc.min(lo-y, y), calc.min(lo-z, z))
-
-      let (hi-x, hi-y, hi-z) = bounds.high
-      bounds.high = (calc.max(hi-x, x), calc.max(hi-y, y), calc.max(hi-z, z))
-    }
-    return bounds
-  } else if type(pts) == dictionary {
-    if init == none {
-      return pts
-    } else {
-      return aabb((pts.low, pts.high,), init: init)
-    }
-  }
-
-  panic("Expected array of vectors or bbox dictionary, got: " + repr(pts))
+  let args = (pts: pts, init: init)
+  let encoded = cbor.encode(args)
+  let bounds = cbor(cetz-core.aabb_func(encoded))
+  return bounds
 }
 
 /// Get the mid-point of an AABB as vector.
