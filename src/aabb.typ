@@ -3,24 +3,14 @@
 
 /// Compute an axis aligned bounding box (aabb) for a list of <Type>vectors</Type>.
 ///
-/// - pts (array): List of <Type>vector</Type>s or dictionary with keys low and high.
+/// - pts (array): List of <Type>vector</Type>s.
 /// - init (aabb): Initial aabb
 /// -> aabb
 #let aabb(pts, init: none) = {
-  if type(pts) == array {
-    let args = (points: pts, init: init)
-    let encoded = cbor.encode(args)
-    let bounds = cbor(cetz-core.aabb_func(encoded))
-    return bounds
-  } else if type(pts) == dictionary {
-    if init == none {
-      return pts
-    } else {
-      return aabb((pts.low, pts.high,), init: init)
-    }
-  }
-
-  panic("Expected array of vectors or bbox dictionary, got: " + repr(pts))
+  let args = (pts: pts, init: init)
+  let encoded = cbor.encode(args)
+  let bounds = cbor(cetz-core.aabb_func(encoded))
+  return bounds
 }
 
 /// Get the mid-point of an AABB as vector.

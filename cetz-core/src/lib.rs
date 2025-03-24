@@ -112,15 +112,15 @@ struct Bounds {
 }
 
 /// Compute the axis-aligned bounding box (aabb).
-fn aabb(init: Option<Bounds>, points: Vec<Point>) -> Result<Bounds, String> {
+fn aabb(init: Option<Bounds>, pts: Vec<Point>) -> Result<Bounds, String> {
     let mut bounds = match init {
         Some(init) => init,
         None => Bounds {
-            low: points.first().unwrap().clone(),
-            high: points.first().unwrap().clone(),
+            low: pts.first().unwrap().clone(),
+            high: pts.first().unwrap().clone(),
         },
     };
-    for pt in points {
+    for pt in pts {
         if pt.len() != 3 {
             return Err("Point must have 3 dimensions".to_string());
         }
@@ -138,7 +138,7 @@ fn aabb(init: Option<Bounds>, points: Vec<Point>) -> Result<Bounds, String> {
 
 #[derive(Deserialize)]
 struct AabbArgs {
-    points: Vec<Point>,
+    pts: Vec<Point>,
     init: Option<Bounds>,
 }
 
@@ -147,7 +147,7 @@ pub fn aabb_func(input: &[u8]) -> Result<Vec<u8>, String> {
     match from_reader::<AabbArgs, _>(input) {
         Ok(input) => {
             let mut buf = Vec::new();
-            let bounds = aabb(input.init, input.points)?;
+            let bounds = aabb(input.init, input.pts)?;
             into_writer(&bounds, &mut buf).unwrap();
             Ok(buf)
         }

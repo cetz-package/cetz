@@ -81,7 +81,8 @@
     let r = element(ctx, el)
     if r != none {
       if r.bounds != none {
-        bounds = aabb.aabb(r.bounds, init: bounds)
+        let pts = (r.bounds.low, r.bounds.high,)
+        bounds = aabb.aabb(pts, init: bounds)
       }
       ctx = r.ctx
       drawables += r.drawables
