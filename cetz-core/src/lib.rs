@@ -12,18 +12,16 @@ fn round(x: f64, digits: u32) -> f64 {
     (x * factor).round() / factor
 }
 
-fn cubic_point_inner(a: f64, b: f64, c1: f64, c2: f64, t: f64) -> f64 {
-    // (1-t)^3*a + 3*(1-t)^2*t*c1 + 3*(1-t)*t^2*c2 + t^3*b
-    let term1 = (1.0 - t).powi(3) * a;
-    let term2 = 3.0 * (1.0 - t).powi(2) * t * c1;
-    let term3 = 3.0 * (1.0 - t) * t.powi(2) * c2;
-    let term4 = t.powi(3) * b;
-    term1 + term2 + term3 + term4
-}
-
 fn cubic_point(a: &Point, b: &Point, c1: &Point, c2: &Point, t: f64) -> Point {
     (0..a.len())
-        .map(|i| cubic_point_inner(a[i], b[i], c1[i], c2[i], t))
+        .map(|i| {
+            // (1-t)^3*a + 3*(1-t)^2*t*c1 + 3*(1-t)*t^2*c2 + t^3*b
+            let term1 = (1.0 - t).powi(3) * a[i];
+            let term2 = 3.0 * (1.0 - t).powi(2) * t * c1[i];
+            let term3 = 3.0 * (1.0 - t) * t.powi(2) * c2[i];
+            let term4 = t.powi(3) * b[i];
+            term1 + term2 + term3 + term4
+        })
         .collect()
 }
 
