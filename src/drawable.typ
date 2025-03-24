@@ -20,8 +20,8 @@
     assert(type(drawable) != array,
       message: "Expected drawable, got array: " + repr(drawable))
     if drawable.type == "path" {
-      drawable.segments = drawable.segments.map(((kind, ..pts)) => {
-        return (kind,) + util.apply-transform(transform, ..pts)
+      drawable.segments = drawable.segments.map(segment => {
+        return (kind: segment.kind, points: util.apply-transform(transform, ..segment.points))
       })
     } else if drawable.type == "content" {
       drawable.pos = util.apply-transform(transform, drawable.pos)
@@ -42,7 +42,7 @@
 #let path(close: false, fill: none, stroke: none, fill-rule: "non-zero", segments) = {
   let segments = segments
   // Handle case where only one segment has been passed
-  if type(segments.first()) == str {
+  if type(segments) == dictionary {
     segments = (segments,)
   }
 

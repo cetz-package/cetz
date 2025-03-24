@@ -107,12 +107,14 @@
         }
 
         let last-point = none
-        for ((kind, ..rest)) in drawable.segments {
+        for segment in drawable.segments {
+          let kind = segment.kind
+          let rest = segment.points
           if kind == "sub" {
             // TODO: Support sub-paths by converting
             //       Also support move commands.
             //       Refactor path arrays to typst style curves.
-          } else if kind == "cubic" {
+          } else if segment.kind == "cubic" {
             let pts = rest.map(transform-point)
 
             if last-point != pts.at(0) {

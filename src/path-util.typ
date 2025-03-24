@@ -12,7 +12,7 @@
 /// - s (segment): Path segment
 /// -> vector
 #let segment-start(s) = {
-  return s.at(1)
+  return s.points.first()
 }
 
 /// Returns the last position vector of a path segment
@@ -20,10 +20,10 @@
 /// - s (segment): Path segment
 /// -> vector
 #let segment-end(s) = {
-  if s.at(0) == "line" {
-    return s.last()
+  if s.kind == "line" {
+    return s.points.last()
   }
-  return s.at(2)
+  return s.points.first()
 }
 
 /// Calculates the bounding points for a list of path segments
@@ -34,13 +34,12 @@
   let bounds = ()
 
   for s in segments {
-    let (kind, ..pts) = s
-    if kind == "line" {
-      bounds += pts
-    } else if kind == "cubic" {
-      bounds.push(pts.at(0))
-      bounds.push(pts.at(1))
-      bounds += bezier.cubic-extrema(..pts)
+    if s.kind == "line" {
+      bounds += s.points
+    } else if s.kind == "cubic" {
+      bounds.push(s.points.at(0))
+      bounds.push(s.points.at(1))
+      bounds += bezier.cubic-extrema(..s.points)
     }
   }
   return bounds
@@ -299,7 +298,7 @@
 /// - points (array): List of points
 /// -> segment
 #let line-segment(points) = {
-  ("line",) + points
+  (kind: "line", points: points)
 }
 
 /// Creates a cubic bezier segment
@@ -310,7 +309,7 @@
 /// - ctrl-b (vector): Control point b
 /// -> segment
 #let cubic-segment(a, b, ctrl-a, ctrl-b) = {
-  ("cubic", a, b, ctrl-a, ctrl-b)
+  (kind: "cubic", points: (a, b, ctrl-a, ctrl-b))
 }
 
 /// Normalize segments by connecting gaps via straight line segments and merging multiple line segments into a single one.
@@ -320,18 +319,20 @@
 #let normalize(segments) = {
   let new = ()
   for s in segments {
+    assert(type(s) == dictionary,
+      message: "Expected dictionary, got: " + repr(s))
     if new == () {
       new.push(s)
     } else {
       let head = new.last()
-      let (kind, ..pts) = s
+      let pts = s.points
 
-      if kind == "line" and head.at(0) == kind {
+      if s.kind == "line" and head.kind == s.kind {
         // Merge consecutive line segments
-        if new.last().len() > 0 and new.last().last() == pts.first() {
-          new.last() += pts.slice(1)
+        if new.last().len() > 0 and new.last().points.last() == pts.first() {
+          new.last().points += pts.slice(1)
         } else {
-          new.last() += pts
+          new.last().points += pts
         }
       } else if segment-start(s) != segment-end(head) {
         // Push a new line or line point if the current segment
