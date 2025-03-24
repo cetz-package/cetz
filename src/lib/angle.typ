@@ -103,9 +103,9 @@
     label-radius = label-radius * radius / 100%
   }
 
-  let label-pt = vector.add(origin, (calc.cos(mid) * label-radius, calc.sin(mid) * label-radius, 0.0))
-  let start-pt = vector.add(origin, (calc.cos(start) * radius, calc.sin(start) * radius, 0.0))
-  let end-pt = vector.add(origin, (calc.cos(start + delta) * radius, calc.sin(start + delta) * radius, 0.0))
+  let label-pt = vector.add(origin, (calc.cos(mid) * label-radius, calc.sin(mid) * label-radius, 0))
+  let start-pt = vector.add(origin, (calc.cos(start) * radius, calc.sin(start) * radius, 0))
+  let end-pt = vector.add(origin, (calc.cos(start + delta) * radius, calc.sin(start + delta) * radius, 0))
   draw.anchor("origin", origin)
   draw.anchor("label", label-pt)
   draw.anchor("start", start-pt)
@@ -180,7 +180,7 @@
   let va = vector.add(vo, vector.scale(vector.norm(vector.sub(va, vo)), r))
   let vb = vector.add(vo, vector.scale(vector.norm(vector.sub(vb, vo)), r))
   let angle-b = vector.angle2(vo, vb)
-  let vm = vector.add(va, (calc.cos(angle-b) * r, calc.sin(angle-b) * r, 0.0))
+  let vm = vector.add(va, (calc.cos(angle-b) * r, calc.sin(angle-b) * r, 0))
 
   // Label radius can be relative to the distance between origin and the
   // angle corner

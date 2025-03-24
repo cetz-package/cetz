@@ -3,18 +3,14 @@
 
 /// Compute an axis aligned bounding box (aabb) for a list of <Type>vectors</Type>.
 ///
-/// - pts (array): List of <Type>vector</Type>s.
+/// - pts (array): List of <Type>vector</Type>s or dictionary with keys low and high.
 /// - init (aabb): Initial aabb
 /// -> aabb
 #let aabb(pts, init: none) = {
   if type(pts) == array {
     let bounds = if init == none {
-      if pts.len() == 0 {
-        return none
-      } else {
-        let pt = pts.at(0)
-        (low: pt, high: pt)
-      }
+      let pt = pts.at(0)
+      (low: pt, high: pt)
     } else {
       init
     }

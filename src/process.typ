@@ -53,9 +53,9 @@
     element.drawables.push(drawable.path(
       path-util.line-segment((
         bounds.low,
-        (bounds.high.at(0), bounds.low.at(1), 0.0),
+        (bounds.high.at(0), bounds.low.at(1), 0),
         bounds.high,
-        (bounds.low.at(0), bounds.high.at(1), 0.0)
+        (bounds.low.at(0), bounds.high.at(1), 0)
       )),
       stroke: red,
       close: true
