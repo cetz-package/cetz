@@ -65,13 +65,13 @@ fn dim_extrema(a: f64, b: f64, c1: f64, c2: f64) -> Vec<f64> {
     vec![t1, t2]
 }
 
-fn cubic_extrema(s: Point, e: Point, c1: Point, c2: Point) -> Vec<Point> {
+fn cubic_extrema(s: &Point, e: &Point, c1: &Point, c2: &Point) -> Vec<Point> {
     let mut pts = Vec::new();
     let dims = std::cmp::max(s.len(), e.len());
     for dim in 0..dims {
         let ts = dim_extrema(s[dim], e[dim], c1[dim], c2[dim]);
         for t in ts {
-            if t >= 0.0 && t <= 1.0 {
+            if (0.0..=1.0).contains(&t) {
                 let pt = cubic_point(s.clone(), e.clone(), c1.clone(), c2.clone(), t);
                 pts.push(pt);
             }
@@ -93,7 +93,47 @@ pub fn cubic_extrema_func(input: &[u8]) -> Vec<u8> {
     match from_reader::<CubicExtremaArgs, _>(input) {
         Ok(input) => {
             let mut buf = Vec::new();
-            let min = cubic_extrema(input.s, input.e, input.c1, input.c2);
+            let min = cubic_extrema(&input.s, &input.e, &input.c1, &input.c2);
+            into_writer(&min, &mut buf).unwrap();
+            buf
+        }
+        Err(e) => {
+            println!("Error: {:?}", e);
+            vec![]
+        }
+    }
+}
+
+#[derive(Deserialize)]
+struct PathSegment {
+    kind: String,
+    points: Vec<Point>,
+}
+
+fn bounds(segments: &Vec<PathSegment>) -> Vec<Point> {
+    let mut bounds = Vec::new();
+    for segment in segments {
+        if segment.kind == "line" {
+            bounds.extend(segment.points.clone());
+        } else if segment.kind == "cubic" {
+            bounds.push(segment.points[0].clone());
+            bounds.push(segment.points[1].clone());
+            let s = &segment.points[0];
+            let e = &segment.points[1];
+            let c1 = &segment.points[2];
+            let c2 = &segment.points[3];
+            bounds.extend(cubic_extrema(s, e, c1, c2));
+        }
+    }
+    bounds
+}
+
+#[wasm_func]
+pub fn bounds_func(input: &[u8]) -> Vec<u8> {
+    match from_reader::<Vec<PathSegment>, _>(input) {
+        Ok(segments) => {
+            let mut buf = Vec::new();
+            let min = bounds(&segments);
             into_writer(&min, &mut buf).unwrap();
             buf
         }

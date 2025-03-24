@@ -4,6 +4,7 @@
 #import "bezier.typ"
 #import "deps.typ"
 #import deps.oxifmt: strfmt
+#let cetz-core = plugin("../cetz-core/cetz_core.wasm")
 
 #let default-samples = 25
 
@@ -31,20 +32,9 @@
 /// - segments (array): List of path segments
 /// -> array
 #let bounds(segments) = {
-  let bounds = ()
-
-  for s in segments {
-    let kind = s.kind
-    let pts = s.points
-    if kind == "line" {
-      bounds += pts
-    } else if s.kind == "cubic" {
-      bounds.push(pts.at(0))
-      bounds.push(pts.at(1))
-      bounds += bezier.cubic-extrema(..pts)
-    }
-  }
-  return bounds
+  let encoded = cbor.encode(segments)
+  let decoded = cbor(cetz-core.bounds_func(encoded))
+  decoded
 }
 
 /// Calculates the length of a single path segment
