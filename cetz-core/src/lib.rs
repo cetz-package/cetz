@@ -71,7 +71,7 @@ fn cubic_extrema(s: &Point, e: &Point, c1: &Point, c2: &Point) -> Vec<Point> {
     for dim in 0..dims {
         let ts = dim_extrema(s[dim], e[dim], c1[dim], c2[dim]);
         for t in ts {
-            if (0.0..=1.0).contains(&t) {
+            if t >= 0.0 && t <= 1.0 {
                 let pt = cubic_point(s.clone(), e.clone(), c1.clone(), c2.clone(), t);
                 pts.push(pt);
             }
