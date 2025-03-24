@@ -1,6 +1,7 @@
 use ciborium::de::from_reader;
 use ciborium::ser::into_writer;
 use serde::Deserialize;
+use serde::Serialize;
 use wasm_minimal_protocol::*;
 
 initiate_protocol!();
@@ -100,6 +101,65 @@ pub fn cubic_extrema_func(input: &[u8]) -> Vec<u8> {
         Err(e) => {
             println!("Error: {:?}", e);
             vec![]
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+struct Bounds {
+    low: Point,
+    high: Point,
+}
+
+
+#[derive(Deserialize)]
+struct ThreeDPoint {
+    x: f64,
+    y: f64,
+    z: f64,
+}
+
+fn aabb(bounds: &mut Bounds, points: Vec<Point>) {
+    for pt in points {
+        if pt[0] < bounds.low[0] {
+            bounds.low[0] = pt[0];
+        }
+        if pt[0] > bounds.high[0] {
+            bounds.high[0] = pt[0];
+        }
+        if pt[1] < bounds.low[1] {
+            bounds.low[1] = pt[1];
+        }
+        if pt[1] > bounds.high[1] {
+            bounds.high[1] = pt[1];
+        }
+        if pt[2] < bounds.low[2] {
+            bounds.low[2] = pt[2];
+        }
+        if pt[2] > bounds.high[2] {
+            bounds.high[2] = pt[2];
+        }
+    }
+}
+
+#[derive(Deserialize)]
+struct AabbArgs {
+    bounds: Bounds,
+    points: Vec<Point>,
+}
+
+#[wasm_func]
+pub fn aabb_func(input: &[u8]) -> Result<Vec<u8>, String> {
+    match from_reader::<AabbArgs, _>(input) {
+        Ok(input) => {
+            let mut buf = Vec::new();
+            let mut bounds = input.bounds;
+            aabb(&mut bounds, input.points);
+            into_writer(&bounds, &mut buf).unwrap();
+            Ok(buf)
+        }
+        Err(e) => {
+            Err(e.to_string())
         }
     }
 }

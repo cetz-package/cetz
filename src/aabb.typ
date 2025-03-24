@@ -1,4 +1,5 @@
 #import "vector.typ"
+#let cetz-core = plugin("../cetz-core/cetz_core.wasm")
 
 /// Compute an axis aligned bounding box (aabb) for a list of <Type>vectors</Type>.
 ///
@@ -7,22 +8,28 @@
 /// -> aabb
 #let aabb(pts, init: none) = {
   if type(pts) == array {
-    let bounds = if init == none and 0 < pts.len() {
-      let pt = pts.at(0)
-      (low: pt, high: pt)
+    let bounds = if init == none {
+      if pts.len() == 0 {
+        return none
+      } else {
+        let pt = pts.at(0)
+        (low: pt, high: pt)
+      }
     } else {
       init
     }
+    assert(type(bounds) == dictionary, message: "Expected aabb dictionary, got: " + repr(bounds))
+    assert(bounds.low.len() == 3, message: "Expected aabb dictionary with low and high keys, got: " + repr(bounds))
+    assert(bounds.high.len() == 3, message: "Expected aabb dictionary with low and high keys, got: " + repr(bounds))
+    assert(pts.len() > 0, message: "Expected non-empty array of vectors, got: " + repr(pts))
+
     for pt in pts {
       assert(type(pt) == array and pt.len() == 3, message: repr(init) + repr(pts))
-      let (x, y, z) = pt
-
-      let (lo-x, lo-y, lo-z) = bounds.low
-      bounds.low = (calc.min(lo-x, x), calc.min(lo-y, y), calc.min(lo-z, z))
-
-      let (hi-x, hi-y, hi-z) = bounds.high
-      bounds.high = (calc.max(hi-x, x), calc.max(hi-y, y), calc.max(hi-z, z))
     }
+
+    let args = (bounds: bounds, points: pts)
+    let encoded = cbor.encode(args)
+    let bounds = cbor(cetz-core.aabb_func(encoded))
     return bounds
   } else if type(pts) == dictionary {
     if init == none {
