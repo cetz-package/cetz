@@ -52,22 +52,6 @@
   return line-cubic(la, lb, s, e, c1, c2)
 }
 
-/// Finds the intersections of a line and linestrip.
-/// - la (vector): Line start point.
-/// - lb (vector): Line end point.
-/// - v (array): An {{array}} of {{vector}}s that define each point on the linestrip.
-/// -> array
-#let line-linestrip(la, lb, v) = {
-  let pts = ()
-  for i in range(0, v.len() - 1) {
-    let pt = line-line(la, lb, v.at(i), v.at(i + 1))
-    if pt != none {
-      pts.push(pt)
-    }
-  }
-  return pts
-}
-
 /// Finds the intersections of a line and path in 2D. The path should be given as a {{drawable}} of type `path`.
 ///
 /// - la (vector): Line start
@@ -75,22 +59,32 @@
 /// - path (drawable): The path.
 /// -> array
 #let line-path(la, lb, path) = {
-  // TODO: Fix
-  let segment(s) = {
-    let (k, ..v) = s
-    if k == "line" {
-      return line-linestrip(la, lb, v)
-    } else if k == "cubic" {
-      return line-cubic(la, lb, ..v)
-    } else {
-      return ()
+  let pts = ()
+
+  for ((start, closed, segments)) in path.at("segments", default: ()) {
+    let origin = start
+    for ((kind, ..args)) in segments {
+      if kind == "l" {
+        let pt = line-line(la, lb, origin, args.last())
+        if pt != none {
+          pts.push(pt)
+        }
+      } else if kind == "c" {
+        let (c1, c2, e) = args
+        pts += line-cubic(la, lb, origin, e, c1, c2)
+      }
+
+      origin = args.last()
+    }
+
+    if closed {
+      let pt = line-line(la, lb, origin, start)
+      if pt != none {
+        pts.push(pt)
+      }
     }
   }
 
-  let pts = ()
-  for s in path.at("segments", default: ()) {
-    pts += segment(s)
-  }
   return pts
 }
 
@@ -103,23 +97,29 @@
 #let path-path(a, b, samples: 8) = {
   import "bezier.typ": cubic-point
 
-  // Convert segment to vertices by sampling curves
-  let linearize-segment(s) = {
-    let t = s.at(0)
-    if t == "line" {
-      return s.slice(1)
-    } else if t == "cubic" {
-      return range(samples + 1).map(
-        t => cubic-point(..s.slice(1), t/samples)
-      )
-    }
-  }
-
   let pts = ()
-  for s in a.at("segments", default: ()) {
-    let sv = linearize-segment(s)
-    for ai in range(0, sv.len() - 1) {
-      pts += line-path(sv.at(ai), sv.at(ai + 1), b)
+
+  for ((start, closed, segments)) in a.at("segments", default: ()) {
+    let origin = start
+    for ((kind, ..args)) in segments {
+      if kind == "l" {
+        pts += line-path(origin, args.last(), b)
+      } else if kind == "c" {
+        let (c1, c2, e) = args
+        let line-strip = range(samples + 1).map(t => {
+          cubic-point(origin, e, c1, c2, t / samples)
+        })
+
+        for i in range(1, line-strip.len()) {
+          pts += line-path(line-strip.at(i - 1), line-strip.at(i), b)
+        }
+      }
+
+      origin = args.last()
+    }
+
+    if closed {
+      pts += line-path(origin, start, b)
     }
   }
   return pts
