@@ -994,6 +994,7 @@
       drawable.line-strip(
         (anchors.north-west, anchors.north-east,
          anchors.south-east, anchors.south-west),
+        close: true,
         stroke: frame-stroke,
         fill: frame-fill,)
     } else if style.frame == "circle" {

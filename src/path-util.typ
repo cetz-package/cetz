@@ -49,9 +49,9 @@
 
 /// Get the end point of a subpath
 /// -> vector
-#let subpath-end(subpath) = {
+#let subpath-end(subpath, ignore-close-flag: false) = {
   let (origin, closed, segments) = subpath
-  return if closed {
+  return if closed and not ignore-close-flag {
     origin
   } else {
     let (_, ..args) = segments.last()
@@ -159,6 +159,7 @@
         let (c1, c2, e) = args
         length += bezier.cubic-arclen(
           cur, e, c1, c2, samples: number-of-samples(samples))
+        cur = e
       }
 
       sub-lengths.push(length)
@@ -203,7 +204,9 @@
   if reverse {
     distance = total - distance
   }
-  distance = calc.max(0, calc.min(distance, total))
+  if not extrapolate {
+    distance = calc.max(0, calc.min(distance, total))
+  }
 
   let point-on-segment(origin, segment, distance) = {
     let (kind, ..args) = segment
@@ -216,6 +219,9 @@
       let (c1, c2, e) = args
       let arclen = bezier.cubic-arclen(origin, e, c1, c2)
       let t = distance / arclen
+      if not extrapolate {
+        t = calc.min(1, calc.max(t, 0))
+      }
       return (
         bezier.cubic-point(origin, e, c1, c2, t),
         bezier.cubic-derivative(origin, e, c1, c2, t))
@@ -314,6 +320,9 @@
                 mode: "CURVED", samples: auto, snap-to: none) = {
   if type(distance) == array {
     let (start, end) = distance
+    // FIXME: This is not correct. Both shortening have to be applied on
+    // the original path, otherwise percentage-values are wrong for the
+    // second call.
     path = shorten-to(path, start, reverse: reverse, mode: mode, samples: samples, snap-to: snap-to)
     path = shorten-to(path, end, reverse: not reverse, mode: mode, samples: samples, snap-to: snap-to)
     return path
@@ -349,6 +358,27 @@
       ((origin, close, segments),) + path.slice(point.subpath-index + 1)
     } else {
       path.slice(0, point.subpath-index) + ((origin, close, segments),)
+    }
+  }
+  return path
+}
+
+/// Normalize a path
+/// - path (path): Input path
+/// -> path
+#let normalize(path) = {
+  for subpath-index in range(path.len()) {
+    let changed = false
+    let subpath = path.at(subpath-index)
+    let (origin, closed, segments) = subpath
+
+    if closed and subpath-start(subpath) != subpath-end(subpath, ignore-close-flag: true) {
+      segments.push(("l", origin))
+      changed = true
+    }
+
+    if changed {
+      path.at(subpath-index) = (origin, closed, segments)
     }
   }
   return path

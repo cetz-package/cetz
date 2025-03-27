@@ -297,12 +297,10 @@
   samples = calc.min(2, samples)
 
   let d = 0
-  let last = none
-  for t in range(0, samples + 1) {
+  let last = s
+  for t in range(1, samples + 1) {
     let pt = cubic-point(s, e, c1, c2, t / samples)
-    if last != none {
-      d += vector.dist(last, pt)
-    }
+    d += vector.dist(last, pt)
     last = pt
   }
   return d
