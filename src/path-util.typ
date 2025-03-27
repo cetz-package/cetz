@@ -176,7 +176,7 @@
 /// - samples (auto, int): Number of samples to take for curves
 /// -> float Length
 #let length(segments, samples: auto) = {
-  return segment-lengths(segments, samples: samples).map(s => s.sum()).sum()
+  return segment-lengths(segments, samples: samples).map(s => s.sum(default: 0)).sum(default: 0)
 }
 
 /// Get information about a point at a given distance on a path.
@@ -315,7 +315,14 @@
   }
 }
 
+/// Shorte a path on one or both sides
 ///
+/// - path (Path): Path
+/// - distance (number,ratio,array): Distance to shorten the path by
+/// - reverse (boolean): If true, start from the end
+/// - mode ("CURVED", "LINEAR"): Shortening mode for cubic segments
+/// - samples (auto,int): Samples to take for measuring cubic segments
+/// - snap-to (none): TODO
 #let shorten-to(path, distance, reverse: false,
                 mode: "CURVED", samples: auto, snap-to: none) = {
   if type(distance) == array {
