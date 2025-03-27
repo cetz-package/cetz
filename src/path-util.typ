@@ -40,6 +40,25 @@
   return none
 }
 
+/// Get the start point of a subpath
+/// -> vector
+#let subpath-start(subpath) = {
+  let (origin, _, _) = subpath
+  return origin
+}
+
+/// Get the end point of a subpath
+/// -> vector
+#let subpath-end(subpath) = {
+  let (origin, closed, segments) = subpath
+  return if closed {
+    origin
+  } else {
+    let (_, ..args) = segments.last()
+    args.last()
+  }
+}
+
 /// Get the direction at the start of the first path
 /// -> vector
 #let first-subpath-direction(path) = {
@@ -104,7 +123,7 @@
         bounds += args
       } else if kind == "c" {
         let (c1, c2, e) = args
-        bounds += bezier.cubic-extrema(bounds.last(), c1, c2, e)
+        bounds += bezier.cubic-extrema(bounds.last(), e, c1, c2)
         bounds.push(e)
       }
     }
@@ -186,34 +205,13 @@
   }
   distance = calc.max(0, calc.min(distance, total))
 
-  let point-on-line-strip(origin, pts, distance) = {
-    let travelled = 0
-    for pt in pts {
-      let length = vector.dist(origin, pt)
-      if distance >= travelled and distance <= travelled + length {
-        return (
-          if length > 0 {
-            vector.lerp(origin, pt, (distance - travelled) / length)
-          } else {
-            origin
-          },
-          if length != 0 {
-            vector.norm(vector.sub(pt, origin))
-          } else {
-            (1, 0, 0)
-          }
-        )
-      }
-
-      travelled += length
-      origin = pt
-    }
-  }
-
   let point-on-segment(origin, segment, distance) = {
     let (kind, ..args) = segment
     if kind == "l" {
-      return point-on-line-strip(origin, args, distance)
+      let pt = args.last()
+      return (
+        vector.lerp(origin, pt, calc.min(1, distance / vector.dist(origin, pt))),
+        vector.norm(vector.sub(origin, pt)))
     } else if kind == "c" {
       let (c1, c2, e) = args
       let arclen = bezier.cubic-arclen(origin, e, c1, c2)

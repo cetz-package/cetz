@@ -47,21 +47,3 @@
     circle((name: "p", anchor: 1% * i), radius: .1, fill: white)
   }
 })
-
-#test-case({
-  import draw: *
-
-  get-ctx(ctx => {
-    let (ctx, bounds, drawables) = process.element(ctx,
-      merge-path({
-        line((0,0), (1,0))
-        line((1,1), (0,1))
-      }).first())
-
-    let path = drawables.first()
-    assert.eq(path.segments.len(), 1,
-      message: "Expected a single line segment")
-    assert.eq(path.segments.first().len(), 1+4,
-      message: "Expected 4 points")
-  })
-})
