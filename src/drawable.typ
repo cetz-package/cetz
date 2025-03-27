@@ -57,18 +57,22 @@
 #let path(close: false, fill: none, stroke: none, fill-rule: "non-zero", path) = {
   assert.eq(type(path), array)
 
-  let path = path
   for subpath in path {
     assert.eq(subpath.len(), 3)
     let (origin, closed, segments) = subpath
     assert.eq(type(origin), array)
     assert.eq(type(closed), bool)
     assert.eq(type(segments), array)
-    if segments != () {
-      assert(segments.all(s => type(s) == array))
+    for ((kind, ..args)) in segments {
+      if kind == "l" {
+        assert.eq(args.len(), 1)
+      } else if kind == "c" {
+        assert.eq(args.len(), 3)
+      }
     }
   }
 
+  path = path-util.normalize(path)
   return (
     type: "path",
     close: close,
