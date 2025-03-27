@@ -23,6 +23,9 @@
     if drawable.type == "path" {
       drawable.segments = drawable.segments.map(((origin, closed, segments)) => {
         origin = util.apply-transform(transform, origin)
+        if type(segments.first()) != array {
+          panic(origin, segments)
+        }
         segments = segments.map(((kind, ..args)) => {
           if args.len() == 1 {
             (kind, util.apply-transform(transform, ..args))
@@ -54,14 +57,22 @@
 #let path(close: false, fill: none, stroke: none, fill-rule: "non-zero", path) = {
   assert.eq(type(path), array)
 
-  let path = path
   for subpath in path {
     assert.eq(subpath.len(), 3)
-    assert.eq(type(subpath.at(0)), array)
-    assert.eq(type(subpath.at(1)), bool)
-    assert.eq(type(subpath.at(2)), array)
+    let (origin, closed, segments) = subpath
+    assert.eq(type(origin), array)
+    assert.eq(type(closed), bool)
+    assert.eq(type(segments), array)
+    for ((kind, ..args)) in segments {
+      if kind == "l" {
+        assert.eq(args.len(), 1)
+      } else if kind == "c" {
+        assert.eq(args.len(), 3)
+      }
+    }
   }
 
+  path = path-util.normalize(path)
   return (
     type: "path",
     close: close,
@@ -74,12 +85,18 @@
   )
 }
 
-///
+/// Construct a line-strip from a list of points
+/// - points (array): Array of points
+/// - close (bool):
+/// - fill (none,fill):
+/// - stroke (none,stroke):
+/// - fill-rule (str):
+/// -> drawable
 #let line-strip(points, close: false, fill: none, stroke: none, fill-rule: "non-zero") = {
   assert.eq(type(points), array)
 
   return path(
-    ((points.first(), close, ("l", ..points.slice(1))),),
+    ((points.first(), close, points.slice(1).map((pt) => ("l", pt))),),
     stroke: stroke,
     fill: fill,
     fill-rule: fill-rule,
@@ -205,8 +222,7 @@
   }
 
   return path(
-    fill: fill,
-    stroke: stroke,
     ((origin, mode != "OPEN", segments),),
-  )
+    fill: fill,
+    stroke: stroke)
 }

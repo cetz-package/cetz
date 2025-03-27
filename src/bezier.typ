@@ -293,17 +293,14 @@
 /// - c1 (vector): Control point 1
 /// - c2 (vector): Control point 2
 /// -> float
-#let cubic-arclen(s, e, c1, c2, samples: 10) = {
-  samples = calc.min(2, samples)
-
+#let cubic-arclen(s, e, c1, c2, samples: 20) = {
   let d = 0
-  let last = none
-  for t in range(0, samples + 1) {
-    let pt = cubic-point(s, e, c1, c2, t / samples)
-    if last != none {
-      d += vector.dist(last, pt)
-    }
-    last = pt
+  for i in range(1, samples + 1) {
+    let t0 = (i - 1) / samples
+    let t1 = i / samples
+    d += vector.dist(
+      cubic-point(s, e, c1, c2, t0),
+      cubic-point(s, e, c1, c2, t1))
   }
   return d
 }
@@ -353,7 +350,8 @@
       let segment-dist = vector.dist(cubic-point(s, e, c1, c2, t0),
                                      cubic-point(s, e, c1, c2, t1))
       if sum <= d and d <= sum + segment-dist {
-        return t0 + (d - sum) / segment-dist / samples
+        let lambda = (d - sum) / segment-dist
+        return (1 - lambda) * t0 + lambda * t1
       }
       sum += segment-dist
     }

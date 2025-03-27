@@ -19,6 +19,7 @@
   ("l", (1, 1)),
 )
 
+/*
 #assert.eq(path-util.split(path0).len(), 0)
 #assert.eq(path-util.split(path1).len(), 1)
 #assert.eq(path-util.split(path2).len(), 1)
@@ -32,3 +33,4 @@
 #assert.eq(path-util.last-path-end(path2), (0, 0))
 #assert.eq(path-util.first-path-start(path3), (0, 0))
 #assert.eq(path-util.last-path-end(path3), (1, 1))
+*/

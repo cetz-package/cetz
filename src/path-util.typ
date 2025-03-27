@@ -40,6 +40,25 @@
   return none
 }
 
+/// Get the start point of a subpath
+/// -> vector
+#let subpath-start(subpath) = {
+  let (origin, _, _) = subpath
+  return origin
+}
+
+/// Get the end point of a subpath
+/// -> vector
+#let subpath-end(subpath, ignore-close-flag: false) = {
+  let (origin, closed, segments) = subpath
+  return if closed and not ignore-close-flag {
+    origin
+  } else {
+    let (_, ..args) = segments.last()
+    args.last()
+  }
+}
+
 /// Get the direction at the start of the first path
 /// -> vector
 #let first-subpath-direction(path) = {
@@ -104,7 +123,7 @@
         bounds += args
       } else if kind == "c" {
         let (c1, c2, e) = args
-        bounds += bezier.cubic-extrema(bounds.last(), c1, c2, e)
+        bounds += bezier.cubic-extrema(bounds.last(), e, c1, c2)
         bounds.push(e)
       }
     }
@@ -122,7 +141,6 @@
 #let segment-lengths(path, samples: auto) = {
   let cur = none
   let start = none
-
   let lengths = ()
   for ((origin, _, segments)) in path {
     start = origin
@@ -140,6 +158,7 @@
         let (c1, c2, e) = args
         length += bezier.cubic-arclen(
           cur, e, c1, c2, samples: number-of-samples(samples))
+        cur = e
       }
 
       sub-lengths.push(length)
@@ -156,7 +175,7 @@
 /// - samples (auto, int): Number of samples to take for curves
 /// -> float Length
 #let length(segments, samples: auto) = {
-  return segment-lengths(segments, samples: samples).map(s => s.sum()).sum()
+  return segment-lengths(segments, samples: samples).map(s => s.sum(default: 0)).sum(default: 0)
 }
 
 /// Get information about a point at a given distance on a path.
@@ -171,7 +190,11 @@
 ///    - direction (vector) Normalized direction vector
 ///    - subpath-index (int) Index of the subpath
 ///    - segment-index (int) Index of the segment
-#let point-at(path, distance, reverse: false, extrapolate: false) = {
+#let point-at(path, distance, reverse: false, extrapolate: false, samples: auto) = {
+  if samples == auto {
+    samples = number-of-samples(samples)
+  }
+
   let travelled = 0
   // TODO: Implement extrapolation
 
@@ -184,40 +207,23 @@
   if reverse {
     distance = total - distance
   }
-  distance = calc.max(0, calc.min(distance, total))
-
-  let point-on-line-strip(origin, pts, distance) = {
-    let travelled = 0
-    for pt in pts {
-      let length = vector.dist(origin, pt)
-      if distance >= travelled and distance <= travelled + length {
-        return (
-          if length > 0 {
-            vector.lerp(origin, pt, (distance - travelled) / length)
-          } else {
-            origin
-          },
-          if length != 0 {
-            vector.norm(vector.sub(pt, origin))
-          } else {
-            (1, 0, 0)
-          }
-        )
-      }
-
-      travelled += length
-      origin = pt
-    }
+  if not extrapolate {
+    distance = calc.max(0, calc.min(distance, total))
   }
 
   let point-on-segment(origin, segment, distance) = {
     let (kind, ..args) = segment
     if kind == "l" {
-      return point-on-line-strip(origin, args, distance)
+      let pt = args.last()
+      return (
+        vector.lerp(origin, pt, calc.min(1, distance / vector.dist(origin, pt))),
+        vector.norm(vector.sub(origin, pt)))
     } else if kind == "c" {
       let (c1, c2, e) = args
-      let arclen = bezier.cubic-arclen(origin, e, c1, c2)
-      let t = distance / arclen
+      let t = bezier.cubic-t-for-distance(origin, e, c1, c2, distance, samples: samples)
+      if not extrapolate {
+        t = calc.min(1, calc.max(t, 0))
+      }
       return (
         bezier.cubic-point(origin, e, c1, c2, t),
         bezier.cubic-derivative(origin, e, c1, c2, t))
@@ -311,11 +317,21 @@
   }
 }
 
+/// Shorte a path on one or both sides
 ///
+/// - path (Path): Path
+/// - distance (number,ratio,array): Distance to shorten the path by
+/// - reverse (boolean): If true, start from the end
+/// - mode ("CURVED", "LINEAR"): Shortening mode for cubic segments
+/// - samples (auto,int): Samples to take for measuring cubic segments
+/// - snap-to (none): TODO
 #let shorten-to(path, distance, reverse: false,
                 mode: "CURVED", samples: auto, snap-to: none) = {
   if type(distance) == array {
     let (start, end) = distance
+    // FIXME: This is not correct. Both shortening have to be applied on
+    // the original path, otherwise percentage-values are wrong for the
+    // second call.
     path = shorten-to(path, start, reverse: reverse, mode: mode, samples: samples, snap-to: snap-to)
     path = shorten-to(path, end, reverse: not reverse, mode: mode, samples: samples, snap-to: snap-to)
     return path
@@ -351,6 +367,27 @@
       ((origin, close, segments),) + path.slice(point.subpath-index + 1)
     } else {
       path.slice(0, point.subpath-index) + ((origin, close, segments),)
+    }
+  }
+  return path
+}
+
+/// Normalize a path
+/// - path (path): Input path
+/// -> path
+#let normalize(path) = {
+  for subpath-index in range(path.len()) {
+    let changed = false
+    let subpath = path.at(subpath-index)
+    let (origin, closed, segments) = subpath
+
+    if closed and subpath-start(subpath) != subpath-end(subpath, ignore-close-flag: true) {
+      segments.push(("l", origin))
+      changed = true
+    }
+
+    if changed {
+      path.at(subpath-index) = (origin, closed, segments)
     }
   }
   return path

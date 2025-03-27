@@ -641,8 +641,9 @@
       vector.add(origin, (calc.cos(alpha) * rx, calc.sin(alpha) * ry, 0))
     })
 
-    let drawables = drawable.path(
-      (((points.first(), true, ("l", points.slice(1)))),),
+    let drawables = drawable.line-strip(
+      points,
+      close: true,
       fill: style.fill,
       stroke: style.stroke)
 
@@ -990,11 +991,10 @@
       style.fill
     }
     let frame-shape = if style.frame in (none, "rect") {
-      drawable.path(
-        ((anchors.north-west, true,
-          ("l", anchors.north-east,
-            anchors.south-east,
-            anchors.south-west)),),
+      drawable.line-strip(
+        (anchors.north-west, anchors.north-east,
+         anchors.south-east, anchors.south-west),
+        close: true,
         stroke: frame-stroke,
         fill: frame-fill,)
     } else if style.frame == "circle" {
