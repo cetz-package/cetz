@@ -9,7 +9,9 @@ crate-type = ["cdylib"]
 [dependencies]
 ciborium = "0.2.1"
 serde = "1.0.219"
+serde_tuple = "1.1.0"
 wasm-minimal-protocol = "0.1"
+arrayvec = { version = "0.7", features = ["serde"] }
 
 [profile.release]
 lto = true

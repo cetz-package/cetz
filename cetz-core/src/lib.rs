@@ -1,11 +1,14 @@
 use ciborium::de::from_reader;
 use ciborium::ser::into_writer;
+use serde::Serialize;
 use serde::Deserialize;
+use serde_tuple::*;
+use arrayvec::ArrayVec;
 use wasm_minimal_protocol::*;
 
 initiate_protocol!();
 
-type Point = Vec<f64>;
+type Point = ArrayVec<f64, 4>;
 
 fn round(x: f64, digits: u32) -> f64 {
     let factor = 10.0_f64.powi(digits as i32);
@@ -16,8 +19,16 @@ fn vector_add(a: Point, b: Point) -> Point {
     a.iter().zip(b.iter()).map(|(a, b)| a + b).collect()
 }
 
+fn vector_sub(a: Point, b: Point) -> Point {
+    a.iter().zip(b.iter()).map(|(a, b)| a - b).collect()
+}
+
 fn vector_scale(a: Point, b: f64) -> Point {
     a.iter().map(|a| a * b).collect()
+}
+
+fn vector_dist(a: Point, b: Point) -> f64 {
+  vector_sub(a, b).into_iter().map(|x| x * x).sum::<f64>().sqrt()
 }
 
 fn cubic_point(a: Point, b: Point, c1: Point, c2: Point, t: f64) -> Point {
@@ -102,4 +113,86 @@ pub fn cubic_extrema_func(input: &[u8]) -> Vec<u8> {
             vec![]
         }
     }
+}
+
+#[derive(Serialize,Deserialize)]
+#[serde(untagged)]
+enum Segment {
+  Line(String /* "l" */, Point),
+  Cubic(String /* "c" */, Point, Point, Point),
+}
+
+impl Segment {
+  fn end_point(&self) -> Point {
+    match self {
+      Segment::Line(_, p) => p.clone(),
+      Segment::Cubic(_, _c1, _c2, e) => e.clone(),
+    }
+  }
+
+  fn length(&self, origin: Point) -> f64 {
+    match self {
+      Segment::Line(_, p) => vector_dist(origin, p.clone()),
+      Segment::Cubic(_, c1, c2, e) => 0.0, // TODO
+    }
+  }
+}
+
+#[derive(Serialize_tuple, Deserialize_tuple)]
+struct SubPath {
+  origin: Point,
+  closed: bool,
+  segments: Vec<Segment>,
+}
+
+impl SubPath {
+  fn end_point(&self) -> Point {
+    match self.segments.last() {
+      Some(segment) => segment.end_point(),
+      None => self.origin.clone(),
+    }
+  }
+
+  fn normalize(&mut self) {
+    if self.closed {
+      if self.origin != self.end_point() {
+        self.segments.push(Segment::Line("l".to_string(), self.origin.clone()));
+      }
+    }
+  }
+}
+
+#[derive(Serialize_tuple, Deserialize_tuple)]
+struct Path {
+  subpaths: Vec<SubPath>,
+}
+
+impl Path {
+  fn normalize(&mut self) {
+    for subpath in &mut self.subpaths {
+      subpath.normalize()
+    }
+  }
+}
+
+#[derive(Deserialize)]
+struct PathNormalizeArgs {
+  path: Path
+}
+
+#[wasm_func]
+pub fn path_normalize_func(input: &[u8]) -> Vec<u8> {
+  match from_reader::<PathNormalizeArgs, _>(input) {
+    Ok(mut input) => {
+      let mut buf = Vec::new();
+      input.path.normalize();
+      into_writer(&input.path, &mut buf).unwrap();
+      buf
+    }
+    Err(e) => {
+      let mut buf = Vec::new();
+      into_writer(&e.to_string(), &mut buf).unwrap();
+      buf
+    }
+  }
 }
