@@ -5,6 +5,8 @@
 #import "deps.typ"
 #import deps.oxifmt: strfmt
 
+#let cetz-core = plugin("../cetz-core/cetz_core.wasm")
+
 // A path is an array of subpaths.
 // A subpath is a triplet of the form:
 //   (origin : vector, closed : bool, segments : array<segment>)
@@ -367,19 +369,12 @@
 /// - path (path): Input path
 /// -> path
 #let normalize(path) = {
-  for subpath-index in range(path.len()) {
-    let changed = false
-    let subpath = path.at(subpath-index)
-    let (origin, closed, segments) = subpath
-
-    if closed and subpath-start(subpath) != subpath-end(subpath, ignore-close-flag: true) {
-      segments.push(("l", origin))
-      changed = true
-    }
-
-    if changed {
-      path.at(subpath-index) = (origin, closed, segments)
-    }
+  let args = (path: (path,))
+  let encoded = cbor.encode(args)
+  let result = cbor(cetz-core.path_normalize_func(encoded))
+  if type(result) == str {
+    panic("normalize: " + result)
   }
-  return path
+
+  return result.first()
 }
