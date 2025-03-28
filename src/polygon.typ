@@ -8,16 +8,19 @@
 /// - segment (array): List of segments
 /// - samples (int): Number of samples
 /// -> array
-#let from-segments(segments, samples: 10) = {
+#let from-subpath(subpath, samples: 10) = {
   import "/src/bezier.typ": cubic-point
-  let poly = ()
-  for ((kind, ..pts)) in segments {
-    if kind == "cubic" {
+  let (origin, _, segments) = subpath
+
+  let poly = (origin,)
+  for ((kind, ..args)) in segments {
+    if kind == "c" {
+      let (c1, c2, e) = args
       poly += range(0, samples).map(t => {
-        cubic-point(..pts, t / (samples - 1))
+        cubic-point(poly.last(), e, c1, c2, t / (samples - 1))
       })
     } else {
-      poly += pts
+      poly += args
     }
   }
   return poly
