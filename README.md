@@ -107,11 +107,9 @@ To run all tests you can run the `just test` target. You need to have
 [`tytanic`](https://github.com/tingerrr/tytanic/) in your `PATH`: `cargo install tytanic`.
 
 ## Projects using CeTZ
-- [cirCeTZ](https://github.com/fenjalien/cirCeTZ) A port of [circuitikz](https://github.com/circuitikz/circuitikz) to Typst.
 - [conchord](https://github.com/sitandr/conchord) Package for writing lyrics with chords that generates fretboard diagrams using CeTZ.
 - [finite](https://github.com/jneug/typst-finite) Finite is a Typst package for rendering finite automata.
 - [fletcher](https://github.com/Jollywatt/typst-fletcher) Package for drawing commutative diagrams and figures with arrows.
-- [riesketcher](https://github.com/ThatOneCalculator/riesketcher) Package for drawing Riemann sums.
 - [chronos](https://git.kb28.ch/HEL/chronos) Package for drawing sequence diagrams.
 - [circuiteria](https://git.kb28.ch/HEL/circuiteria) Package for drawing circuits.
 - [rivet](https://git.kb28.ch/HEL/rivet-typst) Package for drawing instruction / register diagrams.
