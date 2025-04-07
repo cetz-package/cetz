@@ -60,7 +60,8 @@ You can explore an example gallery of scientific diagrams at [janosh.github.io/d
 For information, see the [online manual](https://cetz-package.github.io/docs).
 
 To use this package, simply add the following code to your document:
-```
+
+```typ
 #import "@preview/cetz:0.3.4"
 
 #cetz.canvas({
