@@ -114,3 +114,4 @@ To run all tests you can run the `just test` target. You need to have
 - [chronos](https://git.kb28.ch/HEL/chronos) Package for drawing sequence diagrams.
 - [circuiteria](https://git.kb28.ch/HEL/circuiteria) Package for drawing circuits.
 - [rivet](https://git.kb28.ch/HEL/rivet-typst) Package for drawing instruction / register diagrams.
+- [plotsy-3d](https://github.com/misskacie/plotsy-3d) Package for rendering 3D objects & plots.
