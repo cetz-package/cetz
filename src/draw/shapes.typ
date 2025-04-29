@@ -635,7 +635,7 @@
     let style = styles.resolve(ctx.style, merge: style, root: "polygon")
 
     let (ctx, origin) = coordinate.resolve(ctx, origin)
-    let (rx, ry) = util.resolve-radius(style.radius)
+    let (rx, ry) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
 
     let points = range(0, sides).map(i => {
       let alpha = angle + 360deg / sides * i
