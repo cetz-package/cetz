@@ -24,7 +24,9 @@
 #let _sort-by-distance(drawables) = {
   return drawables.sorted(key: d => {
     let z = none
-    for ((kind, ..pts)) in d.segments {
+    for segment in d.segments {
+      let kind = segment.kind
+      let pts = segment.points
       pts = pts.map(p => p.at(2))
       z = if z == none {
         calc.max(..pts)
