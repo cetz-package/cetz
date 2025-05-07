@@ -141,7 +141,6 @@
 #let segment-lengths(path, samples: auto) = {
   let cur = none
   let start = none
-
   let lengths = ()
   for ((origin, _, segments)) in path {
     start = origin
@@ -191,7 +190,11 @@
 ///    - direction (vector) Normalized direction vector
 ///    - subpath-index (int) Index of the subpath
 ///    - segment-index (int) Index of the segment
-#let point-at(path, distance, reverse: false, extrapolate: false) = {
+#let point-at(path, distance, reverse: false, extrapolate: false, samples: auto) = {
+  if samples == auto {
+    samples = number-of-samples(samples)
+  }
+
   let travelled = 0
   // TODO: Implement extrapolation
 
@@ -217,8 +220,7 @@
         vector.norm(vector.sub(origin, pt)))
     } else if kind == "c" {
       let (c1, c2, e) = args
-      let arclen = bezier.cubic-arclen(origin, e, c1, c2)
-      let t = distance / arclen
+      let t = bezier.cubic-t-for-distance(origin, e, c1, c2, distance, samples: samples)
       if not extrapolate {
         t = calc.min(1, calc.max(t, 0))
       }

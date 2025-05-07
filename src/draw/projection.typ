@@ -26,9 +26,9 @@
     let z = none
     for ((origin, closed, segments)) in d.segments {
       z = if z == none {
-        calc.max(..origin)
+        calc.max(origin.at(2))
       } else {
-        calc.max(z, ..origin)
+        calc.max(z, origin.at(2))
       }
       for ((kind, ..pts)) in segments {
         pts = pts.map(p => p.at(2))
