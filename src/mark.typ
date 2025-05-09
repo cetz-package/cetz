@@ -270,20 +270,19 @@
 
     let mark = _eval-mark-shape-and-anchors(ctx, mark-fn(style), style)
     let offset = style.at("offset", default: 0)
-    let inset = style.at("inset", default: 0) + offset
-    inset = calc.min(inset, mark.length)
-    let mark-path-length = mark.length - inset
+    let inset = style.at("inset", default: 0)
+    //inset = calc.min(inset, mark.length)
 
     let mark-tip-info = path-util.point-at(
         segments, distance, reverse: is-end)
-    let mark-base-info = if mark-path-length > 0 {
+    let mark-base-info = if mark.length > 0 {
       path-util.point-at(
-          segments, distance + mark-path-length, reverse: is-end)
+          segments, distance + mark.length - inset, reverse: is-end)
     } else {
       mark-tip-info
     }
 
-    let dir = if mark-path-length > 0 {
+    let dir = if mark-base-info.point != mark-tip-info.point {
       vector.sub(mark-base-info.point, mark-tip-info.point)
     } else {
       mark-tip-info.direction
@@ -305,9 +304,11 @@
       harpoon: style.harpoon,
     )
 
+    let offset = mark.offset
+
     // Shorten path to this mark
     if style.shorten-to != none and (style.shorten-to == auto or i <= style.shorten-to) {
-      shorten-distance = distance + mark.length
+      shorten-distance = distance + mark.length - offset
       shorten-pos = mark-base-info.point
     }
 
