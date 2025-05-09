@@ -24,12 +24,19 @@
 #let _sort-by-distance(drawables) = {
   return drawables.sorted(key: d => {
     let z = none
-    for ((kind, ..pts)) in d.segments {
-      pts = pts.map(p => p.at(2))
+    for ((origin, closed, segments)) in d.segments {
       z = if z == none {
-        calc.max(..pts)
+        calc.max(origin.at(2))
       } else {
-        calc.max(z, ..pts)
+        calc.max(z, origin.at(2))
+      }
+      for ((kind, ..pts)) in segments {
+        pts = pts.map(p => p.at(2))
+        z = if z == none {
+          calc.max(..pts)
+        } else {
+          calc.max(z, ..pts)
+        }
       }
     }
     return z
@@ -40,8 +47,12 @@
 // all counter clock-wise ones.
 #let _filter-cw-faces(drawables, mode: "cw") = {
   return drawables.filter(d => {
-    let poly = polygon.from-segments(d.segments)
-    poly.first() != poly.last() or polygon.winding-order(poly) == mode
+    if d.segments != () {
+      let poly = polygon.from-subpath(d.segments.first())
+      poly.first() != poly.last() or polygon.winding-order(poly) == mode
+    } else {
+      d
+    }
   })
 }
 

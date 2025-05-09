@@ -272,13 +272,13 @@
       (bounds.low.at(1), bounds.high.at(1)) = (bounds.high.at(1), bounds.low.at(1))
       let center = aabb.mid(bounds)
       let (width, height, _) = aabb.size(bounds)
-      let path = drawable.path(
-        path-util.line-segment((
+      let path = drawable.line-strip((
           (bounds.low.at(0), bounds.high.at(1)),
           bounds.high,
           (bounds.high.at(0), bounds.low.at(1)),
           bounds.low,
-        )), close: true)
+        ), close: true)
+
       (center, width, height, path)
     } else { (none,) * 4 }
 
