@@ -1655,19 +1655,20 @@
         if r != none {
           ctx = r.ctx
 
-          if join and subpaths.len() > 0 {
+          let drawables = r.drawables.filter(d => not d.hidden)
+          if join and drawables.len() > 0 and subpaths.len() > 0 {
             let (origin, closed, segments) = subpaths.last()
-            let (next-origin, _, next-segments) = r.drawables.first().segments.first()
+            let (next-origin, _, next-segments) = drawables.first().segments.first()
             segments.push(("l", next-origin))
             segments += next-segments
 
             // TODO: Close is not working as expected here
             subpaths.last() = (origin, closed or close, segments)
-            subpaths += r.drawables.slice(1).filter(d => {
+            subpaths += drawables.slice(1).filter(d => {
               d.type == "path"
             }).map(d => d.segments).join()
           } else {
-            subpaths += r.drawables.filter(d => {
+            subpaths += drawables.filter(d => {
               d.type == "path"
             }).map(d => d.segments).join()
           }
