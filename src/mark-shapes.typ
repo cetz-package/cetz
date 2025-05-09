@@ -118,7 +118,7 @@
     create-triangle-tip-and-base-anchor(style, (0, 0), (l - i, 0))
   },
   bar: (style) => {
-    import "/src/draw.typ": *
+    import "/src/draw.typ": line, anchor
 
     let w = style.width
 
@@ -130,6 +130,7 @@
 
     let offset = style.stroke.thickness / 2
     create-tip-and-base-anchor(style, (offset, 0), (offset, 0), respect-stroke-thickness: false)
+    anchor("center", (0, 0))
   },
   ellipse: (style) => {
     import "/src/draw.typ": *
