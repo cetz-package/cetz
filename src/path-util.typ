@@ -324,16 +324,24 @@
 /// - reverse (boolean): If true, start from the end
 /// - mode ("CURVED", "LINEAR"): Shortening mode for cubic segments
 /// - samples (auto,int): Samples to take for measuring cubic segments
-/// - snap-to (none): TODO
+/// - snap-to (none,array): Optional array of points to try to move the shortened segment to
 #let shorten-to(path, distance, reverse: false,
                 mode: "CURVED", samples: auto, snap-to: none) = {
+  let snap-to-threshold = 1e-4
+
+  // Shorten from both sides
   if type(distance) == array {
-    let (start, end) = distance
-    // FIXME: This is not correct. Both shortening have to be applied on
-    // the original path, otherwise percentage-values are wrong for the
-    // second call.
-    path = shorten-to(path, start, reverse: reverse, mode: mode, samples: samples, snap-to: snap-to)
-    path = shorten-to(path, end, reverse: not reverse, mode: mode, samples: samples, snap-to: snap-to)
+    let original-length = length(path)
+    let (start, end) = distance.map(v => {
+      if type(v) == ratio {
+        v * original-length
+      } else {
+        v
+      }
+    })
+
+    path = shorten-to(path, start, reverse: reverse, mode: mode, samples: samples, snap-to: snap-to.first())
+    path = shorten-to(path, end, reverse: not reverse, mode: mode, samples: samples, snap-to: snap-to.last())
     return path
   }
 
@@ -352,6 +360,11 @@
       (new-origin, args) = _shorten-cubic(
         origin, point.previous-point, args, distance,
         reverse: reverse, mode: mode)
+    }
+
+    // Test if we can "snap-to" the snap-to hint given
+    if snap-to != none and args.last() != none and vector.dist(args.last(), snap-to) < snap-to-threshold {
+      args.last() = snap-to
     }
 
     if (point.segment-index == 0) {
