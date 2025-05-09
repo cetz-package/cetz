@@ -38,7 +38,7 @@
   if base == tip { base = vector.add(tip, (1e-8, 0, 0)) }
   let dir = vector.norm(vector.sub(tip, base))
 
-  import "/src/draw.typ": *
+  import "/src/draw.typ": anchor
   anchor("tip", vector.add(tip, vector.scale(dir, style.stroke.thickness / 2)))
   anchor("base", vector.sub(base, vector.scale(dir, style.stroke.thickness / 2)))
 }
@@ -47,7 +47,7 @@
   if base == tip { base = vector.add(tip, (1e-8, 0, 0)) }
   let dir = vector.norm(vector.sub(tip, base))
 
-  import "/src/draw.typ": *
+  import "/src/draw.typ": anchor
   if style.reverse {
     // Since tip and base are now "swapped", we add the stroke thickness to the triangle
     // base. To get smooth looking connections between the triangle tip and a connecting line,
@@ -64,7 +64,7 @@
   if base == tip { base = vector.add(tip, (1e-8, 0, 0)) }
   let dir = vector.norm(vector.sub(tip, base))
 
-  import "/src/draw.typ": *
+  import "/src/draw.typ": anchor
 
   let tip-style = style
   tip-style.length = style.length * (ratio / 100%)
@@ -136,7 +136,7 @@
     create-tip-and-base-anchor(style, (r.at(0), 0), (-r.at(0), 0))
   },
   circle: (style) => {
-    import "/src/draw.typ": *
+    import "/src/draw.typ": arc, circle
 
     let r = calc.min(style.length, style.width) / 2
 
