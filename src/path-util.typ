@@ -157,7 +157,7 @@
 /// - clamp (bool): Clamps the distance to the length of the path, so the function won't panic.
 /// -> dictionary
 /// ---
-/// Returns a {{dictionary}} with the folloing key-value pairs:
+/// Returns a {{dictionary}} with the following key-value pairs:
 /// - index (int): The index of the segment in the given array of segments.
 /// - segment (segment): The found segment.
 /// - travelled (float): The absolute distance travelled along the path to find the segment.
@@ -171,7 +171,7 @@
     t = total * t / 100%
   }
   if not clamp {
-    assert(t >= 0 and t <= total,
+    assert(t >= 0 and t <= total + 1e-10,
       message: strfmt("t is expected to be between 0 and the length of the path ({}), got: {}", total, t))
   }
 

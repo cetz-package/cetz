@@ -90,3 +90,16 @@
 
   wave(line((0,0), (4,0)), segments: 1)
 })
+
+// Bug #873: Some values of segment-length caused
+// assertion failures due to floating point error.
+#test-case(x => {
+  import draw: *
+  wave(line((0,0), (3,0)), segment-length: x)
+}, args: (
+  0.333,
+  1.33,
+  2.5777,
+  0.077777,
+  0.044488,
+))
