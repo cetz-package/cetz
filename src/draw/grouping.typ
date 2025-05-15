@@ -324,6 +324,9 @@
       nested-anchors: true
     )
 
+    // Pass-through shared context data
+    ctx.shared-state = group-ctx.shared-state
+
     return (
       ctx: ctx,
       name: name,
@@ -345,8 +348,9 @@
 
   (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, util.resolve-body(group-ctx, body))
 
-  // Leak nodes
+  // Pass-through nodes and shared context data
   ctx.nodes += group-ctx.nodes
+  ctx.shared-state = group-ctx.shared-state
 
   return (
     ctx: ctx,
@@ -456,6 +460,10 @@
 /// circle((z: 1), fill: blue)
 /// circle((z: 2), fill: green)
 /// ```
+///
+/// You can store shared context data under a key in the `ctx.shared-data`
+/// dictionary. The `ctx.shared-data` dictionary is not scoped by
+/// `group` or `scope` elements and can be used for canvas global state.
 ///
 /// - callback (function): A function that accepts the context dictionary and only returns a new one.
 #let set-ctx(callback) = {

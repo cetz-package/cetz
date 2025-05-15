@@ -1,5 +1,6 @@
 # 0.3.5
 - Fixed a bug where passing a length as radius to a polygon resulted in an error
+- Added `ctx.shared-state`, a context field to share canvas-global state
 
 # 0.3.4
 - Fixed a bug with rendering curves with Typst 0.13.1
