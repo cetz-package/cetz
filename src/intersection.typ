@@ -76,7 +76,8 @@
 /// -> array
 #let line-path(la, lb, path) = {
   let segment(s) = {
-    let (k, ..v) = s
+    let k = s.kind
+    let v = s.points
     if k == "line" {
       return line-linestrip(la, lb, v)
     } else if k == "cubic" {
@@ -104,12 +105,12 @@
 
   // Convert segment to vertices by sampling curves
   let linearize-segment(s) = {
-    let t = s.at(0)
+    let t = s.kind
     if t == "line" {
-      return s.slice(1)
+      return s.points
     } else if t == "cubic" {
       return range(samples + 1).map(
-        t => cubic-point(..s.slice(1), t/samples)
+        t => cubic-point(..s.points, t/samples)
       )
     }
   }
