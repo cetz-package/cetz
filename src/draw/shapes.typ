@@ -1556,7 +1556,7 @@
 ///
 /// ```typc example
 /// multi-path({
-///   rect((-1, -1), (2, 2)),
+///   rect((-1, -1), (2, 2))
 ///   circle((0, 0), radius: .5)
 /// }, fill: blue)
 /// ```
