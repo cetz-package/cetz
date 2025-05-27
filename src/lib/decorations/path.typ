@@ -133,7 +133,8 @@
   }
 
   let first = drawables.first()
-  return (segments: first.segments, close: first.close)
+  let closed = path-util.first-subpath-closed(first.segments)
+  return (segments: first.segments, close: closed)
 }
 
 // Add optional line elements from segments start to mid-path start

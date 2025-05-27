@@ -30,6 +30,16 @@
   }
 }
 
+/// Get if the first subpath is closed
+/// -> boolean
+#let first-subpath-closed(path) = {
+  if path != () {
+    let (_, closed, _) = path.first()
+    return closed
+  }
+  return false
+}
+
 /// Get the start position of the first path
 /// -> vector
 #let first-subpath-start(path) = {
