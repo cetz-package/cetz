@@ -54,7 +54,7 @@
 /// - fill-rule (string): One of "even-odd" or "non-zero".
 /// - stroke (stroke): The stroke of the path.
 /// -> drawable
-#let path(close: false, fill: none, stroke: none, fill-rule: "non-zero", path) = {
+#let path(fill: none, stroke: none, fill-rule: "non-zero", path) = {
   assert.eq(type(path), array)
 
   for subpath in path {
@@ -75,7 +75,6 @@
   path = path-util.normalize(path)
   return (
     type: "path",
-    close: close,
     segments: path,
     fill: fill,
     fill-rule: fill-rule,

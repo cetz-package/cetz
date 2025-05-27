@@ -1168,12 +1168,7 @@
         let p1 = (x1, y1, z1)
         let p2 = (x2, y1, z1)
         let p3 = (x2, y2, z1)
-        drawable.path((path-util.make-subpath(p0, (
-          ("l", p1),
-          ("l", p2),
-          ("l", p3),
-          ("l", p0),
-        ), closed: true),), fill: style.fill, stroke: style.stroke)
+        drawable.line-strip((p0, p1, p2, p3), fill: style.fill, stroke: style.stroke, close: true)
       } else {
         let z = z1
 
@@ -1444,8 +1439,7 @@
       ((curves.first().first(), close, curves.map(((s, e, c1, c2)) => ("c", c1, c2, e))),),
       fill: style.fill,
       fill-rule: style.fill-rule,
-      stroke: style.stroke,
-      close: close)
+      stroke: style.stroke)
 
     let (transform, anchors) = {
       let a = for (i, pt) in pts.enumerate() {
@@ -1521,8 +1515,7 @@
       ((curves.first().first(), close, curves.map(((s, e, c1, c2)) => ("c", c1, c2, e))),),
       fill: style.fill,
       fill-rule: style.fill-rule,
-      stroke: style.stroke,
-      close: close)
+      stroke: style.stroke)
 
     let (transform, anchors) = {
       let a = for (i, pt) in pts.enumerate() {
