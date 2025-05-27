@@ -200,13 +200,12 @@
 ///    - direction (vector) Normalized direction vector
 ///    - subpath-index (int) Index of the subpath
 ///    - segment-index (int) Index of the segment
-#let point-at(path, distance, reverse: false, extrapolate: false, samples: auto) = {
+#let point-at(path, distance, reverse: false, samples: auto) = {
   if samples == auto {
     samples = number-of-samples(samples)
   }
 
   let travelled = 0
-  // TODO: Implement extrapolation
 
   let lengths = segment-lengths(path)
   let total = lengths.map(l => l.sum(default: 0)).sum(default: 0)
@@ -217,9 +216,7 @@
   if reverse {
     distance = total - distance
   }
-  if not extrapolate {
-    distance = calc.max(0, calc.min(distance, total))
-  }
+  distance = calc.max(0, calc.min(distance, total))
 
   let point-on-segment(origin, segment, distance) = {
     let (kind, ..args) = segment
@@ -231,9 +228,8 @@
     } else if kind == "c" {
       let (c1, c2, e) = args
       let t = bezier.cubic-t-for-distance(origin, e, c1, c2, distance, samples: samples)
-      if not extrapolate {
-        t = calc.min(1, calc.max(t, 0))
-      }
+      t = calc.min(1, calc.max(t, 0))
+
       return (
         bezier.cubic-point(origin, e, c1, c2, t),
         bezier.cubic-derivative(origin, e, c1, c2, t))
