@@ -111,15 +111,15 @@
 
   assert(style.anchor in ("tip", "base", "center"))
   let tip = mark.tip
-  let base = mark.base
-  let origin = mark.at(style.anchor)
+  let center = mark.at("center", default: tip)
+  let base = mark.at("base", default: tip)
 
   // Mirror anchors on mark center
   if reverse {
     (tip, base) = (base, tip)
-    origin = vector.sub(mark.center, vector.sub(origin, mark.center))
   }
 
+  let origin = (tip: tip, base: base, center: center).at(style.anchor)
   mark.offset = vector.dist(origin, tip)
 
   let t = (
@@ -271,11 +271,10 @@
     let mark = _eval-mark-shape-and-anchors(ctx, mark-fn(style), style)
     let offset = style.at("offset", default: 0)
     let inset = style.at("inset", default: 0)
-    //inset = calc.min(inset, mark.length)
 
     let mark-tip-info = path-util.point-at(
         segments, distance, reverse: is-end)
-    let mark-base-info = if mark.length > 0 {
+    let mark-base-info = if mark.length != 0 {
       path-util.point-at(
           segments, distance + mark.length - inset, reverse: is-end)
     } else {
@@ -386,7 +385,6 @@
     segments = path-util.shorten-to(
       segments,
       distance,
-      mode: "CURVED",
       samples: style.position-samples,
       snap-to: snap-to)
   }

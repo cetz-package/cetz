@@ -34,8 +34,10 @@
   return calc.sin(angle/2) * (style.stroke.thickness / 2)
 }
 
-#let create-tip-and-base-anchor(style, tip, base, center: none, respect-stroke-thickness: true) = {
-  if base == tip { base = vector.add(tip, (1e-8, 0, 0)) }
+#let create-tip-and-base-anchor(style, tip, base, center: none, respect-stroke-thickness: false) = {
+  if base == auto or base == tip {
+    base = vector.add(tip, (1e-6, 0, 0))
+  }
   let dir = vector.norm(vector.sub(tip, base))
 
   let thickness = if respect-stroke-thickness {
@@ -52,19 +54,23 @@
 }
 
 #let create-triangle-tip-and-base-anchor(style, tip, base, center: none) = {
-  if base == tip { base = vector.add(tip, (1e-8, 0, 0)) }
+  if base == auto or base == tip {
+    base = vector.add(tip, (1e-6, 0, 0))
+  }
   let dir = vector.norm(vector.sub(tip, base))
+  let dist = vector.dist(tip, base)
+  let thickness = calc.min(style.stroke.at("thickness", default: 0), dist) / 2
 
   import "/src/draw.typ": anchor
   if style.reverse {
     // Since tip and base are now "swapped", we add the stroke thickness to the triangle
     // base. To get smooth looking connections between the triangle tip and a connecting line,
     // we do not add the tip-offset.
-    anchor("tip", vector.add(tip, vector.scale(dir, style.stroke.thickness / 2)))
-    anchor("base", base)
+    anchor("tip", tip)
+    anchor("base", vector.sub(base, vector.scale(dir, thickness)))
   } else {
     anchor("tip", vector.add(tip, vector.scale(dir, _calculate-tip-offset(style))))
-    anchor("base", vector.sub(base, vector.scale(dir, style.stroke.thickness / 2)))
+    anchor("base", base)
   }
 }
 
@@ -96,9 +102,9 @@
     import "/src/draw.typ": *
 
     if style.harpoon {
-      line((0,0), (style.length, 0), (style.length, +style.width / 2), close: true)
+      line((0,0), (style.length, 0), (style.length, style.width / 2), close: true)
     } else {
-      line((0,0), (style.length, -style.width / 2), (style.length, +style.width / 2), close: true)
+      line((0,0), (style.length, -style.width / 2), (style.length, style.width / 2), close: true)
     }
 
     create-triangle-tip-and-base-anchor(style, (0, 0), (style.length, 0))
@@ -129,7 +135,7 @@
     }
 
     let offset = style.stroke.thickness / 2
-    create-tip-and-base-anchor(style, (offset, 0), (offset, 0), respect-stroke-thickness: false)
+    create-tip-and-base-anchor(style, (-offset, 0), (offset, 0))
     anchor("center", (0, 0))
   },
   ellipse: (style) => {
@@ -143,7 +149,7 @@
       circle((0, 0), radius: r)
     }
 
-    create-tip-and-base-anchor(style, (r.at(0), 0), (-r.at(0), 0))
+    create-tip-and-base-anchor(style, (r.at(0), 0), (-r.at(0), 0), respect-stroke-thickness: true)
   },
   circle: (style) => {
     import "/src/draw.typ": arc, circle
@@ -156,7 +162,7 @@
       circle((0, 0), radius: r)
     }
 
-    create-tip-and-base-anchor(style, (r, 0), (-r, 0))
+    create-tip-and-base-anchor(style, (r, 0), (-r, 0), respect-stroke-thickness: true)
   },
   bracket: (style) => {
     import "/src/draw.typ": *
@@ -164,13 +170,12 @@
     let (l, w, i) = (style.length, style.width, style.inset)
 
     if style.harpoon {
-      line((-l - i, w / 2), (0, w / 2), (0, 0), fill: none)
+      line((l + i, w / 2), (0, w / 2), (0, 0), fill: none)
     } else {
-      line((-l - i, w / 2), (0, w / 2), (0, -w / 2), (-l - i, -w / 2), fill: none)
+      line((l + i, w / 2), (0, w / 2), (0, -w / 2), (l + i, -w / 2), fill: none)
     }
 
-    let offset = style.stroke.thickness / 2
-    create-tip-and-base-anchor(style, (offset, 0), (offset + 1e-8, 0))
+    create-tip-and-base-anchor(style, (0, 0), (0, 0), respect-stroke-thickness: true)
   },
   diamond: (style) => {
     import "/src/draw.typ": *
@@ -196,7 +201,7 @@
       rect((0, -w / 2), (-l, +w / 2))
     }
 
-    create-tip-and-base-anchor(style, (0, 0), (-l, 0))
+    create-tip-and-base-anchor(style, (0, 0), (-l, 0), respect-stroke-thickness: true)
   },
   hook: (style) => {
     import "/src/draw.typ": *
@@ -213,9 +218,7 @@
       }
     }, fill: none)
 
-    line((0, 0), (l - r, 0))
-
-    create-tip-and-base-anchor(style, (-r, 0), (l - r, 0), center: ((-r + i) / 2, 0), respect-stroke-thickness: false)
+    create-tip-and-base-anchor(style, (-r, 0), (0, 0), center: ((-r + i) / 2, 0))
   },
   // An unfilled mark in the shape of an angle bracket (>).
   straight: (style) => {
@@ -230,7 +233,7 @@
     }
 
     if style.harpoon {
-      create-tip-and-base-anchor(style, (0, 0), (-1e-6, 0), respect-stroke-thickness: false)
+      create-tip-and-base-anchor(style, (0, 0), (0, 0))
     } else {
       create-triangle-tip-and-base-anchor(style, (0, 0), (0, 0))
     }
@@ -254,33 +257,27 @@
     }, ..style)
 
     let offset = style.stroke.thickness / 2
-    create-tip-and-base-anchor(style, (-offset, 0), (-offset - 1e-6, 0), respect-stroke-thickness: false)
+    create-tip-and-base-anchor(style, (-offset, 0), (2 * offset, 0))
   },
   plus: (style) => {
     import "/src/draw.typ": *
-
-    let style = style
-    style.stroke.join = "round"
 
     let (l, w) = (style.length, style.width)
 
     line((-l / 2, 0), (+l / 2, 0))
     line((0, -w / 2), (0, +w / 2))
 
-    create-tip-and-base-anchor(style, (0, 0), (l / 2, 0), respect-stroke-thickness: false)
+    create-tip-and-base-anchor(style, (0, 0), (0, 0))
   },
   x: (style) => {
     import "/src/draw.typ": *
-
-    let style = style
-    style.stroke.join = "round"
 
     let (l, w) = (style.length, style.width)
 
     line((-l / 2, w / 2), (+l / 2, -w / 2))
     line((-l / 2, -w / 2), (+l / 2, +w / 2))
 
-    create-tip-and-base-anchor(style, (0, 0), (0, 0), respect-stroke-thickness: false)
+    create-tip-and-base-anchor(style, (0, 0), (0, 0))
   },
   star: (style) => {
     import "/src/draw.typ": *
@@ -293,7 +290,7 @@
       line((0, 0), (calc.cos(a) * l / 2, calc.sin(a) * w / 2))
     }
 
-    create-tip-and-base-anchor(style, (0, 0), (l / 2, 0), respect-stroke-thickness: false)
+    create-tip-and-base-anchor(style, (0, 0), (0, 0))
   },
 )
 #let names = marks.keys()

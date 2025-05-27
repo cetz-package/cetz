@@ -30,7 +30,7 @@
 #test-case(args => {
   import draw: *
 
-  set-style(mark: (stroke: red))
+  set-style(mark: (stroke: blue))
   line((0,-1.2), (0,+1.2), stroke: green)
   mark((0,  0), (-1,  0), symbol: args.symbol, anchor: "tip")
   line((-1, 2), (3, 2), mark: (start: args.symbol, end: args.symbol, harpoon: true))

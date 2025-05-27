@@ -224,7 +224,7 @@
       let pt = args.last()
       return (
         vector.lerp(origin, pt, calc.min(1, distance / vector.dist(origin, pt))),
-        vector.norm(vector.sub(origin, pt)))
+        vector.norm(vector.sub(pt, origin)))
     } else if kind == "c" {
       let (c1, c2, e) = args
       let t = bezier.cubic-t-for-distance(origin, e, c1, c2, distance, samples: samples)
