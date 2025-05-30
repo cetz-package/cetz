@@ -21,5 +21,8 @@ test *filter: build
 update-test *filter:
   tt update {{filter}}
 
+test-external *filter:
+  ./tests/external-packages.sh
+
 gallery:
   for f in "{{gallery_dir}}"/*.typ; do typst c "$f" "${f/typ/png}"; done
