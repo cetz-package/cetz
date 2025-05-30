@@ -183,7 +183,7 @@
 
 /// Draw elements on the yz-plane with optional x offset.
 ///
-/// All vertices of all elements will be changed in the following way: $\begin{pmatrix} x_\text{argument} \\ x \\ y \end{pmatrix}$, where $x_\text{argument}$ is the x-value given as argument.
+/// All vertices of all elements will be changed in the following way: $\begin{pmatrix} x_\text{argument} \\ y \\ x \end{pmatrix}$, where $x_\text{argument}$ is the x-value given as argument.
 ///
 /// ```typc example
 /// on-yz({
