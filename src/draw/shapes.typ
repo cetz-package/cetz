@@ -1551,6 +1551,70 @@
   },)
 }
 
+/// Create a new path from a SVG-like list of commands.
+///
+/// The following commands are supported
+/// - `("l", pt)` line to `pt`
+/// - `("m", pt)` Move to `pt`
+/// - `("c", ctrl-1, ctrl-2, pt)` Bezier curve to `pt` with control points `ctrl-1` and `ctrl-2`
+/// - `("z")` Close the current path
+#let svg-path(name: none, ..commands-style) = {
+  let style = commands-style.named()
+  let commands = commands-style.pos().map(cmd => {
+    if type(cmd) == str {
+      (cmd,)
+    } else {
+      cmd
+    }
+  })
+  return (ctx => {
+    let paths = ()
+
+    let origin = (0, 0, 0)
+    let current = ()
+    let cursor = (0, 0, 0)
+
+    for ((cmd, ..args)) in commands {
+      if cmd == "h" {
+        cmd = "l"
+        args = ((rel: (args.first(), 0, 0)),)
+      } else if cmd == "v" {
+        cmd = "l"
+        args = ((rel: (0, args.first(), 0)),)
+      }
+
+      (ctx, ..args) = coordinate.resolve(ctx, ..args)
+
+      if cmd == "z" or cmd == "m" {
+        if current != () {
+          paths.push(path-util.make-subpath(origin, current, closed: cmd == "z"))
+        }
+
+        origin = args.at(0, default: (0, 0, 0))
+        current = ()
+      } else if cmd == "l" {
+        current.push(("l", args.first()))
+      } else if cmd == "c" {
+        let (c1, c2, pt) = args
+        current.push(("c", c1, c2, pt))
+      }
+
+      cursor = args.at(-1, default: origin)
+      ctx.prev.pt = cursor
+    }
+
+    let style = styles.resolve(ctx.style, merge: style)
+    let drawables = drawable.path(paths, stroke: style.stroke, fill: style.fill, fill-rule: style.fill-rule)
+
+    return (
+      ctx: ctx,
+      name: name,
+      //anchors: anchors,
+      drawables: drawables,
+    )
+  },)
+}
+
 /// Create a new path with one or more elments used as sub-paths.
 /// This can be used to create paths with holes.
 ///
