@@ -1790,3 +1790,60 @@
     },
   )
 }
+
+/// Draws an axis aligned bounding box around all given points/elements.
+/// Everything else (styling, anchors) is similar to the rect shape.
+///
+/// ```typc example
+/// circle((1, 1), radius: 0.1, fill: blue, name: "c1")
+/// circle((0, 1), radius: 0.1, fill: red, name: "c2")
+/// rect((0, 2), (1, 2.5), name: "r1")
+/// bbox("c1", "c2", "r1", stroke: yellow, padding: 0.1)
+/// ```
+/// - ..pts-style (coordinates,style): Positional two or more coordinates/elements to calculate bounding box of. Accepts style key-value pairs.
+///
+/// ## Styling
+/// The padding attribute can be used to control spacing.
+/// Other attributes are forwarded to the rect shape.
+/// 
+/// ## Anchors
+/// The same as for the rect shape.
+#let bbox(..pts-style) = {
+  let pts = pts-style.pos()
+  let style = pts-style.named()
+
+  let ctx = get-ctx((ctx) => {
+    let more_points = ()
+    for pt in pts {
+      // If objects are given, include all anchors
+      // Skip dictionaries as they break the "in" nodes check
+      if type(pt) != dictionary and pt in ctx.nodes {
+        for anchor in (ctx.nodes.at(pt).anchors)(()) {
+          let temp = pt + "." + anchor
+          more_points.push(temp)
+        }
+      } else {
+        more_points.push(pt)
+      }
+    }
+
+    let style = styles.resolve(ctx.style, merge: style, root: "rect", base: (padding: none))
+
+    let (ctx, ..vecs) = coordinate.resolve(ctx, ..more_points)
+    let bounds = aabb.aabb(vecs)
+    // Resolve padding and convert to canvas units
+    let padding = util.as-padding-dict(style.padding)
+    // Swap top and bottom padding for reasons
+    let temp = padding.top
+    padding.top = padding.bottom
+    padding.bottom = temp
+    for (k, v) in padding {
+      padding.insert(k, util.resolve-number(ctx, v))
+    }
+    let newbounds = aabb.padded(bounds, padding)
+
+    rect(newbounds.low, newbounds.high, ..style)
+  })
+  return ctx
+}
+
