@@ -1,6 +1,7 @@
 use ciborium::de::from_reader;
 use ciborium::ser::into_writer;
 use serde::Deserialize;
+use serde::Serialize;
 use wasm_minimal_protocol::*;
 
 initiate_protocol!();
@@ -110,4 +111,54 @@ pub fn cubic_extrema_func(input: &[u8]) -> Result<Vec<u8>, String> {
     handle_cbor(input, |args: CubicExtremaArgs| {
         cubic_extrema(args.s, args.e, args.c1, args.c2)
     })
+}
+
+#[derive(Serialize, Deserialize)]
+struct Bounds {
+    low: Point,
+    high: Point,
+}
+
+/// Compute the axis-aligned bounding box (aabb).
+fn aabb(init: Option<Bounds>, pts: Vec<Point>) -> Result<Bounds, String> {
+    let mut bounds = match init {
+        Some(init) => init,
+        None => Bounds {
+            low: pts.first().unwrap().clone(),
+            high: pts.first().unwrap().clone(),
+        },
+    };
+    for pt in pts {
+        if pt.len() != 3 {
+            return Err("Point must have 3 dimensions".to_string());
+        }
+        for dim in 0..pt.len() {
+            if pt[dim] < bounds.low[dim] {
+                bounds.low[dim] = pt[dim];
+            }
+            if bounds.high[dim] < pt[dim] {
+                bounds.high[dim] = pt[dim];
+            }
+        }
+    }
+    Ok(bounds)
+}
+
+#[derive(Deserialize)]
+struct AabbArgs {
+    pts: Vec<Point>,
+    init: Option<Bounds>,
+}
+
+#[wasm_func]
+pub fn aabb_func(input: &[u8]) -> Result<Vec<u8>, String> {
+    match from_reader::<AabbArgs, _>(input) {
+        Ok(input) => {
+            let mut buf = Vec::new();
+            let bounds = aabb(input.init, input.pts)?;
+            into_writer(&bounds, &mut buf).unwrap();
+            Ok(buf)
+        }
+        Err(e) => Err(e.to_string()),
+    }
 }
