@@ -35,12 +35,9 @@
     harpoon: false,
     flip: false,
     reverse: false,
-    /// If false, the mark points in the direction of the paths start/end direction.
-    /// Curved paths get shortened linearly.
-    flex: true,
     /// Max. number of samples to use for calculating curve positions
     /// a higher number gives better results but may slow down compilation.
-    position-samples: 30,
+    position-samples: 20,
     /// Index of the mark the path should get shortened to, or auto
     /// to shorten to the last mark. To apply different values per side,
     /// set the default to `0` and to `auto` for the mark you want to

@@ -133,7 +133,8 @@
   }
 
   let first = drawables.first()
-  return (segments: first.segments, close: first.close)
+  let closed = path-util.first-subpath-closed(first.segments)
+  return (segments: first.segments, close: closed)
 }
 
 // Add optional line elements from segments start to mid-path start
@@ -146,19 +147,19 @@
   let mid-last = drawables.last().segments.last()
 
   if add {
-    let start = path-util.segment-start(segments.first())
+    let start = path-util.first-subpath-start(segments)
     start = util.revert-transform(ctx.transform, start)
 
-    let mid-start = path-util.segment-start(mid-first)
+    let mid-start = path-util.subpath-start(mid-first)
     mid-start = util.revert-transform(ctx.transform, mid-start)
     draw.line(start, mid-start, mark: none)
   }
   mid-path;
   if add {
-    let end = path-util.segment-end(segments.last())
+    let end = path-util.last-subpath-end(segments)
     end = util.revert-transform(ctx.transform, end)
 
-    let mid-end = path-util.segment-end(mid-last)
+    let mid-end = path-util.subpath-end(mid-last)
     mid-end = util.revert-transform(ctx.transform, mid-end)
     draw.line(mid-end, end, mark: none)
   }
@@ -184,10 +185,10 @@
   let pts = ()
   let len = path-util.length(segments)
   for i in range(0, n) {
-    let p0 = path-util.point-on-path(segments, calc.max(start,
-      start + inc * i))
-    let p1 = path-util.point-on-path(segments, calc.min(stop,
-      start + inc * (i + 1)))
+    let p0 = path-util.point-at(segments, calc.max(start,
+      start + inc * i)).point
+    let p1 = path-util.point-at(segments, calc.min(stop,
+      start + inc * (i + 1))).point
     if p0 == p1 { continue }
 
     (p0, p1) = util.revert-transform(ctx.transform, p0, p1)
