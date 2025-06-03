@@ -64,7 +64,6 @@
     return pts.first()
   }
 
-
   return if pts.len() == 1 {
     pts.first()
   } else if pts.len() > 1 {
@@ -172,7 +171,9 @@
     if out == none {
       if type(anchor) in (ratio, float, int) {
         assert(path-anchors, message: strfmt("Element '{}' does not support path anchors.", name))
-        out = path-util.point-on-path(path.segments, anchor)
+        let point-info = path-util.point-at(path.segments, anchor)
+        assert.ne(point-info, none)
+        out = point-info.point
       } else if type(anchor) == angle {
         assert(border-anchors, message: strfmt("Element '{}' does not support border anchors.", name))
         out = border(callback("center"), ..radii, path, anchor)

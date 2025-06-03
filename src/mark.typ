@@ -38,7 +38,6 @@
     sep: auto,
     pos: auto,
     offset: auto,
-    flex: auto,
     xy-up: auto,
     z-up: auto,
     shorten-to: auto,
@@ -112,15 +111,15 @@
 
   assert(style.anchor in ("tip", "base", "center"))
   let tip = mark.tip
-  let base = mark.base
-  let origin = mark.at(style.anchor)
+  let center = mark.at("center", default: tip)
+  let base = mark.at("base", default: tip)
 
   // Mirror anchors on mark center
   if reverse {
     (tip, base) = (base, tip)
-    origin = vector.sub(mark.center, vector.sub(origin, mark.center))
   }
 
+  let origin = (tip: tip, base: base, center: center).at(style.anchor)
   mark.offset = vector.dist(origin, tip)
 
   let t = (
@@ -231,8 +230,8 @@
 /// - ctx (context): The canvas context object.
 /// - styles (style): A processed mark styling.
 /// - segments (drawable): The path to place the mark on.
-/// - is-end (bool): TODO
-/// -> dictionary
+/// - is-end (bool): Start from the end of the path
+/// -> dictionary (pt, distance, drawable)
 #let place-mark-on-path(ctx, styles, segments, is-end: false) = {
   if type(styles) != array {
     styles = (styles,)
@@ -241,6 +240,7 @@
   let shorten-distance = 0
   let shorten-pos = none
   let drawables = ()
+
   for (i, style) in styles.enumerate() {
     let is-last = i + 1 == styles.len()
     if style.symbol == none {
@@ -269,69 +269,28 @@
     style = merge-flag(style, "harpoon")
 
     let mark = _eval-mark-shape-and-anchors(ctx, mark-fn(style), style)
+    let offset = style.at("offset", default: 0)
+    let inset = style.at("inset", default: 0)
 
-    let pos = if style.flex {
-      path-util.point-on-path(
-        segments,
-        if distance != 0 {
-          distance * if is-end { -1 } else { 1 }
-        } else {
-          if is-end {
-            100%
-          } else {
-            0%
-          }
-        }, extrapolate: true)
+    let mark-tip-info = path-util.point-at(
+        segments, distance, reverse: is-end)
+    let mark-base-info = if mark.length != 0 {
+      path-util.point-at(
+          segments, distance + mark.length - inset, reverse: is-end)
     } else {
-      let (_, dir) = path-util.direction(
-        segments,
-        if is-end {
-          100%
-        } else {
-          0%
-        },
-        clamp: true)
-      let pt = if is-end {
-        path-util.segment-end(segments.last())
-      } else {
-        path-util.segment-start(segments.first())
-      }
-      vector.sub(pt, vector.scale(vector.norm(dir), distance * if is-end { 1 } else { -1 }))
+      mark-tip-info
     }
-    assert.ne(pos, none,
-      message: "Could not determine mark position")
 
-    let dir = if style.flex {
-      let a = pos
-      let b = path-util.point-on-path(
-        segments,
-        (mark.length + distance) * if is-end { -1 } else { 1 },
-        samples: style.position-samples,
-        extrapolate: true)
-      if b != none and a != b {
-        vector.sub(b, a)
-      } else {
-        let (_, dir) = path-util.direction(
-          segments,
-          distance,
-          clamp: true)
-        vector.scale(dir, if is-end { -1 } else { 1 })
-      }
+    let dir = if mark-base-info.point != mark-tip-info.point {
+      vector.sub(mark-base-info.point, mark-tip-info.point)
     } else {
-      let (_, dir) = path-util.direction(
-        segments,
-        if is-end {
-          100%
-        } else {
-          0%
-        },
-        clamp: true)
-      if dir != none {
-        vector.scale(dir, if is-end { -1 } else { 1 })
-      }
+      mark-tip-info.direction
     }
-    assert.ne(pos, none,
-      message: "Could not determine mark direction")
+    if vector.len(dir) == 0 {
+      dir = (1, 0, 0)
+    }
+
+    let pos = mark-tip-info.point
 
     mark = transform-mark(
       style,
@@ -344,15 +303,12 @@
       harpoon: style.harpoon,
     )
 
-    // Shorten path to this mark
-    let inset = mark.at("inset", default: 0)
-    if style.shorten-to != none and (style.shorten-to == auto or i <= style.shorten-to) {
-      let offset = mark.offset
-      inset += offset
+    let offset = mark.offset
 
-      shorten-distance = distance + mark.length - inset
-      shorten-pos = vector.add(pos,
-        vector.scale(vector.norm(dir), mark.length - inset))
+    // Shorten path to this mark
+    if style.shorten-to != none and (style.shorten-to == auto or i <= style.shorten-to) {
+      shorten-distance = distance + mark.length - offset
+      shorten-pos = mark-base-info.point
     }
 
     drawables += mark.drawables
@@ -426,10 +382,9 @@
     snap-to.last() = pt
   }
   if distance != (0, 0) {
-    segments = path-util.shorten-path(
+    segments = path-util.shorten-to(
       segments,
-      ..distance,
-      mode: if style.flex { "CURVED" } else { "LINEAR" },
+      distance,
       samples: style.position-samples,
       snap-to: snap-to)
   }

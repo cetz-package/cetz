@@ -41,3 +41,9 @@
   polygon((2, 2), 3, name: "p2")
   line("p1", "p2")
 })
+
+#test-case({
+  import cetz.draw: *
+
+  polygon((0, 0), 3, radius: 3cm)
+})

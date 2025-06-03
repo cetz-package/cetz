@@ -1,41 +1,49 @@
 #import "/src/vector.typ"
 #import "/src/matrix.typ"
 #import "/src/util.typ"
-#import "/src/draw.typ": *
+#import "/src/draw.typ"
 #import "/src/coordinate.typ"
 #import "/src/styles.typ"
 
-// Rotates the vector 'ab' around 'a' and scales it to 'len', returns the absolute point 'c'.
-#let _rotate-around(a, b, angle: 90deg, len: auto) = {
-  let rel = vector.sub(b, a)
-  let rotated = util.apply-transform(matrix.transform-rotate-z(angle), rel)
-  let scaled = if len == auto {
-    rotated
-  } else {
-    vector.scale(vector.norm(rotated), len)
-  }
-  return vector.add(a, scaled)
-}
 
 #let brace-default-style = (
-  amplitude: .5,
-  pointiness: 15deg,
-  outer-pointiness: 0deg,
-  content-offset: .3,
+  amplitude: 0.25,
+
+  // Thickness relative to half the amplitude
+  thickness: 0.015cm,
+
+  // Outset of the inner side of the mid spike
+  pointiness: 80%,
+
+  // Draw a tapered brace
+  taper: true,
+
+  // Inset of the outer spike curves
+  outer-inset: 0.5cm,
+  outer-curvyness: 60%,
+
+  // Outset of the inner spike curves
+  inner-outset: 0.2cm,
+  inner-curvyness: 80%,
+
+  // Extra inset applied to both tips of the brace
+  outer-thickness: 0,
+
+  // Vertically flip
   flip: false,
-  stroke: auto,
-  fill: none,
+
+  // Offset to apply to the "content" anchor
+  content-offset: .3cm,
+
+  stroke: none,
+  fill: black,
 )
 
 /// Draw a curly brace between two points.
 ///
 /// ```typc example
 /// cetz.decorations.brace((0,1),(2,1))
-///
-/// cetz.decorations.brace((0,0),(2,0),
-///   pointiness: 45deg, outer-pointiness: 45deg)
-/// cetz.decorations.brace((0,-1),(2,-1),
-///   pointiness: 90deg, outer-pointiness: 90deg)
+/// cetz.decorations.brace((0,0),(2,0), outer-inset: 0)
 /// ```
 ///
 /// - start (coordinate): Start point
@@ -46,11 +54,19 @@
 /// ## Styling
 ///
 /// *Root:* `brace`
-/// - amplitude (number) = 0.5: Sets the height of the brace, from its baseline to its middle tip.
-/// - pointiness (ratio, angle) = 15deg: How pointy the spike should be. `0deg` or `100%` for maximum pointiness, `90deg` or `0%` for minimum.
-/// - outer-pointiness (ratio, angle) = 15deg: How pointy the outer edges should be. `0deg` or `100%` for maximum pointiness (allowing for a smooth transition to a straight line), `90deg` or `0%` for minimum. Setting this to <Type>auto</Type> will use the value set for `pointiness`.
+/// - amplitude (number) = 0.25cm: Sets the height of the brace, from its baseline to its middle tip.
+/// - thickness (number,ratio) = 0.015cm: Thickness of tapered braces (if ratio, relative to half the amplitude).
+/// - pointiness (ratio) = 50%: Thickness of the mid-spice
+/// - taper (boor) = true: Draw a tapered brace
+/// - outer-inset (number,ratio): Inset of the outer curve points
+/// - outer-curvyness (ratio): Curvyness of the outer curves
+/// - inner-outset (number,ratio): Inset of the inner tip curve points
+/// - inner-curvyness (ratio): Curvyness of the inner tip curves
+/// - outer-thickness (number) = 0: Thickness of the outer tips
 /// - content-offset (number) = 0.3: Offset of the `"content"` anchor from the spike of the brace.
 /// - flip (bool) = false: Mirror the brace along the line between start and end.
+///
+/// Use the `fill` style for tapered braces and set `stroke` to none.
 ///
 /// ## Anchors
 /// - **start** Where the brace starts, same as the `start` parameter.
@@ -58,85 +74,120 @@
 /// - **spike** Point of the spike, halfway between `start` and `end` and shifted by `amplitude` towards the pointing direction.
 /// - **content** Point to place content/text at, in front of the spike.
 /// - **center** Center of the enclosing rectangle.
+
 #let brace(start, end, ..style, name: none) = {
-  assert.eq(style.pos().len(), 0,
-    message: "Brace takes no additional positional arugments.")
+  import draw: line, bezier, merge-path, scope, scale, translate, anchor, group
 
-  // Validate coordinates
-  let _ = (start, end).map(coordinate.resolve-system)
+  let lerp(a, b, t) = {
+    t = if type(t) == ratio { t / 100% } else { t }
+    return (1 - t) * a + t * b
+  }
 
-  group(name: name, ctx => {
-    // Resolve all coordinates
-    let (ctx, start, end) = coordinate.resolve(ctx, start, end)
+  let draw-shape(x0, x1, x2, style, is-inner: false) = {
+    let x-dist = x1 - x0
 
-    // Query and resolve style
-    let style = styles.resolve(ctx.style, root: "brace", base: brace-default-style, merge: style.named())
-
-    let amplitude = util.resolve-number(ctx, style.amplitude)
-    let content-offset = util.resolve-number(ctx, style.content-offset)
-    let pointiness = if type(style.pointiness) == ratio {
-      (1 - style.pointiness / 100%) * 90deg
-    } else { style.pointiness }
-    pointiness = calc.max(0deg, calc.min(pointiness, 90deg))
-
-    let outer-pointiness = if type(style.outer-pointiness) == ratio {
-      (1 - style.outer-pointiness / 100%) * 90deg
-    } else { style.outer-pointiness }
-    outer-pointiness = calc.max(0deg, calc.min(outer-pointiness, 90deg)) * -1
-
-    let up = (0, 0, -1)
-    let mid = vector.lerp(start, end, .5)
-
-    let dir = vector.norm(vector.sub(end, start))
-    let normal = vector.cross(dir, up)
+    let height = style.amplitude
+    let pointiness = style.pointiness
+    let thickness = style.thickness * (if is-inner { -1 } else { 1 })
     if style.flip {
-      normal = vector.scale(normal, -1)
-      pointiness *= -1
-      outer-pointiness *= -1
+      height *= -1
+      thickness *= -1
     }
 
-    // Compute tip coordinate
-    let tip = vector.add(mid, vector.scale(normal, calc.abs(amplitude)))
+    let mid = height / 2
 
-    // Measure distance between midpoint on start-end and tip
-    let amplitude = vector.dist(mid, tip)
+    let outer-inset = calc.min(style.outer-inset, x-dist / 2)
+    let outer-curve-slant = 100% - style.outer-curvyness
 
-    // Add anchors
-    anchor("start", start)
-    anchor("end", end)
-    anchor("default", mid)
-    anchor("spike", tip)
+    let inner-outset = calc.min(style.inner-outset, x-dist / 2)
+    let inner-curve-slant = 100% - style.inner-curvyness
 
-    // Offset content anchor
-    anchor("content", vector.add(tip, vector.scale(normal, content-offset)))
+    let outer-thickness = if is-inner {
+      style.outer-thickness
+    } else {
+      0
+    }
+
+    let a   = (x0 + outer-thickness, 0)
+    let a-b = (lerp(x0, x0 + outer-inset, outer-curve-slant), mid + thickness)
+    let b   = (x0 + outer-inset, mid + thickness)
+
+    let c   = (x1 - inner-outset, mid + thickness)
+    let c-d = (lerp(x1, x1 - inner-outset, inner-curve-slant), mid + thickness)
+    let d   = if is-inner {
+      (x1, lerp(mid + thickness, height, pointiness))
+    } else {
+      (x1, height)
+    }
+
+    let d-e = (lerp(x1, x1 + inner-outset, inner-curve-slant), mid + thickness)
+    let e   = (x1 + inner-outset, mid + thickness)
+
+    let f   = (x2 - outer-inset, mid + thickness)
+    let f-g = (lerp(x2, x2 - outer-inset, outer-curve-slant), mid + thickness)
+    let g   = (x2 - outer-thickness, 0)
+
+    if not is-inner {
+      bezier(a, b, a-b, a-b)
+      line(b, c)
+      bezier(c, d, c-d, c-d)
+
+      bezier(d, e, d-e, d-e)
+      line(e, f)
+      bezier(f, g, f-g, f-g)
+    } else {
+      bezier(g, f, f-g, f-g)
+      line(f, e)
+      bezier(e, d, d-e, d-e)
+
+      bezier(d, c, c-d, c-d)
+      line(c, b)
+      bezier(b, a, a-b, a-b)
+    }
+  }
+
+  draw.group(name: name, ctx => {
+    let (_, x0, x1) = coordinate.resolve(ctx, start, end)
+
+    let style = styles.resolve(ctx.style, root: "brace", base: brace-default-style, merge: style.named())
+
+    // Resolve thickness
+    if type(style.thickness) == ratio {
+      style.thickness = style.thickness / 100% * style.amplitude / 2
+    }
+
+    // Resolve relative style keys
+    for key in ("inner-outset", "outer-inset") {
+      if type(style.at(key)) == ratio {
+         style.at(key) = style.at(key) / 50% * vector.dist(x0, x1)
+      }
+    }
+
+    // Resolve length style keys
+    for key in ("inner-outset", "outer-inset", "thickness", "amplitude", "content-offset") {
+      style.at(key) = util.resolve-number(ctx, style.at(key))
+    }
+
+    let width = vector.dist(x0, x1)
+    let angle = vector.angle2(x0, x1)
+
+    draw.set-origin(x0)
+    draw.rotate(angle)
 
     merge-path({
-      let scale-amplitude(v) = {
-        let max = vector.dist(start, end) / 2
-        vector.scale(v, calc.min(amplitude, max))
+      draw-shape(0, width / 2, width, style)
+      if style.taper {
+        draw-shape(0, width / 2, width, style, is-inner: true)
       }
+    }, close: style.taper, stroke: style.stroke, fill: style.fill)
 
-      let rotate-inner(factor) = {
-        vector.rotate-z(normal, pointiness * factor)
-      }
+    anchor("start", (0, 0))
+    anchor("default", (width / 2, 0))
+    anchor("end", (width, 0))
+    anchor("spike", (width / 2, style.amplitude))
+    anchor("content", (width / 2, style.amplitude + style.content-offset))
 
-      let rotate-outer(factor) = {
-        vector.rotate-z(normal, outer-pointiness * factor)
-      }
-
-      let dist = vector.dist(start, tip) + vector.dist(tip, end)
-      let ratio = vector.dist(start, tip) / dist
-      let b = vector.dist(end, tip) / dist
-
-      bezier(start, tip,
-        vector.add(start, scale-amplitude(rotate-outer(+1))),
-        vector.sub(tip,   scale-amplitude(rotate-inner(-1))))
-      bezier(tip, end,
-        vector.sub(tip,   scale-amplitude(rotate-inner(+1))),
-        vector.add(end,   scale-amplitude(rotate-outer(-1))))
-    }, stroke: style.stroke, fill: style.fill)
-
-    move-to(end)
+    draw.move-to(end)
   })
 }
 
@@ -197,6 +248,8 @@
   name: none,
   ..style,
 ) = {
+  import draw: *
+
   // Validate coordinates
   let _ = (start, end).map(coordinate.resolve-system)
 
@@ -330,24 +383,8 @@
     for (name, point) in points {
       anchor(name, point)
     }
-
-    if debug {
-      // Show bezier control points using colored lines
-      line(stroke: purple, a, alc)
-      line(stroke: blue,   d, dlc)
-      line(stroke: olive,  e, elc)
-      line(stroke: red,    c, clc)
-      line(stroke: red,    c, crc)
-      line(stroke: olive,  f, frc)
-      line(stroke: blue,   g, grc)
-      line(stroke: purple, b, brc)
-      // Show all named points
-      for (name, point) in points {
-        content(point, box(fill: luma(240), inset: .5pt, text(style.debug-text-size, raw(name))))
-      }
-    }
   })
 
   // Move to end point so the current position after this is the end position
-  move-to(end)
+  draw.move-to(end)
 }
