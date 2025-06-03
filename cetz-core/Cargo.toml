@@ -2,6 +2,8 @@
 name = "cetz-core"
 version = "0.1.0"
 edition = "2021"
+# To avoid accidentally publishing on crates.io.
+publish = false
 
 [lib]
 crate-type = ["cdylib"]
