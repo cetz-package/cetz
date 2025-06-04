@@ -5,6 +5,7 @@
 - Changed the internal path model to support multiple subpaths
 - Braces are now drawn tapered by default (#828)
 - Brace styling changed, see the documention of `decorations.brace`
+- Added a new element `svg-path` that accepts a list of a subset of SVG commands to construct paths
 
 # 0.3.4
 - Fixed a bug with rendering curves with Typst 0.13.1
