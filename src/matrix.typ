@@ -1,4 +1,6 @@
 #import "vector.typ"
+#import "wasm.typ": call_wasm
+#let cetz-core = plugin("../cetz-core/cetz_core.wasm")
 
 // Global rounding precision
 #let precision = 8
