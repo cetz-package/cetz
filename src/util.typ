@@ -8,6 +8,13 @@
 /// Constant to be used as float rounding error
 #let float-epsilon = 0.000001
 
+/// Promotes an integer to a float.
+/// - x (int,float): The value to promote.
+/// -> float
+#let promote-float(x) = {
+  return if type(x) == int {float(x)} else {x}
+}
+
 /// Multiplies vectors by a transformation matrix. If multiple vectors are given they are returned as an array, if only one vector is given only one will be returned, if a dictionary is given they will be returned in the dictionary with the same keys.
 ///
 /// - transform (matrix,function): The $4 \times 4$ transformation matrix or a function that accepts and returns a vector.
@@ -25,6 +32,11 @@
       vecs.insert(k, t(vec))
     }
   } else {
+    for vec in vecs.pos() {
+      for x in vec {
+        assert(type(x) == float, message: "Vector must contain only floats: " + repr(vec))
+      }
+    }
     vecs = vecs.pos().map(t)
     if vecs.len() == 1 {
       return vecs.first()

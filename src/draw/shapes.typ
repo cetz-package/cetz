@@ -53,6 +53,7 @@
     message: "circle expects one or two points, got " + repr(points))
   assert(points.len() != 2 or "radius" not in style,
     message: "unexpected radius for circle constructed by two points")
+  let points = points.map(util.promote-float)
 
   (ctx => {
     let (center, outer) = if points.len() == 1 {
@@ -90,7 +91,7 @@
       transform: ctx.transform,
       border-anchors: true,
       path-anchors: true,
-      radii: (rx*2, ry*2),
+      radii: (rx*2., ry*2.),
       path: drawables,
     )
 
@@ -132,6 +133,9 @@
 #let circle-through(a, b, c, name: none, anchor: none, ..style) = {
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
   style = style.named()
+  let a = util.promote-float(a)
+  let b = util.promote-float(b)
+  let c = util.promote-float(c)
 
   (a, b, c).map(coordinate.resolve-system)
 
@@ -145,7 +149,7 @@
     let r = vector.dist(a, (cx, cy))
 
     let drawables = drawable.ellipse(
-      cx, cy, 0,
+      cx, cy, 0.,
       r, r,
       fill: style.fill,
       stroke: style.stroke
@@ -522,6 +526,7 @@
   let style = pts-style.named()
 
   assert(pts.len() >= 2, message: "Line must have a minimum of two points")
+  let pts = pts.map(util.promote-float)
 
   // Coordinate check
   let pts-system = pts.map(coordinate.resolve-system)

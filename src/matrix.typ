@@ -1,4 +1,5 @@
 #import "vector.typ"
+#let cetz-core = plugin("../cetz-core/cetz_core.wasm")
 
 // Global rounding precision
 #let precision = 8
@@ -258,7 +259,7 @@
 /// - vec (vector): The vector to multiply
 /// - w (float): The default value for the fourth element of the vector if it is three dimensional.
 /// -> vector
-#let mul4x4-vec3(mat, vec, w: 1) = {
+#let mul4x4-vec3-2(mat, vec, w: 1) = {
   assert(vec.len() <= 4)
 
   let x = vec.at(0)
@@ -271,6 +272,15 @@
     a1 * x + a2 * y + a3 * z + a4 * w,
     b1 * x + b2 * y + b3 * z + b4 * w,
     c1 * x + c2 * y + c3 * z + c4 * w)
+}
+
+#let mul4x4-vec3(mat, vec, w: 1.0) = {
+  // let vec = vec.map(x => if type(x) == int {float(x)} else {x})
+  let mat = mat.map(row => row.map(x => if type(x) == int {float(x)} else {x}))
+
+  let encoded = cbor.encode((mat: mat, vec: vec, w: w))
+  let result = cbor(cetz-core.mul4x4_vec3_func(encoded))
+  return result
 }
 
 // Multiply matrix with vector

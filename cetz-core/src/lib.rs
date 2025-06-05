@@ -162,3 +162,33 @@ pub fn aabb_func(input: &[u8]) -> Result<Vec<u8>, String> {
         Err(e) => Err(e.to_string()),
     }
 }
+
+#[derive(Deserialize)]
+struct Mul4x4Vec3Args {
+    mat: Vec<Point>,
+    vec: Point,
+    w: f64,
+}
+
+fn mul4x4_vec3(mat: Vec<Point>, vec: Point, w: f64) -> Result<Point, String> {
+    assert!(vec.len() <= 4);
+
+    let x = vec[0];
+    let y = vec[1];
+    let z = vec.get(2).unwrap_or(&0.0);
+    let w = vec.get(3).unwrap_or(&w);
+
+    let result = vec!(
+        mat[0][0] * x + mat[0][1] * y + mat[0][2] * z + mat[0][3] * w,
+        mat[1][0] * x + mat[1][1] * y + mat[1][2] * z + mat[1][3] * w,
+        mat[2][0] * x + mat[2][1] * y + mat[2][2] * z + mat[2][3] * w,
+    );
+    Ok(result)
+}
+
+#[wasm_func]
+pub fn mul4x4_vec3_func(input: &[u8]) -> Result<Vec<u8>, String> {
+    handle_cbor(input, |args: Mul4x4Vec3Args| {
+        mul4x4_vec3(args.mat, args.vec, args.w)
+    })
+}

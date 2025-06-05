@@ -57,7 +57,7 @@
 /// - la (vector): Line start
 /// - lb (vector): Line end
 /// - path (drawable): The path.
-/// -> array
+/// -> array<array<float>>
 #let line-path(la, lb, path) = {
   let pts = ()
 
@@ -85,6 +85,7 @@
     }
   }
 
+  pts = pts.map(pt => pt.map(util.promote-float))
   return pts
 }
 

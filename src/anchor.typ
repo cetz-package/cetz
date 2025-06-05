@@ -34,7 +34,7 @@
 /// - y-dist (number): The furthest distance the test line should go in the y direction.
 /// - drawables (drawables): Drawables to test for an intersection against. Ideally should be of type path but all others are ignored.
 /// - angle (angle): The angle to check for a border anchor at.
-/// -> vector,none
+/// -> vector<float>,none
 #let border(center, x-dist, y-dist, drawables, angle) = {
   x-dist += util.float-epsilon
   y-dist += util.float-epsilon
@@ -48,7 +48,7 @@
     (
       center.at(0) + x-dist * calc.cos(angle),
       center.at(1) + y-dist * calc.sin(angle),
-      center.at(2),
+      util.promote-float(center.at(2)),
     )
   )
 
@@ -177,6 +177,9 @@
       } else if type(anchor) == angle {
         assert(border-anchors, message: strfmt("Element '{}' does not support border anchors.", name))
         out = border(callback("center"), ..radii, path, anchor)
+        for o in out {
+          assert(type(o) == float, message: "Border anchor must return floats")
+        }
         assert(out != none, message: strfmt("Element '{}' does not have a border for anchor '{}'.", name, anchor))
       } else {
         panic(strfmt("Unknown anchor '{}' for element '{}'", repr(anchor), name))

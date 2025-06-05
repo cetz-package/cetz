@@ -5,7 +5,7 @@
 ///
 /// - pts (array): List of <Type>vector</Type>s.
 /// - init (aabb): Initial aabb
-/// -> aabb
+/// -> (Vec<f64>, Vec<f64>)
 #let aabb(pts, init: none) = {
   let args = (pts: pts, init: init)
   let encoded = cbor.encode(args)
