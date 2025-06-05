@@ -4,6 +4,7 @@
 #import "matrix.typ"
 #import "vector.typ"
 #import "bezier.typ"
+#let cetz-core = plugin("../cetz-core/cetz_core.wasm")
 
 /// Constant to be used as float rounding error
 #let float-epsilon = 0.000001
@@ -20,24 +21,31 @@
 /// - transform (matrix,function): The $4 \times 4$ transformation matrix or a function that accepts and returns a vector.
 /// - ..vecs (vector): Vectors to get transformed. Only the positional part of the sink is used. A dictionary of vectors can also be passed and all will be transformed.
 /// -> vector,array,dictionary
-#let apply-transform(transform, ..vecs) = {
-  let t = if type(transform) != function {
-    matrix.mul4x4-vec3.with(transform)
-  } else {
-    transform
-  }
-  if type(vecs.pos().first()) == dictionary {
-    vecs = vecs.pos().first()
-    for (k, vec) in vecs {
-      vecs.insert(k, t(vec))
-    }
-  } else {
-    for vec in vecs.pos() {
-      for x in vec {
-        assert(type(x) == float, message: "Vector must contain only floats: " + repr(vec))
+#let apply-transform(mat_or_transform, ..vecs) = {
+  let pos = vecs.pos()
+  let transform = if type(mat_or_transform) != function {
+    let mat = mat_or_transform.map(row => row.map(promote-float))
+
+    // Hot path for mat and non-dictionary.
+    if type(pos.first()) != dictionary {
+      let encoded = cbor.encode((mat: mat, vecs: pos))
+      let vecs = cbor(cetz-core.mul4x4_vecs_func(encoded))
+      if vecs.len() == 1 {
+        return vecs.first()
       }
+      return vecs
     }
-    vecs = vecs.pos().map(t)
+    matrix.mul4x4-vec3.with(mat)
+  } else {
+    mat_or_transform
+  }
+  if type(pos.first()) == dictionary {
+    vecs = pos.first()
+    for (k, vec) in vecs {
+      vecs.insert(k, transform(vec))
+    }
+  } else {
+    vecs = pos.map(transform)
     if vecs.len() == 1 {
       return vecs.first()
     }

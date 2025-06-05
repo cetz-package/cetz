@@ -22,9 +22,6 @@
       message: "Expected drawable, got array: " + repr(drawable))
     if drawable.type == "path" {
       drawable.segments = drawable.segments.map(((origin, closed, segments)) => {
-        for x in origin {
-          assert(type(x) == float, message: "Origin must contain only floats: " + repr(origin))
-        }
         origin = util.apply-transform(transform, origin)
         if type(segments.first()) != array {
           panic(origin, segments)

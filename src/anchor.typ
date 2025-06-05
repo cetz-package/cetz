@@ -177,9 +177,6 @@
       } else if type(anchor) == angle {
         assert(border-anchors, message: strfmt("Element '{}' does not support border anchors.", name))
         out = border(callback("center"), ..radii, path, anchor)
-        for o in out {
-          assert(type(o) == float, message: "Border anchor must return floats")
-        }
         assert(out != none, message: strfmt("Element '{}' does not have a border for anchor '{}'.", name, anchor))
       } else {
         panic(strfmt("Unknown anchor '{}' for element '{}'", repr(anchor), name))

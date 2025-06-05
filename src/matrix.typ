@@ -275,9 +275,6 @@
 }
 
 #let mul4x4-vec3(mat, vec, w: 1.0) = {
-  // let vec = vec.map(x => if type(x) == int {float(x)} else {x})
-  let mat = mat.map(row => row.map(x => if type(x) == int {float(x)} else {x}))
-
   let encoded = cbor.encode((mat: mat, vec: vec, w: w))
   let result = cbor(cetz-core.mul4x4_vec3_func(encoded))
   return result
