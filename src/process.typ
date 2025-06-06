@@ -36,10 +36,12 @@
 
   let name = element.at("name", default: none)
   if name != none {
-    assert.eq(type(name), str,
-      message: "Element name must be a string")
-    assert(not name.contains("."),
-      message: "Invalid name for element '" + element.name + "'; name must not contain '.'")
+    if type(name) != str {
+      panic("Element name must be a string")
+    }
+    if name.contains(".") {
+      panic("Invalid name for element '" + element.name + "'; name must not contain '.'")
+    }
 
     if "anchors" in element {
       ctx.nodes.insert(name, element)

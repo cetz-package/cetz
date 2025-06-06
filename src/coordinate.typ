@@ -68,8 +68,10 @@
   }
 
   // Check if node is known
-  assert(name in ctx.nodes,
-    message: "Unknown element '" + name + "' in elements " + repr(ctx.nodes.keys()))
+  if name not in ctx.nodes {
+    panic("Unknown element '" + name +
+          "' in elements " + repr(ctx.nodes.keys()))
+  }
 
   // Resolve length anchors
   if type(anchor) == length {
