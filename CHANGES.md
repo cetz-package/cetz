@@ -1,10 +1,13 @@
 # 0.3.5
 - Fixed a bug where passing a length as radius to a polygon resulted in an error
 - Added `ctx.shared-state`, a context field to share canvas-global state
-- Removed the `flex` attribute for marks (default to `true`)
+- **BREAKING** Removed the `flex` attribute for marks (default to `true`)
 - Changed the internal path model to support multiple subpaths
 - Braces are now drawn tapered by default (#828)
 - Brace styling changed, see the documention of `decorations.brace`
+- **BREAKING** Removed support for using ratios as canvas lengths. To get back the removed behavior, wrap your canvas in a `layout(ly => canvas(length: ly.width * <ratio>, ...))`
+- Added support for specifying a baseline offset via `canvas(baseline: <coordinate>, ...)`. The canvas switches to an inline `box` as the top-level element if set.
+- Added support for passing a stroke style to the canvas top-level element, see `canvas(stroke: <stroke>, ...)`
 
 # 0.3.4
 - Fixed a bug with rendering curves with Typst 0.13.1

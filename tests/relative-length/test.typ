@@ -18,15 +18,3 @@
   content((1,0), [M])
   content((0,1), [M])
 }))
-
-#box(stroke: 2pt + red, width: 1cm, height: 1cm, canvas(length: 100%, {
-  import draw: *
-
-  rect((0, 0), (1, 1))
-}))
-
-#box(stroke: 2pt + red, width: 2cm, height: 2cm, canvas(length: 100%, {
-  import draw: *
-
-  rect((0, 0), (1, 1))
-}))

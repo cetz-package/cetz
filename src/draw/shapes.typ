@@ -872,10 +872,9 @@
   return (ctx => {
     let body = body
     let style = styles.resolve(ctx.style, merge: style, root: "content")
-    let padding = util.as-padding-dict(style.padding)
-    for (k, v) in padding {
-      padding.insert(k, util.resolve-number(ctx, v))
-    }
+    let padding = util.map-dict(util.as-padding-dict(style.padding), (_, v) => {
+      util.resolve-number(ctx, v)
+    })
 
     let (ctx, a) = coordinate.resolve(ctx, a)
     let b = b
