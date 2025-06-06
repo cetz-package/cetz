@@ -1551,6 +1551,119 @@
   },)
 }
 
+/// Create a new path from a SVG-like list of commands.
+///
+/// The following commands are supported (uppercase command names use absolute coordinates, lowercase use relative coordinates)
+/// - `("l", pt)` line to `pt`
+/// - `("h", num)` Horizontal line
+/// - `("v", num)` Vertical line
+/// - `("m", pt)` Move to `pt`
+/// - `("c", ctrl-1, ctrl-2, pt)` Cubic bezier curve to `pt` with control points `ctrl-1` and `ctrl-2`
+/// - `("q", ctrl, pt)` Quadratiuc bezier curve
+/// - `("z")` Close the current path
+#let svg-path(name: none, anchor: none, ..commands-style) = {
+  let style = commands-style.named()
+  let commands = commands-style.pos().map(cmd => {
+    if type(cmd) == str {
+      (cmd,)
+    } else {
+      cmd
+    }
+  })
+  return (ctx => {
+    let paths = ()
+
+    let origin = (0, 0, 0)
+    let current = ()
+
+    for ((cmd, ..args)) in commands {
+      assert(cmd in ("m", "M", "l", "L", "c", "C", "h", "H", "v", "V", "z", "Z", "q", "Q"),
+        message: "Unknown svg-path command: " + repr(cmd))
+
+      let is-relative = cmd in ("m", "l", "c", "h", "v")
+      let wrap-coordinate = if is-relative {
+        x => (rel: x)
+      } else {
+        x => x
+      }
+
+      if cmd in ("h", "H") {
+        assert.eq(args.len(), 1)
+        let (x, ..rest) = args
+        args = ((x, 0.0, 0.0),)
+        cmd = if cmd == "h" { "l" } else { "L" }
+      } else if cmd in ("v", "V") {
+        assert.eq(args.len(), 1)
+        let (y, ..rest) = args
+        args = ((0.0, y, 0.0),)
+        cmd = if cmd == "v" { "l" } else { "L" }
+      }
+
+      (ctx, ..args) = coordinate.resolve(ctx, ..args.map(wrap-coordinate))
+
+      if cmd in ("z", "Z") {
+        assert.eq(args.len(), 0)
+        if current != () {
+          paths.push(path-util.make-subpath(origin, current, closed: cmd == "z"))
+        }
+
+        current = ()
+      }
+
+      if cmd in ("m", "M", "l", "L") {
+        if cmd in ("m", "M") {
+          assert.eq(args.len(), 1)
+          origin = args.at(0, default: (0, 0, 0))
+          args.pop()
+        }
+
+        current += args.map(pt => ("l", pt))
+      } else if cmd in ("c", "C") {
+        assert.eq(args.len(), 3)
+        let (c1, c2, pt) = args
+        current.push(("c", c1, c2, pt))
+      } else if cmd in ("q", "Q") {
+        assert.eq(args.len(), 2)
+        let (c1, pt) = args
+        let (_, pt, c1, c2) = bezier_.quadratic-to-cubic(ctx.prev.pt, pt, c1)
+        current.push(("c", c1, c2, pt))
+      }
+    }
+
+    if current != () {
+      paths.push(path-util.make-subpath(origin, current, closed: false))
+    }
+
+    let style = styles.resolve(ctx.style, merge: style)
+    let drawables = drawable.path(paths, stroke: style.stroke, fill: style.fill, fill-rule: style.fill-rule)
+
+    let (transform, anchors) = anchor_.setup(
+      (_) => none,
+      (),
+      default: none,
+      name: name,
+      offset-anchor: anchor,
+      transform: ctx.transform,
+      //border-anchors: true,
+      path-anchors: true,
+      path: drawables,
+    )
+
+    if mark_.check-mark(style.mark) {
+      drawables = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
+    } else {
+      drawables = drawable.apply-transform(transform, drawables)
+    }
+
+    return (
+      ctx: ctx,
+      name: name,
+      anchors: anchors,
+      drawables: drawables,
+    )
+  },)
+}
+
 /// Create a new path with one or more elments used as sub-paths.
 /// This can be used to create paths with holes.
 ///
