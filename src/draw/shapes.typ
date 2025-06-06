@@ -613,8 +613,6 @@
 /// *Root*: `polygon`
 /// - radius (number) = 1: Radius of the polygon
 #let polygon(origin, sides, angle: 0deg, name: none, anchor: none, ..style) = {
-  coordinate.resolve-system(origin)
-
   assert(type(sides) == int and sides >= 3,
     message: "Invalid number of sides: " + repr(sides))
 
