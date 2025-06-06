@@ -6,8 +6,9 @@
 - Braces are now drawn tapered by default (#828)
 - Brace styling changed, see the documention of `decorations.brace`
 - **BREAKING** Removed support for using ratios as canvas lengths. To get back the removed behavior, wrap your canvas in a `layout(ly => canvas(length: ly.width * <ratio>, ...))`
-- Added support for specifying a baseline offset via `canvas(baseline: <coordinate>, ...)`. The canvas switches to an inline `box` as the top-level element if set.
+- Added support for specifying a baseline offset via `canvas(baseline: <coordinate>, ...)`. The canvas switches to an inline `box` as the top-level element if set
 - Added support for passing a stroke style to the canvas top-level element, see `canvas(stroke: <stroke>, ...)`
+- Added support for user-defined coordinate systems. See `register-coordinate-resolver(<callback>)`
 
 # 0.3.4
 - Fixed a bug with rendering curves with Typst 0.13.1

@@ -248,12 +248,7 @@
   name: none,
   ..style,
 ) = {
-  import draw: *
-
-  // Validate coordinates
-  let _ = (start, end).map(coordinate.resolve-system)
-
-  group(name: name, ctx => {
+  draw.group(name: name, ctx => {
     // Get styles and validate their types and values
     let style = styles.resolve(ctx.style, merge: style.named(),
       root: "flat-brace", base: flat-brace-default-style)
@@ -314,8 +309,8 @@
     // all the following code assumes the brace to start at (0, 0), growing to the right,
     // pointing upwards, so we set the origin and rotate the entire group accordingly
     let (_, start, end) = coordinate.resolve(ctx, start, end)
-    set-origin(start)
-    rotate(vector.angle2(start, end))
+    draw.set-origin(start)
+    draw.rotate(vector.angle2(start, end))
 
     // we achieve flipping by inverting the amplitude
     if flip {
@@ -365,23 +360,23 @@
     let crc = (middle +      inner-curves.at(3)  * ri, (1 - inner-curves.at(2) / 2) * amplitude)
     let brc = (length -      outer-curves.at(3)  * ro,      outer-curves.at(2) / 2  * amplitude)
 
-    merge-path({
-      bezier(a, d, alc, dlc)
-      bezier(e, c, elc, clc)
-      bezier(c, f, crc, frc)
-      bezier(g, b, grc, brc)
+    draw.merge-path({
+      draw.bezier(a, d, alc, dlc)
+      draw.bezier(e, c, elc, clc)
+      draw.bezier(c, f, crc, frc)
+      draw.bezier(g, b, grc, brc)
     }, stroke: style.stroke, fill: style.fill)
 
     // Define some named anchors
-    anchor("spike", c)
-    anchor("content", h)
-    anchor("start", a)
-    anchor("end", b)
-    anchor("default", (d, 50%, g))
+    draw.anchor("spike", c)
+    draw.anchor("content", h)
+    draw.anchor("start", a)
+    draw.anchor("end", b)
+    draw.anchor("default", (d, 50%, g))
 
     // Define anchors for all points
     for (name, point) in points {
-      anchor(name, point)
+      draw.anchor(name, point)
     }
   })
 
