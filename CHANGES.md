@@ -14,6 +14,8 @@
   leaks elements (like `scope` does) (#1004)
 - Fixed a bug that prevented the leakage of elements of `scope` elements inside
   a `group` (#930)
+- Added a new element `svg-path` that accepts a subset of SVG
+  commands to construct paths
 
 # 0.4.2
 - The `tree` element now has a `anchor:` argument to position the tree (#929)

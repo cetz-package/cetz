@@ -917,7 +917,7 @@
 
     let (from-x, from-y, ..) = from
     let (to-x, to-y, ..) = to
-    
+
     // Resolve shift parameter
     let shift = style.at("shift", default: 0)
     if type(shift) == dictionary {
@@ -2021,4 +2021,161 @@
     rect(newbounds.low, newbounds.high, ..style)
   })
   return ctx
+}
+
+/// Create a new path from a SVG-like list of commands.
+///
+/// The following commands are supported (uppercase command names use absolute coordinates, lowercase use relative coordinates)
+/// - `("l", coordinate)` line to `coordinate`
+/// - `("h", number)` Horizontal line
+/// - `("v", number)` Vertical line
+/// - `("m", coordinate)` Move to `coordinate`
+/// - `("c", ctrl-coordinate-a, ctrl-coordinate-b, coordinate)` Cubic bezier curve to `coordinate` with two control points a and b
+/// - `("q", ctrl-coordinate, coordinate)` Quadratic bezier curve
+/// - `("z",)` Close the current path
+/// - `("anchor", "<anchor-name>", [coordinate=(0, 0)])` named anchor.
+///   If the anchor coordinate is unset, the default `(0, 0, 0)` is used.
+///   The anchor named "default" serves as origin for the `anchor:` argument.
+///
+/// ```example
+/// svg-path(("h", 2),
+///          ("anchor", "here"),
+///          ("c", (0, 1), (0, 0), (-1, 0)),
+///          ("v", -0.5),
+///          ("h", -1),
+///          ("z",), name: "svg")
+/// circle("svg.here", fill: white, radius: 0.1cm)
+/// ```
+///
+/// - name (none, string):
+/// - anchor (none, coordinate):
+/// - ..commands-style (any): Path commands and style keys
+#let svg-path(name: none, anchor: none, ..commands-style) = {
+  let style = commands-style.named()
+  let commands = commands-style.pos().map(cmd => {
+    if type(cmd) == str {
+      (cmd,)
+    } else {
+      cmd
+    }
+  })
+
+  assert.ne(commands, (),
+    message: "Empty svg-path commands")
+
+  return (ctx => {
+    let paths = ()
+
+    let origin = (0.0, 0.0, 0.0)
+    let current = ()
+
+    // Dictionary of user anchors
+    let anchors = (:)
+
+    for ((cmd, ..args)) in commands {
+      assert(cmd in ("m", "M", "l", "L", "c", "C", "h", "H", "v", "V", "z", "Z", "q", "Q", "anchor", "Anchor"),
+        message: "Unknown svg-path command: " + repr(cmd))
+
+      // Transform lower-case commands to relative coordinates
+      let is-relative = cmd in ("m", "l", "c", "h", "v", "q", "anchor")
+      let wrap-coordinate = if is-relative {
+        x => (rel: x)
+      } else {
+        x => x
+      }
+
+      // The name of the current anchor command
+      let current-name = none
+
+      if cmd in ("h", "H") {
+        assert.eq(args.len(), 1)
+        let (x, ..rest) = args
+        args = ((x, 0.0, 0.0),)
+        cmd = if cmd == "h" { "l" } else { "L" }
+      } else if cmd in ("v", "V") {
+        assert.eq(args.len(), 1)
+        let (y, ..rest) = args
+        args = ((0.0, y, 0.0),)
+        cmd = if cmd == "v" { "l" } else { "L" }
+      } else if cmd in ("anchor", "Anchor") {
+        current-name = args.at(0)
+        args = if args.len() != 1 {
+          args.slice(1)
+        } else {
+          ((0, 0, 0),)
+        }
+      }
+
+      // Save the current coordinate before
+      // resolving the list of arguments.
+      let prev-pt = ctx.prev.pt
+
+      (ctx, ..args) = coordinate.resolve(ctx, ..args.map(wrap-coordinate))
+
+      if cmd in ("z", "Z") {
+        assert.eq(args.len(), 0)
+        if current != () {
+          paths.push(path-util.make-subpath(origin, current, closed: cmd == "z"))
+        }
+
+        current = ()
+      }
+
+      if cmd in ("m", "M", "l", "L") {
+        if cmd in ("m", "M") {
+          assert.eq(args.len(), 1)
+          origin = args.at(0, default: (0, 0, 0))
+          args.pop()
+        }
+
+        current += args.map(pt => ("l", pt))
+      } else if cmd in ("c", "C") {
+        assert.eq(args.len(), 3)
+        let (c1, c2, pt) = args
+        current.push(("c", c1, c2, pt))
+      } else if cmd in ("q", "Q") {
+        assert.eq(args.len(), 2)
+        let (c1, pt) = args
+        let (_, pt, c1, c2) = bezier_.quadratic-to-cubic(prev-pt, pt, c1)
+        current.push(("c", c1, c2, pt))
+      } else if cmd in ("anchor", "Anchor") {
+        assert.eq(args.len(), 1)
+        assert(current-name not in (none, ""))
+        anchors.insert(current-name, args.at(0))
+      }
+    }
+
+    if current != () {
+      paths.push(path-util.make-subpath(origin, current, closed: false))
+    }
+
+    let style = styles.resolve(ctx.style, merge: style)
+    let drawables = drawable.path(paths, stroke: style.stroke, fill: style.fill, fill-rule: style.fill-rule)
+
+    let (transform, anchors) = anchor_.setup(
+      key => anchors.at(key),
+      anchors.keys(),
+      default: if "default" in anchors { "default" } else { none },
+      name: name,
+      offset-anchor: anchor,
+      transform: ctx.transform,
+      // For border anchors we would need a radius + a "center" anchor.
+      // border-anchors: "center" in anchors,
+      path-anchors: true,
+      path: drawables,
+    )
+
+    if mark_.check-mark(style.mark) {
+      drawables = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
+    } else {
+      drawables = drawable.apply-transform(transform, drawables)
+    }
+
+    return (
+      ctx: ctx,
+      name: name,
+      anchors: anchors,
+      drawables: drawables,
+    )
+  },)
 }
