@@ -150,6 +150,19 @@
   }
 }
 
+/// Call function `fn` for each key-value pair of `d`
+/// and return the transformed dictionary.
+///
+/// - d (dictionary) Input dictionary
+/// - fn (function) Transformation function
+/// -> dictionary
+#let map-dict(d, fn) = {
+  for ((key, value)) in d {
+    d.at(key) = fn(key, value)
+  }
+  return d
+}
+
 /// Ensures that a radius has an `x` and `y` component.
 /// - radius (number, array):
 /// -> array

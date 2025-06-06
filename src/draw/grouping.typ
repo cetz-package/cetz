@@ -256,12 +256,9 @@
 
     // Apply bounds padding
     bounds = if bounds != none {
-      let padding = util.as-padding-dict(style.padding)
-      padding = padding.pairs().map(
-        ((k, v)) => (
-          (k): util.resolve-number(ctx, v)
-        )
-      ).join()
+      let padding = util.map-dict(util.as-padding-dict(style.padding), (_, v) => {
+        util.resolve-number(ctx, v)
+      })
 
       aabb.padded(bounds, padding)
     }
