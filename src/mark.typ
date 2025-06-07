@@ -43,6 +43,7 @@
     shorten-to: auto,
     position-samples: auto,
     anchor: auto,
+    transform-shape: auto,
   )
 
   if type(style.at(root)) != array {
@@ -96,6 +97,11 @@
           util.resolve-number(ctx, v)
         })
       }
+    }
+
+    // Flip transformed marks
+    if style.transform-shape {
+      style.flip = not style.flip
     }
 
     out.push(style)

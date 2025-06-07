@@ -9,6 +9,7 @@
 - Added support for specifying a baseline offset via `canvas(baseline: <coordinate>, ...)`. The canvas switches to an inline `box` as the top-level element if set
 - Added support for passing a stroke style to the canvas top-level element, see `canvas(stroke: <stroke>, ...)`
 - Added support for user-defined coordinate systems. See `register-coordinate-resolver(<callback>)`
+- The default style value for `mark.transform-shape` changed to `false`
 
 # 0.3.4
 - Fixed a bug with rendering curves with Typst 0.13.1
