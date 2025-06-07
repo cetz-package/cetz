@@ -354,7 +354,8 @@
   }
 
   let (path, is-transformed) = if not style.at("transform-shape", default: true) and transform != none {
-    (drawable.apply-transform(transform, path).first(), true)
+    (drawable.apply-transform(
+      matrix.mul-mat(matrix.transform-scale((1,1,0)), transform), path).first(), true)
   } else {
     (path, false)
   }
@@ -377,6 +378,7 @@
       segments,
       is-end: true
     )
+
     drawables += end-drawables
     distance.last() = end-distance
     snap-to.last() = pt
