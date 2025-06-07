@@ -63,7 +63,7 @@
       marks: (:),
     ),
     // coordinate resolver
-    resolve-coordinate: none,
+    resolve-coordinate: (),
     // Shared state that is not scoped by group/scope elements.
     // CeTZ itself does not use this dictionary for data.
     shared-state: (:),

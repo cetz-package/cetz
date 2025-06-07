@@ -1,5 +1,5 @@
 // Example by @samuelireson
-#import "@preview/cetz:0.3.4": canvas, draw, tree
+#import "@preview/cetz:0.4.0": canvas, draw, tree
 
 #set page(width: auto, height: auto, margin: .5cm)
 
