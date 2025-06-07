@@ -152,13 +152,7 @@ struct AabbArgs {
 
 #[wasm_func]
 pub fn aabb_func(input: &[u8]) -> Result<Vec<u8>, String> {
-    match from_reader::<AabbArgs, _>(input) {
-        Ok(input) => {
-            let mut buf = Vec::new();
-            let bounds = aabb(input.init, input.pts)?;
-            into_writer(&bounds, &mut buf).unwrap();
-            Ok(buf)
-        }
-        Err(e) => Err(e.to_string()),
-    }
+    handle_cbor(input, |args: AabbArgs| {
+        aabb(args.init, args.pts)
+    })
 }

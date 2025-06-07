@@ -1,4 +1,5 @@
 #import "vector.typ"
+#import "wasm.typ": call_wasm
 #let cetz-core = plugin("../cetz-core/cetz_core.wasm")
 
 /// Compute an axis aligned bounding box (aabb) for a list of <Type>vectors</Type>.
@@ -7,10 +8,7 @@
 /// - init (aabb): Initial aabb
 /// -> aabb
 #let aabb(pts, init: none) = {
-  let args = (pts: pts, init: init)
-  let encoded = cbor.encode(args)
-  let bounds = cbor(cetz-core.aabb_func(encoded))
-  return bounds
+  return call_wasm(cetz-core.aabb_func, (pts: pts, init: init))
 }
 
 /// Get the mid-point of an AABB as vector.
