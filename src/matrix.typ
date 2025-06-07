@@ -23,7 +23,7 @@
   assert(size >= 1, message: "Invalid dimension")
 
   range(0, size).map(j => range(0, size).map(k => {
-    if j == k { 1 } else { 0 }
+    if j == k { 1.0 } else { 0.0 }
   }))
 }
 

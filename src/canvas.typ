@@ -43,16 +43,16 @@
     debug: debug,
     background: background,
     // Previous element position & bbox
-    prev: (pt: (0, 0, 0)),
+    prev: (pt: (0.0, 0.0, 0.0)),
     style: styles.default,
     // Current transformation matrix, a rhs coordinate system
     // where z is sheared by a half x and y.
     //   +x = right, +y = up, +z = 1/2 (left + down)
     transform:
-      ((1, 0,-.5, 0),
-       (0,-1,+.5, 0),
-       (0, 0,  0, 0), // FIXME: This should not be zero for Z! Changing it destroys mark & decorations in 3D space.
-       (0, 0, .0, 1)),
+      ((1.0, 0.0,-0.5, 0.),
+       (0.0,-1.0,+0.5, 0.),
+       (0.0, 0.0, 0.0, 0.), // FIXME: This should not be zero for Z! Changing it destroys mark & decorations in 3D space.
+       (0.0, 0.0, 0.0, 1.)),
     // Nodes, stores anchors and paths
     nodes: (:),
     // Group stack
