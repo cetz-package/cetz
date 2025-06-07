@@ -4,28 +4,48 @@
 #import "matrix.typ"
 #import "vector.typ"
 #import "bezier.typ"
+#let cetz-core = plugin("../cetz-core/cetz_core.wasm")
 
 /// Constant to be used as float rounding error
 #let float-epsilon = 0.000001
+
+/// Promotes an integer to a float.
+/// - x (int,float): The value to promote.
+/// -> float
+#let promote-float(x) = {
+  return if type(x) == int {float(x)} else {x}
+}
 
 /// Multiplies vectors by a transformation matrix. If multiple vectors are given they are returned as an array, if only one vector is given only one will be returned, if a dictionary is given they will be returned in the dictionary with the same keys.
 ///
 /// - transform (matrix,function): The $4 \times 4$ transformation matrix or a function that accepts and returns a vector.
 /// - ..vecs (vector): Vectors to get transformed. Only the positional part of the sink is used. A dictionary of vectors can also be passed and all will be transformed.
 /// -> vector,array,dictionary
-#let apply-transform(transform, ..vecs) = {
-  let t = if type(transform) != function {
-    matrix.mul4x4-vec3.with(transform)
+#let apply-transform(mat_or_transform, ..vecs) = {
+  let pos = vecs.pos()
+  let transform = if type(mat_or_transform) != function {
+    let mat = mat_or_transform.map(row => row.map(promote-float))
+
+    // Hot path for mat and non-dictionary.
+    if type(pos.first()) != dictionary {
+      let encoded = cbor.encode((mat: mat, vecs: pos))
+      let vecs = cbor(cetz-core.mul4x4_vecs_func(encoded))
+      if vecs.len() == 1 {
+        return vecs.first()
+      }
+      return vecs
+    }
+    matrix.mul4x4-vec3.with(mat)
   } else {
-    transform
+    mat_or_transform
   }
-  if type(vecs.pos().first()) == dictionary {
-    vecs = vecs.pos().first()
+  if type(pos.first()) == dictionary {
+    vecs = pos.first()
     for (k, vec) in vecs {
-      vecs.insert(k, t(vec))
+      vecs.insert(k, transform(vec))
     }
   } else {
-    vecs = vecs.pos().map(t)
+    vecs = pos.map(transform)
     if vecs.len() == 1 {
       return vecs.first()
     }

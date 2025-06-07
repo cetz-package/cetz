@@ -7,7 +7,8 @@
 /// - points (array): List of points to sort
 /// - reference (vec): Reference point
 /// -> List of points
-#let points-by-distance(ctx, points, reference: (0, 0, 0)) = {
+#let points-by-distance(ctx, points, reference: (0., 0., 0.)) = {
+  let reference = reference.map(util.promote-float)
   let reference = util.apply-transform(ctx.transform, reference)
   return points.sorted(key: pt => {
     vector.dist(pt, reference)
@@ -21,7 +22,8 @@
 /// - points (array): List of points to sort
 /// - reference (vec): Reference point
 /// -> List of points
-#let points-by-angle(ctx, points, reference: (0, 0, 0)) = {
+#let points-by-angle(ctx, points, reference: (0., 0., 0.)) = {
+  let reference = reference.map(util.promote-float)
   let (rx, ry, ..) = util.apply-transform(ctx.transform, reference)
   return points.sorted(key: ((px, py, ..)) => {
     360deg - calc.atan2(rx - px, ry - py)

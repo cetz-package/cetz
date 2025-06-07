@@ -203,7 +203,7 @@
       let (ctx, c) = coordinate.resolve(ctx, origin)
       let (x, y, z) = vector.sub(
         util.apply-transform(ctx.transform, c),
-        util.apply-transform(ctx.transform, (0, 0, 0)),
+        util.apply-transform(ctx.transform, (0., 0., 0.)),
       )
       ctx.transform = matrix.mul-mat(matrix.transform-translate(x, y, z), ctx.transform)
       return (ctx: ctx)
