@@ -1,3 +1,4 @@
+#set page(width: auto, height: auto)
 #import "/src/lib.typ": *
 #import "/tests/helper.typ": *
 
@@ -5,7 +6,7 @@
   import draw: *
 
   compound-path({
-    rect((-1,-1), (1,1))
+    rect((-1,-1),(1,1))
     circle((0,0))
   }, fill: blue, fill-rule: "even-odd", name: "path")
 
