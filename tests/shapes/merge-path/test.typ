@@ -4,10 +4,10 @@
 #test-case({
   import draw: *
 
-  compound-path({
-    rect((-1,-1), (1,1))
-    circle((0,0))
-  }, fill: blue, fill-rule: "even-odd", name: "path")
+  merge-path({
+    line((0,0), (1,0))
+    bezier-through((1,0), (1/2,1), (0,0))
+  }, fill: blue, name: "path")
 
   for-each-anchor("path", name => {
     cross("path." + name)

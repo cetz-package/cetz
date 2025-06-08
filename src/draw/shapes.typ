@@ -1517,8 +1517,11 @@
   },)
 }
 
-/// Create a new path with one or more elments used as sub-paths.
+/// Create a new path with each element used as sub-paths.
 /// This can be used to create paths with holes.
+///
+/// Unlike `merge-path`, this function groups the shapes as sub-paths
+/// instead of concattenating them into a single continous path.
 ///
 /// ```typc example
 /// compound-path({
@@ -1552,7 +1555,7 @@
       assert.ne(subpaths, (),
         message: "compound-path must at least contain one element!")
 
-      let (_, first-path-closed, first-path-segments) = subpaths.first()
+      let (_, first-path-closed, _) = subpaths.first()
 
       let style = styles.resolve(ctx.style, merge: style)
       let drawables = drawable.path(
@@ -1562,7 +1565,8 @@
       let (transform, anchors) = anchor_.setup(
         name => {
           if name == "centroid" {
-            return polygon_.simple-centroid(polygon_.from-subpath(first-path-segments))
+            return polygon_.simple-centroid(polygon_.from-subpath(
+              subpaths.first()))
           }
         },
         if first-path-closed != none { ("centroid",) } else { () },
