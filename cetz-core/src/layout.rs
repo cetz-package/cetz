@@ -139,13 +139,13 @@ impl LayoutTree {
                 modifier_sum_left: 0.0,
             }
         } else {
-            let e_l = self.children(i).first().unwrap().extremes.unwrap();
-            let e_r = self.children(i).last().unwrap().extremes.unwrap();
+            let e_l = self.first_child(i).extremes.unwrap();
+            let e_r = self.last_child(i).extremes.unwrap();
             Extremes {
                 left: e_l.left,
                 right: e_r.right,
-                modifier_sum_right: e_l.modifier_sum_left,
-                modifier_sum_left: e_r.modifier_sum_right,
+                modifier_sum_left: e_l.modifier_sum_left,
+                modifier_sum_right: e_r.modifier_sum_right,
             }
         };
 
@@ -171,7 +171,7 @@ impl LayoutTree {
             let min_y = self
                 .get(self.get(child_id).extremes.unwrap().right)
                 .bottom();
-            self.seperate(i, sib, ih.clone());
+            self.seperate(i, sib, &mut ih);
             ih = ih.update(min_y, sib);
         }
 
@@ -220,7 +220,7 @@ impl LayoutTree {
         self.get_mut(i).prelim = prelim;
     }
 
-    fn seperate(&mut self, i: TreeIndex, sib: usize, mut ih: InnerYLeftSiblings) {
+    fn seperate(&mut self, i: TreeIndex, sib: usize, ih: &mut InnerYLeftSiblings) {
         let sr = self.nth_child(i, sib - 1);
         let cl = self.nth_child(i, sib);
         let mut mssr = sr.modifier;
@@ -234,8 +234,6 @@ impl LayoutTree {
             if self.get(r).bottom() > ih.low_y().unwrap() {
                 ih.0.pop();
             }
-
-            //  How far to the left of the right side of sr is the left side of cl?
 
             let r_n = self.get(r);
             let l_n = self.get(l);
@@ -577,6 +575,6 @@ mod test {
         let layout_tree: LayoutTree = t.clone().into();
         check_trees_are_same(t.clone(), layout_tree);
 
-        panic!();
+        t.layout();
     }
 }
