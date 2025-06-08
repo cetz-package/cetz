@@ -164,3 +164,16 @@ pub fn aabb_func(input: &[u8]) -> Result<Vec<u8>, String> {
         Err(e) => Err(e.to_string()),
     }
 }
+
+#[wasm_func]
+pub fn layout_func(input: &[u8]) -> Result<Vec<u8>, String> {
+    match from_reader::<InputTree, _>(input) {
+        Ok(input) => {
+            let output = input.layout();
+            let mut buf = Vec::new();
+            into_writer(&output, &mut buf).unwrap();
+            Ok(buf)
+        }
+        Err(e) => Err(e.to_string()),
+    }
+}

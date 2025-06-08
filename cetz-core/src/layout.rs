@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 struct TreeIndex(usize);
 
@@ -285,13 +287,13 @@ impl LayoutTree {
     fn set_left_thread(&mut self, i: TreeIndex, sib: usize, left: TreeIndex, modsumsr: f64) {
         let li = self.first_child(i).extremes.unwrap().left;
         let diff = (modsumsr - self.get(left).modifier)
-            - self.first_child(i).extremes.unwrap().modifier_sum_right;
+            - self.first_child(i).extremes.unwrap().modifier_sum_left;
 
         let li = self.get_mut(li);
         li.left_thread = Some(left);
         li.modifier += diff;
         li.prelim -= diff;
-        self.nth_child_mut(i, sib).extremes.unwrap().left =
+        self.first_child_mut(i).extremes.unwrap().left =
             self.nth_child(i, sib).extremes.unwrap().left;
 
         self.first_child_mut(i).extremes.unwrap().modifier_sum_left =
@@ -358,27 +360,25 @@ impl InnerYLeftSiblings {
         self.0.is_empty()
     }
 
-    fn next_peek(&self) -> Option<(f64, usize)> {
-        self.0.get(self.0.len() - 2).copied()
-    }
-
     fn become_next(&mut self) {
         self.0.pop();
     }
 }
 
 ///Enum for serialization of a layout tree
-#[derive(Debug, Clone, PartialEq)]
-pub enum InputTree {
-    Node { height: f64, width: f64 },
-    Children(Vec<InputTree>),
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+pub struct InputTree {
+    height: f64,
+    width: f64,
+    children: Vec<InputTree>,
 }
 
 ///Enum for serialization of a layout tree
-#[derive(Debug, Clone, PartialEq)]
-pub enum OutputTree {
-    Node { x: f64, y: f64 },
-    Children(Vec<OutputTree>),
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct OutputTree {
+    x: f64,
+    y: f64,
+    children: Vec<OutputTree>,
 }
 
 impl InputTree {
@@ -398,18 +398,11 @@ impl InputTree {
 
 impl LayoutTree {
     fn to_output(&self, i: TreeIndex) -> OutputTree {
-        let node = self.get(i);
-        let node = OutputTree::Node {
-            x: node.x.unwrap(),
-            y: node.y.unwrap(),
-        };
-        if self.n_children(i) == 0 {
-            node
-        } else {
-            let mut v = vec![node];
-
-            v.extend(self.children_ids(i).map(|i| self.to_output(i)));
-            OutputTree::Children(v)
+        let n = self.get(i);
+        OutputTree {
+            x: n.x.unwrap(),
+            y: n.y.unwrap(),
+            children: self.children_ids(i).map(|i| self.to_output(i)).collect(),
         }
     }
 }
@@ -425,60 +418,42 @@ impl From<InputTree> for LayoutTree {
         let mut tree = vec![None];
         let mut stack = vec![(None, TreeIndex(0), value)];
         while let Some((parent, position, node)) = stack.pop() {
-            match node {
-                InputTree::Node { height, width } => {
-                    tree[position.0] = Some(NodeData {
-                        width,
-                        height,
-                        x: None,
-                        y: None,
-                        parent,
-                        own_index: position,
-                        children: None,
-                        extremes: None,
-                        change: 0.0,
-                        left_thread: None,
-                        right_thread: None,
-                        prelim: 0.0,
-                        modifier: 0.0,
-                        shift: 0.0,
-                    });
-                }
-                InputTree::Children(children) => {
-                    let n_children = children.len() - 1;
-                    let mut children = children.into_iter();
-                    let InputTree::Node { height, width } =
-                        children.next().expect("Cannot have empty list as a child!")
-                    else {
-                        panic!("The first child must be  node!")
-                    };
+            let InputTree {
+                height,
+                width,
+                children,
+            } = node;
 
-                    let children_start = tree.len();
+            let n_children = children.len();
+            let children_start = tree.len();
 
-                    stack.extend(
-                        children
-                            .enumerate()
-                            .map(|(i, child)| (Some(position), TreeIndex(i + tree.len()), child)),
-                    );
-                    tree.extend(std::iter::repeat_n(None, n_children));
-                    tree[position.0] = Some(NodeData {
-                        width,
-                        height,
-                        x: None,
-                        y: None,
-                        parent,
-                        extremes: None,
-                        children: Some((children_start, children_start + n_children)),
-                        own_index: position,
-                        change: 0.0,
-                        left_thread: None,
-                        right_thread: None,
-                        prelim: 0.0,
-                        modifier: 0.0,
-                        shift: 0.0,
-                    });
-                }
-            }
+            stack.extend(
+                children
+                    .into_iter()
+                    .enumerate()
+                    .map(|(i, child)| (Some(position), TreeIndex(i + tree.len()), child)),
+            );
+            tree.extend(std::iter::repeat_n(None, n_children));
+            tree[position.0] = Some(NodeData {
+                width,
+                height,
+                x: None,
+                y: None,
+                parent,
+                extremes: None,
+                children: if n_children != 0 {
+                    Some((children_start, children_start + n_children))
+                } else {
+                    None
+                },
+                own_index: position,
+                change: 0.0,
+                left_thread: None,
+                right_thread: None,
+                prelim: 0.0,
+                modifier: 0.0,
+                shift: 0.0,
+            });
         }
         LayoutTree(
             tree.into_iter()
@@ -493,66 +468,85 @@ mod test {
 
     use super::*;
 
-    impl InputTree {
-        fn unit_node() -> InputTree {
-            InputTree::Node {
-                height: 1.0,
-                width: 1.0,
-            }
-        }
-    }
-
     fn check_trees_are_same(tree: InputTree, layout_tree: LayoutTree) {
         let mut tree_stack = vec![tree];
         let mut layout_stack = vec![TreeIndex(0)];
         while let (Some(id), Some(input_tree)) = (layout_stack.pop(), tree_stack.pop()) {
+            let InputTree {
+                height,
+                width,
+                children,
+            } = input_tree;
             let x = layout_tree.get(id);
+            assert_eq!(x.height, height);
+            assert_eq!(x.width, width);
+
             layout_stack.extend(layout_tree.children(id).iter().map(|x| x.own_index));
-            match input_tree {
-                InputTree::Node { height, width } => {
-                    assert_eq!(x.height, height);
-                    assert_eq!(x.width, width);
-                }
-                InputTree::Children(input_trees) => {
-                    tree_stack.extend(input_trees.into_iter().skip(1));
-                }
-            }
+            tree_stack.extend(children.into_iter());
         }
         assert!(layout_stack.is_empty());
         assert!(tree_stack.is_empty());
     }
 
+    fn get_tree() -> InputTree {
+        let line = InputTree {
+            width: 1.0,
+            height: 1.0,
+            children: vec![InputTree {
+                width: 1.0,
+                height: 1.0,
+                children: vec![],
+            }],
+        };
+
+        let tree = InputTree {
+            width: 1.0,
+            height: 1.0,
+            children: vec![
+                InputTree {
+                    width: 1.0,
+                    height: 1.0,
+                    children: vec![line.clone()],
+                },
+                InputTree {
+                    width: 1.0,
+                    height: 1.0,
+                    children: vec![],
+                },
+                InputTree {
+                    width: 1.0,
+                    height: 1.0,
+                    children: vec![line.clone()],
+                },
+            ],
+        };
+
+        InputTree {
+            width: 1.0,
+            height: 1.0,
+            children: vec![
+                tree,
+                InputTree {
+                    width: 0.0,
+                    height: 0.0,
+                    children: vec![],
+                },
+                line.clone(),
+            ],
+        }
+    }
+
     #[test]
     fn from_cetz_style() {
-        let tree = InputTree::Children(vec![
-            InputTree::unit_node(),
-            InputTree::Children(vec![
-                InputTree::unit_node(),
-                InputTree::Children(vec![InputTree::unit_node(), InputTree::unit_node()]),
-                InputTree::unit_node(),
-                InputTree::Children(vec![InputTree::unit_node(), InputTree::unit_node()]),
-            ]),
-            InputTree::unit_node(),
-            InputTree::Children(vec![InputTree::unit_node(), InputTree::unit_node()]),
-        ]);
+        let tree = get_tree();
         let layout_tree: LayoutTree = tree.clone().into();
+
         check_trees_are_same(tree, layout_tree);
     }
 
     #[test]
     fn layout_test() {
-        let tree = InputTree::Children(vec![
-            InputTree::unit_node(),
-            InputTree::Children(vec![
-                InputTree::unit_node(),
-                InputTree::Children(vec![InputTree::unit_node(), InputTree::unit_node()]),
-                InputTree::unit_node(),
-                InputTree::Children(vec![InputTree::unit_node(), InputTree::unit_node()]),
-            ]),
-            InputTree::unit_node(),
-            InputTree::Children(vec![InputTree::unit_node(), InputTree::unit_node()]),
-        ]);
-        let x = tree.layout();
+        let x = get_tree().layout();
         dbg!(x);
     }
 }
