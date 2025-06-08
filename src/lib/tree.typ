@@ -87,7 +87,12 @@
   name: none,
   node-layer: 1,
   edge-layer: 0,
+  measure-content: false,
+  ctx: none,
 ) = {
+  if measure-content {
+    assert(ctx != none)
+  }
   assert(parent-position in ("begin", "center", "end", "after-end"))
   assert(grow > 0)
   assert(spread > 0)
@@ -120,9 +125,16 @@
       content = tree
     }
 
+    let height = grow
+    let width = spread
+    if measure-content {
+      let m = measure(content)
+      height += util.resolve-number(ctx, m.height)
+      width += util.resolve-number(ctx, m.width)
+    }
     return (
-      height: grow,
-      width: spread,
+      height: height,
+      width: width,
       n: sibling,
       depth: depth,
       children: children,
