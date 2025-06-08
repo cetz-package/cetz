@@ -151,7 +151,7 @@ impl LayoutTree {
             let min_y = self
                 .get(self.get(child_id).extremes.unwrap().right)
                 .bottom();
-            self.seperate(i, sib, &mut ih);
+            self.seperate(i, sib, ih.clone());
             ih = ih.update(min_y, sib);
         }
 
@@ -199,7 +199,7 @@ impl LayoutTree {
         self.get_mut(i).prelim = prelim;
     }
 
-    fn seperate(&mut self, i: TreeIndex, sib: usize, ih: &mut InnerYLeftSiblings) {
+    fn seperate(&mut self, i: TreeIndex, sib: usize, mut ih: InnerYLeftSiblings) {
         let sr = self.nth_child(i, sib - 1);
         let cl = self.nth_child(i, sib);
         let mut mssr = sr.modifier;
@@ -208,8 +208,13 @@ impl LayoutTree {
 
         let mut sr = Some(sr.own_index);
         let mut cl = Some(cl.own_index);
+
         while let (Some(r), Some(l)) = (sr, cl) {
-            if self.get(r).bottom() > ih.low_y().unwrap() {
+            if ih
+                .low_y()
+                .map(|x| self.get(r).bottom() > x)
+                .unwrap_or(false)
+            {
                 ih.0.pop();
             }
 
@@ -218,10 +223,9 @@ impl LayoutTree {
             let dist = (mssr + r_n.prelim + r_n.width) - (mscl + l_n.prelim);
             if dist > 0.0 || (dist < 0.0 && first) {
                 mscl += dist;
-                dbg!(i);
-                self.move_subtree(i, sib, ih.id().unwrap(), dist);
-                first = false;
+                self.move_subtree(i, sib, ih.id(), dist);
             }
+            first = false;
             let sy = self.get(r).bottom();
             let cy = self.get(l).bottom();
 
@@ -284,22 +288,26 @@ impl LayoutTree {
             self.nth_child(i, sib).extremes.unwrap().modifier_sum_left;
     }
 
-    fn move_subtree(&mut self, i: TreeIndex, sib: usize, ssib: usize, dist: f64) {
+    fn move_subtree(&mut self, i: TreeIndex, sib: usize, ssib: Option<usize>, dist: f64) {
         let c = self.nth_child_mut(i, sib);
         c.modifier += dist;
         c.extremes.unwrap().modifier_sum_left += dist;
         c.extremes.unwrap().modifier_sum_right += dist;
-        self.distribute_extra(i, sib, ssib, dist)
+
+        if let Some(ssib) = ssib {
+            self.distribute_extra(i, sib, ssib, dist)
+        }
     }
 
     fn distribute_extra(&mut self, i: TreeIndex, sib: usize, ssib: usize, dist: f64) {
-        if ssib != sib - 1 {
-            let nr = (sib - ssib) as f64;
+        let n = sib - ssib;
+        if n > 1 {
+            let n = n as f64;
             let c_si = self.nth_child_mut(i, ssib + 1);
-            c_si.shift += dist / nr;
+            c_si.shift += dist / n;
             let c = self.nth_child_mut(i, sib);
-            c.shift -= dist / nr;
-            c.change -= dist - dist / nr;
+            c.shift -= dist / n;
+            c.change -= dist - dist / n;
         }
     }
 
