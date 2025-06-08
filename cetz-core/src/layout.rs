@@ -193,7 +193,12 @@ impl LayoutTree {
     fn position_root(&mut self, i: TreeIndex) {
         let first = self.first_child(i);
         let last = self.last_child(i);
-        let prelim = (first.prelim + first.modifier + last.prelim + last.modifier + last.width)
+        let prelim = (first.prelim
+            + first.modifier
+            + first.width / 2.0
+            + last.prelim
+            + last.modifier
+            + last.width / 2.0)
             / 2.0
             - self.get(i).width / 2.0;
         self.get_mut(i).prelim = prelim;
@@ -220,7 +225,8 @@ impl LayoutTree {
 
             let r_n = self.get(r);
             let l_n = self.get(l);
-            let dist = (mssr + r_n.prelim + r_n.width) - (mscl + l_n.prelim);
+            let dist =
+                (mssr + r_n.prelim) - (mscl + l_n.prelim) + r_n.width / 2.0 + l_n.width / 2.0;
             if dist > 0.0 || (dist < 0.0 && first) {
                 mscl += dist;
                 self.move_subtree(i, sib, ih.id(), dist);
