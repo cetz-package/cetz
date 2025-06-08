@@ -19,7 +19,7 @@ impl NodeData {
     }
     fn right_contour(&self) -> Option<TreeIndex> {
         if let Some((_, b)) = self.children {
-            Some(TreeIndex(b))
+            Some(TreeIndex(b - 1))
         } else {
             self.right_thread
         }
@@ -150,17 +150,55 @@ impl LayoutTree {
             return;
         }
         let mut children = self.children_ids(i);
-        self.first_walk(children.next().unwrap());
+        let first_child = children.next().unwrap();
+        self.first_walk(first_child);
 
-        let mut ih = InnerYLeftSiblings::new(self.get(i).bottom(), 0);
-        for (i, child) in children.enumerate().map(|(i, x)| (i + 1, x)) {
+        let mut ih = InnerYLeftSiblings::new(
+            self.get(self.get(first_child).extremes.unwrap().left)
+                .bottom(),
+            0,
+        );
+
+        for (sib, child) in children.enumerate().map(|(i, x)| (i + 1, x)) {
             self.first_walk(child);
             let min_y = self.get(self.get(child).extremes.unwrap().right).bottom();
-            ih = ih.update(min_y, i);
+            self.seperate(i, sib, &mut ih);
+            ih = ih.update(min_y, sib);
         }
 
         self.position_root(i);
         self.set_extremes(i);
+    }
+
+    fn second_walk(&mut self, i: TreeIndex, mut modsum: f64) -> f64 {
+        modsum += self.get(i).modifier;
+        self.get_mut(i).x = Some(self.get(i).prelim + modsum);
+        let mut min_x = self.get(i).x.unwrap();
+        self.add_child_spacing(i);
+        for child in self.children_ids(i) {
+            let c_min = self.second_walk(child, modsum);
+            if c_min < min_x {
+                min_x = c_min;
+            }
+        }
+        min_x
+    }
+
+    fn third_walk(&mut self, i: TreeIndex, shift: f64) {
+        *self.get_mut(i).x.as_mut().unwrap() += shift;
+        for child in self.children_ids(i) {
+            self.third_walk(child, shift);
+        }
+    }
+
+    fn add_child_spacing(&mut self, i: TreeIndex) {
+        let mut d = 0.0;
+        let mut modsumdelta = 0.0;
+        for child in self.children_ids(i) {
+            d += self.get(child).shift;
+            modsumdelta += d + self.get(child).change;
+            self.get_mut(child).modifier += modsumdelta;
+        }
     }
 
     fn position_root(&mut self, i: TreeIndex) {
@@ -173,7 +211,7 @@ impl LayoutTree {
         self.get_mut(i).prelim = prelim;
     }
 
-    fn seperate(&mut self, i: TreeIndex, sib: usize, mut ih: InnerYLeftSiblings) {
+    fn seperate(&mut self, i: TreeIndex, sib: usize, ih: &mut InnerYLeftSiblings) {
         let sr = self.nth_child(i, sib - 1);
         let cl = self.nth_child(i, sib);
         let mut mssr = sr.modifier;
@@ -213,16 +251,6 @@ impl LayoutTree {
                     mscl += self.get(cl).modifier;
                 }
             }
-            /*
-            //  Advance highest node(s) and sum(s) of modifiers
-            if(sy <= cy){
-               sr = nextRightContour(sr);
-               if(sr!=null) mssr+=sr.mod;
-            }
-            if(sy >= cy){
-               cl = nextLeftContour(cl);
-               if(cl!=null) mscl+=cl.mod;
-            }                                                              */
         }
 
         match (cl, sr) {
@@ -280,7 +308,7 @@ impl LayoutTree {
 
     fn distribute_extra(&mut self, i: TreeIndex, sib: usize, ssib: usize, dist: f64) {
         if ssib != sib - 1 {
-            let nr = (ssib - sib) as f64;
+            let nr = (sib - ssib) as f64;
             let c_si = self.nth_child_mut(i, ssib + 1);
             c_si.shift += dist / nr;
             let c = self.nth_child_mut(i, sib);
@@ -288,8 +316,22 @@ impl LayoutTree {
             c.change -= dist - dist / nr;
         }
     }
+
+    fn set_y(&mut self, i: TreeIndex) {
+        self.get_mut(i).y = if let Some(parent) = self.get(i).parent {
+            let par_bottom = self.get(parent).bottom();
+            Some(par_bottom)
+        } else {
+            Some(0.0)
+        };
+
+        for child in self.children_ids(i) {
+            self.set_y(child);
+        }
+    }
 }
 
+#[derive(Debug, Clone, PartialEq)]
 struct InnerYLeftSiblings(Vec<(f64, usize)>);
 
 impl InnerYLeftSiblings {
@@ -327,14 +369,14 @@ impl InnerYLeftSiblings {
 
 ///Enum for serialization of a layout tree
 #[derive(Debug, Clone, PartialEq)]
-enum InputTree {
+pub enum InputTree {
     Node { height: f64, width: f64 },
     Children(Vec<InputTree>),
 }
 
 ///Enum for serialization of a layout tree
 #[derive(Debug, Clone, PartialEq)]
-enum OutputTree {
+pub enum OutputTree {
     Node { x: f64, y: f64 },
     Children(Vec<OutputTree>),
 }
@@ -342,7 +384,14 @@ enum OutputTree {
 impl InputTree {
     pub fn layout(self) -> OutputTree {
         let mut tree: LayoutTree = self.into();
+
+        tree.set_y(TreeIndex(0));
+
         tree.first_walk(TreeIndex(0));
+        let min_x = tree.second_walk(TreeIndex(0), 0.0);
+        if min_x != 0.0 {
+            tree.third_walk(TreeIndex(0), -min_x)
+        }
         tree.into()
     }
 }
@@ -431,7 +480,6 @@ impl From<InputTree> for LayoutTree {
                 }
             }
         }
-        dbg!(&tree);
         LayoutTree(
             tree.into_iter()
                 .collect::<Option<Vec<_>>>()
@@ -442,15 +490,14 @@ impl From<InputTree> for LayoutTree {
 
 #[cfg(test)]
 mod test {
-    use crate::layout;
 
     use super::*;
 
     impl InputTree {
-        fn empty_node() -> InputTree {
+        fn unit_node() -> InputTree {
             InputTree::Node {
-                height: 0.0,
-                width: 0.0,
+                height: 1.0,
+                width: 1.0,
             }
         }
     }
@@ -478,15 +525,15 @@ mod test {
     #[test]
     fn from_cetz_style() {
         let tree = InputTree::Children(vec![
-            InputTree::empty_node(),
+            InputTree::unit_node(),
             InputTree::Children(vec![
-                InputTree::empty_node(),
-                InputTree::Children(vec![InputTree::empty_node(), InputTree::empty_node()]),
-                InputTree::empty_node(),
-                InputTree::Children(vec![InputTree::empty_node(), InputTree::empty_node()]),
+                InputTree::unit_node(),
+                InputTree::Children(vec![InputTree::unit_node(), InputTree::unit_node()]),
+                InputTree::unit_node(),
+                InputTree::Children(vec![InputTree::unit_node(), InputTree::unit_node()]),
             ]),
-            InputTree::empty_node(),
-            InputTree::Children(vec![InputTree::empty_node(), InputTree::empty_node()]),
+            InputTree::unit_node(),
+            InputTree::Children(vec![InputTree::unit_node(), InputTree::unit_node()]),
         ]);
         let layout_tree: LayoutTree = tree.clone().into();
         check_trees_are_same(tree, layout_tree);
@@ -495,16 +542,17 @@ mod test {
     #[test]
     fn layout_test() {
         let tree = InputTree::Children(vec![
-            InputTree::empty_node(),
+            InputTree::unit_node(),
             InputTree::Children(vec![
-                InputTree::empty_node(),
-                InputTree::Children(vec![InputTree::empty_node(), InputTree::empty_node()]),
-                InputTree::empty_node(),
-                InputTree::Children(vec![InputTree::empty_node(), InputTree::empty_node()]),
+                InputTree::unit_node(),
+                InputTree::Children(vec![InputTree::unit_node(), InputTree::unit_node()]),
+                InputTree::unit_node(),
+                InputTree::Children(vec![InputTree::unit_node(), InputTree::unit_node()]),
             ]),
-            InputTree::empty_node(),
-            InputTree::Children(vec![InputTree::empty_node(), InputTree::empty_node()]),
+            InputTree::unit_node(),
+            InputTree::Children(vec![InputTree::unit_node(), InputTree::unit_node()]),
         ]);
         let x = tree.layout();
+        dbg!(x);
     }
 }

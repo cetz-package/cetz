@@ -4,6 +4,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use wasm_minimal_protocol::*;
 
+mod layout;
+pub use layout::{InputTree, OutputTree};
 initiate_protocol!();
 
 type Point = Vec<f64>;
