@@ -3,14 +3,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 struct TreeIndex(usize);
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-struct Extremes {
-    left: TreeIndex,
-    right: TreeIndex,
-    modifier_sum_left: f64,
-    modifier_sum_right: f64,
-}
-
 impl NodeData {
     fn left_contour(&self) -> Option<TreeIndex> {
         if let Some((a, _)) = self.children {
@@ -32,7 +24,6 @@ impl NodeData {
 struct NodeData {
     width: f64,
     height: f64,
-    extremes: Option<Extremes>,
     left_thread: Option<TreeIndex>,
     right_thread: Option<TreeIndex>,
     x: Option<f64>,
@@ -44,6 +35,10 @@ struct NodeData {
     modifier: f64,
     shift: f64,
     change: f64,
+    extreme_left: Option<TreeIndex>,
+    extreme_right: Option<TreeIndex>,
+    modifier_sum_left: f64,
+    modifier_sum_right: f64,
 }
 
 impl NodeData {
@@ -111,25 +106,26 @@ impl LayoutTree {
     }
 
     fn set_extremes(&mut self, i: TreeIndex) {
-        let e = if self.n_children(i) == 0 {
-            Extremes {
-                left: i,
-                right: i,
-                modifier_sum_right: 0.0,
-                modifier_sum_left: 0.0,
-            }
+        if self.n_children(i) == 0 {
+            let n = self.get_mut(i);
+            n.extreme_right = Some(i);
+            n.extreme_left = Some(i);
+            n.modifier_sum_right = 0.0;
+            n.modifier_sum_left = 0.0;
         } else {
-            let e_l = self.first_child(i).extremes.unwrap();
-            let e_r = self.last_child(i).extremes.unwrap();
-            Extremes {
-                left: e_l.left,
-                right: e_r.right,
-                modifier_sum_left: e_l.modifier_sum_left,
-                modifier_sum_right: e_r.modifier_sum_right,
-            }
-        };
+            let e_l = self.first_child(i);
+            let extreme_left = e_l.extreme_left;
+            let modifier_sum_left = e_l.modifier_sum_left;
 
-        self.get_mut(i).extremes = Some(e);
+            let e_r = self.last_child(i);
+            let extreme_right = e_r.extreme_right;
+            let modifier_sum_right = e_r.modifier_sum_right;
+            let n = self.get_mut(i);
+            n.extreme_right = extreme_right;
+            n.extreme_left = extreme_left;
+            n.modifier_sum_right = modifier_sum_right;
+            n.modifier_sum_left = modifier_sum_left;
+        };
     }
 
     fn first_walk(&mut self, i: TreeIndex) {
@@ -139,20 +135,20 @@ impl LayoutTree {
         }
         self.first_walk(self.nth_child_id(i, 0));
 
-        let mut ih = InnerYLeftSiblings::new(
-            self.get(self.get(self.nth_child_id(i, 0)).extremes.unwrap().left)
-                .bottom(),
-            0,
-        );
+        let left_bottom = self
+            .get(self.get(self.nth_child_id(i, 0)).extreme_left.unwrap())
+            .bottom();
+        let mut ih = vec![(0, left_bottom)];
 
         for sib in 1..self.n_children(i) {
             let child_id = self.nth_child_id(i, sib);
             self.first_walk(child_id);
-            let min_y = self
-                .get(self.get(child_id).extremes.unwrap().right)
-                .bottom();
-            self.seperate(i, sib, ih.clone());
-            ih = ih.update(min_y, sib);
+            let min_y = self.get(self.get(child_id).extreme_right.unwrap()).bottom();
+            self.seperate(i, sib, &ih);
+            while ih.last().is_some() && min_y >= ih.last().unwrap().1 {
+                ih.pop();
+            }
+            ih.push((sib, min_y));
         }
 
         self.position_root(i);
@@ -193,18 +189,13 @@ impl LayoutTree {
     fn position_root(&mut self, i: TreeIndex) {
         let first = self.first_child(i);
         let last = self.last_child(i);
-        let prelim = (first.prelim
-            + first.modifier
-            + first.width / 2.0
-            + last.prelim
-            + last.modifier
-            + last.width / 2.0)
+        let prelim = (first.prelim + first.modifier + last.prelim + last.modifier + last.width)
             / 2.0
             - self.get(i).width / 2.0;
         self.get_mut(i).prelim = prelim;
     }
 
-    fn seperate(&mut self, i: TreeIndex, sib: usize, mut ih: InnerYLeftSiblings) {
+    fn seperate(&mut self, i: TreeIndex, sib: usize, mut ih: &[(usize, f64)]) {
         let sr = self.nth_child(i, sib - 1);
         let cl = self.nth_child(i, sib);
         let mut mssr = sr.modifier;
@@ -215,23 +206,19 @@ impl LayoutTree {
         let mut cl = Some(cl.own_index);
 
         while let (Some(r), Some(l)) = (sr, cl) {
-            if ih
-                .low_y()
-                .map(|x| self.get(r).bottom() > x)
-                .unwrap_or(false)
-            {
-                ih.0.pop();
+            if self.get(r).bottom() > ih.last().unwrap().1 {
+                ih = &ih[0..ih.len() - 1]
             }
 
             let r_n = self.get(r);
             let l_n = self.get(l);
-            let dist =
-                (mssr + r_n.prelim) - (mscl + l_n.prelim) + r_n.width / 2.0 + l_n.width / 2.0;
+            let dist = (mssr + r_n.prelim + r_n.width) - (mscl + l_n.prelim);
             if dist > 0.0 || (dist < 0.0 && first) {
                 mscl += dist;
-                self.move_subtree(i, sib, ih.id(), dist);
+                self.move_subtree(i, sib, dist);
+                self.distribute_extra(i, sib, ih.last().unwrap().0, dist);
+                first = false;
             }
-            first = false;
             let sy = self.get(r).bottom();
             let cy = self.get(l).bottom();
 
@@ -258,57 +245,42 @@ impl LayoutTree {
     }
 
     fn set_right_thread(&mut self, i: TreeIndex, sib: usize, right: TreeIndex, modsumsr: f64) {
-        let ri = self.nth_child(i, sib).extremes.unwrap().right;
-        let diff = (modsumsr - self.get(right).modifier)
-            - self.nth_child(i, sib).extremes.unwrap().modifier_sum_right;
+        let ri = self.nth_child(i, sib).extreme_right.unwrap();
+        let diff =
+            (modsumsr - self.get(right).modifier) - self.nth_child(i, sib).modifier_sum_right;
 
         let ri = self.get_mut(ri);
         ri.right_thread = Some(right);
         ri.modifier += diff;
         ri.prelim -= diff;
-        self.nth_child_mut(i, sib).extremes.unwrap().right =
-            self.nth_child(i, sib - 1).extremes.unwrap().right;
+        self.nth_child_mut(i, sib).extreme_right = self.nth_child(i, sib - 1).extreme_right;
 
-        self.nth_child_mut(i, sib)
-            .extremes
-            .unwrap()
-            .modifier_sum_right = self
-            .nth_child(i, sib - 1)
-            .extremes
-            .unwrap()
-            .modifier_sum_right;
+        self.nth_child_mut(i, sib).modifier_sum_right =
+            self.nth_child(i, sib - 1).modifier_sum_right;
     }
     fn set_left_thread(&mut self, i: TreeIndex, sib: usize, left: TreeIndex, modsumcl: f64) {
-        let li = self.first_child(i).extremes.unwrap().left;
-        let diff = (modsumcl - self.get(left).modifier)
-            - self.first_child(i).extremes.unwrap().modifier_sum_left;
+        let li = self.first_child(i).extreme_left.unwrap();
+        let diff = (modsumcl - self.get(left).modifier) - self.first_child(i).modifier_sum_left;
 
         let li = self.get_mut(li);
         li.left_thread = Some(left);
         li.modifier += diff;
         li.prelim -= diff;
-        self.first_child_mut(i).extremes.unwrap().left =
-            self.nth_child(i, sib).extremes.unwrap().left;
+        self.first_child_mut(i).extreme_left = self.nth_child(i, sib).extreme_left;
 
-        self.first_child_mut(i).extremes.unwrap().modifier_sum_left =
-            self.nth_child(i, sib).extremes.unwrap().modifier_sum_left;
+        self.first_child_mut(i).modifier_sum_left = self.nth_child(i, sib).modifier_sum_left;
     }
 
-    fn move_subtree(&mut self, i: TreeIndex, sib: usize, ssib: Option<usize>, dist: f64) {
+    fn move_subtree(&mut self, i: TreeIndex, sib: usize, dist: f64) {
         let c = self.nth_child_mut(i, sib);
         c.modifier += dist;
-        c.extremes.unwrap().modifier_sum_left += dist;
-        c.extremes.unwrap().modifier_sum_right += dist;
-
-        if let Some(ssib) = ssib {
-            self.distribute_extra(i, sib, ssib, dist)
-        }
+        c.modifier_sum_left += dist;
+        c.modifier_sum_right += dist;
     }
 
     fn distribute_extra(&mut self, i: TreeIndex, sib: usize, ssib: usize, dist: f64) {
-        let n = sib - ssib;
-        if n > 1 {
-            let n = n as f64;
+        if ssib != sib - 1 {
+            let n = (sib - ssib) as f64;
             let c_si = self.nth_child_mut(i, ssib + 1);
             c_si.shift += dist / n;
             let c = self.nth_child_mut(i, sib);
@@ -322,35 +294,6 @@ impl LayoutTree {
         for child in self.children_ids(i) {
             self.set_y(child, y + self.get(i).height);
         }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-struct InnerYLeftSiblings(Vec<(f64, usize)>);
-
-impl InnerYLeftSiblings {
-    fn new(min_y: f64, sibling_id: usize) -> Self {
-        InnerYLeftSiblings(vec![(min_y, sibling_id)])
-    }
-
-    fn update(mut self, min_y: f64, sibling_id: usize) -> Self {
-        while !self.is_null() && min_y >= self.low_y().unwrap() {
-            self.0.pop();
-        }
-
-        self.0.push((min_y, sibling_id));
-        self
-    }
-
-    fn low_y(&self) -> Option<f64> {
-        self.0.last().map(|x| x.0)
-    }
-    fn id(&self) -> Option<usize> {
-        self.0.last().map(|x| x.1)
-    }
-
-    fn is_null(&self) -> bool {
-        self.0.is_empty()
     }
 }
 
@@ -429,7 +372,6 @@ impl From<InputTree> for LayoutTree {
                 x: None,
                 y: None,
                 parent,
-                extremes: None,
                 children: if n_children != 0 {
                     Some((children_start, children_start + n_children))
                 } else {
@@ -439,6 +381,10 @@ impl From<InputTree> for LayoutTree {
                 change: 0.0,
                 left_thread: None,
                 right_thread: None,
+                extreme_left: None,
+                extreme_right: None,
+                modifier_sum_left: 0.0,
+                modifier_sum_right: 0.0,
                 prelim: 0.0,
                 modifier: 0.0,
                 shift: 0.0,
