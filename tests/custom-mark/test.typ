@@ -22,7 +22,7 @@
   import draw: *
 
   register-face()
-  catmull((-3, 0), (-1,1), (1,-1), (3,0), mark: (end: "face", start: (symbol: ":)", flip: true, reverse: true), ))
+  catmull((-3, 0), (-1,1), (1,-1), (3,0), mark: (end: "face", flip: true, start: (symbol: ":)", flip: false, reverse: true), ))
 })
 
 #test-case({
@@ -38,5 +38,5 @@
   import draw: *
 
   register-face()
-  line((0,0), (3,0), mark: (end: (":)", ":)", ":)"), sep: -.3))
+  line((0,0), (3,0), mark: (end: (":)", ":)", ":)"), flip: true, sep: -.3))
 })

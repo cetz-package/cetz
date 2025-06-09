@@ -43,6 +43,7 @@
     shorten-to: auto,
     position-samples: auto,
     anchor: auto,
+    transform-shape: auto,
   )
 
   if type(style.at(root)) != array {
@@ -96,6 +97,11 @@
           util.resolve-number(ctx, v)
         })
       }
+    }
+
+    // Flip transformed marks
+    if style.transform-shape {
+      style.flip = not style.flip
     }
 
     out.push(style)
@@ -354,7 +360,8 @@
   }
 
   let (path, is-transformed) = if not style.at("transform-shape", default: true) and transform != none {
-    (drawable.apply-transform(transform, path).first(), true)
+    (drawable.apply-transform(
+      matrix.mul-mat(matrix.transform-scale((1,1,0)), transform), path).first(), true)
   } else {
     (path, false)
   }
@@ -377,6 +384,7 @@
       segments,
       is-end: true
     )
+
     drawables += end-drawables
     distance.last() = end-distance
     snap-to.last() = pt
