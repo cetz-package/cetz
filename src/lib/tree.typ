@@ -129,8 +129,8 @@
     let width = spread
     if measure-content {
       let m = measure(content)
-      height = util.resolve-number(ctx, m.height)
-      width = util.resolve-number(ctx, m.width)
+      height = util.resolve-number(ctx, m.height) + grow
+      width = util.resolve-number(ctx, m.width) + spread
     }
     return (
       height: height,
