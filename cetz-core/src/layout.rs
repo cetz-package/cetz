@@ -217,8 +217,8 @@ impl LayoutTree {
                 mscl += dist;
                 self.move_subtree(i, sib, dist);
                 self.distribute_extra(i, sib, ih.last().unwrap().0, dist);
-                first = false;
             }
+            first = false;
             let sy = self.get(r).bottom();
             let cy = self.get(l).bottom();
 
