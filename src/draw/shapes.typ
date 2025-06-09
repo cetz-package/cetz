@@ -1517,20 +1517,30 @@
   },)
 }
 
-/// Create a new path with one or more elments used as sub-paths.
+/// Create a new path with each element used as sub-paths.
 /// This can be used to create paths with holes.
 ///
+/// Unlike `merge-path`, this function groups the shapes as sub-paths
+/// instead of concattenating them into a single continous path.
+///
 /// ```typc example
-/// multi-path({
+/// compound-path({
 ///   rect((-1, -1), (2, 2))
 ///   circle((0, 0), radius: .5)
 /// }, fill: blue)
 /// ```
 ///
+/// ## Anchors
+///   **centroid**: Centroid of the _closed and non self-intersecting_ shape. Only exists if `close` is true.
+///   Supports path anchors and shapes where all vertices share the same z-value.
+///
 /// - body (elements): Elements with paths to be merged together.
 /// - name (none,str):
 /// - ..style (style):
-#let multi-path(body, name: none, ..style) = {
+#let compound-path(body, name: none, ..style) = {
+  assert.eq(style.pos().len(), 0,
+    message: "compound-path: Unexpected positional arguments")
+
   let style = style.named()
   return (
     ctx => {
@@ -1543,9 +1553,9 @@
       }
 
       assert.ne(subpaths, (),
-        message: "multi-path must at least contain one element!")
+        message: "compound-path must at least contain one element!")
 
-      let (_, first-path-closed, first-path-segments) = subpaths.first()
+      let (_, first-path-closed, _) = subpaths.first()
 
       let style = styles.resolve(ctx.style, merge: style)
       let drawables = drawable.path(
@@ -1555,7 +1565,8 @@
       let (transform, anchors) = anchor_.setup(
         name => {
           if name == "centroid" {
-            return polygon_.simple-centroid(polygon_.from-subpath(first-path-segments))
+            return polygon_.simple-centroid(polygon_.from-subpath(
+              subpaths.first()))
           }
         },
         if first-path-closed != none { ("centroid",) } else { () },
