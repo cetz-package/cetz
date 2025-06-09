@@ -189,9 +189,11 @@ impl LayoutTree {
     fn position_root(&mut self, i: TreeIndex) {
         let first = self.first_child(i);
         let last = self.last_child(i);
-        let prelim = (first.prelim + first.modifier + last.prelim + last.modifier + last.width)
-            / 2.0
-            - self.get(i).width / 2.0;
+        let prelim = (first.prelim + first.modifier - first.width / 2.0
+            + last.prelim
+            + last.modifier
+            + last.width / 2.0)
+            / 2.0;
         self.get_mut(i).prelim = prelim;
     }
 
@@ -212,7 +214,7 @@ impl LayoutTree {
 
             let r_n = self.get(r);
             let l_n = self.get(l);
-            let dist = (mssr + r_n.prelim + r_n.width) - (mscl + l_n.prelim);
+            let dist = (mssr + r_n.prelim) - (mscl + l_n.prelim) + (r_n.width + l_n.width) / 2.0;
             if dist > 0.0 || (dist < 0.0 && first) {
                 mscl += dist;
                 self.move_subtree(i, sib, dist);
@@ -512,7 +514,18 @@ mod test {
             ]),
         ]);
 
+        let layout_tree: LayoutTree = t.clone().into();
+        dbg!(&layout_tree);
+        check_trees_are_same(t.clone(), layout_tree);
         dbg!(t.layout());
+
+        let t = InputTree::new(1., 1.).with_children(vec![
+            InputTree::new(2., 4.),
+            InputTree::new(3., 1.0).with_children(vec![InputTree::new(4.0, 1.0)]),
+        ]);
+
+        dbg!(t.layout());
+        panic!();
     }
 
     #[test]
