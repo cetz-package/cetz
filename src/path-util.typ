@@ -332,12 +332,12 @@
   }
 }
 
-/// Shorte a path on one or both sides
+/// Shorten a path on one or both sides
 ///
 /// - path (Path): Path
 /// - distance (number,ratio,array): Distance to shorten the path by
 /// - reverse (boolean): If true, start from the end
-/// - mode ("CURVED", "LINEAR"): Shortening mode for cubic segments
+/// - mode ('CURVED','LINEAR'): Shortening mode for cubic segments
 /// - samples (auto,int): Samples to take for measuring cubic segments
 /// - snap-to (none,array): Optional array of points to try to move the shortened segment to
 #let shorten-to(path, distance, reverse: false,

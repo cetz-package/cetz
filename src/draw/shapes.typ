@@ -1525,9 +1525,9 @@
 ///
 /// ```typc example
 /// compound-path({
-///   rect((-1, -1), (2, 2))
+///   rect((-1, -1), (1, 1))
 ///   circle((0, 0), radius: .5)
-/// }, fill: blue)
+/// }, fill: blue, fill-rule: "even-odd")
 /// ```
 ///
 /// ## Anchors
