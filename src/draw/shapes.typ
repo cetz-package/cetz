@@ -674,6 +674,124 @@
   },)
 }
 
+
+/// Draws a n-pointed star.
+///
+/// ```typc example
+/// n-star((0,0), 5)
+///
+/// // An 8-pointed star, rotated
+/// n-star((2,0), 8, angle: 11.25deg)
+///
+/// // A 6-pointed star showing its inner hexagon
+/// n-star((4,0), 6, show-inner: true, style: red)
+/// ``` 
+///
+/// - origin (coordinate): Coordinate to draw the star's center at.
+/// - sides (int): Number of points of the star (>= 3).
+/// - angle (angle) = 0deg: Angle to rotate the star around its origin.
+/// - name (none, str): An optional name to identify the shape.
+///
+/// ## Styling
+/// Root: nstar
+/// - radius (inner, outer) = : The radius of the star's inner and outer points.
+/// - show-inner (bool) = false: If true, also draws the inner polygon connecting the star's inner points.
+/// - fill (color, gradient): The fill color for the star.
+/// - stroke (color, thickness, ...): The stroke for the star and the inner polygon.
+#let n-star(origin, sides, angle: 0deg, name: none, anchor: none, ..style) = {
+  assert(type(sides) == int and sides >= 3,
+    message: "Invalid number of sides: " + repr(sides))
+
+  let style = style.named()
+  return (ctx => {
+    let anchors = ()
+
+    let style = styles.resolve(ctx.style, merge: style, root: "n-star")
+
+    let (ctx, origin) = coordinate.resolve(ctx, origin)
+    let (inner-radius, outer-radius) = if type(style.radius) == array {
+      style.radius.map(util.resolve-number.with(ctx))
+    } else {
+      (style.radius, style.radius).map(util.resolve-number.with(ctx))
+    }
+
+    let angle_step = 360deg / sides
+
+    let point_pairs = range(0, sides).map(i => {
+      let inner_angle = angle + i * angle_step
+      let inner_point = vector.add(origin, (
+        calc.cos(inner_angle) * inner-radius,
+        calc.sin(inner_angle) * outer-radius,
+        0
+      ))
+      let outer_angle = inner_angle + angle_step / 2
+      let outer_point = vector.add(origin, (
+        calc.cos(outer_angle) * outer-radius,
+        calc.sin(outer_angle) * outer-radius,
+        0
+      ))
+
+      (inner_point, outer_point)
+    })
+
+    let drawables = {
+      let main_shape = drawable.line-strip(
+        point_pairs.flatten().chunks(3),
+        close: true,
+        fill: style.fill,
+        stroke: style.stroke,
+      )
+      if style.show-inner {
+        let inner_shape = drawable.line-strip(
+          point_pairs.map(pair => pair.at(0)),
+          close: true,
+          fill: style.fill,
+          stroke: style.stroke,
+        )
+        (main_shape, inner_shape)
+      } else {
+        main_shape
+      }
+    }
+
+    let edge-anchors = range(0, sides * 2).map(i => "edge-" + str(i))
+    let corner-anchors = range(0, sides * 2).map(i => "corner-" + str(i))
+
+    let (transform, anchors) = anchor_.setup(
+      name => {
+        return if name == "center" or name == "default" {
+          origin
+        } else if name in edge-anchors {
+          let idx = edge-anchors.position(item => item == name)
+          vector.lerp(
+            points.at(idx),
+            points.at(idx + 1, default: points.first()),
+            .5)
+        } else if name in corner-anchors {
+          let idx = corner-anchors.position(item => item == name)
+          points.at(idx)
+        }
+      },
+      ("center",) + edge-anchors + corner-anchors,
+      name: name,
+      transform: ctx.transform,
+      path-anchors: false,
+      border-anchors: true,
+      radii: (outer-radius * 2, outer-radius * 2),
+      path: (drawables),
+      offset-anchor: anchor,
+      default: "center",
+    )
+
+    return (
+      ctx: ctx,
+      name: name,
+      anchors: anchors,
+      drawables: drawable.apply-transform(transform, drawables),
+    )
+  },)
+}
+
 /// Draws a grid between two coordinates
 ///
 /// ```typc example
