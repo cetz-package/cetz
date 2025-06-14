@@ -694,8 +694,7 @@
 ///
 /// ## Styling
 /// Root: nstar
-/// - inner-radius (number) = 0.5: The radius of the circle on which the inner points lie.
-/// - outer-radius (number) = 1: The radius of the circle on which the outer points lie.
+/// - radius (inner, outer) = : The radius of the star's inner and outer points.
 /// - show-inner (bool) = false: If true, also draws the inner polygon connecting the star's inner points.
 /// - fill (color, gradient): The fill color for the star.
 /// - stroke (color, thickness, ...): The stroke for the star and the inner polygon.
@@ -710,7 +709,7 @@
     let style = styles.resolve(ctx.style, merge: style, root: "n-star")
 
     let (ctx, origin) = coordinate.resolve(ctx, origin)
-    let (inner_radius, outer_radius) = if type(style.radius) == array {
+    let (inner-radius, outer-radius) = if type(style.radius) == array {
       style.radius.map(util.resolve-number.with(ctx))
     } else {
       (style.radius, style.radius).map(util.resolve-number.with(ctx))
@@ -721,14 +720,14 @@
     let point_pairs = range(0, sides).map(i => {
       let inner_angle = angle + i * angle_step
       let inner_point = vector.add(origin, (
-        calc.cos(inner_angle) * inner_radius,
-        calc.sin(inner_angle) * inner_radius,
+        calc.cos(inner_angle) * inner-radius,
+        calc.sin(inner_angle) * outer-radius,
         0
       ))
       let outer_angle = inner_angle + angle_step / 2
       let outer_point = vector.add(origin, (
-        calc.cos(outer_angle) * outer_radius,
-        calc.sin(outer_angle) * outer_radius,
+        calc.cos(outer_angle) * outer-radius,
+        calc.sin(outer_angle) * outer-radius,
         0
       ))
 
@@ -778,7 +777,7 @@
       transform: ctx.transform,
       path-anchors: false,
       border-anchors: true,
-      radii: (outer_radius * 2, outer_radius * 2),
+      radii: (outer-radius * 2, outer-radius * 2),
       path: (drawables),
       offset-anchor: anchor,
       default: "center",
