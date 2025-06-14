@@ -678,13 +678,13 @@
 /// Draws a n-pointed star.
 ///
 /// ```typc example
-/// nstar((0,0), 5)
+/// n-star((0,0), 5)
 ///
 /// // An 8-pointed star, rotated
-/// nstar((2,0), 8, angle: 11.25deg)
+/// n-star((2,0), 8, angle: 11.25deg)
 ///
 /// // A 6-pointed star showing its inner hexagon
-/// nstar((4,0), 6, show-inner: true, style: red)
+/// n-star((4,0), 6, show-inner: true, style: red)
 /// ``` 
 ///
 /// - origin (coordinate): Coordinate to draw the star's center at.
