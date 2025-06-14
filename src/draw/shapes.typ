@@ -699,7 +699,7 @@
 /// - show-inner (bool) = false: If true, also draws the inner polygon connecting the star's inner points.
 /// - fill (color, gradient): The fill color for the star.
 /// - stroke (color, thickness, ...): The stroke for the star and the inner polygon.
-#let nstar(origin, sides, angle: 0deg, name: none, anchor: none, ..style) = {
+#let n-star(origin, sides, angle: 0deg, name: none, anchor: none, ..style) = {
   assert(type(sides) == int and sides >= 3,
     message: "Invalid number of sides: " + repr(sides))
 
@@ -707,7 +707,7 @@
   return (ctx => {
     let anchors = ()
 
-    let style = styles.resolve(ctx.style, merge: style, root: "nstar")
+    let style = styles.resolve(ctx.style, merge: style, root: "n-star")
 
     let (ctx, origin) = coordinate.resolve(ctx, origin)
     let (inner_radius, outer_radius) = if type(style.radius) == array {

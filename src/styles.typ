@@ -126,7 +126,7 @@
     stroke: auto,
     fill: auto,
   ),
-  nstar: (
+  n-star: (
     radius: auto,
     stroke: auto,
     fill: auto,
