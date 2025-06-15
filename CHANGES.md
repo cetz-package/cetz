@@ -1,3 +1,6 @@
+# 0.4.1
+- Added a `n-star` shape for drawing n-pointed stars
+
 # 0.4.0
 - Fixed a bug where passing a length as radius to a polygon resulted in an error
 - Added `ctx.shared-state`, a context field to share canvas-global state
