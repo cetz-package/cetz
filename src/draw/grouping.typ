@@ -256,12 +256,9 @@
 
     // Apply bounds padding
     bounds = if bounds != none {
-      let padding = util.as-padding-dict(style.padding)
-      padding = padding.pairs().map(
-        ((k, v)) => (
-          (k): util.resolve-number(ctx, v)
-        )
-      ).join()
+      let padding = util.map-dict(util.as-padding-dict(style.padding), (_, v) => {
+        util.resolve-number(ctx, v)
+      })
 
       aabb.padded(bounds, padding)
     }
@@ -383,7 +380,6 @@
   assert(name != none and name != "" and not name.starts-with("."),
     message: "Anchors must not be none, \"\" or start with \".\"!")
 
-  coordinate.resolve-system(position)
   return (ctx => {
     let (ctx, position) = coordinate.resolve(ctx, position)
     position = util.apply-transform(ctx.transform, position)

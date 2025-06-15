@@ -45,8 +45,8 @@
     shorten-to: auto,
     /// Apply shape transforms for marks. This is not honored per mark, but
     /// for all marks on a path. If set to false, marks get placed after the
-    /// shape they are placed on got transformed.
-    transform-shape: true,
+    /// shape they are placed on got transformed, they appear "flat" or two-dimensional.
+    transform-shape: false,
     /// Mark anchor used for placement
     /// Possible values are:
     ///   - "tip"

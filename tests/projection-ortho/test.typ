@@ -5,7 +5,7 @@
 #let axes(l) = {
   import draw: *
 
-  set-style(mark: (end: ">"))
+  set-style(mark: (end: ">", transform-shape: false))
 
   on-layer(-1, {
     line((-l,0), (l,0), stroke: red, name: "x")

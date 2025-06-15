@@ -2,6 +2,7 @@
 // Many functions are ports from https://github.com/Pomax/bezierjs
 #import "vector.typ"
 #import "aabb.typ"
+#import "wasm.typ": call_wasm
 
 #let cetz-core = plugin("../cetz-core/cetz_core.wasm")
 
@@ -397,9 +398,7 @@
 /// -> array
 #let cubic-extrema(s, e, c1, c2) = {
   let args = (s: s, e: e, c1: c1, c2: c2)
-  let encoded = cbor.encode(args)
-  let decoded = cbor(cetz-core.cubic_extrema_func(encoded))
-  decoded
+  return call_wasm(cetz-core.cubic_extrema_func, args)
 }
 
 /// Returns axis aligned bounding box coordinates `(bottom-left, top-right)` for a cubic bezier curve.

@@ -29,6 +29,7 @@ export default [
           "api/draw-functions/shapes/hobby",
           "api/draw-functions/shapes/catmull",
           "api/draw-functions/shapes/merge-path",
+          "api/draw-functions/shapes/compound-path",
         ],
       },
       {

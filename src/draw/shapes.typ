@@ -133,8 +133,6 @@
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
   style = style.named()
 
-  (a, b, c).map(coordinate.resolve-system)
-
   return (ctx => {
     let (ctx, a, b, c) = coordinate.resolve(ctx, a, b, c)
 
@@ -236,9 +234,6 @@
     message: "Unexpected positional arguments: " + repr(style.pos()),
   )
   let style = style.named()
-
-  // Coordinate check
-  let t = coordinate.resolve-system(position)
 
   let start-angle = if start == auto { stop - delta } else { start }
   let stop-angle = if stop == auto { start + delta } else { stop }
@@ -462,8 +457,6 @@
     to = ((rel: (to, 1), to: from))
   }
 
-  (from, to).map(coordinate.resolve-system)
-
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, from, to)
     let style = styles.resolve(ctx.style, merge: style, root: "mark")
@@ -523,9 +516,6 @@
 
   assert(pts.len() >= 2, message: "Line must have a minimum of two points")
 
-  // Coordinate check
-  let pts-system = pts.map(coordinate.resolve-system)
-
   // Find the intersection between line a-b next to b
   // if no intersection could be found, return a.
   let element-line-intersection(ctx, elem, a, b) = {
@@ -551,6 +541,7 @@
   return (ctx => {
     let first-elem = pts.first()
     let last-elem = pts.last()
+    let pts-system = pts.map(coordinate.resolve-system.with(ctx))
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
 
     // If the first/last element, test for intersection
@@ -622,8 +613,6 @@
 /// *Root*: `polygon`
 /// - radius (number) = 1: Radius of the polygon
 #let polygon(origin, sides, angle: 0deg, name: none, anchor: none, ..style) = {
-  coordinate.resolve-system(origin)
-
   assert(type(sides) == int and sides >= 3,
     message: "Invalid number of sides: " + repr(sides))
 
@@ -708,8 +697,6 @@
 /// ## Anchors
 ///   Supports border anchors.
 #let grid(from, to, name: none, ..style) = {
-  (from, to).map(coordinate.resolve-system)
-
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
   style = style.named()
 
@@ -859,23 +846,12 @@
     panic("Expected 2 or 3 positional arguments, got " + str(args.len()))
   }
 
-  coordinate.resolve-system(a)
-
-  if b != auto {
-    coordinate.resolve-system(b)
-  }
-
-  if type(angle) != typst-angle {
-    coordinate.resolve-system(angle)
-  }
-
   return (ctx => {
     let body = body
     let style = styles.resolve(ctx.style, merge: style, root: "content")
-    let padding = util.as-padding-dict(style.padding)
-    for (k, v) in padding {
-      padding.insert(k, util.resolve-number(ctx, v))
-    }
+    let padding = util.map-dict(util.as-padding-dict(style.padding), (_, v) => {
+      util.resolve-number(ctx, v)
+    })
 
     let (ctx, a) = coordinate.resolve(ctx, a)
     let b = b
@@ -1115,9 +1091,6 @@
 ///   Supports border and path anchors. It's default is the `"center"` anchor.
 ///
 #let rect(a, b, name: none, anchor: none, ..style) = {
-  // Coordinate check
-  let t = (a, b).map(coordinate.resolve-system)
-
   // No extra positional arguments from the style sink
   assert.eq(
     style.pos(),
@@ -1321,9 +1294,6 @@
   )
   let coordinates = (start, ..ctrl, end)
 
-  // Coordinates check
-  let t = coordinates.map(coordinate.resolve-system)
-
   return (
     ctx => {
       let (ctx, start, ..ctrl, end) = coordinate.resolve(ctx, ..coordinates)
@@ -1424,8 +1394,6 @@
 
   assert(pts.len() >= 2, message: "Catmull-rom curve requires at least two points. Got " + repr(pts.len()) + "instead.")
 
-  pts.map(coordinate.resolve-system)
-
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
     let style = styles.resolve(ctx.style, merge: style, root: "catmull")
@@ -1498,8 +1466,6 @@
 
   assert(pts.len() >= 2, message: "Hobby curve requires at least two points. Got " + repr(pts.len()) + "instead.")
 
-  pts.map(coordinate.resolve-system)
-
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
     let style = styles.resolve(ctx.style, merge: style, root: "hobby")
@@ -1551,20 +1517,30 @@
   },)
 }
 
-/// Create a new path with one or more elments used as sub-paths.
+/// Create a new path with each element used as sub-paths.
 /// This can be used to create paths with holes.
 ///
+/// Unlike `merge-path`, this function groups the shapes as sub-paths
+/// instead of concattenating them into a single continous path.
+///
 /// ```typc example
-/// multi-path({
-///   rect((-1, -1), (2, 2))
+/// compound-path({
+///   rect((-1, -1), (1, 1))
 ///   circle((0, 0), radius: .5)
-/// }, fill: blue)
+/// }, fill: blue, fill-rule: "even-odd")
 /// ```
+///
+/// ## Anchors
+///   **centroid**: Centroid of the _closed and non self-intersecting_ shape. Only exists if `close` is true.
+///   Supports path anchors and shapes where all vertices share the same z-value.
 ///
 /// - body (elements): Elements with paths to be merged together.
 /// - name (none,str):
 /// - ..style (style):
-#let multi-path(body, name: none, ..style) = {
+#let compound-path(body, name: none, ..style) = {
+  assert.eq(style.pos().len(), 0,
+    message: "compound-path: Unexpected positional arguments")
+
   let style = style.named()
   return (
     ctx => {
@@ -1577,9 +1553,9 @@
       }
 
       assert.ne(subpaths, (),
-        message: "multi-path must at least contain one element!")
+        message: "compound-path must at least contain one element!")
 
-      let (_, first-path-closed, first-path-segments) = subpaths.first()
+      let (_, first-path-closed, _) = subpaths.first()
 
       let style = styles.resolve(ctx.style, merge: style)
       let drawables = drawable.path(
@@ -1589,7 +1565,8 @@
       let (transform, anchors) = anchor_.setup(
         name => {
           if name == "centroid" {
-            return polygon_.simple-centroid(polygon_.from-subpath(first-path-segments))
+            return polygon_.simple-centroid(polygon_.from-subpath(
+              subpaths.first()))
           }
         },
         if first-path-closed != none { ("centroid",) } else { () },
