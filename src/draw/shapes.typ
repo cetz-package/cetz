@@ -715,35 +715,35 @@
       (style.radius, style.radius).map(util.resolve-number.with(ctx))
     }
 
-    let angle_step = 360deg / sides
+    let angle-step = 360deg / sides
 
-    let point_pairs = range(0, sides).map(i => {
-      let inner_angle = angle + i * angle_step
-      let inner_point = vector.add(origin, (
-        calc.cos(inner_angle) * inner-radius,
-        calc.sin(inner_angle) * outer-radius,
+    let point-pairs = range(0, sides).map(i => {
+      let inner-angle = angle + i * angle-step
+      let inner-point = vector.add(origin, (
+        calc.cos(inner-angle) * inner-radius,
+        calc.sin(inner-angle) * inner-radius,
         0
       ))
-      let outer_angle = inner_angle + angle_step / 2
-      let outer_point = vector.add(origin, (
-        calc.cos(outer_angle) * outer-radius,
-        calc.sin(outer_angle) * outer-radius,
+      let outer-angle = inner-angle + angle-step / 2
+      let outer-point = vector.add(origin, (
+        calc.cos(outer-angle) * outer-radius,
+        calc.sin(outer-angle) * outer-radius,
         0
       ))
 
-      (inner_point, outer_point)
+      (inner-point, outer-point)
     })
 
     let drawables = {
       let main_shape = drawable.line-strip(
-        point_pairs.flatten().chunks(3),
+        point-pairs.flatten().chunks(3),
         close: true,
         fill: style.fill,
         stroke: style.stroke,
       )
       if style.show-inner {
         let inner_shape = drawable.line-strip(
-          point_pairs.map(pair => pair.at(0)),
+          point-pairs.map(pair => pair.at(0)),
           close: true,
           fill: style.fill,
           stroke: style.stroke,
