@@ -126,6 +126,13 @@
     stroke: auto,
     fill: auto,
   ),
+  n-star: (
+    radius: auto,
+    stroke: auto,
+    fill: auto,
+    // Connect inner points of the star
+    show-inner: false,
+  ),
   content: (
     padding: auto,
     // Supported values
