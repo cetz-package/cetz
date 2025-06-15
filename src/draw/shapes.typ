@@ -1798,7 +1798,7 @@
 /// circle((1, 1), radius: 0.1, fill: blue, name: "c1")
 /// circle((0, 1), radius: 0.1, fill: red, name: "c2")
 /// rect((0, 2), (1, 2.5), name: "r1")
-/// bbox("c1", "c2", "r1", stroke: yellow, padding: 0.1)
+/// rect-around("c1", "c2", "r1", stroke: yellow, padding: 0.1)
 /// ```
 /// - ..pts-style (coordinates,style): Positional two or more coordinates/elements to calculate bounding box of. Accepts style key-value pairs.
 ///
@@ -1808,7 +1808,7 @@
 /// 
 /// ## Anchors
 /// The same as for the rect shape.
-#let bbox(..pts-style) = {
+#let rect-around(..pts-style) = {
   let pts = pts-style.pos()
   let style = pts-style.named()
 
