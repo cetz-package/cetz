@@ -125,6 +125,7 @@
     radius: auto,
     stroke: auto,
     fill: auto,
+    fill-rule: auto,
   ),
   n-star: (
     radius: auto,
