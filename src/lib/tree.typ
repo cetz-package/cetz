@@ -19,7 +19,7 @@
 // - parent (node): Parent (source) tree node
 // - child (node): Child (target) tree node
 #let default-draw-edge(from, to, parent, child) = {
-  draw.line(from, to)
+  draw.line(from + ".south", to + ".north")
 }
 
 // Default node draw callback
@@ -33,16 +33,16 @@
   }
 
   draw.get-ctx(ctx => {
-    draw.content((), text)
+    draw.content((), text, anchor: "north")
   })
 }
 
 
-#let layout-node(node) = {
+#let layout-node(node, grow, spread) = {
   let just_heights(node) = {
     (height: float(node.height), width: float(node.width), children: node.children.map(x => just_heights(x)))
   }
-  let encoded = cbor.encode(just_heights(node))
+  let encoded = cbor.encode((just_heights(node), grow, spread))
   let positions = cbor(cetz-core.layout_func(encoded))
 
   let weave_together(node, positions) = {
@@ -94,8 +94,8 @@
     assert(ctx != none)
   }
   assert(parent-position in ("begin", "center", "end", "after-end"))
-  assert(grow > 0)
-  assert(spread > 0)
+  assert(grow >= 0)
+  assert(spread >= 0)
 
   direction = (
     up: "north",
@@ -125,12 +125,12 @@
       content = tree
     }
 
-    let height = grow
-    let width = spread
+    let height = 0.0
+    let width = 0.0
     if measure-content {
       let m = measure(content)
-      height = util.resolve-number(ctx, m.height) + grow
-      width = util.resolve-number(ctx, m.width) + spread
+      height = util.resolve-number(ctx, m.height)
+      width = util.resolve-number(ctx, m.width)
     }
     return (
       height: height,
@@ -210,7 +210,7 @@
   }
 
   let root = build-node(root)
-  let nodes = layout-node(root)
+  let nodes = layout-node(root, grow, spread)
   let node = build-element(nodes, none)
 
   // Render node recursive

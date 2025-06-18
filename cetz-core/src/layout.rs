@@ -42,36 +42,44 @@ struct NodeData {
 }
 
 impl NodeData {
-    fn bottom(&self) -> f64 {
-        self.height + self.y.unwrap()
+    fn bottom(&self, tree: &LayoutTree) -> f64 {
+        self.height + self.y.unwrap() + tree.vertical_margin
+    }
+
+    fn width(&self, tree: &LayoutTree) -> f64 {
+        self.width + tree.horizontal_margin
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
-struct LayoutTree(Vec<NodeData>);
+struct LayoutTree {
+    tree: Vec<NodeData>,
+    vertical_margin: f64,
+    horizontal_margin: f64,
+}
 
 impl LayoutTree {
     fn get(&self, i: TreeIndex) -> &NodeData {
-        &self.0[i.0]
+        &self.tree[i.0]
     }
 
     fn get_mut(&mut self, i: TreeIndex) -> &mut NodeData {
-        &mut self.0[i.0]
+        &mut self.tree[i.0]
     }
 
     fn first_child_mut(&mut self, i: TreeIndex) -> &mut NodeData {
         let (a, _) = self.get(i).children.unwrap();
-        &mut self.0[a]
+        &mut self.tree[a]
     }
 
     fn first_child(&self, i: TreeIndex) -> &NodeData {
         let (a, _) = self.get(i).children.unwrap();
-        &self.0[a]
+        &self.tree[a]
     }
 
     fn last_child(&self, i: TreeIndex) -> &NodeData {
         let (_, b) = self.get(i).children.unwrap();
-        &self.0[b - 1]
+        &self.tree[b - 1]
     }
 
     fn nth_child_id(&self, i: TreeIndex, n: usize) -> TreeIndex {
@@ -81,12 +89,12 @@ impl LayoutTree {
 
     fn nth_child(&self, i: TreeIndex, n: usize) -> &NodeData {
         let (a, _) = self.get(i).children.unwrap();
-        &self.0[a + n]
+        &self.tree[a + n]
     }
 
     fn nth_child_mut(&mut self, i: TreeIndex, n: usize) -> &mut NodeData {
         let (a, _) = self.get(i).children.unwrap();
-        &mut self.0[a + n]
+        &mut self.tree[a + n]
     }
 
     fn children_ids(&self, i: TreeIndex) -> impl Iterator<Item = TreeIndex> {
@@ -137,13 +145,15 @@ impl LayoutTree {
 
         let left_bottom = self
             .get(self.get(self.nth_child_id(i, 0)).extreme_left.unwrap())
-            .bottom();
+            .bottom(self);
         let mut ih = vec![(0, left_bottom)];
 
         for sib in 1..self.n_children(i) {
             let child_id = self.nth_child_id(i, sib);
             self.first_walk(child_id);
-            let min_y = self.get(self.get(child_id).extreme_right.unwrap()).bottom();
+            let min_y = self
+                .get(self.get(child_id).extreme_right.unwrap())
+                .bottom(self);
             self.seperate(i, sib, &ih);
             while ih.last().is_some() && min_y >= ih.last().unwrap().1 {
                 ih.pop();
@@ -189,11 +199,12 @@ impl LayoutTree {
     fn position_root(&mut self, i: TreeIndex) {
         let first = self.first_child(i);
         let last = self.last_child(i);
-        let prelim = (first.prelim + first.modifier - first.width / 2.0
+        let prelim = (first.prelim + first.modifier - first.width(self) / 2.0
             + last.prelim
             + last.modifier
-            + last.width / 2.0)
+            + last.width(self) / 2.0)
             / 2.0;
+
         self.get_mut(i).prelim = prelim;
     }
 
@@ -208,21 +219,23 @@ impl LayoutTree {
         let mut cl = Some(cl.own_index);
 
         while let (Some(r), Some(l)) = (sr, cl) {
-            if self.get(r).bottom() > ih.last().unwrap().1 {
+            if self.get(r).bottom(self) > ih.last().unwrap().1 {
                 ih = &ih[0..ih.len() - 1]
             }
 
             let r_n = self.get(r);
             let l_n = self.get(l);
-            let dist = (mssr + r_n.prelim) - (mscl + l_n.prelim) + (r_n.width + l_n.width) / 2.0;
+            let dist = (mssr + r_n.prelim) - (mscl + l_n.prelim)
+                + (r_n.width(self) + l_n.width(self)) / 2.0;
+
             if dist > 0.0 || (dist < 0.0 && first) {
                 mscl += dist;
                 self.move_subtree(i, sib, dist);
                 self.distribute_extra(i, sib, ih.last().unwrap().0, dist);
             }
             first = false;
-            let sy = self.get(r).bottom();
-            let cy = self.get(l).bottom();
+            let sy = self.get(r).bottom(self);
+            let cy = self.get(l).bottom(self);
 
             if sy <= cy {
                 sr = self.get(r).right_contour();
@@ -294,12 +307,12 @@ impl LayoutTree {
     fn set_y(&mut self, i: TreeIndex, y: f64) {
         self.get_mut(i).y = Some(y);
         for child in self.children_ids(i) {
-            self.set_y(child, y + self.get(i).height);
+            self.set_y(child, y + self.get(i).height + self.vertical_margin);
         }
     }
 }
 
-///Enum for serialization of a layout tree
+///Enum for serialization of a layout tree, providing height and width of a tree
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct InputTree {
     height: f64,
@@ -307,17 +320,24 @@ pub struct InputTree {
     children: Vec<InputTree>,
 }
 
-///Enum for serialization of a layout tree
+///Enum for deserialization of a layout tree providing x, y values for nodes
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct OutputTree {
     x: f64,
     y: f64,
+    height: f64,
+    width: f64,
     children: Vec<OutputTree>,
 }
 
+//Very small amount of padding so that float problems don't lead to "technically" overlapping
+//boxes
+
 impl InputTree {
-    pub fn layout(self) -> OutputTree {
+    pub fn layout(self, vertical_margin: f64, horizontal_margin: f64) -> OutputTree {
         let mut tree: LayoutTree = self.into();
+        tree.horizontal_margin = horizontal_margin;
+        tree.vertical_margin = vertical_margin;
 
         tree.set_y(TreeIndex(0), 0.0);
 
@@ -336,6 +356,8 @@ impl LayoutTree {
         OutputTree {
             x: n.x.unwrap(),
             y: n.y.unwrap(),
+            height: n.height,
+            width: n.width,
             children: self.children_ids(i).map(|i| self.to_output(i)).collect(),
         }
     }
@@ -392,11 +414,14 @@ impl From<InputTree> for LayoutTree {
                 shift: 0.0,
             });
         }
-        LayoutTree(
-            tree.into_iter()
+        LayoutTree {
+            tree: tree
+                .into_iter()
                 .collect::<Option<Vec<_>>>()
                 .expect("The tree cannot plan to have children that it does not make!"),
-        )
+            vertical_margin: 0.0,
+            horizontal_margin: 0.0,
+        }
     }
 }
 
@@ -404,8 +429,10 @@ impl From<InputTree> for LayoutTree {
 mod test {
 
     use super::*;
+    use rand::{distr::weighted::WeightedIndex, prelude::*};
+    use rand_chacha::ChaCha8Rng;
 
-    fn check_trees_are_same(tree: InputTree, layout_tree: LayoutTree) {
+    fn check_trees_are_same(tree: &InputTree, layout_tree: &LayoutTree) {
         let mut tree_stack = vec![tree];
         let mut layout_stack = vec![TreeIndex(0)];
         while let (Some(id), Some(input_tree)) = (layout_stack.pop(), tree_stack.pop()) {
@@ -415,70 +442,29 @@ mod test {
                 children,
             } = input_tree;
             let x = layout_tree.get(id);
-            assert_eq!(x.height, height);
-            assert_eq!(x.width, width);
+            assert_eq!(x.height, *height);
+            assert_eq!(x.width, *width);
 
             layout_stack.extend(layout_tree.children_ids(id));
-            tree_stack.extend(children.into_iter());
+            tree_stack.extend(children.iter());
         }
         assert!(layout_stack.is_empty());
         assert!(tree_stack.is_empty());
     }
 
-    fn get_tree() -> InputTree {
-        let line = InputTree {
-            width: 1.0,
-            height: 1.0,
-            children: vec![InputTree {
-                width: 1.0,
-                height: 1.0,
-                children: vec![],
-            }],
-        };
-
-        let tree = InputTree {
-            width: 1.0,
-            height: 1.0,
-            children: vec![
-                InputTree {
-                    width: 1.0,
-                    height: 1.0,
-                    children: vec![line.clone()],
-                },
-                InputTree {
-                    width: 1.0,
-                    height: 1.0,
-                    children: vec![],
-                },
-                InputTree {
-                    width: 1.0,
-                    height: 1.0,
-                    children: vec![line.clone()],
-                },
-            ],
-        };
-
-        InputTree {
-            width: 1.0,
-            height: 1.0,
-            children: vec![
-                tree,
-                InputTree {
-                    width: 0.0,
-                    height: 0.0,
-                    children: vec![],
-                },
-                line.clone(),
-            ],
+    fn random_tree(rng: &mut impl Rng) -> InputTree {
+        let weights = [10.0, 5.0, 2.5, 1.25, 0.75, 0.375, 0.1875];
+        let dist = WeightedIndex::new(weights).unwrap();
+        fn random_tree_inner(dist: &WeightedIndex<f64>, rng: &mut impl Rng) -> InputTree {
+            InputTree {
+                height: rng.random::<f64>() * 100.0 + 0.5,
+                width: rng.random::<f64>() * 100.0 + 0.5,
+                children: (0..dist.sample(rng))
+                    .map(|_| random_tree_inner(dist, rng))
+                    .collect::<Vec<_>>(),
+            }
         }
-    }
-
-    #[test]
-    fn from_cetz_style() {
-        let tree = get_tree();
-        let layout_tree: LayoutTree = tree.clone().into();
-
-        check_trees_are_same(tree, layout_tree);
+        random_tree_inner(&dist, rng)
     }
 
     impl InputTree {
@@ -495,41 +481,176 @@ mod test {
             self
         }
     }
-    #[test]
-    fn simple_layout_test() {
-        let t = InputTree::new(100.0, 50.0);
-        assert_eq!(
-            t.layout(),
-            OutputTree {
-                x: 0.0,
-                y: 0.0,
-                children: vec![]
+
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    struct BBox {
+        xmin: f64,
+        ymin: f64,
+        xmax: f64,
+        ymax: f64,
+    }
+    impl BBox {
+        fn overlaps(&self, other: &BBox) -> bool {
+            self.xmin < other.xmax
+                && other.xmin < self.xmax
+                && self.ymin < other.ymax
+                && other.ymin < self.ymax
+        }
+    }
+
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    struct Line {
+        origin: (f64, f64),
+        dest: (f64, f64),
+    }
+
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    enum Orientation {
+        Collinear,
+        Clockwise,
+        Counterclockwise,
+    }
+    fn orientation(p: (f64, f64), q: (f64, f64), r: (f64, f64)) -> Orientation {
+        let val = (q.1 - p.1) * (r.0 - q.0) - (q.0 - p.0) * (r.1 - q.1);
+        if val.abs() < f64::EPSILON {
+            Orientation::Collinear
+        } else if val > 0.0 {
+            Orientation::Clockwise
+        } else {
+            Orientation::Counterclockwise
+        }
+    }
+    fn on_segment(p: (f64, f64), q: (f64, f64), r: (f64, f64)) -> bool {
+        q.0 <= p.0.max(r.0) && q.0 >= p.0.min(r.0) && q.1 <= p.1.max(r.1) && q.1 >= p.1.min(r.1)
+    }
+
+    impl Line {
+        fn intersects(&self, other: &Line) -> bool {
+            if self.origin == other.origin && self.dest != other.dest {
+                return false;
             }
-        );
-        let t = InputTree::new(40., 40.0).with_children(vec![
-            InputTree::new(40.0, 40.0),
-            InputTree::new(40.0, 40.0).with_children(vec![
-                InputTree::new(100.0, 40.0),
-                InputTree::new(200.0, 40.0),
-            ]),
-        ]);
 
-        let layout_tree: LayoutTree = t.clone().into();
-        dbg!(&layout_tree);
-        check_trees_are_same(t.clone(), layout_tree);
-        dbg!(t.layout());
+            let o1 = orientation(self.origin, self.dest, other.origin);
+            let o2 = orientation(self.origin, self.dest, other.dest);
+            let o3 = orientation(other.origin, other.dest, self.origin);
+            let o4 = orientation(other.origin, other.dest, self.dest);
+            if o1 != o2 && o3 != o4 {
+                return true;
+            }
 
-        let t = InputTree::new(1., 1.).with_children(vec![
-            InputTree::new(2., 4.),
-            InputTree::new(3., 1.0).with_children(vec![InputTree::new(4.0, 1.0)]),
-        ]);
+            if o1 == Orientation::Collinear && on_segment(self.origin, other.origin, self.dest) {
+                return true;
+            }
+            if o2 == Orientation::Collinear && on_segment(self.origin, other.dest, self.dest) {
+                return true;
+            }
+            if o3 == Orientation::Collinear && on_segment(other.origin, self.origin, other.dest) {
+                return true;
+            }
+            if o4 == Orientation::Collinear && on_segment(other.origin, self.dest, other.dest) {
+                return true;
+            }
 
-        dbg!(t.layout());
-        panic!();
+            false
+        }
+    }
+
+    impl OutputTree {
+        fn children_lines<'a>(&'a self) -> impl Iterator<Item = Line> + 'a {
+            let origin = (self.x, self.y + self.height);
+            self.children.iter().map(move |child| Line {
+                origin,
+                dest: (child.x, child.y),
+            })
+        }
+    }
+
+    fn no_aesthetic_problem(tree: &OutputTree) -> bool {
+        let mut tree_stack = vec![tree];
+        let mut boxes = vec![];
+        let mut lines = vec![];
+        while let Some(subtree) = tree_stack.pop() {
+            lines.extend(subtree.children_lines());
+
+            let OutputTree {
+                height,
+                width,
+                x,
+                y,
+                children,
+            } = subtree;
+
+            boxes.push(BBox {
+                xmin: x - width / 2.0,
+                ymin: *y,
+                xmax: x + width / 2.0,
+                ymax: *height,
+            });
+
+            tree_stack.extend(children.iter());
+        }
+
+        while let Some(bbox) = boxes.pop() {
+            for other in boxes.iter() {
+                if bbox.overlaps(other) {
+                    println!("bad bbox: {bbox:?} and {other:?}");
+                    return false;
+                }
+            }
+        }
+        while let Some(line) = lines.pop() {
+            for other in lines.iter() {
+                if line.intersects(other) {
+                    println!("bad lines: {line:?} and {other:?}");
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
+
+    impl OutputTree {
+        fn to_typst(&self, rng: &mut ChaCha8Rng) -> String {
+            let colors = [
+                "green", "blue", "red", "yellow", "orange", "purple", "teal", "lime", "aqua",
+            ];
+            let s = format!(
+                "block(height: {}pt, width: {}pt, fill: {}.transparentize(50%), [])",
+                self.height,
+                self.width,
+                colors.choose(rng).unwrap()
+            );
+
+            if self.children.is_empty() {
+                s
+            } else {
+                format!(
+                    "({s}, {})",
+                    self.children
+                        .iter()
+                        .map(|t| t.to_typst(rng))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                )
+            }
+        }
     }
 
     #[test]
-    fn layout_test() {
+    fn check_random_trees_are_good() {
+        let mut rng = ChaCha8Rng::seed_from_u64(0);
+        for _ in 0..100 {
+            let tree = random_tree(&mut rng);
+            let output_tree = tree.layout(1., 1.);
+            if !no_aesthetic_problem(&output_tree) {
+                panic!("This tree is bad: {}", output_tree.to_typst(&mut rng));
+            }
+        }
+    }
+
+    #[test]
+    fn check_importing() {
         let t = InputTree::new(30.0, 50.0).with_children(vec![
             InputTree::new(40.0, 70.0).with_children(vec![
                 InputTree::new(50.0, 60.0),
@@ -542,8 +663,8 @@ mod test {
         ]);
         let layout_tree: LayoutTree = t.clone().into();
         dbg!(&layout_tree);
-        check_trees_are_same(t.clone(), layout_tree);
+        check_trees_are_same(&t, &layout_tree);
 
-        t.layout();
+        t.layout(0.0, 0.0);
     }
 }

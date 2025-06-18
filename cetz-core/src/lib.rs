@@ -154,16 +154,14 @@ struct AabbArgs {
 
 #[wasm_func]
 pub fn aabb_func(input: &[u8]) -> Result<Vec<u8>, String> {
-    handle_cbor(input, |args: AabbArgs| {
-        aabb(args.init, args.pts)
-    })
+    handle_cbor(input, |args: AabbArgs| aabb(args.init, args.pts))
 }
 
 #[wasm_func]
 pub fn layout_func(input: &[u8]) -> Result<Vec<u8>, String> {
-    match from_reader::<InputTree, _>(input) {
-        Ok(input) => {
-            let output = input.layout();
+    match from_reader::<(InputTree, f64, f64), _>(input) {
+        Ok((input, vertical_margin, horizontal_margin)) => {
+            let output = input.layout(vertical_margin, horizontal_margin);
             let mut buf = Vec::new();
             into_writer(&output, &mut buf).unwrap();
             Ok(buf)
