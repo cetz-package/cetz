@@ -62,7 +62,7 @@ For information, see the [online manual](https://cetz-package.github.io/docs).
 To use this package, simply add the following code to your document:
 
 ```typ
-#import "@preview/cetz:0.3.4"
+#import "@preview/cetz:0.4.0"
 
 #cetz.canvas({
   import cetz.draw: *
@@ -86,7 +86,7 @@ just install
 The installed version can be imported by prefixing the package name with `@local`.
 
 ```typ
-#import "@local/cetz:0.3.4"
+#import "@local/cetz:0.4.0"
 
 #cetz.canvas({
   import cetz.draw: *
@@ -113,5 +113,6 @@ To run all tests you can run the `just test` target. You need to have
 - [fletcher](https://github.com/Jollywatt/typst-fletcher) Package for drawing commutative diagrams and figures with arrows.
 - [chronos](https://git.kb28.ch/HEL/chronos) Package for drawing sequence diagrams.
 - [circuiteria](https://git.kb28.ch/HEL/circuiteria) Package for drawing circuits.
+- [zap](https://github.com/l0uisgrange/zap) Package for drawing standard electronic circuits.
 - [rivet](https://git.kb28.ch/HEL/rivet-typst) Package for drawing instruction / register diagrams.
 - [plotsy-3d](https://github.com/misskacie/plotsy-3d) Package for rendering 3D objects & plots.

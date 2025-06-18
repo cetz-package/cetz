@@ -674,6 +674,124 @@
   },)
 }
 
+
+/// Draws a n-pointed star.
+///
+/// ```typc example
+/// n-star((0,0), 5)
+///
+/// // An 8-pointed star, rotated
+/// n-star((2,0), 8, angle: 11.25deg)
+///
+/// // A 6-pointed star showing its inner hexagon
+/// n-star((4,0), 6, show-inner: true, style: red)
+/// ``` 
+///
+/// - origin (coordinate): Coordinate to draw the star's center at.
+/// - sides (int): Number of points of the star (>= 3).
+/// - angle (angle) = 0deg: Angle to rotate the star around its origin.
+/// - name (none, str): An optional name to identify the shape.
+///
+/// ## Styling
+/// Root: nstar
+/// - radius (inner, outer) = : The radius of the star's inner and outer points.
+/// - show-inner (bool) = false: If true, also draws the inner polygon connecting the star's inner points.
+/// - fill (color, gradient): The fill color for the star.
+/// - stroke (color, thickness, ...): The stroke for the star and the inner polygon.
+#let n-star(origin, sides, angle: 0deg, name: none, anchor: none, ..style) = {
+  assert(type(sides) == int and sides >= 3,
+    message: "Invalid number of sides: " + repr(sides))
+
+  let style = style.named()
+  return (ctx => {
+    let anchors = ()
+
+    let style = styles.resolve(ctx.style, merge: style, root: "n-star")
+
+    let (ctx, origin) = coordinate.resolve(ctx, origin)
+    let (inner-radius, outer-radius) = if type(style.radius) == array {
+      style.radius.map(util.resolve-number.with(ctx))
+    } else {
+      (style.radius, style.radius).map(util.resolve-number.with(ctx))
+    }
+
+    let angle-step = 360deg / sides
+
+    let point-pairs = range(0, sides).map(i => {
+      let inner-angle = angle + i * angle-step
+      let inner-point = vector.add(origin, (
+        calc.cos(inner-angle) * inner-radius,
+        calc.sin(inner-angle) * inner-radius,
+        0
+      ))
+      let outer-angle = inner-angle + angle-step / 2
+      let outer-point = vector.add(origin, (
+        calc.cos(outer-angle) * outer-radius,
+        calc.sin(outer-angle) * outer-radius,
+        0
+      ))
+
+      (inner-point, outer-point)
+    })
+
+    let drawables = {
+      let main_shape = drawable.line-strip(
+        point-pairs.flatten().chunks(3),
+        close: true,
+        fill: style.fill,
+        stroke: style.stroke,
+      )
+      if style.show-inner {
+        let inner_shape = drawable.line-strip(
+          point-pairs.map(pair => pair.at(0)),
+          close: true,
+          fill: style.fill,
+          stroke: style.stroke,
+        )
+        (main_shape, inner_shape)
+      } else {
+        main_shape
+      }
+    }
+
+    let edge-anchors = range(0, sides * 2).map(i => "edge-" + str(i))
+    let corner-anchors = range(0, sides * 2).map(i => "corner-" + str(i))
+
+    let (transform, anchors) = anchor_.setup(
+      name => {
+        return if name == "center" or name == "default" {
+          origin
+        } else if name in edge-anchors {
+          let idx = edge-anchors.position(item => item == name)
+          vector.lerp(
+            points.at(idx),
+            points.at(idx + 1, default: points.first()),
+            .5)
+        } else if name in corner-anchors {
+          let idx = corner-anchors.position(item => item == name)
+          points.at(idx)
+        }
+      },
+      ("center",) + edge-anchors + corner-anchors,
+      name: name,
+      transform: ctx.transform,
+      path-anchors: false,
+      border-anchors: true,
+      radii: (outer-radius * 2, outer-radius * 2),
+      path: (drawables),
+      offset-anchor: anchor,
+      default: "center",
+    )
+
+    return (
+      ctx: ctx,
+      name: name,
+      anchors: anchors,
+      drawables: drawable.apply-transform(transform, drawables),
+    )
+  },)
+}
+
 /// Draws a grid between two coordinates
 ///
 /// ```typc example
@@ -1517,20 +1635,30 @@
   },)
 }
 
-/// Create a new path with one or more elments used as sub-paths.
+/// Create a new path with each element used as sub-paths.
 /// This can be used to create paths with holes.
 ///
+/// Unlike `merge-path`, this function groups the shapes as sub-paths
+/// instead of concattenating them into a single continous path.
+///
 /// ```typc example
-/// multi-path({
-///   rect((-1, -1), (2, 2))
+/// compound-path({
+///   rect((-1, -1), (1, 1))
 ///   circle((0, 0), radius: .5)
-/// }, fill: blue)
+/// }, fill: blue, fill-rule: "even-odd")
 /// ```
+///
+/// ## Anchors
+///   **centroid**: Centroid of the _closed and non self-intersecting_ shape. Only exists if `close` is true.
+///   Supports path anchors and shapes where all vertices share the same z-value.
 ///
 /// - body (elements): Elements with paths to be merged together.
 /// - name (none,str):
 /// - ..style (style):
-#let multi-path(body, name: none, ..style) = {
+#let compound-path(body, name: none, ..style) = {
+  assert.eq(style.pos().len(), 0,
+    message: "compound-path: Unexpected positional arguments")
+
   let style = style.named()
   return (
     ctx => {
@@ -1543,9 +1671,9 @@
       }
 
       assert.ne(subpaths, (),
-        message: "multi-path must at least contain one element!")
+        message: "compound-path must at least contain one element!")
 
-      let (_, first-path-closed, first-path-segments) = subpaths.first()
+      let (_, first-path-closed, _) = subpaths.first()
 
       let style = styles.resolve(ctx.style, merge: style)
       let drawables = drawable.path(
@@ -1555,7 +1683,8 @@
       let (transform, anchors) = anchor_.setup(
         name => {
           if name == "centroid" {
-            return polygon_.simple-centroid(polygon_.from-subpath(first-path-segments))
+            return polygon_.simple-centroid(polygon_.from-subpath(
+              subpaths.first()))
           }
         },
         if first-path-closed != none { ("centroid",) } else { () },

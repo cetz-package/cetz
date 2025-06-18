@@ -74,7 +74,6 @@
 /// - **spike** Point of the spike, halfway between `start` and `end` and shifted by `amplitude` towards the pointing direction.
 /// - **content** Point to place content/text at, in front of the spike.
 /// - **center** Center of the enclosing rectangle.
-
 #let brace(start, end, ..style, name: none) = {
   import draw: line, bezier, merge-path, scope, scale, translate, anchor, group
 

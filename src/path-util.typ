@@ -193,6 +193,7 @@
 /// - path (path): The path
 /// - distance (ratio, number): Distance along the path
 /// - reverse (bool): Travel from end to start
+/// - ignore-subpaths (bool): If false consider the whole path, including sub-paths
 ///
 /// -> dictionary Dictionary with the following keys:
 ///    - point (vector) The point on the path
@@ -200,7 +201,7 @@
 ///    - direction (vector) Normalized direction vector
 ///    - subpath-index (int) Index of the subpath
 ///    - segment-index (int) Index of the segment
-#let point-at(path, distance, reverse: false, samples: auto) = {
+#let point-at(path, distance, reverse: false, samples: auto, ignore-subpaths: true) = {
   if samples == auto {
     samples = number-of-samples(samples)
   }
@@ -208,7 +209,11 @@
   let travelled = 0
 
   let lengths = segment-lengths(path)
-  let total = lengths.map(l => l.sum(default: 0)).sum(default: 0)
+  let total = if ignore-subpaths {
+    lengths.first().sum(default: 0)
+  } else {
+    lengths.map(l => l.sum(default: 0)).sum(default: 0)
+  }
 
   if type(distance) == ratio {
     distance = total * distance / 100%
@@ -261,6 +266,10 @@
       }
 
       travelled += length
+    }
+
+    if ignore-subpaths {
+      break
     }
   }
 }
@@ -323,12 +332,12 @@
   }
 }
 
-/// Shorte a path on one or both sides
+/// Shorten a path on one or both sides
 ///
 /// - path (Path): Path
 /// - distance (number,ratio,array): Distance to shorten the path by
 /// - reverse (boolean): If true, start from the end
-/// - mode ("CURVED", "LINEAR"): Shortening mode for cubic segments
+/// - mode ('CURVED','LINEAR'): Shortening mode for cubic segments
 /// - samples (auto,int): Samples to take for measuring cubic segments
 /// - snap-to (none,array): Optional array of points to try to move the shortened segment to
 #let shorten-to(path, distance, reverse: false,
