@@ -1,5 +1,15 @@
+//! This module provides an algorithm to layout a tree so that the nodes of varying heights and
+//! weights are laid out aesthetically without wasting space. It follows the algorithm of van der
+//! Ploeg (2014) and its [accompanying public domain code](https://github.com/cwi-swat/non-layered-tidy-trees/tree/master)
+//!
+//! The nodes are laid out such that their anchor is at the middle top of the node.
+//!
+//! van der Ploeg, A. (2014). Drawing non-layered tidy trees in linear time. Software: Practice and Experience, 44(12), 1467–1484. https://doi.org/10.1002/spe.2213
+
 use serde::{Deserialize, Serialize};
 
+///A struct which points to specific nodes relative to [`LayoutTree`]. This way, we avoid using
+///any references that might cause difficulties with the borrow checker.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 struct TreeIndex(usize);
 
@@ -51,6 +61,8 @@ impl NodeData {
     }
 }
 
+/// This struct holds all nodes.
+/// The tree is arena-allocated to avoid issues with mutating references.
 #[derive(Debug, Clone, PartialEq)]
 struct LayoutTree {
     tree: Vec<NodeData>,
@@ -330,10 +342,10 @@ pub struct OutputTree {
     children: Vec<OutputTree>,
 }
 
-//Very small amount of padding so that float problems don't lead to "technically" overlapping
-//boxes
-
 impl InputTree {
+    ///Takes an [`InputTree`] and returns an [`OutputTree`] which has been laid out.
+    ///The two arguments add padding between nodes either vertically or horizontally (concretely,
+    ///it amounts to increasing the width and height of all nodes by the relevant margin).
     pub fn layout(self, vertical_margin: f64, horizontal_margin: f64) -> OutputTree {
         let mut tree: LayoutTree = self.into();
         tree.horizontal_margin = horizontal_margin;
@@ -371,7 +383,10 @@ impl From<LayoutTree> for OutputTree {
 
 impl From<InputTree> for LayoutTree {
     fn from(value: InputTree) -> Self {
+        //We initially use `Vec<Option<NodeData>>` as we need to progressively add nodes before we
+        //have their children. We can thus add `None` and refer to its index, and latter fill it in.
         let mut tree = vec![None];
+
         let mut stack = vec![(None, TreeIndex(0), value)];
         while let Some((parent, position, node)) = stack.pop() {
             let InputTree {
