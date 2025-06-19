@@ -1,5 +1,6 @@
 # 0.4.1
 - Added a `n-star` shape for drawing n-pointed stars
+- Added `breakable: false` to the `block` element of the canvas
 
 # 0.4.0
 - Fixed a bug where passing a length as radius to a polygon resulted in an error
