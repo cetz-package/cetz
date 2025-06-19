@@ -98,7 +98,7 @@
   }
 
   // The top-level function the canvas gets wrapped in
-  let container-fn = block
+  let container-fn = block.with(breakable: false)
 
   // Compute the baseline offset
   let baseline-offset = 0cm
