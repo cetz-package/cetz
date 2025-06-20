@@ -53,3 +53,13 @@
          (anchor: "center", name: to), stroke: red + 2pt)
   })
 }, args: (0, 1))
+
+#test-case({
+  import cetz.draw: *
+  cetz.tree.tree(data, draw-node: (node) => {
+    if node.depth == 2 and node.n == 1 {
+      node.content = [This is an extra wide node.]
+    }
+    content((), node.content, frame: "rect", padding: 0.1)
+  })
+})
