@@ -55,3 +55,21 @@
     content((), node.content, frame: "rect", padding: 0.1)
   })
 })
+
+#test-case({
+  import cetz.draw: *
+  let encircle(i) = {
+    std.box(baseline: 3pt, std.circle(stroke: .5pt, radius: .5em)[#move(dx: -0.35em, dy: -1.1em, $#i$)])
+  }
+  set-style(content: (padding: 0.5em))
+  cetz.tree.tree(
+    ([Expression #encircle($5$)], (
+        [Expression #encircle($3$)],
+        ([Expression #encircle($1$)], [`Int(1)`]),
+        [`Plus`],
+        ([Expression #encircle($2$)], [`Int(2)`]),
+      ),
+      [`Lt`],
+      ([Expression #encircle($4$)], [`Int(4)`]),
+    ))
+})
