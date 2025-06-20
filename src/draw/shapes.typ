@@ -1834,9 +1834,7 @@
     // Resolve padding and convert to canvas units
     let padding = util.as-padding-dict(style.padding)
     // Swap top and bottom padding for reasons
-    let temp = padding.top
-    padding.top = padding.bottom
-    padding.bottom = temp
+    (padding.top, padding.bottom) = (padding.bottom, padding.top)
     for (k, v) in padding {
       padding.insert(k, util.resolve-number(ctx, v))
     }
