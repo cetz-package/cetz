@@ -27,14 +27,6 @@
   line((a, .6, b), (b, .6, a), mark: (end: ">", start: ">"))
 })
 
-#for position in ("begin", "center", "end") {
-  test-case({
-    cetz.draw.set-style(content: (frame: "rect", padding: .1))
-    cetz.tree.tree(data, parent-position: position)
-  })
-  h(.1cm)
-}
-
 #for direction in ("down", "up", "left", "right") {
   test-case({
     cetz.draw.set-style(content: (frame: "rect", padding: .1))

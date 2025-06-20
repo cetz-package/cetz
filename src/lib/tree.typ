@@ -73,7 +73,6 @@
 /// - draw-node (auto,function): The function to call to draw a node. The function will be passed the node to draw (a dictionary with a `content` key) and is expected to return elements (`(node, parent-node) => elements`). The node must be drawn at the `(0,0)` coordinate. If `auto` is given, just the node's value will be drawn as content. The following predefined styles can be used:
 /// - draw-edge (none,auto,function): The function to call draw an edge between two nodes. The function will be passed the name of the starting node, the name of the ending node, the start node, the end node, and is expected to return elements (`(source-name, target-name, parent-node, child-node) => elements`). If `auto` is given, a straight line will be drawn between nodes.
 /// - direction (str): A string describing the direction the tree should grow in ("up", "down", "left", "right")
-/// - parent-position (str): Positioning of parent nodes (begin, center, end)
 /// - grow (float): Depth grow factor
 /// - spread (float): Sibling spread factor
 /// - name (none,str): The tree element's name
@@ -84,7 +83,6 @@
   draw-node: auto,
   draw-edge: auto,
   direction: "down",
-  parent-position: "center",
   grow: 1,
   spread: 1,
   name: none,
@@ -92,7 +90,6 @@
   edge-layer: 0,
   measure-content: true,
 ) = {
-  assert(parent-position in ("begin", "center", "end", "after-end"))
   assert(grow >= 0)
   assert(spread >= 0)
 
