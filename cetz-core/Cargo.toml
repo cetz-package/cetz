@@ -13,6 +13,10 @@ ciborium = "0.2.1"
 serde = "1.0.219"
 wasm-minimal-protocol = "0.1"
 
+[dev-dependencies]
+rand = { version = "0.9.1", features = ["alloc"] }
+rand_chacha = "0.9.0"
+
 [profile.release]
 lto = true
 strip = true
