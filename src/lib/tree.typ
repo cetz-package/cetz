@@ -10,8 +10,6 @@
 #let cetz-core = plugin("../../cetz-core/cetz_core.wasm")
 
 
-#let typst-content = content
-
 // Default edge draw callback
 //
 // - from (string): Source element name
@@ -19,7 +17,7 @@
 // - parent (node): Parent (source) tree node
 // - child (node): Child (target) tree node
 #let default-draw-edge(from, to, parent, child) = {
-  draw.line(from + ".center", to + ".center")
+  draw.line(from, to)
 }
 
 // Default node draw callback
@@ -102,7 +100,7 @@
     down: "south",
     right: "east",
     left: "west",
-  ).at(direction)
+  ).at(direction, default: "south")
 
   if draw-edge == auto {
     draw-edge = default-draw-edge
@@ -114,7 +112,6 @@
     draw-node = default-draw-node
   }
   assert(draw-node != none, message: "Node draw callback must be set!")
-
 
   draw.get-ctx(ctx => {
     let build-node(tree, depth: 0, sibling: 0) = {
