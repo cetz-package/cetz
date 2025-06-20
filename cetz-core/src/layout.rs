@@ -337,7 +337,9 @@ pub struct InputTree {
 pub struct OutputTree {
     x: f64,
     y: f64,
+    #[cfg(test)]
     height: f64,
+    #[cfg(test)]
     width: f64,
     children: Vec<OutputTree>,
 }
@@ -368,7 +370,9 @@ impl LayoutTree {
         OutputTree {
             x: n.x.unwrap(),
             y: n.y.unwrap(),
+            #[cfg(test)]
             height: n.height,
+            #[cfg(test)]
             width: n.width,
             children: self.children_ids(i).map(|i| self.to_output(i)).collect(),
         }

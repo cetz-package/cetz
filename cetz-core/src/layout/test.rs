@@ -76,14 +76,15 @@ fn on_segment(p: (f64, f64), q: (f64, f64), r: (f64, f64)) -> bool {
 
 impl Line {
     fn intersects(&self, other: &Line) -> bool {
-        if self.origin == other.origin && self.dest != other.dest {
-            return false;
-        }
-
         let o1 = orientation(self.origin, self.dest, other.origin);
         let o2 = orientation(self.origin, self.dest, other.dest);
         let o3 = orientation(other.origin, other.dest, self.origin);
         let o4 = orientation(other.origin, other.dest, self.dest);
+
+        if self.origin == other.origin && self.dest != other.dest && o2 != Orientation::Collinear {
+            return false;
+        }
+
         if o1 != o2 && o3 != o4 {
             return true;
         }

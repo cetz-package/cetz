@@ -158,7 +158,7 @@ pub fn aabb_func(input: &[u8]) -> Result<Vec<u8>, String> {
 }
 
 #[wasm_func]
-pub fn layout_func(input: &[u8]) -> Result<Vec<u8>, String> {
+pub fn layout_tree_func(input: &[u8]) -> Result<Vec<u8>, String> {
     match from_reader::<(InputTree, f64, f64), _>(input) {
         Ok((input, vertical_margin, horizontal_margin)) => {
             let output = input.layout(vertical_margin, horizontal_margin);
