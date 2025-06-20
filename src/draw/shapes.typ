@@ -1815,9 +1815,8 @@
   let ctx = get-ctx((ctx) => {
     let more_points = ()
     for pt in pts {
-      // If objects are given, include all anchors
-      // Skip dictionaries as they break the "in" nodes check
-      if type(pt) != dictionary and pt in ctx.nodes {
+      // If objects are given (by string name), include all anchors
+      if type(pt) == str and pt in ctx.nodes {
         for anchor in (ctx.nodes.at(pt).anchors)(()) {
           let temp = pt + "." + anchor
           more_points.push(temp)
