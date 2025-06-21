@@ -27,14 +27,6 @@
   line((a, .6, b), (b, .6, a), mark: (end: ">", start: ">"))
 })
 
-#for position in ("begin", "center", "end") {
-  test-case({
-    cetz.draw.set-style(content: (frame: "rect", padding: .1))
-    cetz.tree.tree(data, parent-position: position)
-  })
-  h(.1cm)
-}
-
 #for direction in ("down", "up", "left", "right") {
   test-case({
     cetz.draw.set-style(content: (frame: "rect", padding: .1))
@@ -53,3 +45,31 @@
          (anchor: "center", name: to), stroke: red + 2pt)
   })
 }, args: (0, 1))
+
+#test-case({
+  import cetz.draw: *
+  cetz.tree.tree(data, draw-node: (node) => {
+    if node.depth == 2 and node.n == 1 {
+      node.content = [This is an extra wide node.]
+    }
+    content((), node.content, frame: "rect", padding: 0.1)
+  })
+})
+
+#test-case({
+  import cetz.draw: *
+  let encircle(i) = {
+    std.box(baseline: 3pt, std.circle(stroke: .5pt, radius: .5em)[#move(dx: -0.35em, dy: -1.1em, $#i$)])
+  }
+  set-style(content: (padding: 0.5em))
+  cetz.tree.tree(
+    ([Expression #encircle($5$)], (
+        [Expression #encircle($3$)],
+        ([Expression #encircle($1$)], [`Int(1)`]),
+        [`Plus`],
+        ([Expression #encircle($2$)], [`Int(2)`]),
+      ),
+      [`Lt`],
+      ([Expression #encircle($4$)], [`Int(4)`]),
+    ))
+})

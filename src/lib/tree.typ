@@ -6,11 +6,12 @@
 #import "/src/matrix.typ"
 #import "/src/process.typ"
 #import "/src/anchor.typ" as anchor_
+#import "/src/aabb.typ"
+#import "/src/drawable.typ"
+#import "/src/matrix.typ"
 
 #let cetz-core = plugin("../../cetz-core/cetz_core.wasm")
 
-
-#let typst-content = content
 
 // Default edge draw callback
 //
@@ -19,22 +20,20 @@
 // - parent (node): Parent (source) tree node
 // - child (node): Child (target) tree node
 #let default-draw-edge(from, to, parent, child) = {
-  draw.line(from + ".center", to + ".center")
+  draw.line(from, to)
 }
 
 // Default node draw callback
 //
 // - node (node): The node to draw
-#let default-draw-node(node, _) = {
+#let default-draw-node(node) = {
   let text = if type(node) in (content, str, int, float) {
     [#node]
   } else if type(node) == dictionary {
     node.content
   }
 
-  draw.get-ctx(ctx => {
-    draw.content((), text, anchor: "north")
-  })
+  draw.content((0,0), text)
 }
 
 
@@ -71,10 +70,9 @@
 /// ```
 ///
 /// - root (array): A nested array of content that describes the structure the tree should take. Example: `([root], [child 1], ([child 2], [grandchild 1]))`
-/// - draw-node (auto,function): The function to call to draw a node. The function will be passed two positional arguments, the node to draw and the node's parent, and is expected to return elements (`(node, parent-node) => elements`). The node's position is accessible through the "center" anchor or by using the previous position coordinate `()`. If `auto` is given, just the node's value will be drawn as content. The following predefined styles can be used:
+/// - draw-node (auto,function): The function to call to draw a node. The function will be passed the node to draw (a dictionary with a `content` key) and is expected to return elements (`(node, parent-node) => elements`). The node must be drawn at the `(0,0)` coordinate. If `auto` is given, just the node's value will be drawn as content. The following predefined styles can be used:
 /// - draw-edge (none,auto,function): The function to call draw an edge between two nodes. The function will be passed the name of the starting node, the name of the ending node, the start node, the end node, and is expected to return elements (`(source-name, target-name, parent-node, child-node) => elements`). If `auto` is given, a straight line will be drawn between nodes.
 /// - direction (str): A string describing the direction the tree should grow in ("up", "down", "left", "right")
-/// - parent-position (str): Positioning of parent nodes (begin, center, end)
 /// - grow (float): Depth grow factor
 /// - spread (float): Sibling spread factor
 /// - name (none,str): The tree element's name
@@ -85,7 +83,6 @@
   draw-node: auto,
   draw-edge: auto,
   direction: "down",
-  parent-position: "center",
   grow: 1,
   spread: 1,
   name: none,
@@ -93,7 +90,6 @@
   edge-layer: 0,
   measure-content: true,
 ) = {
-  assert(parent-position in ("begin", "center", "end", "after-end"))
   assert(grow >= 0)
   assert(spread >= 0)
 
@@ -102,7 +98,7 @@
     down: "south",
     right: "east",
     left: "west",
-  ).at(direction)
+  ).at(direction, default: "south")
 
   if draw-edge == auto {
     draw-edge = default-draw-edge
@@ -115,7 +111,6 @@
   }
   assert(draw-node != none, message: "Node draw callback must be set!")
 
-
   draw.get-ctx(ctx => {
     let build-node(tree, depth: 0, sibling: 0) = {
       let children = ()
@@ -127,21 +122,30 @@
         content = tree
       }
 
-      let height = 0.0
-      let width = 0.0
-      if measure-content {
-        let m = measure(content)
-        height = util.resolve-number(ctx, m.height)
-        width = util.resolve-number(ctx, m.width)
-      }
-      return (
-        height: height,
-        width: width,
+      let node = (
+        height: 0.0,
+        width: 0.0,
         n: sibling,
         depth: depth,
         children: children,
         content: content,
+        drawables: none,
       )
+
+      // Pre-Render the node
+      let (ctx: _, drawables, bounds) = process.many(ctx, draw.scope({
+        draw.set-origin((0, 0))
+        (draw-node)(node)
+      }))
+      node.drawables = drawables
+
+      if measure-content {
+        if bounds != none {
+          (node.width, node.height, _) = aabb.size(bounds)
+        }
+      }
+
+      return node
     }
 
 
@@ -189,9 +193,18 @@
         draw.group(
           name: node.group-name,
           {
-            draw.move-to(node-position(node))
-            draw.anchor("default", ())
-            draw-node(node, parent-name)
+            draw.anchor("default", node-position(node))
+
+            (ctx => {
+              let (x, y) = node-position(node)
+              let translation = matrix.transform-translate(x, -y, 0)
+
+              return (
+                ctx: ctx,
+                drawables: drawable.apply-transform(
+                  translation, node.drawables),
+              )
+            },)
           },
         )
       }

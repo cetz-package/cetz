@@ -1,6 +1,9 @@
 # 0.4.1
 - Added a `n-star` shape for drawing n-pointed stars
 - Added `breakable: false` to the `block` element of the canvas
+- A new tree layout algorithm, implemented by @MichaelGoodale in Rust, can handle differently sized tree nodes
+- **BREAKING** The `tree` callback for drawing nodes does not pass the parent nodes name anymor (new signature is `(node) => elements`)
+- **BREAKING** The `parent-position` argument of `tree` got removed
 
 # 0.4.0
 - Fixed a bug where passing a length as radius to a polygon resulted in an error
