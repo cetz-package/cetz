@@ -17,15 +17,15 @@ CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https:
     </a>
   </td>
   <td>
-    <a href="gallery/waves.typ">
-      <img src="gallery/waves.png" width="250px">
+    <a href="gallery/plate-capacitor.typ">
+      <img src="gallery/plate-capacitor.png" width="250px">
     </a>
   </td>
 </tr>
 <tr>
   <td>Karl's Picture</td>
   <td>Pacioli's construction of the icosahedron</td>
-  <td>Waves</td>
+  <td>Plate Capacitor</td>
 </tr>
 <tr>
   <td>
@@ -39,15 +39,31 @@ CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https:
     </a>
   </td>
   <td>
-    <a href="gallery/plate-capacitor.typ">
-      <img src="gallery/plate-capacitor.png" width="250px">
+    <a href="gallery/waves.typ">
+      <img src="gallery/waves.png" width="250px">
     </a>
   </td>
 </tr>
 <tr>
   <td>Tree Layout</td>
   <td>Periodic Table of Elements</td>
-  <td>Plate Capacitor</td>
+  <td>Waves</td>
+</tr>
+<tr>
+  <td>
+    <a href="gallery/torus.typ">
+      <img src="gallery/torus.png" width="250px">
+    </a>
+  </td>
+  <td>
+  </td>
+  <td>
+  </td>
+</tr>
+<tr>
+  <td>Torus</td>
+  <td></td>
+  <td></td>
 </tr>
 </table>
 
