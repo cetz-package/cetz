@@ -57,7 +57,7 @@
 /// - amplitude (number) = 0.25cm: Sets the height of the brace, from its baseline to its middle tip.
 /// - thickness (number,ratio) = 0.015cm: Thickness of tapered braces (if ratio, relative to half the amplitude).
 /// - pointiness (ratio) = 50%: Thickness of the mid-spice
-/// - taper (boor) = true: Draw a tapered brace
+/// - taper (bool) = true: Draw a tapered brace
 /// - outer-inset (number,ratio): Inset of the outer curve points
 /// - outer-curvyness (ratio): Curvyness of the outer curves
 /// - inner-outset (number,ratio): Inset of the inner tip curve points
