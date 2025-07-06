@@ -31,7 +31,7 @@
   line((0,-1), (0,1), stroke: green)
 
   register-face()
-  mark((0,0), (+1,0), symbol: ":)", slant: 50%, anchor: "center")
+  mark((0,0), 0deg, ":)", slant: 50%, anchor: "center", flip: true)
 })
 
 #test-case({
