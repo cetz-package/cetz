@@ -436,18 +436,24 @@
 ///
 /// - from (coordinate): The position to place the mark.
 /// - to (coordinate,angle): The position or angle the mark should point towards.
-/// - ..style (style):
+/// - ..style (str,style): If the third positional argument is of type string, it is treated as mark name (e.g. `">"`) and overrules style keys such as `mark.symbol` or `mark.end`
 ///
 /// ## Styling
 /// *Root*: `mark`
 ///
 /// You can directly use the styling from [Mark Styling](/docs/basics/marks).
 #let mark(from, to, ..style) = {
-  assert.eq(
-    style.pos(),
-    (),
-    message: "Unexpected positional arguments: " + repr(style.pos()),
-  )
+  let symbol = if style.pos() != () {
+    assert.eq(type(style.pos().at(0)), str,
+      message: "Mark name must be of type string")
+    style.pos().at(0)
+  } else {
+    none
+  }
+
+  assert(
+    style.pos().len() <= 1,
+    message: "Unexpected positional arguments: " + repr(style.pos()))
 
   let style = style.named()
 
@@ -461,8 +467,10 @@
     let (ctx, ..pts) = coordinate.resolve(ctx, from, to)
     let style = styles.resolve(ctx.style, merge: style, root: "mark")
 
-    if style.end == none {
-      style.end = style.symbol
+    style.end = if symbol != none {
+      symbol
+    } else {
+      style.symbol
     }
     style.start = none
     style.symbol = none
@@ -470,11 +478,17 @@
     let (to, from) = (..pts)
     from = vector.sub(to, vector.sub(from, to))
 
+    // Place marks and adjust segments
     let drawables = drawable.line-strip((from, to))
-    drawables = mark_.place-marks-along-path(ctx, style, none, drawables, add-path: false)
+    if mark_.check-mark(style) {
+      drawables = mark_.place-marks-along-path(ctx, style, ctx.transform, drawables, add-path: false)
+    } else {
+      drawables = drawable.apply-transform(ctx.transform, drawables)
+    }
+
     return (
       ctx: ctx,
-      drawables: drawable.apply-transform(ctx.transform, drawables)
+      drawables: drawables,
     )
   },)
 }
