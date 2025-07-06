@@ -81,18 +81,9 @@ where
     U: serde::Serialize,
     F: Fn(T) -> Result<U, String>,
 {
-    let data = match from_reader::<T, _>(input) {
-        Ok(data) => data,
-        Err(e) => {
-            return Err(e.to_string());
-        }
-    };
-    let output = match processor(data) {
-        Ok(output) => output,
-        Err(e) => {
-            return Err(e);
-        }
-    };
+    let data = from_reader::<T, _>(input).map_err(|e| e.to_string())?;
+    let output = processor(data)?;
+
     let mut buf = Vec::new();
     match into_writer(&output, &mut buf) {
         Ok(_) => Ok(buf),
