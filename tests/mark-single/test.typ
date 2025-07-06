@@ -28,3 +28,20 @@
   mark((0,0), 180deg, symbol: ">", scale: 3, fill: red)
   mark((0,0), 270deg, symbol: ">", scale: 3, fill: yellow)
 })
+
+// Positional mark name
+#test-case({
+  import draw: *
+
+  // The positional symbol must override the `symbol` key.
+  mark((0,0), 0deg, ">", symbol: "|", scale: 3)
+})
+
+// Transform mark shape
+#test-case({
+  import draw: *
+
+  scale(x: 2)
+  mark((0,0), 0deg, ">", scale: 3)
+  mark((0,0), 0deg, ">", scale: 3, transform-shape: true)
+})
