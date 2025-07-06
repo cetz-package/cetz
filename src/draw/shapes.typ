@@ -478,11 +478,17 @@
     let (to, from) = (..pts)
     from = vector.sub(to, vector.sub(from, to))
 
+    // Place marks and adjust segments
     let drawables = drawable.line-strip((from, to))
-    drawables = mark_.place-marks-along-path(ctx, style, none, drawables, add-path: false)
+    if mark_.check-mark(style) {
+      drawables = mark_.place-marks-along-path(ctx, style, ctx.transform, drawables, add-path: false)
+    } else {
+      drawables = drawable.apply-transform(ctx.transform, drawables)
+    }
+
     return (
       ctx: ctx,
-      drawables: drawable.apply-transform(ctx.transform, drawables)
+      drawables: drawables,
     )
   },)
 }
