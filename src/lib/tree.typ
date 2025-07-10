@@ -130,14 +130,16 @@
         children: children,
         content: content,
         drawables: none,
+        elements: none,
       )
 
       // Pre-Render the node
-      let (ctx: _, drawables, bounds) = process.many(ctx, draw.scope({
+      let (ctx: _, drawables, bounds, elements) = process.many(ctx, {
         draw.set-origin((0, 0))
         (draw-node)(node)
-      }))
+      })
       node.drawables = drawables
+      node.elements = elements
 
       if measure-content {
         if bounds != none {
@@ -197,12 +199,20 @@
 
             (ctx => {
               let (x, y) = node-position(node)
-              let translation = matrix.transform-translate(x, -y, 0)
+              let transform = matrix.transform-translate(x, y, 0)
+              transform = matrix.mul-mat(ctx.transform, transform)
+
+              // Update all the nodes anchors
+              for elem in node.elements.filter(elem => elem.at("name", default: none) != none) {
+                elem.anchors = util.transform-anchors(elem, transform)
+                ctx.nodes.insert(elem.name, elem)
+                ctx.groups.last().push(elem.name)
+              }
 
               return (
                 ctx: ctx,
                 drawables: drawable.apply-transform(
-                  translation, node.drawables),
+                  transform, node.drawables),
               )
             },)
           },
