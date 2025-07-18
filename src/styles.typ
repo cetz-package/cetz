@@ -223,14 +223,29 @@
 
   if base != (:) {
     if root != none {
+      if type(root) != array {
+        root = (root,)
+      }
       let a = (:)
-      a.insert(root, base)
-      base = a
+      for key in root.rev() {
+        a.insert(key, base)
+        base = a
+        a = (:)
+      }
     }
     dict = util.merge-dictionary(dict, base, overwrite: false)
   }
+
+  let d = if root == none {
+    dict
+  } else if type(root) == array {
+    root.fold(dict, (d, k) => d.at(k))
+  } else {
+    dict.at(root)
+  }
+
   return resolve(
-    if root != none { dict.at(root) } else { dict },
+    d,
     if root != none {(dict,)} else {()},
     merge
   )
