@@ -177,7 +177,7 @@
 ///
 /// - dict (style): Current context style from `ctx.style`.
 /// - merge (style): Style values overwriting the current style. I.e. inline styles passed with an element: `line(.., stroke: red)`.
-/// - root (none, str): Style root element name.
+/// - root (none, str, array): Style root element name or list of nested roots (`("my-package", "my-element")`).
 /// - base (none, style): Style values to merge into `dict` without overwriting it.
 /// -> style
 #let resolve(dict, root: none, merge: (:), base: (:)) = {
