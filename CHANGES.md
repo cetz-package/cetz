@@ -8,6 +8,7 @@
   are accessible (#904)
 - `styles.resolve` now supports nested roots by passing an array (#914)
 - Fixed debug frames (#917)
+- Fixed a regression with `merge-path`'s `close:` argument (#910)
 
 # 0.4.0
 - Fixed a bug where passing a length as radius to a polygon resulted in an error
