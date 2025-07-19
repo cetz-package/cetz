@@ -129,19 +129,15 @@
         depth: depth,
         children: children,
         content: content,
-        drawables: none,
-        elements: none,
       )
 
-      // Pre-Render the node
-      let (ctx: _, drawables, bounds, elements) = process.many(ctx, {
-        draw.set-origin((0, 0))
-        (draw-node)(node)
-      })
-      node.drawables = drawables
-      node.elements = elements
-
+      // Measure the node
       if measure-content {
+        let (ctx: _, drawables: _, bounds) = process.many(ctx, {
+          draw.set-origin((0, 0))
+          (draw-node)(node)
+        })
+
         if bounds != none {
           (node.width, node.height, _) = aabb.size(bounds)
         }
@@ -192,29 +188,11 @@
       node.group-name = "g" + name
       node.element = {
         draw.anchor(node.name, node-position(node))
-        draw.group(
-          name: node.group-name,
-          {
-            draw.anchor("default", node-position(node))
-
-            (ctx => {
-              let (x, y) = node-position(node)
-              let transform = matrix.transform-translate(x, y, 0)
-              transform = matrix.mul-mat(ctx.transform, transform)
-
-              // Update all the nodes anchors
-              for elem in node.elements.filter(elem => elem.at("name", default: none) != none) {
-                elem.anchors = util.transform-anchors(elem, transform)
-                ctx.nodes.insert(elem.name, elem)
-                ctx.groups.last().push(elem.name)
-              }
-
-              return (
-                ctx: ctx,
-                drawables: drawable.apply-transform(
-                  transform, node.drawables),
-              )
-            },)
+        draw.group(name: node.group-name, ctx => {
+            let (x, y) = node-position(node)
+            draw.translate((x, y, 0))
+            draw.anchor("default", (0, 0))
+            draw-node(node)
           },
         )
       }

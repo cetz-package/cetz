@@ -412,17 +412,3 @@
   }
   return num
 }
-
-/// Returns a new anchor function that applies
-/// the given transformation on each anchor returned
-/// by the elements previous anchor function.
-#let transform-anchors(element, transform) = {
-  let next-resolver = element.anchors
-  return (key) => {
-    if key == () {
-      next-resolver(key)
-    } else {
-      matrix.mul4x4-vec3(transform, next-resolver(key))
-    }
-  }
-}

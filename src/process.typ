@@ -35,6 +35,7 @@
   }
 
   let name = element.at("name", default: none)
+  element.name = name
   if name != none {
     assert.eq(type(name), str,
       message: "Element name must be a string")
