@@ -35,6 +35,7 @@
   }
 
   let name = element.at("name", default: none)
+  element.name = name
   if name != none {
     assert.eq(type(name), str,
       message: "Element name must be a string")
@@ -64,6 +65,7 @@
     ctx: ctx,
     bounds: bounds,
     drawables: element.at("drawables", default: ()),
+    element: element,
   )
 }
 
@@ -74,6 +76,7 @@
 #let many(ctx, body) = {
   let drawables = ()
   let bounds = none
+  let elements = ()
 
   for el in body {
     let r = element(ctx, el)
@@ -85,6 +88,7 @@
       ctx = r.ctx
       drawables += r.drawables
     }
+    elements.push(r.element)
   }
-  return (ctx: ctx, bounds: bounds, drawables: drawables)
+  return (ctx: ctx, bounds: bounds, drawables: drawables, elements: elements)
 }
