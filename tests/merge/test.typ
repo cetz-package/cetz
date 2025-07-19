@@ -47,3 +47,11 @@
     circle((name: "p", anchor: 1% * i), radius: .1, fill: white)
   }
 })
+
+#test-case({
+  import draw: *
+
+  merge-path(close: true, fill: red, {
+    line((0,0), (1,0), (1,1))
+  })
+})

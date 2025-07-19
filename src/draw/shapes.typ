@@ -1764,7 +1764,6 @@
             segments.push(("l", next-origin))
             segments += next-segments
 
-            // TODO: Close is not working as expected here
             subpaths.last() = (origin, closed or close, segments)
             subpaths += drawables.slice(1).filter(d => {
               d.type == "path"
@@ -1775,6 +1774,13 @@
             }).map(d => d.segments).join()
           }
         }
+      }
+
+      // Close paths
+      if close {
+        subpaths = subpaths.map(((origin, closed, elems)) => {
+          (origin, close or closed, elems)
+        })
       }
 
       let style = styles.resolve(ctx.style, merge: style)
