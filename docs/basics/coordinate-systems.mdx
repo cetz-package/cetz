@@ -5,7 +5,7 @@ title: Coordinate Systems
 import Parameter from "@site/src/components/Parameter";
 import Type from "@site/src/components/Type";
 
-A <Type>coordinate</Type> is a position on the canvas on which the picture is drawn. They take the form of dictionaries and the following sub-sections define the key value pairs for each system. Some systems have a more implicit form as an array of values and CeTZ attempts to infer the system based on the element types.
+A <Type>coordinate</Type> is a position on the canvas on which the picture is drawn. They take the form of dictionaries and the following subsections define the key-value pairs for each system. Some systems have a more implicit form as an array of values and CeTZ attempts to infer the system based on the element types.
 
 ## XYZ
 
@@ -23,7 +23,7 @@ Defines a point `x` units right, `y` units upward and `z` units away.
   The number of units in the `z` direction.
 </Parameter>
 
-The implicit form can be given as an {{array}} of two or three <Type>number</Type>s, as in `(x, y)` or `(x, y, z)`
+The implicit form can be given as an {{array}} of two or three <Type>number</Type>s, as in `(x, y)` or `(x, y, z)`.
 
 ```typc example
 line((0,0), (x: 1))
@@ -63,7 +63,7 @@ Places the given coordinate relative to the previous coordinate. Or in other wor
   The coordinate to treat as the previous coordinate.
 </Parameter>
 
-In the example below, the red circle is placed one unit to the right of the blue circle. If the blue circle was to be moved a different position, the red circle will move with the blue circle to stay one unit to the right.
+In the example below, the red circle is placed one unit to the right of the blue circle. If the blue circle was to be moved to a different position, the red circle would move with the blue circle to stay one unit to the right.
 
 ```typc example
 circle((0, 0), stroke: blue)
@@ -111,7 +111,7 @@ $$
 <Parameter name="bary" types="dictionary">
   A dictionary where the key is a named element and the value is a{" "}
   <Type>float</Type>. The `center` anchor of the named element is used as $v$
-  and the value is used as $\alpha$
+  and the value is used as $\alpha$.
 </Parameter>
 
 ```typc example
@@ -192,7 +192,7 @@ circle("line.75%", name: "circle")
 rect("line.start", "circle.east")
 ```
 
-When using named elements within a group, you can access the element's anchors outside of the group by using the implicit anchor coordinate. e.g. `"a.b.north"`
+When using named elements within a group, you can access the element's anchors outside of the group by using the implicit anchor coordinate, e.g. `"a.b.north"`.
 ```typc example
 group(name: "a", {
   circle((), name: "b")
