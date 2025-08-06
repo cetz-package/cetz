@@ -217,7 +217,7 @@ This system allows you to compute the point that lies tangent to a shape. In det
   Which solution should be used if there are more than one.
 </Parameter>
 
-A special algorithm is needed in order to compute the tangent for a given shape. Currently it does this by assuming the distance between the center and top anchor (See [Anchors](/basics/anchors)) is the radius of a circle.
+A special algorithm is needed in order to compute the tangent for a given shape. Currently it does this by fitting an ellipse to the given center, north and east anchors (see [Anchors](/basics/anchors)), so only circles and ellipses will work correctly.
 
 ```typc example
 grid((0,0), (3,2), help-lines: true)
