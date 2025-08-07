@@ -7,7 +7,7 @@
   // (x: <number> or <none>, y: <number> or <none>, z: <number> or <none>)
   // (x, y)
   // (x, y, z)
-  
+
   return if type(c) == array {
     vector.as-vec(c)
   } else {
@@ -117,7 +117,7 @@
       (ctx, ctx.prev.pt)
     }
   c = vector.add(
-    rel, 
+    rel,
     to,
   )
   c.insert(0, update)
@@ -127,36 +127,49 @@
 #let resolve-tangent(resolve, ctx, c) = {
   // (element: <string>, point: <coordinate>, solution: <integer>)
 
-  // https://stackoverflow.com/a/69641745/7142815
+  // 1) center + query point
   let C = resolve-anchor(ctx, c.element)
   let (ctx, P) = resolve(ctx, c.point, update: false)
-  // Radius
-  let r = vector.len(vector.sub(resolve-anchor(ctx, c.element + ".north"), C))
-  // Vector between C and P
-  let D = vector.sub(P, C) // C - P
-  // Distance between C and P
-  let pc = vector.len(D)
-  if pc < r {
+
+  // 2) semi-axes a (east), b (north)
+  let a = vector.len(vector.sub(resolve-anchor(ctx, c.element + ".east"),  C))
+  let b = vector.len(vector.sub(resolve-anchor(ctx, c.element + ".north"), C))
+
+  // 3) vector center→P
+  let D = vector.sub(P, C)
+
+  // 4) move into unit-circle coords
+  let Dscaled = (D.at(0)/a, D.at(1)/b)
+  let rho = vector.len(Dscaled)
+  if rho < 1 {
     panic("No tangent solution for element " + c.element + " and point " + repr(c.point))
   }
-  // Distance between P and X0
-  let d = r*r / pc
-  // Distance between X0 and X1(X2)
-  let h = calc.sqrt(r*r - d*d)
 
-  return if c.solution == 1 {
+  // 5) normalize & compute tangent parameters
+  let ux = Dscaled.at(0) / rho
+  let uy = Dscaled.at(1) / rho
+  let t  = 1 / rho
+  let h  = calc.sqrt(1 - t*t)
+
+  // 6) pick one of the two solutions on the unit circle
+  let (sx, sy) = if c.solution == 1 {
     (
-      C.at(0) + (D.at(0) * d - D.at(1) * h) / pc,
-      C.at(1) + (D.at(1) * d + D.at(0) * h) / pc,
-      0
+      ux*t - uy*h,
+      uy*t + ux*h
     )
   } else {
     (
-      C.at(0) + (D.at(0) * d + D.at(1) * h) / pc,
-      C.at(1) + (D.at(1) * d - D.at(0) * h) / pc,
-      0
+      ux*t + uy*h,
+      uy*t - ux*h
     )
   }
+
+  // 7) map back through the ellipse‐stretch and return
+  return (
+    C.at(0) + a * sx,
+    C.at(1) + b * sy,
+    0
+  )
 }
 
 #let resolve-perpendicular(resolve, ctx, c) = {
