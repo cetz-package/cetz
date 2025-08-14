@@ -1,4 +1,8 @@
 # 0.4.1
+- The `tree` element now has a `anchor:` argument to position the tree.
+- Fixed the tree node anchor documentation.
+
+# 0.4.1
 - Added a `n-star` shape for drawing n-pointed stars
 - Added `breakable: false` to the `block` element of the canvas
 - A new tree layout algorithm, implemented by @MichaelGoodale in Rust, can handle differently sized tree nodes
