@@ -26,7 +26,6 @@ jobs:
         uses: baptiste0928/cargo-install@v3
         with:
           crate: tytanic
-          git: https://github.com/tingerrr/tytanic.git
       - uses: typst-community/setup-typst@v3
         with:
           typst-version: '0.13.1'
