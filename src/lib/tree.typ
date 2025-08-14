@@ -61,7 +61,7 @@
 
 /// Lays out and renders tree nodes.
 ///
-/// For each node, the `tree` function creates an anchor of the format `"node-<depth>-<child-index>"` that can be used to query a nodes position on the canvas.
+/// For each node, the `tree` function creates an anchor of the format `"[<child-index>-]<child-index>"` (the root is `"0"`, its first child `"0-0"`, second `"0-1"` and so on) that can be used to query a nodes position on the canvas.
 ///
 /// ```typc example
 /// import cetz.tree
@@ -78,6 +78,7 @@
 /// - name (none,str): The tree element's name
 /// - node-layer (int): Layer to draw nodes on
 /// - edge-layer (int): Layer to draw edges on
+/// - anchor (none, string): Name of the anchor to align the tree to. Use the root node anchor (`"0"`) to align the tree to the root nodes position.
 #let tree(
   root,
   draw-node: auto,
@@ -89,6 +90,7 @@
   node-layer: 1,
   edge-layer: 0,
   measure-content: true,
+  anchor: none,
 ) = {
   assert(grow >= 0)
   assert(spread >= 0)
@@ -229,6 +231,9 @@
       }
     }
 
-    draw.group(name: name, render(node))
+    draw.group(name: name, anchor: anchor, {
+      draw.anchor("default", (0,0))
+      render(node)
+    })
   })
 }

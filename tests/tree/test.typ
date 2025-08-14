@@ -73,3 +73,17 @@
       ([Expression #encircle($4$)], [`Int(4)`]),
     ))
 })
+
+#test-case({
+  import cetz.draw: *
+
+  circle((0,0), radius: 0.5)
+  cetz.tree.tree(data, anchor: "0-1")
+})
+
+#test-case({
+  import cetz.draw: *
+
+  circle((0,0), radius: 0.5)
+  cetz.tree.tree(data, anchor: "0-0-1")
+})
