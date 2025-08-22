@@ -427,8 +427,8 @@
 /// Draws a single mark pointing towards a target coordinate.
 ///
 /// ```typc example
-/// mark((0,0), (1,0), symbol: ">", fill: black)
-/// mark((0,0), (1,1), symbol: "stealth", scale: 3, fill: black)
+/// mark((0,0), (0,1), symbol: ">", fill: black)
+/// mark((0,0), 180deg, symbol: "stealth", scale: 3)
 /// ```
 ///
 /// Note: To place a mark centered at the first coodinate (`from`) use
@@ -699,7 +699,7 @@
 ///
 /// // A 6-pointed star showing its inner hexagon
 /// n-star((4,0), 6, show-inner: true, style: red)
-/// ``` 
+/// ```
 ///
 /// - origin (coordinate): Coordinate to draw the star's center at.
 /// - sides (int): Number of points of the star (>= 3).
@@ -940,7 +940,7 @@
 ///   )
 /// )
 /// ```
-/// 
+///
 /// - ..args-style (coordinate, content, style): When one coordinate is given as a positional argument, the content will be placed at that position. When two coordinates are given as positional arguments, the content will be placed inside a rectangle between the two positions. All named arguments are styling and any additional positional arguments will panic.
 /// - angle (angle,coordinate): Rotates the content by the given angle. A coordinate can be given to rotate the content by the angle between it and the first coordinate given in `args`. This effectively points the right hand side of the content towards the coordinate. This currently exists because Typst's rotate function does not change the width and height of content.
 /// - anchor (none, str):
@@ -1825,7 +1825,7 @@
 /// ## Styling
 /// The padding attribute can be used to control spacing.
 /// Other attributes are forwarded to the rect shape.
-/// 
+///
 /// ## Anchors
 /// The same as for the rect shape.
 #let rect-around(..pts-style) = {
@@ -1863,4 +1863,3 @@
   })
   return ctx
 }
-
