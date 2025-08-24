@@ -70,17 +70,17 @@
     }
 
     style.stroke = util.resolve-stroke(style.stroke)
-    style.stroke.thickness = util.resolve-number(ctx, style.stroke.thickness)
+    style.canvas-thickness = util.resolve-number(ctx, style.stroke.thickness)
 
     if "angle" in style and type(style.angle) == angle {
       style.width = calc.tan(style.angle / 2) * style.length * 2
     }
 
-    // Stroke thickness relative attributes
+    // Stroke canvas-thickness relative attributes
     for (k, v) in style {
       if k in ("length", "width", "inset", "sep") {
         style.insert(k, if type(v) == ratio {
-          style.stroke.thickness * v / 100%
+          style.canvas-thickness * v / 100%
         } else {
           util.resolve-number(ctx, v)
         } * style.scale)
@@ -186,7 +186,7 @@
   import "/src/draw.typ"
   let body = draw.group({
     draw.set-style(
-      stroke: style.at("stroke", default: none),
+      stroke: util.resolve-stroke(style.at("stroke", default: none)),
       fill: style.at("fill", default: none),
       mark: none,
       line: (mark: none),

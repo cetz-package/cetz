@@ -351,23 +351,30 @@
     return (paint: none, thickness: 0pt, join: none, cap: none, miter-limit: 4)
   }
 
-  let default = (
-    paint: black,
-    thickness: 1pt,
-    join: "miter",
-    cap: "butt",
-    miter-limit: 4
-  )
-  let s = line(stroke: stroke).stroke
-  let stroke = (:)
-  for (k, v) in (paint: s.paint, thickness: s.thickness, join: s.join, cap: s.cap, miter-limit: s.miter-limit) {
-    if v == auto {
-      stroke.insert(k, default.at(k))
-    } else {
-      stroke.insert(k, v)
-    }
+  if type(stroke) == std.stroke {
+    stroke = (
+      paint: stroke.paint,
+      thickness: stroke.thickness,
+      join: stroke.join,
+      cap: stroke.cap,
+      miter-limit: stroke.miter-limit,
+      dash: stroke.dash,
+    )
   }
-  return stroke
+
+  let or-default(key, default) = {
+    let v = stroke.at(key, default: default)
+    return if v == auto { default } else { v }
+  }
+
+  return (
+    paint: or-default("paint", black),
+    thickness: or-default("thickness", 1pt),
+    join: or-default("join", "miter"),
+    cap: or-default("cap", "butt"),
+    miter-limit: or-default("miter-limit", 4),
+    dash: or-default("dash", none),
+  )
 }
 
 /// Asserts whether a "body" has the correct type.
