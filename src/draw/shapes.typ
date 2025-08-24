@@ -1680,6 +1680,7 @@
       for element in util.resolve-body(ctx, body) {
         let r = process.element(ctx, element)
         if r != none and "drawables" in r {
+          ctx = r.ctx
           subpaths += r.drawables.map(d => d.segments).join()
         }
       }

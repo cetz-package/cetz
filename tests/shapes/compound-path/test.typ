@@ -14,3 +14,14 @@
     cross("path." + name)
   })
 })
+
+/// Bug #938 - Inside of `compound-path` named elements
+/// are not accessible.
+#test-case({
+  import draw: *
+
+  compound-path({
+    rect((-1, -1), (1, 1), name: "rect")
+    circle("rect.center", radius: .5)
+  }, fill: blue, fill-rule: "even-odd")
+})

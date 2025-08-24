@@ -1,6 +1,7 @@
 # 0.4.1
 - The `tree` element now has a `anchor:` argument to position the tree.
 - Fixed the tree node anchor documentation.
+- Fixed named element access inside `compound-path` (#938)
 
 # 0.4.1
 - Added a `n-star` shape for drawing n-pointed stars
