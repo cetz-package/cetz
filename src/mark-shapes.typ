@@ -9,7 +9,7 @@
 // and height style.length
 #let _calculate-tip-offset(style) = {
   if style.stroke.join == "round" {
-    return style.stroke.thickness / 2
+    return style.canvas-thickness / 2
   }
 
   if style.length == 0 {
@@ -25,13 +25,13 @@
     if angle > 0deg {
       let miter-limit = 1 / calc.sin(angle / 2)
       if miter-limit <= style.stroke.miter-limit {
-        return miter-limit * (style.stroke.thickness / 2)
+        return miter-limit * (style.canvas-thickness / 2)
       }
     }
   }
 
   // style.stroke.join must be "bevel"
-  return calc.sin(angle/2) * (style.stroke.thickness / 2)
+  return calc.sin(angle/2) * (style.canvas-thickness / 2)
 }
 
 #let create-tip-and-base-anchor(style, tip, base, center: none, respect-stroke-thickness: false) = {
@@ -43,7 +43,7 @@
   let thickness = if respect-stroke-thickness {
     let dist = vector.dist(tip, base)
 
-    calc.min(style.stroke.thickness, dist / 2) / 2
+    calc.min(style.canvas-thickness, dist / 2) / 2
   } else {
     0
   }
@@ -59,7 +59,7 @@
   }
   let dir = vector.norm(vector.sub(tip, base))
   let dist = vector.dist(tip, base)
-  let thickness = calc.min(style.stroke.at("thickness", default: 0), dist) / 2
+  let thickness = calc.min(style.at("canvas-thickness", default: 0), dist) / 2
 
   import "/src/draw.typ": anchor
   if style.reverse {
@@ -123,6 +123,36 @@
 
     create-triangle-tip-and-base-anchor(style, (0, 0), (l - i, 0))
   },
+  curved-stealth: (style) => {
+    import "/src/draw.typ": *
+
+    let (l, w, i) = (style.length, style.width, style.inset)
+
+    // Force round join
+    style.stroke.join = "round"
+
+    merge-path(
+      fill: style.fill,
+      stroke: style.stroke,
+      close: true, {
+        bezier(
+          (0, 0),
+          (l, w / 2),
+          (l / 3, w / 8))
+        bezier(
+          (l, w / 2),
+          (l, -w / 2),
+          (l - i, 0))
+        bezier(
+          (l, -w / 2),
+          (0, 0),
+          (l / 3, -w / 8))
+      },
+    )
+
+    let thickness = style.canvas-thickness
+    create-triangle-tip-and-base-anchor(style, (0, 0), (l - i + thickness / 2, 0))
+  },
   bar: (style) => {
     import "/src/draw.typ": line, anchor
 
@@ -134,7 +164,7 @@
       line((0, w / 2), (0, -w / 2))
     }
 
-    let offset = style.stroke.thickness / 2
+    let offset = style.canvas-thickness / 2
     create-tip-and-base-anchor(style, (-offset, 0), (offset, 0))
     anchor("center", (0, 0))
   },
@@ -256,7 +286,7 @@
       }
     }, ..style)
 
-    let offset = style.stroke.thickness / 2
+    let offset = style.canvas-thickness / 2
     create-tip-and-base-anchor(style, (-offset, 0), (2 * offset, 0))
   },
   plus: (style) => {
@@ -313,6 +343,8 @@
   "+":  ("plus",     (:)),
   "x":  ("x",        (:)),
   "*":  ("star",     (:)),
+  ")>": ("curved-stealth", (:)),
+  ">>": ("stealth",  (:))
 )
 
 // Get a mark shape + reverse tuple for a mark name
