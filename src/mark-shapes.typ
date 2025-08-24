@@ -123,6 +123,36 @@
 
     create-triangle-tip-and-base-anchor(style, (0, 0), (l - i, 0))
   },
+  bstealth: (style) => {
+    import "/src/draw.typ": *
+    let (l, w, i) = (style.length, style.width, style.inset)
+    merge-path(
+      fill: style.stroke.paint,
+      stroke: (thickness: 1pt, join: "round"),
+      close: true,
+      {
+        bezier(
+          (0, 0),
+          (l, w / 2),
+          (l / 3, w / 8),
+          stroke: none,
+        )
+        bezier(
+          (l, w / 2),
+          (l, -w / 2),
+          (l - i, 0),
+          stroke: none,
+        )
+        bezier(
+          (l, -1 / 2),
+          (0, 0),
+          (l / 3, -w / 8),
+          stroke: none,
+        )
+      },
+    )
+    create-triangle-tip-and-base-anchor(style, (0, 0), (l - i, 0))
+  },
   bar: (style) => {
     import "/src/draw.typ": line, anchor
 
