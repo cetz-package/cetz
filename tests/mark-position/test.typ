@@ -16,7 +16,6 @@
   line((-1,1), (1,1), mark: (start: ">", end: ">", pos: .25, shorten-to: none))
 })
 
-
 // Relative Offset
 #test-case({
   import draw: *

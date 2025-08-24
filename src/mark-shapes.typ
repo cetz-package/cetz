@@ -123,6 +123,36 @@
 
     create-triangle-tip-and-base-anchor(style, (0, 0), (l - i, 0))
   },
+  curved-stealth: (style) => {
+    import "/src/draw.typ": *
+
+    let (l, w, i) = (style.length, style.width, style.inset)
+
+    // Force round join
+    style.stroke.join = "round"
+
+    merge-path(
+      fill: style.fill,
+      stroke: style.stroke,
+      close: true, {
+        bezier(
+          (0, 0),
+          (l, w / 2),
+          (l / 3, w / 8))
+        bezier(
+          (l, w / 2),
+          (l, -w / 2),
+          (l - i, 0))
+        bezier(
+          (l, -w / 2),
+          (0, 0),
+          (l / 3, -w / 8))
+      },
+    )
+
+    let thickness = style.canvas-thickness
+    create-triangle-tip-and-base-anchor(style, (0, 0), (l - i + thickness / 2, 0))
+  },
   bar: (style) => {
     import "/src/draw.typ": line, anchor
 
@@ -313,6 +343,8 @@
   "+":  ("plus",     (:)),
   "x":  ("x",        (:)),
   "*":  ("star",     (:)),
+  ")>": ("curved-stealth", (:)),
+  ">>": ("stealth",  (:))
 )
 
 // Get a mark shape + reverse tuple for a mark name

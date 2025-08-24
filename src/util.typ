@@ -351,6 +351,10 @@
     return (paint: none, thickness: 0pt, join: none, cap: none, miter-limit: 4)
   }
 
+  if type(stroke) in (std.color, std.length) {
+    stroke = std.stroke(stroke)
+  }
+
   if type(stroke) == std.stroke {
     stroke = (
       paint: stroke.paint,
