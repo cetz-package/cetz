@@ -4,6 +4,7 @@
 - Fixed named element access inside `compound-path` (#938)
 - Added a new `curved-stealth` (short `)>`) mark
 - Added the shortcut `>>` for the `stealt` mark
+- Fixed a division by zero bug when placing marks on zero-length paths
 
 # 0.4.1
 - Added a `n-star` shape for drawing n-pointed stars

@@ -195,12 +195,13 @@
 /// - reverse (bool): Travel from end to start
 /// - ignore-subpaths (bool): If false consider the whole path, including sub-paths
 ///
-/// -> dictionary Dictionary with the following keys:
+/// -> none,dictionary Dictionary with the following keys:
 ///    - point (vector) The point on the path
 ///    - previous-point (vector) Point previous to point
 ///    - direction (vector) Normalized direction vector
 ///    - subpath-index (int) Index of the subpath
 ///    - segment-index (int) Index of the segment
+///    None is returned, if the path is empty/of length zero.
 #let point-at(path, distance, reverse: false, samples: auto, ignore-subpaths: true) = {
   if samples == auto {
     samples = number-of-samples(samples)
@@ -213,6 +214,10 @@
     lengths.first().sum(default: 0)
   } else {
     lengths.map(l => l.sum(default: 0)).sum(default: 0)
+  }
+
+  if total == 0 {
+    return none
   }
 
   if type(distance) == ratio {

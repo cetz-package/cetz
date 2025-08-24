@@ -287,6 +287,12 @@
       mark-tip-info
     }
 
+    // Do not try to place this mark, if we failed to
+    // get a tip/base info.
+    if mark-tip-info == none or mark-base-info == none {
+      continue
+    }
+
     let dir = if mark-base-info.point != mark-tip-info.point {
       vector.sub(mark-base-info.point, mark-tip-info.point)
     } else {
