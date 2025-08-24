@@ -1727,7 +1727,7 @@
 /// })
 /// ```
 ///
-/// Elements hidden via @@hide() are ignored.
+/// Elements hidden via [hide](../grouping/hide) are ignored.
 ///
 /// ## Anchors
 ///   **centroid**: Centroid of the _closed and non self-intersecting_ shape. Only exists if `close` is true.
