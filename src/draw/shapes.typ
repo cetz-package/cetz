@@ -1735,7 +1735,7 @@
 ///   Supports path anchors and shapes where all vertices share the same z-value.
 ///
 /// - body (elements): Elements with paths to be merged together.
-/// - join (bool): Connect all sup-paths with a straight line
+/// - join (bool): Connect all sub-paths with a straight line
 /// - close (bool): Close the path with a straight line from the start of the path to its end.
 /// - name (none,str):
 /// - ..style (style):

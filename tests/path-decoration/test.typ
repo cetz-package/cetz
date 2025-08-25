@@ -84,7 +84,7 @@
 }, args: all-fns)
 
 // Bug #736: Waves with a single segment
-// have are sharp on the second peak.
+// are sharp on the second peak.
 #test-case({
   import draw: *
 

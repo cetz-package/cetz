@@ -178,7 +178,7 @@ package called `cetz-plot`.
 - New style keys for enabling/disabling the shared zero tick for "school-book" style plots
 - New style keys for specifying the layer of different plot elements (`grid-layer`, `axis-layer`, `background-layer`)
 - Fixed annotation bounds calculation
-- Marks insides annotations are now unaffected by the plots canvas scaling by default (see marks new post-transform style key)
+- Marks inside annotations are now unaffected by the plot's canvas scaling by default (see marks' new post-transform style key)
 
 # 0.2.0
 CeTZ 0.2.0 requires Typst 0.10.0
