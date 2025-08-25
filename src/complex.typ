@@ -49,7 +49,7 @@
 #let unit(V) = scale(V, 1/norm(V))
 
 /// Inverts a complex number.
-/// - V (complex): The complex number 
+/// - V (complex): The complex number
 /// -> complex
 #let inv(V) = scale(conj(V), 1/normsq(V))
 

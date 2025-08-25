@@ -38,7 +38,7 @@
 }
 
 /// Finds the intersections of a line and cubic bezier.
-/// 
+///
 /// - s   (vector): Bezier start point
 /// - e   (vector): Bezier end point
 /// - c1  (vector): Bezier control point 1

@@ -148,7 +148,7 @@
         if anchor == "default" {
           anchor = default
         }
-        
+
         out = callback(if nested-anchors != none { nested-anchors } else { anchor })
       } else if path-anchors and anchor in named-path-anchors {
         anchor = named-path-anchors.at(anchor)
