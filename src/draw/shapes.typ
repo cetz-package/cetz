@@ -122,10 +122,10 @@
 /// ### Styling
 /// *Root*: `circle`
 ///
-///   `circle-through` has the same styling as [circle](./circle#styling) except for `radius` as the circle's radius is calculated by the given coordinates.
+///   `circle-through` has the same styling as [`circle`](./circle#styling) except for `radius` as the circle's radius is calculated by the given coordinates.
 ///
 /// ### Anchors
-/// Supports the same anchors as [circle](./circle#anchors) as well as:
+/// Supports the same anchors as [`circle`](./circle#anchors) as well as:
 /// - **a**: Coordinate a
 /// - **b**: Coordinate b
 /// - **c**: Coordinate c
@@ -351,10 +351,10 @@
 /// ### Styling
 /// *Root*: `arc`
 ///
-/// Uses the same styling as [arc](./arc#styling)
+/// Uses the same styling as [`arc`](./arc#styling)
 ///
 /// ### Anchors
-///   For anchors see [arc](./arc#anchors).
+///   For anchors see [`arc`](./arc#anchors).
 ///
 #let arc-through(
   a,
@@ -1471,7 +1471,7 @@
   )
 }
 
-/// Draws a cubic bezier curve through a set of three points. See [bezier](./bezier) for style and anchor details.
+/// Draws a cubic bezier curve through a set of three points. See [`bezier`](./bezier) for style and anchor details.
 ///
 /// ```typc example
 /// let (a, b, c) = ((0, 0), (1, 1), (2, -1))
@@ -1728,7 +1728,7 @@
 /// })
 /// ```
 ///
-/// Elements hidden via [hide](../grouping/hide) are ignored.
+/// Elements hidden via [`hide`](../grouping/hide) are ignored.
 ///
 /// ## Anchors
 ///   **centroid**: Centroid of the _closed and non self-intersecting_ shape. Only exists if `close` is true.
