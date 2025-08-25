@@ -5,7 +5,7 @@
 // Calculate triangular tip offset, depending on the strokes
 // join type.
 //
-// The angle is calculated for an isosceles triangle of base style.widh
+// The angle is calculated for an isosceles triangle of base style.width
 // and height style.length
 #let _calculate-tip-offset(style) = {
   if style.stroke.join == "round" {

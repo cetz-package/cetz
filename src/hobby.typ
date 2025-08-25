@@ -91,7 +91,7 @@
 /// - ta (auto,array): Outgoing tension per point
 /// - tb (auto,array): Incoming tension per point
 /// - rho (auto,function): The rho function of the form `(float, float) => float`
-/// - omega (auto,array): Tuple of the curl at the start end end of the curve `(start, end)` as floats
+/// - omega (auto,array): Tuple of the curl at the start and end of the curve `(start, end)` as floats
 ///
 /// -> array
 #let hobby-to-cubic-open(points, ta: auto, tb: auto, rho: auto, omega: auto) = {
@@ -252,7 +252,7 @@
 /// - ta (auto,array): Outgoing tension per point
 /// - tb (auto,array): Incoming tension per point
 /// - rho (auto,array): The rho function of the form `(float, float) => float`
-/// - omega (auto,array): Tuple of the curl at the start end end of the curve `(start, end)` as floats
+/// - omega (auto,array): Tuple of the curl at the start and end of the curve `(start, end)` as floats
 /// - close (bool): Close the curve
 ///
 /// -> array

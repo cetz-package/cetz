@@ -18,7 +18,7 @@
     rect((0,2), (1,1))
   })
 
-  // Styles apply to floating elementss
+  // Styles apply to floating elements
   set-style(stroke: green)
 
   // Use floating anchor

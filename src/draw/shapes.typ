@@ -431,7 +431,7 @@
 /// mark((0,0), 180deg, symbol: "stealth", scale: 3)
 /// ```
 ///
-/// Note: To place a mark centered at the first coodinate (`from`) use
+/// Note: To place a mark centered at the first coordinate (`from`) use
 /// the marks `anchor: "center"` style.
 ///
 /// - from (coordinate): The position to place the mark.
@@ -620,7 +620,7 @@
 ///
 /// - origin (coordinate): Coordinate to draw the polygon at
 /// - sides (int): Number of sides of the polygon (>= 3)
-/// - angle (angle) = 0deg: Angle angle to rotate the polygon arround its origin
+/// - angle (angle) = 0deg: Angle to rotate the polygon around its origin
 /// - name (none, str):
 ///
 /// ## Styling
@@ -1653,7 +1653,7 @@
 /// This can be used to create paths with holes.
 ///
 /// Unlike `merge-path`, this function groups the shapes as sub-paths
-/// instead of concattenating them into a single continous path.
+/// instead of concatenating them into a single continuous path.
 ///
 /// ```typc example
 /// compound-path({
@@ -1719,7 +1719,7 @@
   )
 }
 
-/// Merges two or more paths by concattenating their elements. Anchors and visual styling, such as `stroke` and `fill`, are not preserved. When an element's path does not start at the same position the previous element's path ended, a straight line is drawn between them so that the final path is continuous. You must then pay attention to the direction in which element paths are drawn.
+/// Merges two or more paths by concatenating their elements. Anchors and visual styling, such as `stroke` and `fill`, are not preserved. When an element's path does not start at the same position the previous element's path ended, a straight line is drawn between them so that the final path is continuous. You must then pay attention to the direction in which element paths are drawn.
 ///
 /// ```typc example
 /// merge-path(fill: white, {

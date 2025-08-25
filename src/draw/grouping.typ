@@ -52,7 +52,7 @@
 
 /// Places an element without affecting bounding boxes.
 ///
-/// Floating elements are drawn to the canvas but are ignored when calculating bouding boxes. All other behaviours remain the same.
+/// Floating elements are drawn to the canvas but are ignored when calculating bounding boxes. All other behaviours remain the same.
 ///
 /// ```typc example
 /// group(name: "g", {
@@ -213,7 +213,7 @@
 /// rect((-1,-1),(1,1))
 /// ```
 ///
-/// - body (elements, function): Elements to group together. A least one is required. A function that accepts `ctx` and returns elements is also accepted.
+/// - body (elements, function): Elements to group together. At least one is required. A function that accepts `ctx` and returns elements is also accepted.
 /// - anchor (none, str): Anchor to position the group and it's children relative to. For translation the difference between the groups `"default"` anchor and the passed anchor is used.
 /// - name (none, str):
 /// - ..style (style):
@@ -336,7 +336,7 @@
 /// This element acts as a scope, all state changes such as transformations and styling only affect the elements in the group. Elements after the scope are not affected by the changes inside the scope.
 /// In contrast to `group`, the `scope` element does not create a named element itself and "leaks" body element to the outside.
 ///
-/// - body (elements, function): Elements to group together. A least one is required. A function that accepts `ctx` and returns elements is also accepted.
+/// - body (elements, function): Elements to group together. At least one is required. A function that accepts `ctx` and returns elements is also accepted.
 #let scope(body) = (ctx => {
   let bounds = none
   let drawables = ()

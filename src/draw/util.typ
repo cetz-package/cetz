@@ -25,7 +25,7 @@
 /// A coordinate resolver must be a function of the format `(context, coordinate) => coordinate`. And must _always_ return a valid coordinate or panic, in case of an error.
 ///
 /// If multiple resolvers are registered, coordinates get passed through all
-/// resolvers in reverse registering order. All coordinates get paased to cetz'
+/// resolvers in reverse registering order. All coordinates get passed to cetz'
 /// default coordinate resolvers.
 ///
 /// ```typc example

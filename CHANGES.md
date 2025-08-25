@@ -3,7 +3,7 @@
 - Fixed the tree node anchor documentation.
 - Fixed named element access inside `compound-path` (#938)
 - Added a new `curved-stealth` (short `)>`) mark
-- Added the shortcut `>>` for the `stealt` mark
+- Added the shortcut `>>` for the `stealth` mark
 
 # 0.4.1
 - Added a `n-star` shape for drawing n-pointed stars
@@ -23,7 +23,7 @@
 - **BREAKING** Removed the `flex` attribute for marks (default to `true`)
 - Changed the internal path model to support multiple subpaths
 - Braces are now drawn tapered by default (#828)
-- Brace styling changed, see the documention of `decorations.brace`
+- Brace styling changed, see the documentation of `decorations.brace`
 - **BREAKING** Removed support for using ratios as canvas lengths. To get back the removed behavior, wrap your canvas in a `layout(ly => canvas(length: ly.width * <ratio>, ...))`
 - Added support for specifying a baseline offset via `canvas(baseline: <coordinate>, ...)`. The canvas switches to an inline `box` as the top-level element if set
 - Added support for passing a stroke style to the canvas top-level element, see `canvas(stroke: <stroke>, ...)`
@@ -74,7 +74,7 @@ CeTZ 0.3.1 requires Typst 0.12.0.
 CeTZ 0.3.0 requires Typst 0.11.0.
 The licence changed from Apache-2.0 to LGPLv3.
 
-CeTZ' plotting and charting functionality has been moved to a separate 
+CeTZ's plotting and charting functionality has been moved to a separate 
 package called `cetz-plot`.
 
 ## Canvas
@@ -89,14 +89,14 @@ package called `cetz-plot`.
   leaking child elements to the outside. This element can be used for scoping
   transformations, without having to scope children under a group name.
 - The center anchor of `content()` with two coordinates got fixed when using
-  negative cordinates.
+  negative coordinates.
 - Element names are now checked to not contain a "." character.
 - Fixed intersection bug for content with `anchor:` set.
 - **BREAKING** The winding order of _all_ elements has been changed to CCW.
 - You can now add custom marks via `register-mark`.
-- Mark anchor (tip, base, center) calcuation got fixed.
-- Content border anchors for `text` now default to the texts bounds.
-- Content emit new anchors for accessing the baseline of the content.
+- Mark anchor (tip, base, center) calculation got fixed.
+- Content border anchors for `text` now default to the text's bounds.
+- Content emits new anchors for accessing the baseline of the content.
 
 ## Draw
 - Added `floating` function for drawing elements without affecting bounding boxes.
@@ -148,7 +148,7 @@ package called `cetz-plot`.
 - Fixed piechart styles when using `clockwise: true`.
 - Fixed `decorations.flat-brace` vertical positioning
 - Fixed drawing of mirrored plot axis ticks.
-- Fixed plots with only annotions.
+- Fixed plots with only annotations.
 - Added matrix rounding to fix rounding errors when using lots of transforms
 
 # 0.2.1
@@ -300,7 +300,7 @@ CeTZ requires Typst 0.8.0.
 - Changed transformation matrix multiplication order from `Local * World to`
   World * Local.
 - Added `set-viewport` function for setting up scaling and translation to draw
-  insides a rectangular region.
+  inside a rectangular region.
 - The function `rect` now emits rotated anchors,
   before it did not set anchors but used the bounding box.
 - New function `copy-anchors` to copy anchors of an element into a group.

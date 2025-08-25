@@ -3,7 +3,7 @@
 CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https://typst.app) with an API inspired by TikZ and [Processing](https://processing.org/).
 
 ## Examples
-<!-- img width is set so the table gets evenly spaced by GitHubs css -->
+<!-- img width is set so the table gets evenly spaced by GitHub's CSS -->
 <table>
 <tr>
   <td>
