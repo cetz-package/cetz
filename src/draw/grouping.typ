@@ -16,7 +16,7 @@
 
 /// Hides an element.
 ///
-/// Hidden elements are not drawn to the canvas, are ignored when calculating bounding boxes and discarded by [merge-path](../shapes/merge-path). All other behaviours remain the same as a non-hidden element.
+/// Hidden elements are not drawn to the canvas, are ignored when calculating bounding boxes and discarded by [`merge-path`](../shapes/merge-path). All other behaviours remain the same as a non-hidden element.
 ///
 /// ```typc example
 /// set-style(radius: .5)
@@ -110,7 +110,7 @@
 /// })
 /// ```
 ///
-/// You can calculate intersections with hidden elements by using [hide](./hide).
+/// You can calculate intersections with hidden elements by using [`hide`](./hide).
 ///
 /// - name (str): Name to prepend to the generated anchors. (Not to be confused with other `name` arguments that allow the use of anchor coordinates.)
 /// - ..elements (elements,str): Elements and/or element names to calculate intersections with. Elements referred to by name are (unlike elements passed) not drawn by the intersections function!
@@ -226,9 +226,9 @@
 /// ## Anchors
 /// Supports border and path anchors of the axis aligned bounding box of all the child elements of the group.
 ///
-/// You can add custom named anchors to the group by using the [anchor](./anchor) element while in the scope of said group, see [anchor](./anchor) for more details.
+/// You can add custom named anchors to the group by using the [`anchor`](./anchor) element while in the scope of said group, see [`anchor`](./anchor) for more details.
 ///
-/// The default anchor is `"center"` but this can be overridden by using [anchor](./anchor) to place a new anchor called `"default"`.
+/// The default anchor is `"center"` but this can be overridden by using [`anchor`](./anchor) to place a new anchor called `"default"`.
 ///
 /// When using named elements within a group, you can access the element's anchors outside of the group by using the implicit anchor coordinate. e.g. `"a.b.north"`
 /// ```typc example
@@ -439,7 +439,7 @@
   },)
 }
 
-/// An advanced element that allows you to modify the current canvas {{context}}. 
+/// An advanced element that allows you to modify the current canvas {{context}}.
 /// Note: The transformation matrix (`transform`) is rounded after calling the `callback` function and therefore might be not exactly the matrix specified. This is due to rounding errors and should not cause any problems.
 ///
 /// ```typc example
