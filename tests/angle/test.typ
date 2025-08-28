@@ -96,3 +96,19 @@
   angle((0,0), (1,0), (0,1), radius: 75%, stroke: blue)
   angle((0,0), (1,0), (0,1), radius: 1, stroke: green)
 })
+
+#test-case({
+  import draw: *
+  import angle: *
+
+  angle((0,0), (1,0), (0,1), mark: (end: ">"), direction: "near", radius: 0.5)
+  angle((0,0), (1,0), (-1,0), mark: (end: ">"), direction: "near", radius: 1, stroke: blue)
+})
+
+#test-case({
+  import draw: *
+  import angle: *
+
+  angle((0,0), (1,0), (0,1), mark: (end: ">"), direction: "far", radius: 0.5)
+  angle((0,0), (1,0), (-1,0), mark: (end: ">"), direction: "far", radius: 1, stroke: blue)
+})

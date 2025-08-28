@@ -30,7 +30,7 @@
 /// - origin (coordinate): Angle origin
 /// - a (coordinate): Coordinate of side `a`, containing an angle between `origin` and `b`.
 /// - b (coordinate): Coordinate of side `b`, containing an angle between `origin` and `a`.
-/// - direction (string): Direction of the angle. Accepts "cw" (clockwise) and "ccw" (counter-clockwise), the latter being the default.
+/// - direction (string): Direction of the angle. Accepts "ccw" (counter-clockwise), "cw" (clockwise), "near" (inner angle), "far" (outer angle), the first one being the default.
 /// - label (none,content,function): Draw a label at the angles "label" anchor. If label is a function, it gets the angle value passed as argument. The function must be of the format `angle => content`.
 /// - name (none,str): Element name, used for querying anchors.
 /// - ..style (style): Style key-value pairs.
@@ -67,12 +67,10 @@
   assert(origin.at(2) == a.at(2) and a.at(2) == b.at(2),
     message: "Angle z coordinates of all three points must be equal")
 
-  assert(direction in ("cw", "ccw"),
+  assert(direction in ("cw", "ccw", "near", "far"),
     message: "Invalid angle direction " + repr(direction))
 
-  let (start, delta, ccw) = {
-    let ccw = direction == "ccw"
-
+  let (start, delta) = {
     let s = vector.angle2(origin, a)
     if s < 0deg { s += 360deg }
 
@@ -83,10 +81,12 @@
       e += 360deg
     }
 
-    if ccw {
-      (s, (e - s), ccw)
-    } else {
-      (s, -(360deg - (e - s)), ccw)
+    let d = e - s
+    if direction == "ccw" or (direction == "near" and d < 180deg) or (direction == "far" and d >= 180deg) {
+      (s, (e - s))
+    }
+    else {
+      (s, -(360deg - (e - s)))
     }
   }
 
