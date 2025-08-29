@@ -223,7 +223,7 @@
 /// *Root*: `zigzag`
 /// - factor (ratio) = 100%: Triangle mid between its start and end. Setting this to 0% leads to a falling sawtooth shape, while 100% results in a raising sawtooth.
 #let zigzag(target, name: none, close: auto, ..style) = draw.get-ctx(ctx => {
-  let style = styles.resolve(ctx, merge: style.named(),
+  let style = styles.resolve(ctx.style, merge: style.named(),
     base: zigzag-default-style, root: "zigzag")
 
   let (segments, close) = get-segments(ctx, target)
@@ -288,7 +288,7 @@
 /// *Root*: `coil`
 /// - factor (ratio) = 150%: Factor of how much the coil overextends its length to form a curl.
 #let coil(target, close: auto, name: none, ..style) = draw.get-ctx(ctx => {
-  let style = styles.resolve(ctx, merge: style.named(),
+  let style = styles.resolve(ctx.style, merge: style.named(),
     base: coil-default-style, root: "coil")
 
   let (segments, close) = get-segments(ctx, target)
@@ -388,7 +388,7 @@
 ///
 /// - tension (float) = 0.5 Catmull-Rom curve tension, see [Catmull](/api/draw-functions/shapes/catmull)
 #let wave(target, close: auto, name: none, ..style) = draw.get-ctx(ctx => {
-  let style = styles.resolve(ctx, merge: style.named(),
+  let style = styles.resolve(ctx.style, merge: style.named(),
     base: wave-default-style, root: "wave")
 
   let (segments, close) = get-segments(ctx, target)
@@ -453,7 +453,7 @@
 ///
 /// - factor (ratio) = 50% Square-Wave midpoint
 #let square(target, close: auto, name: none, ..style) = draw.get-ctx(ctx => {
-  let style = styles.resolve(ctx, merge: style.named(),
+  let style = styles.resolve(ctx.style, merge: style.named(),
     base: square-default-style, root: "square")
 
   let (segments, close) = get-segments(ctx, target)

@@ -9,6 +9,8 @@
 - Added missing `register-mark` and `register-coordinate-resolvea` API to the docs (#932)
 - Fixed element access inside `compound-path` (#932)
 - The `tangent` coordinate now supports ellipses (#925)
+- The styling algorithm now folds strokes (#923)
+- Fixed path decoration styling (#947)
 
 # 0.4.1
 - Added a `n-star` shape for drawing n-pointed stars
