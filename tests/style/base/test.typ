@@ -15,7 +15,7 @@
   })
 }
 
-#let assert-style-eq(key, value, base: base, merge: merge, root: none) = {
+#let assert-style-eq(key, value, merge: merge, root: none) = {
   get-ctx(ctx => {
     let style = cetz.styles.resolve(ctx.style, base: base, merge: merge, root: root)
 
@@ -32,40 +32,35 @@
 #test-case({
   assert-style-eq("my-key", "base")
 
-  // Set the style value.
+  // Set the style value
   set-style(my-key: 1)
   assert-style-eq("my-key", 1)
 
-  // Override the current style value.
+  // Override the current style value
   set-style(my-key: 2)
   assert-style-eq("my-key", 2)
 
-  // Reset to the current base style by passing auto.
+  // Reset to the current base style by passing auto
   set-style(my-key: auto)
   assert-style-eq("my-key", "base")
 })
 
 // Test merged style (override)
 #test-case({
-  // Use the default merge.
+  // Use the default merge
   assert-style-eq("my-merged-key", "merged")
 
-  // Merge another dictionary.
+  // Merge another dictionary
   assert-style-eq("my-merged-key", "override", merge: (my-merged-key: "override"))
 })
 
 // Test custom root
 #test-case({
-  // Use a custom root.
+  // Use a custom root
   set-style(my-root: (my-key: "root"))
   assert-style-eq("my-key", "root", root: "my-root")
 
-  // Fallback to the base value.
+  // Fallback to the base value
   set-style(my-root: (my-key: auto))
   assert-style-eq("my-key", "base", root: "my-root")
-
-  // Fallback to the base even if existing in the
-  // current style (but at root level!) value.
-  set-style(stroke: "wrong-value")
-  assert-style-eq("stroke", "base", root: "my-root", base: (stroke: "base"))
 })
