@@ -148,6 +148,36 @@
   ),
 )
 
+#let _is-stroke-compatible-type(value) = {
+  return (type(value) in (stroke, color, length) or
+          (type(value) == dictionary and value.keys().all(k => k in (
+            "paint", "thickness", "join", "cap", "miter-limit", "dash"
+          ))))
+}
+
+#let _fold-stroke(bottom, top) = {
+  let bottom-type = type(bottom)
+  let top-type = type(top)
+
+  if bottom-type == color {
+    bottom = (paint: bottom)
+  } else if bottom-type == length {
+    bottom = (thickness: bottom)
+  } else {
+    bottom = util.resolve-stroke(bottom)
+  }
+
+  if top-type == color {
+    top = (paint: top)
+  } else if top-type == length {
+    top = (thickness: top)
+  } else {
+    top = util.resolve-stroke(top)
+  }
+
+  return util.merge-dictionary(bottom, top)
+}
+
 /// You can use this to combine the style in `ctx`, the style given by a user for a single element and an element's default style. 
 ///
 /// `base` is first merged onto `dict` without overwriting existing values, and if `root` is given it is merged onto that key of `dict`. `merge` is then merged onto `dict` but does overwrite existing entries, if `root` is given it is merged onto that key of `dict`. Then entries in `dict` that are {{auto}} inherit values from their nearest ancestor and entries of type {{dictionary}} are merged with their closest ancestor. 
@@ -181,72 +211,88 @@
 /// - base (none, style): Style values to merge into `dict` without overwriting it.
 /// -> style
 #let resolve(dict, root: none, merge: (:), base: (:)) = {
-  let resolve(dict, ancestors, merge) = {
-    // Merge. If both values are dictionaries, merge's values will be inserted at a lower level in this step.
-    for (k, v) in merge {
-      if k not in dict or not (type(v) == dictionary and type(dict.at(k)) == dictionary) {
-        dict.insert(k, v)
-      }
+  let root-dict = dict
+  if root != none and root in dict {
+    dict = dict.at(root)
+  } else {
+    root-dict = none
+  }
+
+  let stack = (
+    root-dict, base, dict, merge,
+  ).filter(v => v != none and v != (:)).rev()
+
+  let fold-value(bottom, top) = {
+    // Inherit base value
+    if top == auto {
+      return bottom
     }
 
-    // For each entry that is a dictionary or `auto`, travel back up the tree until it finds an entry with the same key.
-    for (k, v) in dict {
-      let is-dict = type(v) == dictionary
-      if is-dict or v == auto {
-        for ancestor in ancestors {
-          if k in ancestor {
-            // If v is auto and the ancestor's value is not auto, update v.
-            if ancestor.at(k) != auto and v == auto {
-              v = ancestor.at(k)
-            // If both values are dictionaries, merge them. Values in v overwrite its ancestor's value.
-            } else if is-dict and type(ancestor.at(k)) == dictionary {
-              v = util.merge-dictionary(ancestor.at(k), v)
-            }
-            // Retain the updated value. Because all of the ancestors have already been processed even if a v is still auto that just means the key at the highest level either is auto or doesn't exist.
-            dict.insert(k, v)
-            break
-          }
-        }
-      }
+    // Do not try to fold none values
+    if bottom == none {
+      return top
     }
 
-    // Record history here so it doesn't change.
-    ancestors = (dict,) + ancestors
-    // Because only keys on this level have been processed, process all children of this level.
-    for (k, v) in dict {
-      if type(v) == dictionary {
-        dict.insert(k, resolve(v, ancestors, merge.at(k, default: (:))))
+    // Merge dictionaries
+    if type(bottom) == dictionary and type(top) == dictionary {
+      return util.merge-dictionary(bottom, top)
+    }
+
+    // Fold strokes with compatible types if both values
+    // are of different type or both values are strokes.
+    //
+    // Note: _fold-stroke returns a dictionary!
+    if ((type(bottom) != type(top) or type(bottom) == stroke) and
+        _is-stroke-compatible-type(bottom) and
+        _is-stroke-compatible-type(top)) {
+      return _fold-stroke(bottom, top)
+    }
+
+    return top
+  }
+
+  // Traverses
+  let traverse-up(key, stack) = {
+    let value = stack.first().at(key, default: auto)
+    for style in stack {
+      if root != none and root in style {
+        value = fold-value(style.at(root).at(key, default: auto), value)
       }
+      value = fold-value(style.at(key, default: auto), value)
+    }
+    return value
+  }
+
+  // List of keys the final dictionary contains
+  let keys = (dict, base, merge)
+    .filter(v => v != none)
+    .map(v => v.keys())
+    .flatten()
+    .dedup()
+
+  // Recursively fold a dictionary
+  let fold-dict(dict) = {
+    for (key, value) in dict {
+      value = traverse-up(key, (dict,) + stack)
+      if type(value) == dictionary and value != (:) {
+        value = fold-dict(value)
+      }
+      dict.insert(key, value)
     }
     return dict
   }
 
-  if base != (:) {
-    if root != none {
-      if type(root) != array {
-        root = (root,)
-      }
-      let a = (:)
-      for key in root.rev() {
-        a.insert(key, base)
-        base = a
-        a = (:)
-      }
+  let merged = (:)
+  for key in keys {
+    // Try resolve the value upwards
+    let value = traverse-up(key, stack)
+
+    // Recurse into dictionaries
+    if type(value) == dictionary {
+      value = fold-dict(value)
     }
-    dict = util.merge-dictionary(dict, base, overwrite: false)
+    merged.insert(key, value)
   }
 
-  let d = if root == none {
-    dict
-  } else if type(root) == array {
-    root.fold(dict, (d, k) => d.at(k))
-  } else {
-    dict.at(root)
-  }
-
-  return resolve(
-    d,
-    if root != none {(dict,)} else {()},
-    merge
-  )
+  return merged
 }
