@@ -1,16 +1,20 @@
-# 0.4.1
-- The `tree` element now has a `anchor:` argument to position the tree.
-- Fixed the tree node anchor documentation.
+# 0.4.2
+- The `tree` element now has a `anchor:` argument to position the tree (#929)
+- Fixed the tree node anchor documentation. (#929)
 - Fixed named element access inside `compound-path` (#938)
-- Added a new `curved-stealth` (short `)>`) mark
-- Added the shortcut `>>` for the `stealt` mark
-- Fixed a division by zero bug when placing marks on zero-length paths
+- Added a new `curved-stealth` (short `)>`) mark (#941)
+- Added the shortcut `>>` for the `stealth` mark (#941)
+- Fixed a division by zero bug when placing marks on zero-length paths (#936)
+- Added `"near"` and `"far"` directions to the `angle` API (#945)
+- Added missing `register-mark` and `register-coordinate-resolvea` API to the docs (#932)
+- Fixed element access inside `compound-path` (#932)
+- The `tangent` coordinate now supports ellipses (#925)
 
 # 0.4.1
 - Added a `n-star` shape for drawing n-pointed stars
 - Added `breakable: false` to the `block` element of the canvas
 - A new tree layout algorithm, implemented by @MichaelGoodale in Rust, can handle differently sized tree nodes
-- **BREAKING** The `tree` callback for drawing nodes does not pass the parent nodes name anymore (new signature is `(node) => elements`)
+- **BREAKING** The `tree` callback for drawing nodes does not pass the parent node's name anymore (new signature is `(node) => elements`)
 - **BREAKING** The `parent-position` argument of `tree` got removed
 - Tree nodes now support anchors: custom anchors from the `draw-node` callback
   are accessible (#904)
@@ -19,24 +23,24 @@
 - Fixed a regression with `merge-path`'s `close:` argument (#910)
 
 # 0.4.0
-- Fixed a bug where passing a length as radius to a polygon resulted in an error
+- Fixed a bug where passing a length as a radius to a polygon resulted in an error
 - Added `ctx.shared-state`, a context field to share canvas-global state
 - **BREAKING** Removed the `flex` attribute for marks (default to `true`)
 - Changed the internal path model to support multiple subpaths
 - Braces are now drawn tapered by default (#828)
-- Brace styling changed, see the documention of `decorations.brace`
+- Brace styling changed; see the documentation of `decorations.brace`
 - **BREAKING** Removed support for using ratios as canvas lengths. To get back the removed behavior, wrap your canvas in a `layout(ly => canvas(length: ly.width * <ratio>, ...))`
 - Added support for specifying a baseline offset via `canvas(baseline: <coordinate>, ...)`. The canvas switches to an inline `box` as the top-level element if set
-- Added support for passing a stroke style to the canvas top-level element, see `canvas(stroke: <stroke>, ...)`
+- Added support for passing a stroke style to the canvas top-level element; see `canvas(stroke: <stroke>, ...)`
 - Added support for user-defined coordinate systems. See `register-coordinate-resolver(<callback>)`
 - The default style value for `mark.transform-shape` changed to `false`
-- Harpoon marks changed side (on a line from (0, 0) to (1, 0), the end mark now appears on the left side/top)
+- Harpoon marks changed sides (on a line from (0, 0) to (1, 0), the end mark now appears on the left side/top)
 
 # 0.3.4
 - Fixed a bug with rendering curves with Typst 0.13.1
 
 # 0.3.3
-- Circle supports two-point construction, using the distance as radius
+- Circle supports two-point construction, using the distance as the radius
 - Require Typst 0.13.0, port test cases over to Tytanic
 - Add note about contents `auto-scale` feature
 - Various performance improvements
@@ -73,7 +77,7 @@ CeTZ 0.3.1 requires Typst 0.12.0.
 # 0.3.0
 
 CeTZ 0.3.0 requires Typst 0.11.0.
-The licence changed from Apache-2.0 to LGPLv3.
+The license changed from Apache-2.0 to LGPLv3.
 
 CeTZ' plotting and charting functionality has been moved to a separate 
 package called `cetz-plot`.
@@ -86,7 +90,7 @@ package called `cetz-plot`.
   Use `scale(z: -1)` if you want to change back to a left-hand system.
 - The `on-<axes>` functions lead to wrong anchors and got fixed. The offset
   argument is now behaving as translation instead of hard setting the coordinate!
-- A new `scope(...)` element got added that behaves like an unnamed group but
+- A new `scope(...)` element got added that behaves like an unnamed group, but
   leaking child elements to the outside. This element can be used for scoping
   transformations, without having to scope children under a group name.
 - The center anchor of `content()` with two coordinates got fixed when using
@@ -95,33 +99,33 @@ package called `cetz-plot`.
 - Fixed intersection bug for content with `anchor:` set.
 - **BREAKING** The winding order of _all_ elements has been changed to CCW.
 - You can now add custom marks via `register-mark`.
-- Mark anchor (tip, base, center) calcuation got fixed.
-- Content border anchors for `text` now default to the texts bounds.
-- Content emit new anchors for accessing the baseline of the content.
+- Mark anchor (tip, base, center) calculation got fixed.
+- Content border anchors for `text` now default to the text's bounds.
+- Content emits new anchors for accessing the baseline of the content.
 
 ## Draw
-- Added `floating` function for drawing elements without affecting bounding boxes.
+- Added the `floating` function for drawing elements without affecting bounding boxes.
 - The `ortho` function gained a `sorted` and `cull-face` argument to enable
   depth ordering and face culling of drawables. Ordering is enabled by default.
 - Closed `line` and `merge-path` elements now have a `"centroid"` anchor that
   is the calculated centroid of the (non self-intersecting!) shape.
 
 ## Marks
-- Added support for mark `anchor` style key, to adjust mark placement and
+- Added support for the mark `anchor` style key, to adjust mark placement and
   allow for centered marks.
 
 ## Plot
-- **BREAKING** The plot library has been moved out of cetz
+- **BREAKING** The plot library has been moved out of cetz.
 - Added support for automatically adding axis breaks (sawtooth lines) by setting the `break`
   attribute of an axis to `true`.
-- Added a new errorbar function: `add-errorbar`
-- Added errorbar support to the `add-bar` function
+- Added a new error bar function: `add-errorbar`
+- Added error bar support to the `add-bar` function
 - Improved the performance & memory consumption of the clipping algorithm
 - **BREAKING** Legend anchors got renamed and do not use the legend prefix anymore
 
 ## Chart
 - **BREAKING** The chart library has been moved out of cetz
-- Added errorbar support for bar- and columncharts
+- Added error bar support for bar- and columncharts
 - Piecharts now support a legend (see `legend.label` style)
 - **BREAKING** Legend anchors got renamed and do not use the legend prefix anymore
 
@@ -155,7 +159,7 @@ package called `cetz-plot`.
 # 0.2.1
 
 ## Anchors
-- Changing a group's "center" anchor now effects how border anchors are calculated.
+- Changing a group's "center" anchor now affects how border anchors are calculated.
 - Allowed changing of the default anchor for groups.
 - Re-added "a", "b", and "c" anchors for `circle-through`
 - Open arcs are no longer modified for anchors, invalid border anchors will panic.
@@ -165,21 +169,21 @@ package called `cetz-plot`.
 - Marks can now be placed on a path after that path got transformed. See the new `transform-shape` style key.
 
 ## Misc
-- The `hide` function now support an additional `bounds:` parameter to enable canvas bounds adjustment for hidden elements
+- The `hide` function now supports an additional `bounds:` parameter to enable canvas bounds adjustment for hidden elements
 - The default transformation matrix changed
 
 ## Charts
-- Default piechart rotation changed from counter-clockwise to clockwise
-- Default piechart start/stop angles changed so that the first item
+- Default pie chart rotation changed from counterclockwise to clockwise
+- Default pie chart start/stop angles changed so that the first item
   starts at 90° (ccw)
 
 ## Libs
 ### Plot
 - The default style of plots changed
-- New style keys for enabling/disabling the shared zero tick for "school-book" style plots
+- New style keys for enabling/disabling the shared zero tick for `"school-book"` style plots
 - New style keys for specifying the layer of different plot elements (`grid-layer`, `axis-layer`, `background-layer`)
 - Fixed annotation bounds calculation
-- Marks insides annotations are now unaffected by the plots canvas scaling by default (see marks new post-transform style key)
+- Marks inside annotations are now unaffected by the plot's canvas scaling by default (see marks new post-transform style key)
 
 # 0.2.0
 CeTZ 0.2.0 requires Typst 0.10.0
