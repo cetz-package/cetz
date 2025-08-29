@@ -178,6 +178,36 @@
   return util.merge-dictionary(bottom, top)
 }
 
+
+#let _fold-value(bottom, top) = {
+  // Inherit base value
+  if top == auto {
+    return bottom
+  }
+
+  // Do not try to fold none values
+  if bottom == none or top == none {
+    return top
+  }
+
+  // Merge dictionaries
+  if type(bottom) == dictionary and type(top) == dictionary {
+    return util.merge-dictionary(bottom, top)
+  }
+
+  // Fold strokes with compatible types if both values
+  // are of different type or both values are strokes.
+  //
+  // Note: _fold-stroke returns a dictionary!
+  if ((type(bottom) != type(top) or type(bottom) == stroke) and
+      _is-stroke-compatible-type(bottom) and
+      _is-stroke-compatible-type(top)) {
+    return _fold-stroke(bottom, top)
+  }
+
+  return top
+}
+
 /// You can use this to combine the style in `ctx`, the style given by a user for a single element and an element's default style. 
 ///
 /// `base` is first merged onto `dict` without overwriting existing values, and if `root` is given it is merged onto that key of `dict`. `merge` is then merged onto `dict` but does overwrite existing entries, if `root` is given it is merged onto that key of `dict`. Then entries in `dict` that are {{auto}} inherit values from their nearest ancestor and entries of type {{dictionary}} are merged with their closest ancestor. 
@@ -212,68 +242,43 @@
 /// -> style
 #let resolve(dict, root: none, merge: (:), base: (:)) = {
   let root-dict = dict
-  if root != none and root in dict {
-    dict = dict.at(root)
+  if root != none {
+    dict = dict.at(root, default: none)
   } else {
     root-dict = none
   }
 
   let stack = (
     root-dict, base, dict, merge,
-  ).filter(v => v != none and v != (:)).rev()
+  ).filter(v => v != none and v != auto and v != (:)).rev()
 
-  let fold-value(bottom, top) = {
-    // Inherit base value
-    if top == auto {
-      return bottom
-    }
-
-    // Do not try to fold none values
-    if bottom == none {
-      return top
-    }
-
-    // Merge dictionaries
-    if type(bottom) == dictionary and type(top) == dictionary {
-      return util.merge-dictionary(bottom, top)
-    }
-
-    // Fold strokes with compatible types if both values
-    // are of different type or both values are strokes.
-    //
-    // Note: _fold-stroke returns a dictionary!
-    if ((type(bottom) != type(top) or type(bottom) == stroke) and
-        _is-stroke-compatible-type(bottom) and
-        _is-stroke-compatible-type(top)) {
-      return _fold-stroke(bottom, top)
-    }
-
-    return top
-  }
-
-  // Traverses
+  // Traverses upwards and folds values with parent values.
   let traverse-up(key, stack) = {
     let value = stack.first().at(key, default: auto)
     for style in stack {
       if root != none and root in style {
-        value = fold-value(style.at(root).at(key, default: auto), value)
+        let root-style = style.at(root)
+        if root-style != auto {
+          value = _fold-value(root-style.at(key, default: auto), value)
+        }
       }
-      value = fold-value(style.at(key, default: auto), value)
+      value = _fold-value(style.at(key, default: auto), value)
     }
     return value
   }
 
   // List of keys the final dictionary contains
   let keys = (dict, base, merge)
-    .filter(v => v != none)
+    .filter(v => v != none and v != auto)
     .map(v => v.keys())
     .flatten()
     .dedup()
 
   // Recursively fold a dictionary
   let fold-dict(dict) = {
+    let new-stack = (dict,) + stack
     for (key, value) in dict {
-      value = traverse-up(key, (dict,) + stack)
+      value = traverse-up(key, new-stack)
       if type(value) == dictionary and value != (:) {
         value = fold-dict(value)
       }
@@ -295,4 +300,26 @@
   }
 
   return merged
+}
+
+/// Merge two style dictionaries by using cetz' style
+/// folding logic.
+///
+/// - bottom (dictionary) Base style dictionary.
+/// - top (dictionary) New style dictionary to merge on top of `bottom`.
+#let merge(bottom, top) = {
+  let merge-recursive(bottom, top) = {
+    for (k, v) in top {
+      // Fold if bottom is a dictionary _and_ v is not auto!
+      // Merging style dicts must preserve auto values.
+      if type(bottom) == dictionary and k in bottom and v != auto {
+        bottom.insert(k, _fold-value(bottom.at(k), v))
+      } else {
+        bottom.insert(k, v)
+      }
+    }
+    return bottom
+  }
+
+  return merge-recursive(bottom, top)
 }

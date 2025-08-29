@@ -1,4 +1,5 @@
 #import "/src/util.typ"
+#import "/src/styles.typ"
 
 /// Set current style
 ///
@@ -11,8 +12,8 @@
   )
   
   (ctx => {
-    ctx.style = util.merge-dictionary(ctx.style, style.named())
-    
+    ctx.style = styles.merge(ctx.style, style.named())
+
     return (ctx: ctx)
   },)
 }

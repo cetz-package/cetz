@@ -11,6 +11,8 @@
 - The `tangent` coordinate now supports ellipses (#925)
 - Grid lines now correctly connect at the corners (#921)
 - Grid now supports a `shift: (x, y)` argument to offset grid-lines.
+- The styling algorithm now folds strokes (#923)
+- Fixed path decoration styling (#947)
 
 # 0.4.1
 - Added a `n-star` shape for drawing n-pointed stars
