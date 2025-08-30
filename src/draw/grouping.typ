@@ -491,7 +491,7 @@
   (ctx => {
     let body = callback(ctx)
     if body != none {
-      let (ctx, drawables) = process.many(ctx, callback(ctx))
+      let (ctx, drawables) = process.many(ctx, body)
       return (ctx: ctx, drawables: drawables)
     }
     return (ctx: ctx)
