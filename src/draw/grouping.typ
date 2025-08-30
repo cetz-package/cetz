@@ -117,11 +117,12 @@
 /// - samples (int): Number of samples to use for non-linear path segments. A higher sample count can give more precise results but worse performance.
 /// - sort (none,function): A function of the form `(context, array<vector>) -> array<vector>`
 ///   that gets called with the list of intersection points.
+/// - ignore-mark (bool): If true, ignore mark shapes.
 ///
 ///   CeTZ provides the following sorting functions:
 ///     - sorting.points-by-distace(points, reference: (0, 0, 0))
 ///     - sorting.points-by-angle(points, reference: (0, 0, 0))
-#let intersections(name, ..elements, samples: 10, sort: none) = {
+#let intersections(name, ..elements, samples: 10, sort: none, ignore-marks: true) = {
   samples = calc.clamp(samples, 2, 2500)
 
   assert(type(name) == str and name != "",
@@ -156,6 +157,8 @@
     }
 
     let elems = named-drawables + drawables
+    if ignore-marks { elems = drawable.filter-tagged(elems, "mark") }
+
     let pts = ()
     if elems.len() > 1 {
       for (i, elem-1) in elems.enumerate() {
