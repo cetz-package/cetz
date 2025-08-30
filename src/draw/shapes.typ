@@ -824,6 +824,7 @@
 /// ## Styling
 /// *Root*: `grid`
 /// - step (number, array, dictionary) = 1: Distance between grid lines. A distance of $1$ means to draw a grid line every $1$ length units in x- and y-direction. If given a dictionary with `x` and `y` keys or a tuple, the step is set per axis.
+/// - shift (number, array, dictionary) = 0: Offset of the grid lines. Supports an array of the form `(x, y)` or a dictionary of the form `(x: <number>, y: <number>)`.
 /// - help-lines (bool) = false: If true, force the stroke style to `gray + 0.2pt`
 ///
 /// ## Anchors
@@ -860,28 +861,99 @@
       (style.step, style.step)
     }.map(util.resolve-number.with(ctx))
 
-    let drawables = {
-      if x-step != 0 {
-        range(int((to.at(0) - from.at(0)) / x-step)+1).map(x => {
-          x *= x-step
-          x += from.at(0)
-          drawable.line-strip(((x, from.at(1)), (x, to.at(1))),
-            stroke: style.stroke)
-        })
-      } else {
-        ()
+    let (from-x, from-y, ..) = from
+    let (to-x, to-y, ..) = to
+    
+    // Resolve shift parameter
+    let shift = style.at("shift", default: 0)
+    if type(shift) == dictionary {
+      shift = (shift.at("x", default: 0), shift.at("y", default: 0))
+    }
+    let (shift-x, shift-y) = if type(shift) == array {
+      style.shift.map(util.resolve-number.with(ctx))
+    } else {
+      (shift, shift).map(util.resolve-number.with(ctx))
+    }
+
+    let x-steps = if x-step != 0 {
+      // Calculate offset start position based on shift
+      let start-x = from-x + calc.rem(shift-x, x-step)
+      // Adjust range to account for shift
+      let count = int((to.at(0) - start-x) / x-step) + 1
+      range(count).map(x => {
+        return (x * x-step) + start-x
+      }).filter(x => x >= from-x and x <= to-x)
+    } else { () }
+
+    let y-steps = if y-step != 0 {
+      // Calculate offset start position based on shift
+      let start-y = from-y + calc.rem(shift-y, y-step)
+      // Adjust range to account for shift
+      let count = int((to.at(1) - start-y) / y-step) + 1
+      range(count).map(y => {
+        return (y * y-step) + start-y
+      }).filter(y => y >= from-y and y <= to-y)
+    } else { () }
+
+
+    let drawables = ()
+
+    let low-x = x-steps.first()
+    let high-x = x-steps.last()
+    let low-y = y-steps.first()
+    let high-y = y-steps.last()
+
+    // Draw inner grid lines (vertical and horizontal)
+    drawables += x-steps.slice(1, -1).map(x => drawable.line-strip(
+      ((x, from-y), (x, to-y)), stroke: style.stroke))
+    drawables += y-steps.slice(1, -1).map(y => drawable.line-strip(
+      ((from-x, y), (to-x, y)), stroke: style.stroke))
+
+    // Draw outer border lines as connected path when corners touch
+    let outer-lines = (
+      ((from-x, low-y), (to-x, low-y)),
+      ((high-x, from-y), (high-x, to-y)),
+      ((to-x, high-y), (from-x, high-y)),
+      ((low-x, to-y), (low-x, from-y)),
+    ).map(s => s.map(pt => pt.map(calc.round.with(digits: 6))))
+
+    let at-border = (
+      low-x == from-x,
+      low-y == from-y,
+      high-x == to-x,
+      high-y == to-y,
+    )
+
+    let outer-strips = ()
+    for i in range(0, 4) {
+      let i = calc.rem(i, 4)
+
+      let added = false
+      for j in range(0, outer-strips.len()) {
+        if outer-strips.at(j).last() == outer-lines.at(i).first() {
+          outer-strips.at(j).push(outer-lines.at(i).last())
+          added = true
+          break
+        } else if outer-strips.at(j).first() == outer-lines.at(i).last() {
+          outer-strips.at(j).insert(0, outer-lines.at(i).first())
+          added = true
+          break
+        }
       }
-      if y-step != 0 {
-        range(int((to.at(1) - from.at(1)) / y-step)+1).map(y => {
-          y *= y-step
-          y += from.at(1)
-          drawable.line-strip(((from.at(0), y), (to.at(0), y)),
-            stroke: style.stroke)
-        })
-      } else {
-        ()
+
+      if not added {
+        outer-strips.push(outer-lines.at(i))
       }
     }
+
+    // Connect first and last strip, if the touch
+    if outer-strips.len() > 1 and outer-strips.last().last() == outer-strips.first().first() {
+      outer-strips.last() += outer-strips.first()
+      outer-strips.remove(0)
+    }
+
+    drawables += outer-strips.map(s => drawable.line-strip(
+      s, stroke: style.stroke, close: at-border.all(v => v)))
 
     let center = vector.lerp(from, to, .5)
     let (transform, anchors) = anchor_.setup(
