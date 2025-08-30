@@ -1,14 +1,28 @@
 #set page(width: auto, height: auto)
 #import "/src/lib.typ": *
+#import "/tests/helper.typ": *
 
-#box(stroke: 2pt + red, canvas({
+#test-case({
     import draw: *
 
-    grid((0,0), (1,1), step: .1)
+    grid((0,0), (1,1))
+})
 
-    translate((0, 1.5))
-    grid((0,0), (1,1), step: .5)
+#test-case({
+    import draw: *
 
-    translate((0, 1.5))
-    grid((0,0), (1,1), step: (x: .2, y: .5))
-}))
+    grid((0,0), (1,1), step: 0.3)
+})
+
+#test-case({
+    import draw: *
+
+    grid((0,0), (1,1), step: (0.1, 0.2))
+})
+
+// Test shift
+#test-case({
+    import draw: *
+
+    grid((0,0), (1,1), step: (0.3, 0.2), shift: (0.1, 0.1))
+})
