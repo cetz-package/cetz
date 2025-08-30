@@ -55,3 +55,26 @@
     line((0,0), (1,0), (1,1))
   })
 })
+
+// Test marks on merged paths
+#test-case({
+  import draw: *
+
+  merge-path({
+    line((0,0), (1,0))
+    arc((), start: 0deg, stop: 90deg)
+  }, mark: (end: range(0, 110, step: 10).map(t => (symbol: "o", shorten-to: none, pos: t * 1%, fill: white))))
+})
+
+// Test shortening merged paths
+#test-case({
+  import draw: *
+
+  merge-path({
+    line((0,0), (1,0))
+    arc((), start: 0deg, stop: 90deg)
+  }, mark: (
+    end: ((symbol: "o", pos: 75%, fill: white), (symbol: "|", pos: 0%)),
+    start: "|"
+  ))
+})
