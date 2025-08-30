@@ -261,12 +261,30 @@
           direction = vector.scale(direction, -1)
         }
 
+        // Calculate segment length
+        let segment-distance = distance - travelled
+        let relative-distance = segment-distance
+
+        // For reverse shortening, we need distance from the segment end
+        if reverse {
+          let (kind, ..args) = segment
+          if kind == "l" {
+            let segment-length = vector.dist(origin, args.last())
+            relative-distance = segment-length - segment-distance
+          } else if kind == "c" {
+            let (c1, c2, e) = args
+            let segment-length = bezier.cubic-arclen(origin, e, c1, c2, samples: samples)
+            relative-distance = segment-length - segment-distance
+          }
+        }
+
         return (
           previous-point: origin,
           point: point,
           direction: direction,
           subpath-index: subpath-index,
           segment-index: segment-index,
+          distance: relative-distance,
         )
       }
 
@@ -360,8 +378,8 @@
       }
     })
 
-    path = shorten-to(path, start, reverse: reverse, mode: mode, samples: samples, snap-to: snap-to.first())
-    path = shorten-to(path, end, reverse: not reverse, mode: mode, samples: samples, snap-to: snap-to.last())
+    path = shorten-to(path, start, reverse: reverse, mode: mode, samples: samples, snap-to: if snap-to != none { snap-to.first() } else { none })
+    path = shorten-to(path, end, reverse: not reverse, mode: mode, samples: samples, snap-to: if snap-to != none { snap-to.last() } else { none })
     return path
   }
 
@@ -374,11 +392,11 @@
     let new-origin
     if kind == "l" {
       (new-origin, args) = _shorten-line(
-        origin, point.previous-point, args, distance,
+        origin, point.previous-point, args, point.distance,
         reverse: reverse)
     } else if kind == "c" {
       (new-origin, args) = _shorten-cubic(
-        origin, point.previous-point, args, distance,
+        origin, point.previous-point, args, point.distance,
         reverse: reverse, mode: mode)
     }
 
