@@ -1809,9 +1809,11 @@
 /// - body (elements): Elements with paths to be merged together.
 /// - join (bool): Connect all sup-paths with a straight line
 /// - close (bool): Close the path with a straight line from the start of the path to its end.
+/// - ignore-mark (bool): If true, remove marks from input elements
+/// - ignore-hidden (bool): If true, ignore all hidden elements
 /// - name (none,str):
 /// - ..style (style):
-#let merge-path(body, join: true, close: false, name: none, ..style) = {
+#let merge-path(body, join: true, ignore-marks: true, ignore-hidden: true, close: false, name: none, ..style) = {
   // No extra positional arguments from the style sink
   assert.eq(
     style.pos(),
@@ -1830,13 +1832,20 @@
         if r != none {
           ctx = r.ctx
 
-          let drawables = r.drawables.filter(d => not d.hidden)
+          let drawables = r.drawables
+          if ignore-hidden { drawables = drawables.filter(d => not d.hidden) }
+          if ignore-marks { drawables = drawable.filter-tagged(drawables, "mark") }
+
           if join and drawables.len() > 0 and subpaths.len() > 0 {
             let (origin, closed, segments) = subpaths.last()
             let (next-origin, _, next-segments) = drawables.first().segments.first()
-            segments.push(("l", next-origin))
-            segments += next-segments
 
+            // Close the gap using a line
+            if next-origin != path-util.subpath-end(subpaths.last()) {
+              segments.push(("l", next-origin))
+            }
+
+            segments += next-segments
             subpaths.last() = (origin, closed or close, segments)
             subpaths += drawables.slice(1).filter(d => {
               d.type == "path"
@@ -1873,6 +1882,13 @@
         path-anchors: true,
         path: drawables,
       )
+
+      // Place marks and adjust segments
+      if mark_.check-mark(style.mark) {
+        drawables = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
+      } else {
+        drawables = drawable.apply-transform(transform, drawables)
+      }
 
       return (
         ctx: ctx,
