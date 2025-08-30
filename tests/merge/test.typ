@@ -56,7 +56,7 @@
   })
 })
 
-// Test marks on merged paths
+// Place multiple marks along a merged path
 #test-case({
   import draw: *
 
@@ -66,7 +66,7 @@
   }, mark: (end: range(0, 110, step: 10).map(t => (symbol: "o", shorten-to: none, pos: t * 1%, fill: white))))
 })
 
-// Test shortening merged paths
+// Shorten merged paths
 #test-case({
   import draw: *
 
@@ -77,4 +77,22 @@
     end: ((symbol: "o", pos: 75%, fill: white), (symbol: "|", pos: 0%)),
     start: "|"
   ))
+})
+
+// Remove existing marks by default
+#test-case({
+  import draw: *
+
+  merge-path({
+    line((0,0), (1,0), mark: (end: ">"))
+  })
+})
+
+// Keep marks if specified
+#test-case({
+  import draw: *
+
+  merge-path(ignore-marks: false, {
+    line((0,0), (1,0), mark: (end: ">"))
+  })
 })
