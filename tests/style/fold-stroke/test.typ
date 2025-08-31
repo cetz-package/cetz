@@ -36,6 +36,29 @@
   line((0,0), (1,0))
 })
 
+// Fold netsted with root style dictionaries
+#test-case({
+  import draw: *
+
+  // Set color
+  set-style(stroke: red)
+  // Set thickness
+  set-style(line: (stroke: 5pt))
+
+  line((0,0), (1,0))
+})
+
+// Reset nested style (override root style)
+#test-case({
+  import draw: *
+
+  // Set color
+  set-style(stroke: red)
+  set-style(line: (stroke: blue + 5pt))
+
+  line((0,0), (1,0))
+})
+
 // Reset a folded value between calls
 #test-case({
   import draw: *
