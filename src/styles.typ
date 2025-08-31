@@ -149,17 +149,21 @@
 )
 
 #let _is-stroke-compatible-type(value) = {
-  return (type(value) in (stroke, color, length) or
+  return (type(value) in (stroke, color, length, gradient, tiling) or
           (type(value) == dictionary and value.keys().all(k => k in (
             "paint", "thickness", "join", "cap", "miter-limit", "dash"
           ))))
 }
 
 #let _fold-stroke(bottom, top) = {
+  if bottom == none {
+    return top
+  }
+
   let bottom-type = type(bottom)
   let top-type = type(top)
 
-  if bottom-type == color {
+  if bottom-type in (color, gradient, tiling) {
     bottom = (paint: bottom)
   } else if bottom-type == length {
     bottom = (thickness: bottom)
@@ -167,7 +171,7 @@
     bottom = util.resolve-stroke(bottom)
   }
 
-  if top-type == color {
+  if top-type in (color, gradient, tiling) {
     top = (paint: top)
   } else if top-type == length {
     top = (thickness: top)

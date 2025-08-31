@@ -60,3 +60,16 @@
 
   line((0,0), (1,0))
 })
+
+// Fold different stroke-compatible types
+#test-case({
+  import draw: *
+
+  // Set color
+  set-style(stroke: 5pt)
+  set-style(stroke: gradient.linear(red, blue))
+  set-style(stroke: (dash: "dotted"))
+  set-style(stroke: (join: "round"))
+
+  rect((0,0), (1,1))
+})
