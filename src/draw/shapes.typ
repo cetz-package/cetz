@@ -1809,7 +1809,7 @@
 /// - body (elements): Elements with paths to be merged together.
 /// - join (bool): Connect all sup-paths with a straight line
 /// - close (bool): Close the path with a straight line from the start of the path to its end.
-/// - ignore-mark (bool): If true, remove marks from input elements
+/// - ignore-marks (bool): If true, remove marks from input elements
 /// - ignore-hidden (bool): If true, ignore all hidden elements
 /// - name (none,str):
 /// - ..style (style):

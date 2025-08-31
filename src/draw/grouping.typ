@@ -117,7 +117,7 @@
 /// - samples (int): Number of samples to use for non-linear path segments. A higher sample count can give more precise results but worse performance.
 /// - sort (none,function): A function of the form `(context, array<vector>) -> array<vector>`
 ///   that gets called with the list of intersection points.
-/// - ignore-mark (bool): If true, ignore mark shapes.
+/// - ignore-marks (bool): If true, ignore mark shapes.
 ///
 ///   CeTZ provides the following sorting functions:
 ///     - sorting.points-by-distace(points, reference: (0, 0, 0))
