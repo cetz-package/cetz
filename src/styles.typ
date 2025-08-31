@@ -179,7 +179,7 @@
 }
 
 
-#let _fold-value(bottom, top) = {
+#let _fold-value(bottom, top, merge-dictionary-fn: util.merge-dictionary) = {
   // Inherit base value
   if top == auto {
     return bottom
@@ -192,7 +192,7 @@
 
   // Merge dictionaries
   if type(bottom) == dictionary and type(top) == dictionary {
-    return util.merge-dictionary(bottom, top)
+    return merge-dictionary-fn(bottom, top)
   }
 
   // Fold strokes with compatible types if both values
@@ -313,7 +313,7 @@
       // Fold if bottom is a dictionary _and_ v is not auto!
       // Merging style dicts must preserve auto values.
       if type(bottom) == dictionary and k in bottom and v != auto {
-        bottom.insert(k, _fold-value(bottom.at(k), v))
+        bottom.insert(k, _fold-value(bottom.at(k), v, merge-dictionary-fn: merge-recursive))
       } else {
         bottom.insert(k, v)
       }

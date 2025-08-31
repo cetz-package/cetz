@@ -24,6 +24,18 @@
   line((0,0), (1,0))
 })
 
+// Fold netsted style dictionaries
+#test-case({
+  import draw: *
+
+  // Set color
+  set-style(line: (stroke: red))
+  // Set thickness
+  set-style(line: (stroke: 5pt))
+
+  line((0,0), (1,0))
+})
+
 // Reset a folded value between calls
 #test-case({
   import draw: *
