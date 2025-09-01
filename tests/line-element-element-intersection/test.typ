@@ -83,19 +83,12 @@
     return coord
   })
 
-  scale(4)
-  arc((), start: 15deg, stop: 35deg, radius: 5mm, mode: "PIE", fill: color.mix((green, 20%), white), anchor: "origin")
   let orig = (0, 0)
-  let (o, a, b) = ((0, 0), (35deg, 1cm), (15deg, 1.25cm))
+  let (o, a, b) = ((0, 0), (35deg, 2), (15deg, 2.25))
   line(o, a, mark: (end: ">"), name: "v1")
   line(o, b, mark: (end: ">"), name: "v2")
 
-  // Because of a bug with `line`, curstom coordinates do not work properly,
-  // so we create a named anchor.
-  anchor("pt", ("v1.end", "perpendicular", "v2.start", "v2.end"))
-  //line("v1.end", "pt", stroke: red)
-
   // #944: ERROR resolving coordinate:
-  line("v1.end", ("v1.end", "perpendicular", "v2.start", "v2.end"),
+  line("v1.80%", ((), "perpendicular", "v2.start", "v2.end"),
     stroke: red)
 })

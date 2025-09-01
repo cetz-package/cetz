@@ -251,6 +251,30 @@
   return vector.add(a, vector.scale(ab, distance))
 }
 
+// Resolve a projection coordinate.
+//
+// (project: p, onto: (a, b))
+// (p, "_|_", a, b)
+// (p, "⟂", a, b)
+#let resolve-project-point-on-line(resolve, ctx, c) = {
+  let (ctx, a, b, p) = if type(c) == dictionary {
+    let (project: p, onto: (a, b)) = c
+    (_, a, b) = resolve(ctx, a, b)
+    (ctx, p) = resolve(ctx, p)
+    (ctx, a, b, p)
+  } else {
+    let (p, _, a, b) = c
+    (_, a, b) = resolve(ctx, a, b)
+    (ctx, p) = resolve(ctx, p)
+    (ctx, a, b, p)
+  }
+
+  let ap = vector.sub(p, a)
+  let ab = vector.sub(b, a)
+
+  return vector.add(a, vector.scale(ab, vector.dot(ap, ab) / vector.dot(ab, ab)))
+}
+
 #let resolve-function(resolve, ctx, c) = {
   let (func, ..c) = c
   (ctx, ..c) = resolve(ctx, ..c)
@@ -290,6 +314,8 @@
       "relative"
     } else if len in (3, 4) and keys.all(k => k in ("a", "number", "angle", "abs", "b")) {
       "lerp"
+    } else if len == 2 and keys.all(k => k in ("project", "onto")) {
+      "project"
     }
   } else if type(c) == array {
     let len = c.len()
@@ -304,6 +330,8 @@
       "perpendicular"
     } else if len in (3, 4) and types.at(1) in (int, float, length, ratio) and (len == 3 or (len == 4 and types.at(2) == angle)) {
       "lerp"
+    } else if len == 4 and c.at(1) in ("_|_", "⟂") {
+      "project"
     } else if len >= 2 and types.first() == function {
       "function"
     }
@@ -370,6 +398,8 @@
       c
     } else if t == "lerp" {
       resolve-lerp(resolve, ctx, c)
+    } else if t == "project" {
+      resolve-project-point-on-line(resolve, ctx, c)
     } else if t == "function" {
       resolve-function(resolve, ctx, c)
     } else {
