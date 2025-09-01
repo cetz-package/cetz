@@ -257,14 +257,20 @@
   func(..c)
 }
 
-#let resolve-pos(ctx, c) = {
-  // (name: str, pos: float, auto?: left|right, swap?: bool)
-}
-
 /// Figures out what system a coordinate belongs to and returns the corresponding string.
 /// - c (coordinate): The coordinate to find the system of.
 /// -> str
 #let resolve-system(ctx, c) = {
+  let resolver = if type(ctx.resolve-coordinate) == array {
+    ctx.resolve-coordinate
+  } else {
+    ()
+  }
+
+  for resolve-fn in resolver.rev() {
+    c = resolve-fn(ctx, c)
+  }
+
   let t = if type(c) == dictionary {
     let keys = c.keys()
     let len = c.len()
@@ -307,13 +313,10 @@
     } else {
       "element"
     }
-  } else if ctx.at("resolve-system", default: none) != none {
-    ctx.resolve-system = none
-    resolve-system(ctx, c)
   }
 
   if t == none {
-    panic("Failed to resolve coordinate: " + repr(c))
+    panic("Failed to resolve coordinate system: " + repr(c))
   }
   return t
 }
@@ -343,8 +346,8 @@
 
   let result = ()
   for c in coordinates.pos() {
-    for i in range(1, resolver.len() + 1) {
-      c = (resolver.at(resolver.len() - i))(ctx, c)
+    for resolve-fn in resolver.rev() {
+      c = resolve-fn(ctx, c)
     }
 
     let t = resolve-system(ctx, c)
