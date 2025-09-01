@@ -1833,8 +1833,8 @@
           ctx = r.ctx
 
           let drawables = r.drawables
-          if ignore-hidden { drawables = drawables.filter(d => not d.hidden) }
-          if ignore-marks { drawables = drawable.filter-tagged(drawables, "mark") }
+          if ignore-hidden { drawables = drawable.filter-tagged(drawables, drawable.TAG.hidden) }
+          if ignore-marks { drawables = drawable.filter-tagged(drawables, drawable.TAG.mark) }
 
           if join and drawables.len() > 0 and subpaths.len() > 0 {
             let (origin, closed, segments) = subpaths.last()

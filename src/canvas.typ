@@ -1,11 +1,12 @@
-#import "matrix.typ"
+#import "version.typ"
+#import "drawable.typ"
 #import "vector.typ"
+#import "matrix.typ"
 #import "util.typ"
 #import "path-util.typ"
 #import "aabb.typ"
 #import "styles.typ"
 #import "process.typ"
-#import "version.typ"
 #import "coordinate.typ"
 
 /// Sets up a canvas for drawing on.
@@ -75,7 +76,7 @@
   }
 
   // Filter hidden drawables
-  drawables = drawables.filter(d => not d.hidden)
+  drawables = drawable.filter-tagged(drawables, drawable.TAG.hidden)
 
   // Order draw commands by z-index
   drawables = drawables.sorted(key: (cmd) => {

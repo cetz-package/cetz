@@ -37,11 +37,8 @@
       (ctx) => {
         let element = f(ctx)
         if "drawables" in element {
-          element.drawables = element.drawables.map(d => {
-            d.hidden = true
-            d.bounds = bounds
-            return d
-          })
+          element.drawables = drawable.apply-tags(element.drawables,
+            drawable.TAG.hidden, if not bounds { drawable.TAG.no-bounds })
         }
         return element
       }
@@ -71,10 +68,7 @@
       ctx => {
         let element = f(ctx)
         if "drawables" in element {
-          element.drawables = element.drawables.map(d => {
-            d.bounds = false
-            return d
-          })
+          element.drawables = drawable.apply-tags(element.drawables, drawable.TAG.no-bounds)
         }
         return element
       }
@@ -157,7 +151,7 @@
     }
 
     let elems = named-drawables + drawables
-    if ignore-marks { elems = drawable.filter-tagged(elems, "mark") }
+    if ignore-marks { elems = drawable.filter-tagged(elems, drawable.TAG.mark) }
 
     let pts = ()
     if elems.len() > 1 {

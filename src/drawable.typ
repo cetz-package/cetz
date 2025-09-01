@@ -2,6 +2,13 @@
 #import "util.typ"
 #import "path-util.typ"
 
+/// Tag constants
+#let TAG = (
+  hidden: "hidden",
+  no-bounds: "no-bounds",
+  mark: "mark",
+)
+
 /// Applies a transform to drawables. If a single drawable is given it will be returned in a single element <Type>array</Type>.
 /// - transform (matrix): The transformation matrix.
 /// - drawables (drawable): The drawables to transform.
@@ -53,13 +60,14 @@
 /// - ..tags (str) The list of tags to add to the drawable
 /// -> (drawable, array)
 #let apply-tags(drawables, ..tags) = {
-  assert(tags.pos().all(v => type(v) == str))
+  let tags = tags.pos().filter(v => v != none)
+  assert(tags.all(v => type(v) == str))
 
   if type(drawables) == array {
     return drawables.map(d => apply-tags(d, ..tags))
   }
 
-  drawables.insert("tags", (drawables.at("tags", default: ()) + tags.pos()).dedup())
+  drawables.insert("tags", (drawables.at("tags", default: ()) + tags).dedup())
   return drawables
 }
 
@@ -112,8 +120,6 @@
     fill: fill,
     fill-rule: fill-rule,
     stroke: stroke,
-    hidden: false,
-    bounds: true,
     tags: (),
   )
 }
@@ -152,8 +158,6 @@
     height: height,
     segments: border,
     body: body,
-    hidden: false,
-    bounds: true,
     tags: (),
   )
 }
