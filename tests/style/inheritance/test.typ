@@ -1,7 +1,8 @@
 #set page(width: auto, height: auto)
 #import "/src/lib.typ": *
+#import "/tests/helper.typ": *
 
-#box(stroke: 2pt + red, canvas({
+#test-case({
   import draw: *
 
   let next(body) = {
@@ -52,5 +53,4 @@
     set-style(stroke: red)
     line((0,0), (1,0), mark: (end: ">"), stroke: blue)
   })
-}))
-
+})

@@ -2,6 +2,13 @@
 #import "util.typ"
 #import "path-util.typ"
 
+/// Tag constants
+#let TAG = (
+  hidden: "hidden",
+  no-bounds: "no-bounds",
+  mark: "mark",
+)
+
 /// Applies a transform to drawables. If a single drawable is given it will be returned in a single element <Type>array</Type>.
 /// - transform (matrix): The transformation matrix.
 /// - drawables (drawable): The drawables to transform.
@@ -47,11 +54,45 @@
   }
 }
 
+/// Adds `tags` to one or more drawables.
+///
+/// - drawables (drawable, array) A single drawable or an array of drawables.
+/// - ..tags (str) The list of tags to add to the drawable
+/// -> (drawable, array)
+#let apply-tags(drawables, ..tags) = {
+  let tags = tags.pos().filter(v => v != none)
+  assert(tags.all(v => type(v) == str))
+
+  if type(drawables) == array {
+    return drawables.map(d => apply-tags(d, ..tags))
+  }
+
+  drawables.insert("tags", (drawables.at("tags", default: ()) + tags).dedup())
+  return drawables
+}
+
+/// Filter out all drawables that have one of the given tags assigned.
+///
+/// - drawables (drawable, array) A single drawable or an array of drawables.
+/// - ..tags (str) The list of tags to use as a filter.
+/// -> (drawable, array)
+#let filter-tagged(drawables, ..tags) = {
+  if type(drawables) == array {
+    return drawables.map(d => filter-tagged(d, ..tags)).filter(d => d != none)
+  }
+
+  let tags = tags.pos()
+  if drawables.at("tags", default: ()).any(t => t in tags) {
+    return none
+  }
+  return drawables
+}
+
 /// Creates a path drawable from path segements.
 /// - segments (array): The segments to create the path from.
 /// - close (bool): If `true` the path will be closed.
 /// - fill (color,none): The color to fill the path with.
-/// - fill-rule (string): One of "even-odd" or "non-zero".
+/// - fill-rule (str): One of "even-odd" or "non-zero".
 /// - stroke (stroke): The stroke of the path.
 /// -> drawable
 #let path(fill: none, stroke: none, fill-rule: "non-zero", path) = {
@@ -79,8 +120,7 @@
     fill: fill,
     fill-rule: fill-rule,
     stroke: stroke,
-    hidden: false,
-    bounds: true,
+    tags: (),
   )
 }
 
@@ -118,8 +158,7 @@
     height: height,
     segments: border,
     body: body,
-    hidden: false,
-    bounds: true,
+    tags: (),
   )
 }
 

@@ -13,6 +13,10 @@
 - Grid now supports a `shift: (x, y)` argument to offset grid-lines.
 - The styling algorithm now folds strokes (#923)
 - Fixed path decoration styling (#947)
+- Fixed path shortening (#948)
+- The `merge-path` element now support `mark:`; by default,
+  marks of the source elements get removed (#922, #948)
+- The `intersections` element ignores mark shapes by default (see `ignore-marks:`) (#948)
 
 # 0.4.1
 - Added a `n-star` shape for drawing n-pointed stars

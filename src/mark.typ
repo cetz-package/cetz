@@ -331,7 +331,7 @@
   }
 
   return (
-    drawables: drawables,
+    drawables: drawable.apply-tags(drawables, drawable.TAG.mark),
     distance: shorten-distance,
     pos: shorten-pos
   )

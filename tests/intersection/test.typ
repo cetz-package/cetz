@@ -107,3 +107,16 @@
   sorting.points-by-angle.with(reference: (1, 1)),
   sorting.points-by-distance.with(reference: (0, 0.1)),
 ))
+
+// No intersection with the mark shape
+#test-case({
+  import draw: *
+
+  line((0,0), (1,0), mark: (end: ">", scale: 4), name: "a")
+  line((0,-0.25), (0,0.25), (1,0.25), name: "b")
+
+  intersections("i", "a", "b")
+  for-each-anchor("i", (name) => {
+    content((), [#name], frame: "circle", fill: white)
+  })
+})
