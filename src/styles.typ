@@ -5,10 +5,7 @@
   fill-rule: "non-zero",
   stroke: black + 1pt,
   radius: 1,
-  /// Bezier shortening mode:
-  ///   - "LINEAR" Moving the affected point and it's next control point (like TikZ "quick" key)
-  ///   - "CURVED" Preserving the bezier curve by calculating new control points
-  shorten: "LINEAR",
+  modifiers: ("shorten",),
 
   // Allowed values:
   //   - none
@@ -57,42 +54,44 @@
   circle: (
     radius: auto,
     stroke: auto,
-    fill: auto
+    fill: auto,
+    modifiers: auto,
   ),
   group: (
     padding: auto,
     fill: auto,
-    stroke: auto
+    stroke: auto,
   ),
   line: (
     mark: auto,
     fill: auto,
     fill-rule: auto,
     stroke: auto,
+    modifiers: auto,
   ),
   bezier: (
     stroke: auto,
     fill: auto,
     fill-rule: auto,
     mark: auto,
-    shorten: auto,
+    modifiers: auto,
   ),
   catmull: (
     tension: .5,
     mark: auto,
-    shorten: auto,
     stroke: auto,
     fill: auto,
     fill-rule: auto,
+    modifiers: auto,
   ),
   hobby: (
     /// Curve start and end omega (curlyness)
     omega: (0,0),
     mark: auto,
-    shorten: auto,
     stroke: auto,
     fill: auto,
     fill-rule: auto,
+    modifiers: auto,
   ),
   rect: (
     /// Rect corner radius that supports the following types:
@@ -108,6 +107,7 @@
     radius: 0,
     stroke: auto,
     fill: auto,
+    modifiers: auto,
   ),
   arc: (
     // Supported values:
@@ -119,13 +119,15 @@
     mark: auto,
     stroke: auto,
     fill: auto,
-    radius: auto
+    radius: auto,
+    modifiers: auto,
   ),
   polygon: (
     radius: auto,
     stroke: auto,
     fill: auto,
     fill-rule: auto,
+    modifiers: auto,
   ),
   n-star: (
     radius: auto,
@@ -133,6 +135,7 @@
     fill: auto,
     // Connect inner points of the star
     show-inner: false,
+    modifiers: auto,
   ),
   content: (
     padding: auto,

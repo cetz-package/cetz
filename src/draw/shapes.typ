@@ -16,6 +16,7 @@
 #import "/src/mark-shapes.typ" as mark-shapes_
 #import "/src/polygon.typ" as polygon_
 #import "/src/aabb.typ"
+#import "/src/path-modifier.typ": apply-modifiers
 
 #import "transformations.typ": *
 #import "styling.typ": *
@@ -80,6 +81,9 @@
       fill: style.fill,
       stroke: style.stroke
     )
+
+    // Apply modifiers
+    drawables = apply-modifiers(ctx, style, drawables)
 
     let (transform, anchors) = anchor_.setup(
       (_) => center,
@@ -148,6 +152,9 @@
       fill: style.fill,
       stroke: style.stroke
     )
+
+    // Apply modifiers
+    drawables = apply-modifiers(ctx, style, drawables)
 
     let (transform, anchors) = anchor_.setup(
       (anchor) => (
@@ -258,6 +265,9 @@
       fill: style.fill,
       mode: style.mode
     )
+
+    // Apply modifiers
+    drawables = apply-modifiers(ctx, style, drawables)
 
     let sector-center = (
       x - rx * calc.cos(start-angle),
@@ -579,6 +589,9 @@
       stroke: style.stroke,
     )
 
+    // Apply modifiers
+    drawables = apply-modifiers(ctx, style, drawables)
+
     // Get bounds
     let (transform, anchors) = anchor_.setup(
       name => {
@@ -649,6 +662,9 @@
       close: true,
       fill: style.fill,
       stroke: style.stroke)
+
+    // Apply modifiers
+    drawables = apply-modifiers(ctx, style, drawables)
 
     let edge-anchors = range(0, sides).map(i => "edge-" + str(i))
     let corner-anchors = range(0, sides).map(i => "corner-" + str(i))
@@ -767,6 +783,9 @@
         main_shape
       }
     }
+
+    // Apply modifiers
+    drawables = apply-modifiers(ctx, style, drawables)
 
     let edge-anchors = range(0, sides * 2).map(i => "edge-" + str(i))
     let corner-anchors = range(0, sides * 2).map(i => "corner-" + str(i))
@@ -954,6 +973,9 @@
 
     drawables += outer-strips.map(s => drawable.line-strip(
       s, stroke: style.stroke, close: at-border.all(v => v)))
+
+    // Apply modifiers
+    drawables = apply-modifiers(ctx, style, drawables)
 
     let center = vector.lerp(from, to, .5)
     let (transform, anchors) = anchor_.setup(
@@ -1434,6 +1456,9 @@
           fill: style.fill, stroke: style.stroke)
       }
 
+      // Apply modifiers
+      drawables = apply-modifiers(ctx, style, drawables)
+
       // Calculate border anchors
       let center = vector.lerp(a, b, .5)
       let (width, height, ..) = size
@@ -1513,6 +1538,9 @@
         fill-rule: style.fill-rule,
         stroke: style.stroke,
       )
+
+      // Apply modifiers
+      drawables = apply-modifiers(ctx, style, drawables)
 
       let (transform, anchors) = anchor_.setup(
         anchor => (
@@ -1613,6 +1641,9 @@
       fill-rule: style.fill-rule,
       stroke: style.stroke)
 
+    // Apply modifiers
+    drawables = apply-modifiers(ctx, style, drawables)
+
     let (transform, anchors) = {
       let a = for (i, pt) in pts.enumerate() {
         (("pt-" + str(i)): pt)
@@ -1686,6 +1717,9 @@
       fill: style.fill,
       fill-rule: style.fill-rule,
       stroke: style.stroke)
+
+    // Apply modifiers
+    drawables = apply-modifiers(ctx, style, drawables)
 
     let (transform, anchors) = {
       let a = for (i, pt) in pts.enumerate() {
@@ -1766,6 +1800,9 @@
       let drawables = drawable.path(
         fill: style.fill, fill-rule: style.fill-rule, stroke: style.stroke,
         subpaths)
+
+      // Apply modifiers
+      drawables = apply-modifiers(ctx, style, drawables)
 
       let (transform, anchors) = anchor_.setup(
         name => {
@@ -1867,6 +1904,9 @@
 
       let style = styles.resolve(ctx.style, merge: style)
       let drawables = drawable.path(fill: style.fill, fill-rule: style.fill-rule, stroke: style.stroke, subpaths)
+
+      // Apply modifiers
+      drawables = apply-modifiers(ctx, style, drawables)
 
       let (transform, anchors) = anchor_.setup(
         name => {
