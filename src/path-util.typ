@@ -76,7 +76,11 @@
     let (origin, _, segments) = path.first()
     let (kind, ..args) = segments.first()
     if kind == "l" {
-      return vector.dir(origin, args.last())
+      let v = vector.sub(origin, args.last())
+      if vector.len(v) != 0 {
+        return vector.norm(v)
+      }
+      return v
     } else if kind == "c" {
       let (c1, c2, e) = args
       return bezier.cubic-derivative(origin, e, c1, c2, 0)
@@ -96,7 +100,11 @@
 
     let (kind, ..args) = segments.last()
     if kind == "l" {
-      return vector.dir(origin, args.last())
+      let v = vector.sub(origin, args.last())
+      if vector.len(v) != 0 {
+        return vector.norm(v)
+      }
+      return v
     } else if kind == "c" {
       let (c1, c2, e) = args
       return bezier.cubic-derivative(e, origin, c2, c1, 0)
@@ -193,6 +201,7 @@
 /// - path (path): The path
 /// - distance (ratio, number): Distance along the path
 /// - reverse (bool): Travel from end to start
+/// - clamp (bool): Clamp distance between 0%-100%
 /// - ignore-subpaths (bool): If false consider the whole path, including sub-paths
 ///
 /// -> none,dictionary Dictionary with the following keys:
@@ -202,7 +211,7 @@
 ///    - subpath-index (int) Index of the subpath
 ///    - segment-index (int) Index of the segment
 ///    None is returned, if the path is empty/of length zero.
-#let point-at(path, distance, reverse: false, samples: auto, ignore-subpaths: true) = {
+#let point-at(path, distance, reverse: false, clamp: true, samples: auto, ignore-subpaths: true) = {
   if samples == auto {
     samples = number-of-samples(samples)
   }
@@ -309,7 +318,7 @@
 #let _shorten-line(origin, previous, args, distance, reverse: false) = {
   let pt = args.last()
   let length = vector.dist(previous, pt)
-  if length > 0 {
+  if length != 0 {
     let t = if reverse {
       1 - distance / length
     } else {
@@ -355,24 +364,87 @@
   }
 }
 
-/// Shorten a path on one or both sides
+// Extend a path by `distance` by placing/extending straight
+// lines at the start/end
+//
+// - path (path): Input path
+// - distance (float): Distance to extend the path by
+// - reverse (bool): If true, extend the beginning of the path instead
+//   of the end
+// - samples (auto, int): Number of samples to use for sampling curves
+// -> path
+#let _extend-path(path, distance, reverse: false, samples: auto) = {
+  if reverse {
+    let (origin, closed, segments) = path.first()
+    if type(segments.first()) != array { panic(path) }
+    let (kind, ..args) = segments.first()
+    if kind == "l" {
+      let dir = vector.sub(args.last(), origin)
+      if vector.len(dir) != 0 { dir = vector.norm(dir) }
+      origin = vector.add(origin, vector.scale(dir, distance))
+      return ((origin, false, segments),) + path.slice(1)
+    } else {
+      // We extend cubic beziers by just appending straight lines.
+      let (c1, c2, e) = args
+      let dir = bezier.cubic-derivative(origin, e, c1, c2, 0)
+      let old-origin = origin
+      origin = vector.add(origin, vector.scale(vector.norm(dir), distance))
+      return ((origin, false, (("l", old-origin),) + segments),) + path.slice(1)
+    }
+  } else {
+    let (origin, closed, segments) = path.last()
+    let (kind, ..args) = segments.last()
+    let prev = if segments.len() > 1 {
+      segments.at(-2).last()
+    } else {
+      origin
+    }
+
+    let last-segment = if kind == "l" {
+      let dir = vector.sub(prev, args.last())
+      if vector.len(dir) != 0 { dir = vector.norm(dir) }
+      let end = vector.add(args.last(), vector.scale(dir, distance))
+
+      // Prepend a straight line
+      (("l", end),)
+    } else {
+      // We extend cubic beziers by just appending straight lines.
+      let (c1, c2, e) = args
+      let dir = bezier.cubic-derivative(prev, e, c1, c2, 1)
+      let end = vector.add(e, vector.scale(vector.norm(dir), -distance))
+
+      // We re-add the curve + some straight tail
+      (("c", c1, c2, e), ("l", end),)
+    }
+
+    return path.slice(0, -1) + ((origin, false, segments.slice(0, -1) + last-segment),)
+  }
+}
+
+/// Shorten or extend a path on one or both sides
 ///
 /// - path (Path): Path
 /// - distance (number,ratio,array): Distance to shorten the path by
-/// - reverse (boolean): If true, start from the end
+/// - reverse (bool): If true, start from the end
+/// - ignore-subpaths (bool): Only shorten/extend the first sub-path
 /// - mode ('CURVED','LINEAR'): Shortening mode for cubic segments
 /// - samples (auto,int): Samples to take for measuring cubic segments
 /// - snap-to (none,array): Optional array of points to try to move the shortened segment to
-#let shorten-to(path, distance, reverse: false,
+#let shorten-to(path, distance, reverse: false, ignore-subpaths: true,
                 mode: "CURVED", samples: auto, snap-to: none) = {
   let snap-to-threshold = 1e-4
+
+  // Shortcut zero length
+  if distance == 0 or distance == 0% or distance == (0, 0) {
+    return path
+  }
 
   // Shorten from both sides
   if type(distance) == array {
     let original-length = length(path)
     let (start, end) = distance.map(v => {
       if type(v) == ratio {
-        v * original-length
+        original-length * v / 100%
       } else {
         v
       }
@@ -381,8 +453,23 @@
     path = shorten-to(path, start, reverse: reverse, mode: mode, samples: samples, snap-to: if snap-to != none { snap-to.first() } else { none })
     path = shorten-to(path, end, reverse: not reverse, mode: mode, samples: samples, snap-to: if snap-to != none { snap-to.last() } else { none })
     return path
+  } else if type(distance) == ratio {
+    let length = length(path)
+    distance = length * distance / 100%
   }
 
+  // Extend the path
+  if distance < 0 {
+    if ignore-subpaths {
+      return _extend-path(path.slice(0, 1), distance,
+        reverse: reverse, samples: samples) + path.slice(1)
+    } else {
+      return _extend-path(path, distance,
+        reverse: reverse, samples: samples)
+    }
+  }
+
+  // Shorten the path
   let point = point-at(path, distance, reverse: reverse)
   if point != none {
     // Find the subpath to modify

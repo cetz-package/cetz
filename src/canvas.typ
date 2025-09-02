@@ -8,6 +8,7 @@
 #import "styles.typ"
 #import "process.typ"
 #import "coordinate.typ"
+#import "path-modifier.typ"
 
 /// Sets up a canvas for drawing on.
 ///
@@ -63,8 +64,10 @@
       mnemonics: (:),
       marks: (:),
     ),
-    // coordinate resolver
+    // Coordinate resolver
     resolve-coordinate: (),
+    // Path modifiers
+    path-modifiers: path-modifier.builtin,
     // Shared state that is not scoped by group/scope elements.
     // CeTZ itself does not use this dictionary for data.
     shared-state: (:),
