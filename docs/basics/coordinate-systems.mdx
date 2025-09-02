@@ -376,6 +376,22 @@ circle(a, radius: .1, fill: black)
 line((a, .7, b), (a: (), b: a, number: .5, angle: 90deg), stroke: red)
 ```
 
+## Projection
+
+To project a point `pt` onto a line from `a` to `b`, you can use the
+`(project: pt, onto: (a, b))` or short `(pt, "_|_", a, b)` coordinate.
+
+```typc exapmle
+set-style(fill: black, radius: 0.1)
+
+circle(name: "A", (0, 0))
+circle(name: "B", (3, 1))
+circle(name: "P", (1.9, -1.6))
+
+line("A", "B")
+line("P", (project: "P", onto: ("A", "B")))
+```
+
 ## Function
 
 An array where the first element is a function and the rest are coordinates will cause the function to be called with the resolved coordinates. The resolved coordinates will be given as a <Type>vector</Type> that represents an xyz point in space.

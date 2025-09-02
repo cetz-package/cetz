@@ -17,6 +17,8 @@
 - The `merge-path` element now support `mark:`; by default,
   marks of the source elements get removed (#922, #948)
 - The `intersections` element ignores mark shapes by default (see `ignore-marks:`) (#948)
+- Added a new `(project: <coordinate>, onto: (<coordinate>, <coordinate>))` 
+  coordinate for projecting a point onto a line (short form: `(pt, "_|_", a, b)`)
 
 # 0.4.1
 - Added a `n-star` shape for drawing n-pointed stars
