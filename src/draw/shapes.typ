@@ -1753,7 +1753,9 @@
         let r = process.element(ctx, element)
         if r != none and "drawables" in r {
           ctx = r.ctx
-          subpaths += r.drawables.map(d => d.segments).join()
+
+          subpaths += drawable.filter-tagged(r.drawables, drawable.TAG.debug)
+            .map(d => d.segments).join()
         }
       }
 
@@ -1832,10 +1834,11 @@
         if r != none {
           ctx = r.ctx
 
-          let drawables = r.drawables
-          if ignore-hidden { drawables = drawable.filter-tagged(drawables, drawable.TAG.hidden) }
-          if ignore-marks { drawables = drawable.filter-tagged(drawables, drawable.TAG.mark) }
+          let tags = (drawable.TAG.debug,)
+          if ignore-hidden { tags.push(drawable.TAG.hidden) }
+          if ignore-marks { tags.push(drawable.TAG.mark) }
 
+          let drawables = drawable.filter-tagged(r.drawables, ..tags)
           if join and drawables.len() > 0 and subpaths.len() > 0 {
             let (origin, closed, segments) = subpaths.last()
             let (next-origin, _, next-segments) = drawables.first().segments.first()

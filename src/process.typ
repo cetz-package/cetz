@@ -48,6 +48,7 @@
     }
   }
 
+  // Draw a debug bounding box.
   if ctx.debug and bounds != none {
     element.drawables.push(drawable.line-strip(
       (bounds.low,
@@ -56,7 +57,8 @@
         (bounds.low.at(0), bounds.high.at(1), 0.0)
       ),
       close: true,
-      stroke: red))
+      stroke: red,
+      tags: (drawable.TAG.debug,)))
   }
 
   return (

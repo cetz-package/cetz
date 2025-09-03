@@ -7,6 +7,7 @@
   hidden: "hidden",
   no-bounds: "no-bounds",
   mark: "mark",
+  debug: "debug",
 )
 
 /// Applies a transform to drawables. If a single drawable is given it will be returned in a single element <Type>array</Type>.
@@ -95,7 +96,7 @@
 /// - fill-rule (str): One of "even-odd" or "non-zero".
 /// - stroke (stroke): The stroke of the path.
 /// -> drawable
-#let path(fill: none, stroke: none, fill-rule: "non-zero", path) = {
+#let path(fill: none, stroke: none, fill-rule: "non-zero", tags: (), path) = {
   assert.eq(type(path), array)
 
   for subpath in path {
@@ -120,8 +121,7 @@
     fill: fill,
     fill-rule: fill-rule,
     stroke: stroke,
-    tags: (),
-  )
+    tags: tags)
 }
 
 /// Construct a line-strip from a list of points
@@ -131,7 +131,7 @@
 /// - stroke (none,stroke):
 /// - fill-rule (str):
 /// -> drawable
-#let line-strip(points, close: false, fill: none, stroke: none, fill-rule: "non-zero") = {
+#let line-strip(points, close: false, fill: none, stroke: none, fill-rule: "non-zero", tags: ()) = {
   assert.eq(type(points), array)
 
   return path(
@@ -139,7 +139,7 @@
     stroke: stroke,
     fill: fill,
     fill-rule: fill-rule,
-  )
+    tags: tags)
 }
 
 
