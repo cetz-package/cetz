@@ -19,6 +19,7 @@
 - The `intersections` element ignores mark shapes by default (see `ignore-marks:`) (#948)
 - Added a new `(project: <coordinate>, onto: (<coordinate>, <coordinate>))` 
   coordinate for projecting a point onto a line (short form: `(pt, "_|_", a, b)`)
+- Debug shapes (bounding boxes) are ignored by `merge-path` (#575)
 
 # 0.4.1
 - Added a `n-star` shape for drawing n-pointed stars
