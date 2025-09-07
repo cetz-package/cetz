@@ -1083,27 +1083,31 @@
       body = std.scale(x: sx * 100%, y: sy * 100%, body, reflow: true)
     }
 
-    // Height from the baseline to content-north
-    let (content-width, baseline-height) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "baseline", body))
+    // Compute the baseline offset
+    let (_, line-baseline-height) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "baseline",
+      [ #show linebreak: [ ]; #body]))
+    let (_, line-bounds-height) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "bounds",
+      [ #show linebreak: [ ]; #body]))
+    let baseline-offset = line-bounds-height - line-baseline-height
 
     // Size of the bounding box
-    let (width, height, ..) = if auto-size {
-      util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "bounds", body))
+    let (content-width, content-height, ..) = if auto-size {
+      util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "baseline", body))
     } else {
       vector.sub(b, a)
     }
 
-    let bounds-width = calc.abs(width)
-    let bounds-height = calc.abs(height)
-    baseline-height = bounds-height - baseline-height
+    let baseline-height = calc.abs(content-height)
+    let bounds-width = calc.abs(content-width)
+    let bounds-height = calc.abs(content-height + baseline-offset)
+    let content-width = calc.abs(content-width)
 
-    width = calc.max(0, bounds-width + padding.left + padding.right)
-    height = calc.max(0, bounds-height + padding.top + padding.bottom)
+    let width = calc.max(0, bounds-width + padding.left + padding.right)
+    let height = calc.max(0, bounds-height + padding.top + padding.bottom)
 
     let anchors = {
       let w = width / 2
       let h = height / 2
-      let bh = (baseline-height - padding.top - padding.bottom) / 2
 
       let bounds-center = if auto-size {
         a
@@ -1133,7 +1137,7 @@
       let south-west = vector.sub(bounds-center, vector.add(north-scaled, east-scaled))
 
       let base = vector.add(south,
-        vector.scale(north-dir, padding.bottom + baseline-height))
+        vector.scale(north-dir, padding.bottom + baseline-offset))
       let mid = vector.lerp(
         vector.sub(north, vector.scale(north-dir, padding.top)),
         base,
