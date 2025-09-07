@@ -129,6 +129,7 @@
   ),
   n-star: (
     radius: auto,
+    inner-radius: 50%,
     stroke: auto,
     fill: auto,
     // Connect inner points of the star

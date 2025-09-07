@@ -20,6 +20,8 @@
 - Added a new `(project: <coordinate>, onto: (<coordinate>, <coordinate>))` 
   coordinate for projecting a point onto a line (short form: `(pt, "_|_", a, b)`)
 - Debug shapes (bounding boxes) are ignored by `merge-path` (#575)
+- **BREAKING** The `n-star` element now takes the inner radius as a separate style key `inner-radius` (ratio or number) (#920)
+- Fixed an issue with multiline text and baseline anchors in `content` (#956)
 
 # 0.4.1
 - Added a `n-star` shape for drawing n-pointed stars

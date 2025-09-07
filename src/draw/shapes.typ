@@ -708,7 +708,8 @@
 ///
 /// ## Styling
 /// Root: nstar
-/// - radius (inner, outer) = : The radius of the star's inner and outer points.
+/// - radius (number): The radius of the star's outer points.
+/// - inner-radius (number,ratio): The radius (relative to the outer radius) of the star's inner points(relative to the outer radius) of the star's inner points.
 /// - show-inner (bool) = false: If true, also draws the inner polygon connecting the star's inner points.
 /// - fill (color, gradient): The fill color for the star.
 /// - stroke (color, thickness, ...): The stroke for the star and the inner polygon.
@@ -723,10 +724,11 @@
     let style = styles.resolve(ctx.style, merge: style, root: "n-star")
 
     let (ctx, origin) = coordinate.resolve(ctx, origin)
-    let (inner-radius, outer-radius) = if type(style.radius) == array {
-      style.radius.map(util.resolve-number.with(ctx))
+    let outer-radius = util.resolve-number(ctx, style.radius)
+    let inner-radius = if type(style.inner-radius) == ratio {
+      outer-radius * style.inner-radius / 100%
     } else {
-      (style.radius, style.radius).map(util.resolve-number.with(ctx))
+      util.resolve-number(ctx, style.inner-radius)
     }
 
     let angle-step = 360deg / sides
