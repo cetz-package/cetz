@@ -1,6 +1,6 @@
 [package]
 name = "cetz"
-version = "0.4.1"
+version = "0.4.2"
 compiler = "0.13.1"
 repository = "https://github.com/cetz-package/cetz"
 homepage = "https://cetz-package.github.io/"

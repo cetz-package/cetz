@@ -709,7 +709,7 @@
 /// ## Styling
 /// Root: nstar
 /// - radius (number): The radius of the star's outer points.
-/// - inner-radius (number,ratio): The radius (relative to the outer radius) of the star's inner points(relative to the outer radius) of the star's inner points.
+/// - inner-radius (number,ratio): The radius (if of type ratio, relative to the outer radius) of the star's inner points of the star's inner points.
 /// - show-inner (bool) = false: If true, also draws the inner polygon connecting the star's inner points.
 /// - fill (color, gradient): The fill color for the star.
 /// - stroke (color, thickness, ...): The stroke for the star and the inner polygon.
@@ -722,6 +722,9 @@
     let anchors = ()
 
     let style = styles.resolve(ctx.style, merge: style, root: "n-star")
+    if type(style.radius) == array {
+      panic("n-star: Expected a single radius, got an array. Note: You can pass the inner radius as `inner-radius:` to n-star.")
+    }
 
     let (ctx, origin) = coordinate.resolve(ctx, origin)
     let outer-radius = util.resolve-number(ctx, style.radius)

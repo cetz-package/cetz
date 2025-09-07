@@ -6,7 +6,7 @@
 - Added the shortcut `>>` for the `stealth` mark (#941)
 - Fixed a division by zero bug when placing marks on zero-length paths (#936)
 - Added `"near"` and `"far"` directions to the `angle` API (#945)
-- Added missing `register-mark` and `register-coordinate-resolvea` API to the docs (#932)
+- Added missing `register-mark` and `register-coordinate-resolver` API to the docs (#932)
 - Fixed element access inside `compound-path` (#932)
 - The `tangent` coordinate now supports ellipses (#925)
 - Grid lines now correctly connect at the corners (#921)
