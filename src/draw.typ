@@ -4,3 +4,4 @@
 #import "draw/shapes.typ": circle, circle-through, arc, arc-through, mark, line, grid, content, rect, bezier, bezier-through, catmull, hobby, merge-path, polygon, compound-path, n-star, rect-around
 #import "draw/projection.typ": ortho, on-xy, on-xz, on-yz
 #import "draw/util.typ": assert-version, register-coordinate-resolver
+#import "draw/layout.typ": matrix
