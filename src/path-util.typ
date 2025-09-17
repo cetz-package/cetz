@@ -232,9 +232,15 @@
     let (kind, ..args) = segment
     if kind == "l" {
       let pt = args.last()
-      return (
-        vector.lerp(origin, pt, calc.min(1, distance / vector.dist(origin, pt))),
-        vector.norm(vector.sub(pt, origin)))
+      let length = vector.dist(origin, pt)
+      if length != 0 {
+        return (
+          vector.lerp(origin, pt, calc.min(1, distance / length)),
+          vector.norm(vector.sub(pt, origin)))
+      } else {
+        return (
+          pt, (1, 0, 0))
+      }
     } else if kind == "c" {
       let (c1, c2, e) = args
       let t = bezier.cubic-t-for-distance(origin, e, c1, c2, distance, samples: samples)
