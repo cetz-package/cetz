@@ -429,23 +429,37 @@
   return path
 }
 
-/// Normalize a path
+/// Normalize a path:
+///   - Add missing closing segments
+///   - Remove zero-length line segments
+///
 /// - path (path): Input path
 /// -> path
 #let normalize(path) = {
   for subpath-index in range(path.len()) {
-    let changed = false
     let subpath = path.at(subpath-index)
     let (origin, closed, segments) = subpath
 
+    // Add a missing closing line
     if closed and subpath-start(subpath) != subpath-end(subpath, ignore-close-flag: true) {
       segments.push(("l", origin))
-      changed = true
     }
 
-    if changed {
-      path.at(subpath-index) = (origin, closed, segments)
-    }
+    // Filter out zero-length lines
+    segments = segments.enumerate().filter(((i, segment)) => {
+      let (kind, ..args) = segment
+      if kind == "l" {
+        let end = args.last()
+        return if i == 0 {
+          end != origin
+        } else {
+          end != segments.at(i - 1).last()
+        }
+      }
+      return true
+    }).map(((i, segment)) => segment)
+
+    path.at(subpath-index) = (origin, closed, segments)
   }
   return path
 }
