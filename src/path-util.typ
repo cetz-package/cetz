@@ -63,46 +63,12 @@
   let (origin, closed, segments) = subpath
   return if closed and not ignore-close-flag {
     origin
-  } else {
+  } else if segments != () {
     let (_, ..args) = segments.last()
     args.last()
+  } else {
+    origin
   }
-}
-
-/// Get the direction at the start of the first path
-/// -> vector
-#let first-subpath-direction(path) = {
-  if path.len() > 0 {
-    let (origin, _, segments) = path.first()
-    let (kind, ..args) = segments.first()
-    if kind == "l" {
-      return vector.dir(origin, args.last())
-    } else if kind == "c" {
-      let (c1, c2, e) = args
-      return bezier.cubic-derivative(origin, e, c1, c2, 0)
-    }
-  }
-  return none
-}
-
-/// Get the direction at the end of the last path
-/// -> vector
-#let last-subpath-direction(path) = {
-  if path.len() > 0 {
-    let (origin, _, segments) = path.last()
-    if segments.len() > 1 {
-      origin = segments.at(-2).last()
-    }
-
-    let (kind, ..args) = segments.last()
-    if kind == "l" {
-      return vector.dir(origin, args.last())
-    } else if kind == "c" {
-      let (c1, c2, e) = args
-      return bezier.cubic-derivative(e, origin, c2, c1, 0)
-    }
-  }
-  return none
 }
 
 /// Get the end position of the last path
@@ -113,7 +79,11 @@
     if close {
       return origin
     }
-    return segments.last().last()
+    return if segments != () {
+      return segments.last().last()
+    } else {
+      origin
+    }
   }
   return none
 }
