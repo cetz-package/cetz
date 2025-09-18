@@ -31,18 +31,20 @@
     if drawable.type == "path" {
       drawable.segments = drawable.segments.map(((origin, closed, segments)) => {
         origin = util.apply-transform(transform, origin)
-        if type(segments.first()) != array {
-          panic(origin, segments)
-        }
-        segments = segments.map(((kind, ..args)) => {
-          if args.len() == 1 {
-            (kind, util.apply-transform(transform, ..args))
-          } else if args.len() > 1 {
-            (kind, ..util.apply-transform(transform, ..args))
-          } else {
-            (kind,)
+        if segments != () {
+          if type(segments.first()) != array {
+            panic(origin, segments)
           }
-        })
+          segments = segments.map(((kind, ..args)) => {
+            if args.len() == 1 {
+              (kind, util.apply-transform(transform, ..args))
+            } else if args.len() > 1 {
+              (kind, ..util.apply-transform(transform, ..args))
+            } else {
+              (kind,)
+            }
+          })
+        }
 
         return (origin, closed, segments)
       })
