@@ -26,23 +26,27 @@
   }
 
   for drawable in drawables {
-    assert(type(drawable) != array,
-      message: "Expected drawable, got array: " + repr(drawable))
+    if type(drawable) != dictionary {
+      panic("Expected drawable, got: ", drawable)
+    }
+
     if drawable.type == "path" {
       drawable.segments = drawable.segments.map(((origin, closed, segments)) => {
         origin = util.apply-transform(transform, origin)
-        if type(segments.first()) != array {
-          panic(origin, segments)
-        }
-        segments = segments.map(((kind, ..args)) => {
-          if args.len() == 1 {
-            (kind, util.apply-transform(transform, ..args))
-          } else if args.len() > 1 {
-            (kind, ..util.apply-transform(transform, ..args))
-          } else {
-            (kind,)
+        if segments != () {
+          if type(segments.first()) != array {
+            panic("Segments must be an array, got: ", segments)
           }
-        })
+          segments = segments.map(((kind, ..args)) => {
+            if args.len() == 1 {
+              (kind, util.apply-transform(transform, ..args))
+            } else if args.len() > 1 {
+              (kind, ..util.apply-transform(transform, ..args))
+            } else {
+              (kind,)
+            }
+          })
+        }
 
         return (origin, closed, segments)
       })
