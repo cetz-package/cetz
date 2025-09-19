@@ -3,6 +3,7 @@
 - Fixed a coordinate rounding issue when placing `angle` elements (#968)
 - Added a new `content.wrap` style key that takes a function to wrap content in, useful for applying Typst styling, such as text color (#964)
 - Fixed a division by zero bug when shortening paths to zero length (#962)
+- The content element now supports the `wrap:` style to apply a function to they Typst content (e.g. applying text attributes) (#964)
 
 # 0.4.2
 - The `tree` element now has a `anchor:` argument to position the tree (#929)

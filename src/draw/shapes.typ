@@ -1077,6 +1077,7 @@
 /// - padding (number, dictionary) = 0: Sets the spacing around content. Can be a single number to set padding on all sides or a dictionary to specify each side specifically. The dictionary follows Typst's `pad` function: https://typst.app/docs/reference/layout/pad/
 /// - frame (str, none) = none: Sets the frame style. Can be {{none}}, `"rect"` or `"circle"` and inherits the `stroke` and `fill` style.
 /// - auto-scale (bool): If `true`, apply current canvas scaling to the content. Defaults to `false`.
+/// - wrap (function, none) = none: A function to apply the content body to. Must return content. Example: `text.with(red)` to wrap every content element in a `text(red, <body>)` element.
 ///
 /// == Anchors
 /// Supports border anchors, the default anchor is set to *center*.
@@ -1105,11 +1106,16 @@
   }
 
   return (ctx => {
-    let body = body
     let style = styles.resolve(ctx.style, merge: style, root: "content")
     let padding = util.map-dict(util.as-padding-dict(style.padding), (_, v) => {
       util.resolve-number(ctx, v)
     })
+
+    let body = if "wrap" in style and type(style.wrap) == function {
+      (style.wrap)(body)
+    } else {
+      body
+    }
 
     let (ctx, a) = coordinate.resolve(ctx, a)
     let b = b
