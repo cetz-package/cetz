@@ -1,3 +1,6 @@
+# NEXT
+- The content element now supports the `wrap:` style to apply a function to they Typst content (e.g. applying text attributes) (#964)
+
 # 0.4.2
 - The `tree` element now has a `anchor:` argument to position the tree (#929)
 - Fixed the tree node anchor documentation. (#929)
