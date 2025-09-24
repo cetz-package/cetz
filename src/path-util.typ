@@ -63,46 +63,12 @@
   let (origin, closed, segments) = subpath
   return if closed and not ignore-close-flag {
     origin
-  } else {
+  } else if segments != () {
     let (_, ..args) = segments.last()
     args.last()
+  } else {
+    origin
   }
-}
-
-/// Get the direction at the start of the first path
-/// -> vector
-#let first-subpath-direction(path) = {
-  if path.len() > 0 {
-    let (origin, _, segments) = path.first()
-    let (kind, ..args) = segments.first()
-    if kind == "l" {
-      return vector.dir(origin, args.last())
-    } else if kind == "c" {
-      let (c1, c2, e) = args
-      return bezier.cubic-derivative(origin, e, c1, c2, 0)
-    }
-  }
-  return none
-}
-
-/// Get the direction at the end of the last path
-/// -> vector
-#let last-subpath-direction(path) = {
-  if path.len() > 0 {
-    let (origin, _, segments) = path.last()
-    if segments.len() > 1 {
-      origin = segments.at(-2).last()
-    }
-
-    let (kind, ..args) = segments.last()
-    if kind == "l" {
-      return vector.dir(origin, args.last())
-    } else if kind == "c" {
-      let (c1, c2, e) = args
-      return bezier.cubic-derivative(e, origin, c2, c1, 0)
-    }
-  }
-  return none
 }
 
 /// Get the end position of the last path
@@ -113,7 +79,11 @@
     if close {
       return origin
     }
-    return segments.last().last()
+    return if segments != () {
+      return segments.last().last()
+    } else {
+      origin
+    }
   }
   return none
 }
@@ -232,9 +202,15 @@
     let (kind, ..args) = segment
     if kind == "l" {
       let pt = args.last()
-      return (
-        vector.lerp(origin, pt, calc.min(1, distance / vector.dist(origin, pt))),
-        vector.norm(vector.sub(pt, origin)))
+      let length = vector.dist(origin, pt)
+      if length != 0 {
+        return (
+          vector.lerp(origin, pt, calc.min(1, distance / length)),
+          vector.norm(vector.sub(pt, origin)))
+      } else {
+        return (
+          pt, (1, 0, 0))
+      }
     } else if kind == "c" {
       let (c1, c2, e) = args
       let t = bezier.cubic-t-for-distance(origin, e, c1, c2, distance, samples: samples)
@@ -423,23 +399,37 @@
   return path
 }
 
-/// Normalize a path
+/// Normalize a path:
+///   - Add missing closing segments
+///   - Remove zero-length line segments
+///
 /// - path (path): Input path
 /// -> path
 #let normalize(path) = {
   for subpath-index in range(path.len()) {
-    let changed = false
     let subpath = path.at(subpath-index)
     let (origin, closed, segments) = subpath
 
+    // Add a missing closing line
     if closed and subpath-start(subpath) != subpath-end(subpath, ignore-close-flag: true) {
       segments.push(("l", origin))
-      changed = true
     }
 
-    if changed {
-      path.at(subpath-index) = (origin, closed, segments)
-    }
+    // Filter out zero-length lines
+    segments = segments.enumerate().filter(((i, segment)) => {
+      let (kind, ..args) = segment
+      if kind == "l" {
+        let end = args.last()
+        return if i == 0 {
+          end != origin
+        } else {
+          end != segments.at(i - 1).last()
+        }
+      }
+      return true
+    }).map(((i, segment)) => segment)
+
+    path.at(subpath-index) = (origin, closed, segments)
   }
   return path
 }
