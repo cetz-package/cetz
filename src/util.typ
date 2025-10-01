@@ -8,6 +8,15 @@
 /// Constant to be used as float rounding error
 #let float-epsilon = 0.000001
 
+/// Compare two floating point numbers
+/// - a (float): First number
+/// - b (float): Second number
+/// - epsilon: Maximum distance between both numbers
+/// -> bool
+#let float-eq(a, b, epsilon: float-epsilon) = {
+  return calc.abs(a - b) <= epsilon
+}
+
 /// Multiplies vectors by a transformation matrix. If multiple vectors are given they are returned as an array, if only one vector is given only one will be returned, if a dictionary is given they will be returned in the dictionary with the same keys.
 ///
 /// - transform (matrix,function): The $4 \times 4$ transformation matrix or a function that accepts and returns a vector.
