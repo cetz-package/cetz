@@ -1,6 +1,6 @@
 #import "/src/styles.typ"
 #import "/src/vector.typ"
-#import "/src/util.typ"
+#import "/src/util.typ": resolve-number, resolve-radius, float-eq
 #import "/src/coordinate.typ"
 #import "/src/anchor.typ" as anchor_
 #import "/src/draw.typ"
@@ -58,13 +58,13 @@
   ..style
 ) = draw.group(name: name, ctx => {
   let style = styles.resolve(ctx.style, merge: style.named(), base: default-style, root: "angle")
-  let radius = util.resolve-number(ctx, style.radius)
-  let label-radius = util.resolve-number(ctx, style.label-radius)
+  let radius = resolve-number(ctx, style.radius)
+  let label-radius = resolve-number(ctx, style.label-radius)
 
   let (ctx, origin) = coordinate.resolve(ctx, origin)
   let (ctx, a, b) = coordinate.resolve(ctx, a, b, update: false)
 
-  assert(origin.at(2) == a.at(2) and a.at(2) == b.at(2),
+  assert(float-eq(origin.at(2), a.at(2)) and float-eq(a.at(2), b.at(2)),
     message: "Angle z coordinates of all three points must be equal")
 
   assert(direction in ("cw", "ccw", "near", "far"),
@@ -174,7 +174,7 @@
   if type(style.radius) == ratio {
     style.radius = style.radius * calc.min(vector.dist(vo, va), vector.dist(vo, vb)) / 100%
   }
-  let (r, _) = util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
+  let (r, _) = resolve-radius(style.radius).map(resolve-number.with(ctx))
 
   let va = vector.add(vo, vector.scale(vector.norm(vector.sub(va, vo)), r))
   let vb = vector.add(vo, vector.scale(vector.norm(vector.sub(vb, vo)), r))
@@ -186,7 +186,7 @@
   if type(style.label-radius) == ratio {
     style.label-radius = style.label-radius * vector.dist(vm, vo) / 100%
   }
-  let (ra, _) = util.resolve-radius(style.label-radius).map(util.resolve-number.with(ctx))
+  let (ra, _) = resolve-radius(style.label-radius).map(resolve-number.with(ctx))
 
   if style.fill != none {
     draw.line(vo, va, vm, vb, close: true, stroke: none, fill: style.fill)
