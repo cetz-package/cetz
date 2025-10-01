@@ -71,7 +71,7 @@
   content((0, 0,-1), [Z=-1])
   content((0, 0, 0), [Z=0])
   content((0, 0, 1), [Z=1])
-})
+}, z: (-1/2, -1/2))
 
 // Test inline math measuring
 #test-case({

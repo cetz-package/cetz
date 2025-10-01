@@ -1,3 +1,9 @@
+# 0.5.0
+- **BREAKING** The default matrix changed to id (#967)
+- Fixed a coordinate rounding issue when placing `angle` elements (#968)
+- Added a new `content.wrap` style key that takes a function to wrap content in, useful for applying Typst styling, such as text color (#964)
+- Fixed a division by zero bug when shortening paths to zero length (#962)
+
 # 0.4.2
 - The `tree` element now has a `anchor:` argument to position the tree (#929)
 - Fixed the tree node anchor documentation. (#929)

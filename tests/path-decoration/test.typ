@@ -56,7 +56,7 @@
   import draw: *
 
   fn(line((0,0,-1), (0,0,1)), start: 10%, stop: 90%)
-}, args: all-fns)
+}, z: (-1/2, -1/2), args: all-fns)
 
 #test-case(factor => {
   import draw: *

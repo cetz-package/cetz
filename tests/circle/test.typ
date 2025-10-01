@@ -18,11 +18,3 @@
   point(outer, "O")
   point(center, "M")
 }, args: ((2, 1), (rel: (1, 0)), (rel: (1, 1))))
-
-#test-case({
-  import draw: *
-
-  for z in range(-1, 2) {
-    circle((0,0,z))
-  }
-})

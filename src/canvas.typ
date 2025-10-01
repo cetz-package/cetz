@@ -17,9 +17,12 @@
 /// - background (none, color): A color to be used for the background of the canvas.
 /// - stroke (none, stroke): Stroke style to apply to the canvas top-level element (box or block)
 /// - padding (none, number, array, dictionary) = none: How much padding to add to the canvas. `none` applies no padding. A number applies padding to all sides equally. A dictionary applies padding following Typst's `pad` function: https://typst.app/docs/reference/layout/pad/. An array follows CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`.
+/// - x (number, vector) = 1.0: Sets up the x vector of the coordinate system to `(x, 0, 0)` or to the given vector.
+/// - y (number, vector) = 1.0: Sets up the y vector of the coordinate system to `(0, y, 0)` or to the given vector.
+/// - z (number, vector) = 1.0: Sets up the z vector of the coordinate system to `(0, 0, z)` or to the given vector.
 /// - debug (bool): Shows the bounding boxes of each element when `true`.
 /// -> content
-#let canvas(length: 1cm, baseline: none, debug: false, background: none, stroke: none, padding: none, body) = context {
+#let canvas(length: 1cm, x: 1.0, y: 1.0, z: 1.0, baseline: none, debug: false, background: none, stroke: none, padding: none, body) = context {
   if body == none {
     return []
   }
@@ -38,6 +41,18 @@
   assert(length / 1cm != 0,
     message: "Canvas length must be != 0!")
 
+  // Prepare the coordinate system
+  let resolve-number(x) = {
+    return if type(x) == std.length {
+      x / length
+    } else {
+      float(x)
+    }
+  }
+  let x = (if type(x) != array { (x, 0.0, 0.0) } else { x }).map(resolve-number)
+  let y = (if type(y) != array { (0.0, y, 0.0) } else { y }).map(resolve-number)
+  let z = (if type(z) != array { (0.0, 0.0, z) } else { z }).map(resolve-number)
+
   let ctx = (
     version: version.version,
     length: length,
@@ -46,14 +61,12 @@
     // Previous element position & bbox
     prev: (pt: (0.0, 0.0, 0.0)),
     style: styles.default,
-    // Current transformation matrix, a rhs coordinate system
-    // where z is sheared by a half x and y.
-    //   +x = right, +y = up, +z = 1/2 (left + down)
+    // Current transformation matrix
     transform:
-      ((1.0, 0.0,-0.5, 0.),
-       (0.0,-1.0,+0.5, 0.),
-       (0.0, 0.0, 1.0, 0.),
-       (0.0, 0.0, 0.0, 1.)),
+      ((x.at(0, default: 1.0), y.at(0, default: 0.0), z.at(0, default: 0.0), 0.0),
+       (x.at(1, default: 0.0), y.at(1, default: 1.0), z.at(1, default: 0.0), 0.0),
+       (x.at(2, default: 0.0), y.at(2, default: 0.0), z.at(2, default: 1.0), 0.0),
+       (0.0, 0.0, 0.0, 1.0)),
     // Nodes, stores anchors and paths
     nodes: (:),
     // Group stack
@@ -87,16 +100,16 @@
   let padding = util.map-dict(util.as-padding-dict(padding), (_, v) => {
     util.resolve-number(ctx, v)
   })
-  bounds = aabb.padded(bounds, padding)
-
-  let (offset-x, offset-y, ..) = bounds.low
+  let swapped-padding = padding
+  swapped-padding.top = padding.bottom
+  swapped-padding.bottom = padding.top
+  bounds = aabb.padded(bounds, swapped-padding)
 
   // Final canvas size
   let (width, height, ..) = vector.scale(aabb.size(bounds), length)
 
-  let relative = (orig, c) => {
-    return vector.sub(c, orig)
-  }
+  let (offset-x, offset-y, ..) = bounds.low
+  offset-y = -offset-y - height / length
 
   // The top-level function the canvas gets wrapped in
   let container-fn = block.with(breakable: false)
@@ -112,7 +125,7 @@
     sub-ctx.transform = matrix.ident(4)
 
     let (_, (x, y, _)) = coordinate.resolve(sub-ctx, baseline)
-    baseline-offset = length * (y - offset-y) - height
+    baseline-offset = length * (-y - offset-y) - height
 
     container-fn = box.with(baseline: -baseline-offset)
   }
@@ -123,7 +136,7 @@
       // offset all paths to start at (0, 0) to make gradients work.
       let (segment-x, segment-y, _) = if drawable.type == "path" {
         vector.sub(
-          aabb.aabb(path-util.bounds(drawable.segments)).low,
+          vector.element-product(aabb.aabb(path-util.bounds(drawable.segments)).low, (1, -1, 1)),
           bounds.low)
       } else {
         (0, 0, 0)
@@ -133,8 +146,8 @@
         let vertices = ()
 
         let transform-point((x, y, _)) = {
-          ((x - offset-x - segment-x) * length,
-           (y - offset-y - segment-y) * length)
+          (( x - offset-x - segment-x) * length,
+           (-y - offset-y - segment-y) * length)
         }
 
         for ((origin, closed, segments)) in drawable.segments {
@@ -169,8 +182,8 @@
       } else if drawable.type == "content" {
         let (width, height) = std.measure(drawable.body)
         move(
-          dx: (drawable.pos.at(0) - offset-x) * length - width / 2,
-          dy: (drawable.pos.at(1) - offset-y) * length - height / 2,
+          dx: ( drawable.pos.at(0) - offset-x) * length - width / 2,
+          dy: (-drawable.pos.at(1) - offset-y) * length - height / 2,
           drawable.body,
         )
       }, dx: segment-x * length, dy: segment-y * length)
