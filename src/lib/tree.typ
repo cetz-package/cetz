@@ -33,7 +33,7 @@
     node.content
   }
 
-  draw.content((0,0), text)
+  draw.content((0, 0), text)
 }
 
 
@@ -141,6 +141,11 @@
         })
 
         if bounds != none {
+          if direction in ("north", "south") {
+            (node.width, node.height, _) = aabb.size(bounds)
+          } else {
+            (node.height, node.width, _) = aabb.size(bounds)
+          }
           (node.width, node.height, _) = aabb.size(bounds)
         }
       }
@@ -191,12 +196,11 @@
       node.element = {
         draw.anchor(node.name, node-position(node))
         draw.group(name: node.group-name, ctx => {
-            let (x, y) = node-position(node)
-            draw.translate((x, y, 0))
-            draw.anchor("default", (0, 0))
-            draw-node(node)
-          },
-        )
+          let (x, y) = node-position(node)
+          draw.translate((x, y, 0))
+          draw.anchor("default", (0, 0))
+          draw-node(node)
+        })
       }
 
       // Render children
@@ -232,7 +236,7 @@
     }
 
     draw.group(name: name, anchor: anchor, {
-      draw.anchor("default", (0,0))
+      draw.anchor("default", (0, 0))
       render(node)
     })
   })
