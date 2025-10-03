@@ -1,5 +1,6 @@
 #set page(width: auto, height: auto)
 #import "/src/lib.typ": *
+#import "/tests/helper.typ": *
 
 #let display(body, ..args, angle: false) = {
   import draw: *
@@ -32,87 +33,80 @@
   }
 }
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   display(line, (0,0), (.75,1), (1.25,-1), (2,0))
-}))
+})
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   display(circle, (0,0), angle: true)
-}))
+})
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   display(circle-through, (-1,0), (0,1), (1,0), angle: true)
-}))
+})
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   display(arc, (0,0), start: 225deg, stop: 135deg, radius: 2, mode: "OPEN", angle: true)
-}))
+})
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   display(arc, (0,0), start: 225deg, stop: 135deg, radius: 2, mode: "PIE", angle: true)
-}))
+})
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   display(arc, (0,0), start: 225deg, stop: 135deg, radius: 2, mode: "CLOSE", angle: true)
-}))
+})
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   display(line, (-1,0), (0,1), (1,0))
-}))
+})
 
-/*
-#box(stroke: 2pt + red, canvas(length: 1cm, {
-  import draw: *
-  display(content, (), text(2cm)[Text])
-}))
-*/
-
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   display(rect, (-1,-1), (1,1), angle: true)
-}))
+})
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   display(rect, (-1,-1), (1,1), radius: .5)
-}))
+})
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   display(bezier, (-2,0), (2,0), (-1,1), (1,-1))
-}))
+})
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   display(bezier, (-1,-1), (1,-1), (0,2))
-}))
+})
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   display(bezier-through, (-1,-1), (0,1), (1,-1))
-}))
+})
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   display(catmull, (-2,0), (-1,-1), (0,1), (1,-1), (2,0))
-}))
+})
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
   display(group, {
     circle((0,0), radius: .5)
     circle((1,1), radius: .7)
   }, angle: true)
-}))
+})
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
 
   rotate(10deg)
@@ -135,4 +129,4 @@
     let i = i * 1deg
     circle((name: "a", anchor: i), radius: .1)
   }
-}))
+})

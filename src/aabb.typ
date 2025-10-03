@@ -24,7 +24,7 @@
 /// - bounds (aabb): The aabb to get the size of.
 /// -> vector
 #let size(bounds) = {
-  return vector.sub(bounds.high, bounds.low)
+  vector.sub(bounds.high, bounds.low).map(calc.abs)
 }
 
 /// Pad AABB with padding from dictionary with keys top, left, right and bottom.

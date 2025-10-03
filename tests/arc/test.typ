@@ -1,7 +1,8 @@
 #set page(width: auto, height: auto)
 #import "/src/lib.typ": *
+#import "/tests/helper.typ": *
 
-#box(stroke: 2pt + red, canvas(length: 1cm, {
+#test-case({
   import draw: *
 
   for r in ((1,1), (0.5,1), (1,0.5)) {
@@ -22,11 +23,4 @@
       }
     })
   }
-}))
-
-#box(stroke: 2pt + red, canvas(length: 1cm, {
-  import draw: *
-
-  arc((0,0), start: 45deg, delta: 90deg)
-  arc((0,0,1), start: 45deg, delta: 90deg, stroke: blue)
-}))
+})

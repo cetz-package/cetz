@@ -33,13 +33,11 @@
 
   assert(
     type(mat) == array,
-    message: "Transformtion matrix must be of type array, got: " + repr(mat)
-  )
+    message: "Transformtion matrix must be of type array, got: " + repr(mat))
   assert.eq(
     mat.len(), 
     4,
-    message: "Transformation matrix must be of size 4x4, got: " + repr(mat)
-  )
+    message: "Transformation matrix must be of size 4x4, got: " + repr(mat))
 
   (ctx => {
     ctx.transform = mat

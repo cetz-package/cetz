@@ -63,11 +63,9 @@
   import draw: *
   grid((-4,-4), (2,2))
 
-  set-transform(none)
-  scale(y: -1)
-
   set-style(fill: gray)
   rect((-3,-3), (rel: (2,2)))
+
 
   rotate(x: 60deg, y: 45deg, origin: (-2,-2))
   set-style(fill: blue)

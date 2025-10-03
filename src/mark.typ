@@ -145,9 +145,9 @@
     matrix.transform-translate(..vector.scale(origin, if reverse {1} else {-1})),
 
     // Mirror on x and/or y axis
-    if flip or reverse {
+    if not flip or reverse {
       matrix.transform-scale({
-        if flip {
+        if not flip {
           (y: -1)
         }
         if reverse {

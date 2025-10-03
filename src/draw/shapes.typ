@@ -1,6 +1,3 @@
-#let typst-angle = angle
-#let typst-rotate = rotate
-
 #import "/src/coordinate.typ"
 #import "/src/drawable.typ"
 #import "/src/styles.typ"
@@ -1069,16 +1066,13 @@
       (ctx, b) = coordinate.resolve(ctx, b)
     }
 
-    let angle = if type(angle) != typst-angle {
+    let angle = if type(angle) != std.angle {
       let c
       (ctx, c) = coordinate.resolve(ctx, angle)
       vector.angle2(a, c)
     } else {
       angle
     }
-
-    // Typst's `rotate` function is clockwise relative to x-axis, which is backwards from us
-    angle = angle * -1
 
     // Optionally scale content with current canvas scaling
     if style.auto-scale == true {
@@ -1123,10 +1117,10 @@
       // Only the center anchor gets transformed. All other anchors
       // must be calculated relative to the transformed center!
       bounds-center = matrix.mul4x4-vec3(ctx.transform,
-        vector.as-vec(bounds-center, init: (0,0,0)))
+        vector.as-vec(bounds-center, init: (0, 0, 0)))
 
       let east-dir = vector.rotate-z((1, 0, 0), angle)
-      let north-dir = vector.rotate-z((-1, 0, 0), angle + 90deg)
+      let north-dir = vector.rotate-z((0, 1, 0), angle)
       let east-scaled = vector.scale(east-dir, +w)
       let west-scaled = vector.scale(east-dir, -w)
       let north-scaled = vector.scale(north-dir, +h)
@@ -1218,7 +1212,7 @@
         aabb-width,
         aabb-height,
         frame-shape.segments,
-        typst-rotate(angle,
+        std.rotate(-angle,
           reflow: true,
           origin: center + horizon,
           block(
