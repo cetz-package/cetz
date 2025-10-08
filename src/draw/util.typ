@@ -36,9 +36,9 @@
 ///   return c
 /// })
 ///
-/// circle((log: (10, 0)), radius: .25)
-/// circle((log: (100, 0)), radius: .25)
-/// circle((log: (1000, 0)), radius: .25)
+/// circle((log: (10, 1e-6)), radius: .25)
+/// circle((log: (100, 1e-6)), radius: .25)
+/// circle((log: (1000, 1e-6)), radius: .25)
 /// ```
 ///
 /// - resolver (function): The resolver function, taking a context and a single coordinate and returning a single coordinate
