@@ -25,7 +25,9 @@ export default [
       type: "doc",
       id: "libraries/libraries",
     },
-    items: ["libraries/tree"],
+    items: [
+      "libraries/tree",
+    ],
   },
   {
     type: "category",

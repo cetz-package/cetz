@@ -22,9 +22,11 @@ export default [
           "api/draw-functions/shapes/mark",
           "api/draw-functions/shapes/line",
           "api/draw-functions/shapes/polygon",
+          "api/draw-functions/shapes/n-star",
           "api/draw-functions/shapes/grid",
           "api/draw-functions/shapes/content",
           "api/draw-functions/shapes/rect",
+          "api/draw-functions/shapes/rect-around",
           "api/draw-functions/shapes/bezier",
           "api/draw-functions/shapes/hobby",
           "api/draw-functions/shapes/catmull",
@@ -64,6 +66,7 @@ export default [
           "api/draw-functions/styling/set-style",
           "api/draw-functions/styling/fill",
           "api/draw-functions/styling/stroke",
+          "api/draw-functions/styling/register-mark",
         ],
       },
       {
@@ -96,7 +99,18 @@ export default [
           "api/draw-functions/projections/on-xz",
           "api/draw-functions/projections/on-yz",
         ],
-      }
+      },
+      {
+        type: "category",
+        label: "Util",
+        link: {
+          type: "doc",
+          id: "api/draw-functions/util/util",
+        },
+        items: [
+          "api/draw-functions/util/register-coordinate-resolver",
+        ],
+      },
     ],
   },
   {
