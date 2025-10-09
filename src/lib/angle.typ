@@ -16,7 +16,7 @@
 
 /// Draw an angle counter-clock-wise between `a` and `b` through origin `origin`
 ///
-/// ```typc example
+/// ```example
 /// line((0,0), (1,1.5), name: "a")
 /// line((0,0), (2,-1), name: "b")
 ///
@@ -35,13 +35,13 @@
 /// - name (none,str): Element name, used for querying anchors.
 /// - ..style (style): Style key-value pairs.
 ///
-/// ## Styling
+/// == Styling
 /// *Root:* `angle` \
 ///
 /// - radius (number) = 0.5: The radius of the angles arc. If of type `ratio`, it is relative to the smaller distance of either origin to a or origin to b.
 /// - label-radius (number, ratio) = 50%: The radius of the angles label origin. If of type `ratio`, it is relative to `radius`.
 ///
-/// ## Anchors
+/// == Anchors
 /// - **a** Point a
 /// - **b** Point b
 /// - **origin** Origin
@@ -131,7 +131,7 @@
 
 /// Draw a right angle between `a` and `b` through origin `origin`
 ///
-/// ```typc example
+/// ```example
 /// line((0,0), (1,2), name: "a")
 /// line((0,0), (2,-1), name: "b")
 ///
@@ -151,10 +151,10 @@
 /// - name (none,str): Element name, used for querying anchors.
 /// - ..style (style): Style key-value pairs.
 ///
-/// ## Styling
+/// == Styling
 /// Styling is the same as the `angle` function.
 ///
-/// ## Anchors
+/// == Anchors
 /// Anchors are the same as the `angle` function
 ///
 #let right-angle(

@@ -63,14 +63,14 @@
 ///
 /// For each node, the `tree` function creates an anchor of the format `"[<child-index>-]<child-index>"` (the root is `"0"`, its first child `"0-0"`, second `"0-1"` and so on) that can be used to query a nodes position on the canvas.
 ///
-/// ```typc example
+/// ```example
 /// import cetz.tree
 /// set-style(content: (padding: .1))
 /// tree.tree(([Root], ([A], [A.A], [A.B]), ([B], [B.A])))
 /// ```
 ///
 /// - root (array): A nested array of content that describes the structure the tree should take. Example: `([root], [child 1], ([child 2], [grandchild 1]))`
-/// - draw-node (auto,function): The function to call to draw a node. The function will be passed the node to draw (a dictionary with a `content` key) and is expected to return elements (`(node, parent-node) => elements`). The node must be drawn at the `(0,0)` coordinate. If `auto` is given, just the node's value will be drawn as content. The following predefined styles can be used:
+/// - draw-node (auto,function): The function to call to draw a node. The function will be passed the node to draw (a dictionary with a `content` key) and is expected to return elements (`(node, parent-node) => elements`). The node must be drawn at the `(0,0)` coordinate. If `auto` is given, just the node's value will be drawn as content.
 /// - draw-edge (none,auto,function): The function to call draw an edge between two nodes. The function will be passed the name of the starting node, the name of the ending node, the start node, the end node, and is expected to return elements (`(source-name, target-name, parent-node, child-node) => elements`). If `auto` is given, a straight line will be drawn between nodes.
 /// - direction (str): A string describing the direction the tree should grow in ("up", "down", "left", "right")
 /// - grow (float): Depth grow factor
