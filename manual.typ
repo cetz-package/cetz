@@ -1,9 +1,12 @@
 #import "/src/lib.typ" as cetz
 
+#import "/docs/style.typ": show-type
 #import "/docs/typlodocus/extractor.typ"
 
 #let modules = (
-  "src/draw/shapes.typ",
+  //"src/draw/shapes.typ",
+  "src/draw/styling.typ",
+
   "src/lib/angle.typ",
   "src/lib/tree.typ",
 )
@@ -12,21 +15,11 @@
   (filename, extractor.extract-doc-comments(read(filename).split("\n")))
 }).to-dict()
 
-#let show-type(name) = {
-  let colors = (
-    int: yellow,
-    float: yellow,
-    string: red,
-    array: purple,
-    function: purple,
-    any: gray.lighten(50%),
-    rest: gray.lighten(50%),
-  )
+// Generate query metadata
+#metadata(docs) <metadata>
 
-  box(raw(name), inset: 2pt, baseline: 2pt, radius: 2pt,
-    fill: colors.at(name, default: colors.rest), stroke: none)
-}
 
+/// Show a function signature annoted with types from the docstring
 #let show-annotated-signature(signature, comment) = {
   let name = signature.name
 
@@ -39,9 +32,9 @@
     }
 
     if arg.has-default {
-      raw(arg.name + ":") + comment-arg.types.map(show-type).join([ ])
+      raw(arg.name + ":") + [ ] + comment-arg.types.map(show-type).join([ ])
     } else {
-      raw(arg.name)
+      raw(arg.name) + [ ] + comment-arg.types.map(show-type).join([ ])
     }
   })
 
@@ -51,7 +44,7 @@
     []
   }
 
-  raw(name) + raw("(") + [\ ] + arguments.map(v => h(1em) + v).join([,\ ]) + [\ ] + raw(")") + result
+  text(blue, raw(name)) + raw("(") + [\ ] + arguments.map(v => h(1em) + v).join([,\ ]) + [\ ] + raw(")") + result
 }
 
 /// Render an example side-by-side with its source code.
@@ -75,6 +68,12 @@
 
   show raw.where(lang: "example"): it => render-example(it.text)
 
+  block([
+    #eval(text, mode: "markup", scope: (
+      cetz: cetz,
+    ))
+  ])
+
   if arguments != () {
     heading("Parameters", level: level + 1)
     list(..arguments.map(arg => {
@@ -85,23 +84,18 @@
       )
     }))
   }
-
-  block([
-    #eval(text, mode: "markup", scope: (
-      cetz: cetz,
-    ))
-  ])
 }
 
-// Show a single module/file
+/// Show a single module/file
 #let show-module(name, level: 2) = {
   for item in docs.at(name) {
     let function-name = item.signature.name
 
     heading(function-name, level: level)
-
+    block({
+      show-annotated-signature(item.signature, item.comment)
+    })
     show-docstring(item.comment, level)
-    block(show-annotated-signature(item.signature, item.comment))
   }
 }
 
@@ -111,6 +105,9 @@
 
 = Shapes
 //#show-module("src/draw/shapes.typ")
+
+= Styling
+#show-module("src/draw/styling.typ")
 
 = Libraries
 == Angle

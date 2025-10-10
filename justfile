@@ -23,3 +23,6 @@ update-test *filter:
 
 gallery:
   for f in "{{gallery_dir}}"/*.typ; do typst c "$f" "${f/typ/png}"; done
+
+docs:
+  typst query --root . manual.typ "<metadata>" --field value | python ./docs/genhtml.py
