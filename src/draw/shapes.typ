@@ -21,12 +21,27 @@
 /// Draws a circle or ellipse.
 ///
 /// ```example
-/// circle((0,0))
-/// // Draws an ellipse
-/// circle((0,-2), radius: (0.75, 0.5))
-/// // Draws a circle at (0, 2) through point (1, 3)
-/// circle((0,2), (rel: (1,1)))
+/// // Draw a circle with center (0, 0)
+/// circle((0, 0))
 /// ```
+///
+/// ```example
+/// // Draw an ellipse
+/// circle((2, 0), radius: (1, 0.5))
+/// ```
+///
+/// ```example
+/// let (a, b) = ((2, 1), (1, 1))
+///
+/// // Draw a circle with its center at (2, 1), going
+/// // through point (1, 1)
+/// circle(a, b)
+///
+/// // Show both points
+/// set-style(content: (frame: "circle", padding: 1pt, fill: white))
+/// content(a, [A]); content(b, [B])
+/// ```
+///
 ///
 /// - ..points-style (coordinate, style): The position to place the circle on.
 ///   If given two coordinates, the distance between them is used as radius.
@@ -103,10 +118,14 @@
 /// Draws a circle through three coordinates.
 ///
 /// ```example
-/// let (a, b, c) = ((0,0), (2,-.5), (1,1))
-/// line(a, b, c, close: true, stroke: gray)
+/// let (a, b, c) = ((0, 0), (2, -0.5), (1, 1))
+///
+/// // Draw a circle through 3 points
 /// circle-through(a, b, c, name: "c")
-/// circle("c.center", radius: .05, fill: red)
+///
+/// // Show the points
+/// set-style(content: (frame: "circle", padding: 1pt, fill: white))
+/// content(a, [A]); content(b, [B]); content(c, [C])
 /// ```
 ///
 /// - a (coordinate): Coordinate a.
@@ -338,7 +357,14 @@
 /// the function fails.
 ///
 /// ```example
-/// arc-through((0,1), (1,1), (1,0))
+/// let (a, b, c) = ((0, 1), (2, 2), (2, 0))
+///
+/// // Draw an arc through 3 points
+/// arc-through(a, b, c)
+///
+/// // Show the points
+/// set-style(content: (frame: "circle", padding: 1pt, fill: white))
+/// content(a, [A]); content(b, [B]); content(c, [C])
 /// ```
 ///
 /// - a (coordinate): Start position of the arc
@@ -425,8 +451,19 @@
 /// Draws a single mark pointing towards a target coordinate.
 ///
 /// ```example
-/// mark((0,0), (0,1), symbol: ">", fill: black)
-/// mark((0,0), 180deg, symbol: "stealth", scale: 3)
+/// // Show a grid
+/// grid((-1, -1), (1, 1), stroke: gray)
+///
+/// // Draw a mark with its tip at (0, 0) pointing to (1, 0)
+/// mark((0, 0), (1, 0), symbol: ")>", scale: 4)
+/// ```
+///
+/// ```example
+/// // Show a grid
+/// grid((-1, -1), (1, 1), stroke: gray)
+///
+/// // Draw a mark with its center at (0, 0) pointing to (1, 1)
+/// mark((0, 0), (1, 1), symbol: ">>", anchor: "center", scale: 5)
 /// ```
 ///
 /// Note: To place a mark centered at the first coodinate (`from`) use
@@ -494,9 +531,18 @@
 /// Draws a line, more than two points can be given to create a line-strip.
 ///
 /// ```example
-/// line((-1.5, 0), (1.5, 0))
-/// line((0, -1.5), (0, 1.5))
-/// line((-1, -1), (-0.5, 0.5), (0.5, 0.5), (1, -1), close: true)
+/// // Draw a line between two points
+/// line((0, 0), (1.5, 1))
+/// ```
+///
+/// ```example
+/// // Draw a line between more than two points
+/// line((0, 0), (1, 0.5), (2, -0.5), (3, 0))
+/// ```
+///
+/// ```example
+/// // Draw a polygon using `close: true`
+/// line((0, 0), (0, 1), (1, 2), (2, 1), (2,0), close: true)
 /// ```
 ///
 /// If the first or last coordinates are given as the name of an element,
@@ -611,9 +657,11 @@
 /// Draws a regular polygon.
 ///
 /// ```example
-/// polygon((0,0), 3, angle: 90deg)
-/// polygon((2,0), 5)
-/// polygon((4,0), 7)
+/// set-style(polygon: (radius: 0.65))
+///
+/// polygon((0, 0), 3, angle: 90deg)
+/// polygon((1.5,0), 5)
+/// polygon((3, 0), 7)
 /// ```
 ///
 /// - origin (coordinate): Coordinate to draw the polygon at
@@ -690,13 +738,15 @@
 /// Draws a n-pointed star.
 ///
 /// ```example
-/// n-star((0,0), 5)
+/// set-style(n-star: (radius: 0.65))
+///
+/// n-star((0, 0), 5)
 ///
 /// // An 8-pointed star, rotated
-/// n-star((2,0), 8, angle: 11.25deg)
+/// n-star((1.5, 0), 8, angle: 11.25deg)
 ///
 /// // A 6-pointed star showing its inner hexagon
-/// n-star((4,0), 6, show-inner: true, style: red)
+/// n-star((3, 0), 6, show-inner: true)
 /// ```
 ///
 /// - origin (coordinate): Coordinate to draw the star's center at.
@@ -1259,40 +1309,33 @@
 
 /// Draws a rectangle between two coordinates.
 /// ```example
-/// rect((0,0), (1,1))
-/// rect(
-///   (-.5, -.5),
-///   (rel: (2, 2)),
-///   radius: (
-///     north-east: (100%, .5),
-///     south-west: (100%, .5),
-///     rest: .2
-///   ),
-///   stroke: red
-/// )
-/// rect((-1, -1), (rel: (3, 3)), radius: .5, stroke: blue)
+/// // Draw a rect from A(0, 0) to B(1, 1)
+/// rect((0, 0), (1, 1))
+///
+/// // Show the points
+/// set-style(content: (frame: "circle", padding: 1pt, fill: white))
+/// content((0, 0), [A]); content((1, 1), [B])
 /// ```
+///
+/// ```example-vertical
+/// rect((0,0), (rel: (1,1)), radius: 0)
+/// rect((2,0), (rel: (1,1)), radius: 25%)
+/// rect((4,0), (rel: (1,1)), radius: (north: 50%))
+/// rect((6,0), (rel: (1,1)), radius: (north-east: 50%))
+/// rect((8,0), (rel: (1,1)), radius: (south-west: 0, rest: 50%))
+/// rect((10,0), (rel: (1,1)), radius: (rest: (20%, 50%)))
+/// ```
+///
+/// == Styling
+/// *Root*: `rect`
 ///
 /// - a (coordinate): Coordinate of the bottom left corner of the rectangle.
 /// - b (coordinate): Coordinate of the top right corner of the rectangle. You can draw a rectangle with a specified width and height by using relative coordinates for this parameter `(rel: (width, height))`.
 /// - name (none,str):
 /// - anchor (none, str):
 /// - ..style (style):
-///
-/// == Styling
-/// *Root*: `rect`
-///
 /// - radius (number,ratio,dictionary) = 0: The rectangle's corner radius. If set to a single number, that radius is applied to all four corners of the rectangle. If passed a dictionary you can set the radii per corner. The following keys support either a type:number, type:ratio or an array of type:number or type:ratio for specifying a different x- and y-radius: `north`, `east`, `south`, `west`, `north-west`, `north-east`, `south-west` and `south-east`. To set a default value for remaining corners, the `rest` key can be used.
 ///   Ratio values are relative to the rectangle's width and height.
-///
-///   ```example-vertical
-///   rect((0,0), (rel: (1,1)), radius: 0)
-///   rect((2,0), (rel: (1,1)), radius: 25%)
-///   rect((4,0), (rel: (1,1)), radius: (north: 50%))
-///   rect((6,0), (rel: (1,1)), radius: (north-east: 50%))
-///   rect((8,0), (rel: (1,1)), radius: (south-west: 0, rest: 50%))
-///   rect((10,0), (rel: (1,1)), radius: (rest: (20%, 50%)))
-///   ```
 ///
 /// == Anchors
 ///   Supports border and path anchors. It's default is the `"center"` anchor.
@@ -1467,12 +1510,18 @@
 ///
 /// ```example
 /// let (a, b, c) = ((0, 0), (2, 0), (1, 1))
-/// line(a, c,  b, stroke: gray)
 /// bezier(a, b, c)
 ///
-/// let (a, b, c, d) = ((0, -1), (2, -1), (.5, -2), (1.5, 0))
-/// line(a, c, d, b, stroke: gray)
+/// set-style(content: (frame: "circle", padding: 1pt, fill: white))
+/// content(a, [A]); content(b, [B]); content(c, [C])
+/// ```
+///
+/// ```example
+/// let (a, b, c, d) = ((0, 0), (2, 0), (.5, -1), (1.5, 1))
 /// bezier(a, b, c, d)
+///
+/// set-style(content: (frame: "circle", padding: 1pt, fill: white))
+/// content(a, [A]); content(b, [B]); content(c, [C]); content(d, [D])
 /// ```
 ///
 /// - start (coordinate): Start position
@@ -1546,15 +1595,17 @@
   )
 }
 
-/// Draws a cubic bezier curve through a set of three points. See [bezier](./bezier) for style and anchor details.
+/// Draws a cubic bezier curve through a set of three points.
+/// See @bezier for style and anchor details.
 ///
 /// ```example
 /// let (a, b, c) = ((0, 0), (1, 1), (2, -1))
-/// line(a, b, c, stroke: gray)
-/// bezier-through(a, b, c, name: "b")
+/// bezier-through(a, b, c, name: "curve")
 ///
-/// // Show calculated control points
-/// line(a, "b.ctrl-0", "b.ctrl-1", c, stroke: gray)
+/// // Show the computed control points: 1 and 2
+/// set-style(content: (frame: "circle", padding: 1pt, fill: white))
+/// content(a, [A]); content(b, [B]); content(c, [C])
+/// content("curve.ctrl-1", [2]); content("curve.ctrl-0", [1])
 /// ```
 ///
 /// - start (coordinate): The position to start the curve.

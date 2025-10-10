@@ -216,7 +216,7 @@
 /// You can use this to combine the style in `ctx`, the style given by a user for a single element and an element's default style.
 ///
 /// `base` is first merged onto `dict` without overwriting existing values, and if `root` is given it is merged onto that key of `dict`. `merge` is then merged onto `dict` but does overwrite existing entries, if `root` is given it is merged onto that key of `dict`. Then entries in `dict` that are {{auto}} inherit values from their nearest ancestor and entries of type {{dictionary}} are merged with their closest ancestor.
-/// ```typ example
+/// ```typ
 /// #let dict = (
 ///   stroke: "black",
 ///   fill: none,
