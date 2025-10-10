@@ -109,11 +109,15 @@ def format_types(types_list):
     return ",".join(types_list)
 
 
-def escape_json_string(text):
-    """Escape a string for JSON."""
+def escape_html_attr(text):
+    """Escape text for HTML attribute values."""
     if not text:
         return ""
-    return text.replace('"', '\\"').replace('\n', '\\n').replace('\r', '\\r')
+    return (text.replace('&', '&amp;')
+               .replace('"', '&quot;')
+               .replace("'", '&#39;')
+               .replace('<', '&lt;')
+               .replace('>', '&gt;'))
 
 
 def generate_mdx_file(func_data, output_path, cetz_path=DEFAULT_CETZ_VERSION):
@@ -180,7 +184,7 @@ def generate_mdx_file(func_data, output_path, cetz_path=DEFAULT_CETZ_VERSION):
                 if default_value and default_value != "null":
                     if default_value.startswith("= "):
                         default_value = default_value[2:]
-                    param_attrs.append(f'default_value="{default_value}"')
+                    param_attrs.append(f'default_value="{escape_html_attr(default_value)}"')
                 
                 mdx_lines.append(f'<Parameter {" ".join(param_attrs)}>')
                 
@@ -364,7 +368,8 @@ def main():
         
         # Generate combined MDX file
         if function_names:
-            combined_filename = f"{path_parts[-1]}-combined.mdx"
+            #combined_filename = f"{path_parts[-1]}-combined.mdx"
+            combined_filename = f"-combined.mdx"
             combined_path = current_mdx_dir / combined_filename
             
             combined_lines = []
