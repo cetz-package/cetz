@@ -25,4 +25,5 @@ gallery: build
   for f in "{{gallery_dir}}"/*.typ; do typst c "$f" "${f/typ/png}"; done
 
 docs: build
+  typst compile --root . manual.typ
   typst query --root . manual.typ "<metadata>" --field value | python ./docs/genhtml.py -o ./docs/_generated

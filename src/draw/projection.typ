@@ -120,7 +120,7 @@
 ///
 /// By default an isometric projection (x ≈ 35.264°, y = 45°) is set.
 ///
-/// ```typc example
+/// ```example
 /// ortho({
 ///   on-xz({
 ///     rect((-1,-1), (1,1))
@@ -145,9 +145,9 @@
 
 /// Draw elements on the xy-plane with optional z offset.
 ///
-/// All vertices of all elements will be changed in the following way: $\begin{pmatrix} x \\ y \\ z_\text{argument}\end{pmatrix}$, where $z_\text{argument}$ is the z-value given as argument.
+/// All vertices of all elements will be changed in the following way: $mat(x, y, z_"argument")$, where $z_"argument"$ is the z-value given as argument.
 ///
-/// ```typc example
+/// ```example
 /// on-xy({
 ///   rect((-1, -1), (1, 1))
 /// })
@@ -164,9 +164,9 @@
 
 /// Draw elements on the xz-plane with optional y offset.
 ///
-/// All vertices of all elements will be changed in the following way: $\begin{pmatrix} x \\ y_\text{argument} \\ y \end{pmatrix}$, where $y_\text{argument}$ is the y-value given as argument.
+/// All vertices of all elements will be changed in the following way: $mat(x, y_"argument", y)$, where $y_"argument"$ is the y-value given as argument.
 ///
-/// ```typc example
+/// ```example
 /// on-xz({
 ///   rect((-1, -1), (1, 1))
 /// })
@@ -183,9 +183,9 @@
 
 /// Draw elements on the yz-plane with optional x offset.
 ///
-/// All vertices of all elements will be changed in the following way: $\begin{pmatrix} x_\text{argument} \\ y \\ x \end{pmatrix}$, where $x_\text{argument}$ is the x-value given as argument.
+/// All vertices of all elements will be changed in the following way: $mat(x_"argument", y, x)$, where $x_"argument"$ is the x-value given as argument.
 ///
-/// ```typc example
+/// ```example
 /// on-yz({
 ///   rect((-1, -1), (1, 1))
 /// })

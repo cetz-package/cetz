@@ -237,7 +237,7 @@
 /// - styles (style): A processed mark styling.
 /// - segments (drawable): The path to place the mark on.
 /// - is-end (bool): Start from the end of the path
-/// -> dictionary (pt, distance, drawable)
+/// -> dictionary Dictionary with the following keys: pt, distance and drawable.
 #let place-mark-on-path(ctx, styles, segments, is-end: false) = {
   if type(styles) != array {
     styles = (styles,)

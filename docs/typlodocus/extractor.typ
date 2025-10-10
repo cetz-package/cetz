@@ -5,7 +5,7 @@
 /// a list of lines.
 ///
 /// - lines (array): List of lines to parse.
-/// -> Array of dictionaries of the form (comment: (raw:, text:, arguments: ((name:, types: (,), default-value:, text:),)), signature: (name:, arguments: ((name:, default-value:, has-default:),)))
+/// -> array Array of dictionaries of the form (comment: (raw:, text:, arguments: ((name:, types: (,), default-value:, text:),)), signature: (name:, arguments: ((name:, default-value:, has-default:),)))
 #let extract-doc-comments(lines) = {
   let comments = ()
 
