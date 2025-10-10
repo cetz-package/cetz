@@ -2,7 +2,7 @@
 
 /// Create a new palette based on a base style
 ///
-/// ```typc example
+/// ```example
 /// let p = cetz.palette.new(colors: (red, blue, green))
 /// for i in range(0, p("len")) {
 ///   set-style(..p(i))

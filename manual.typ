@@ -20,6 +20,7 @@
   "src/lib/tree.typ",
   "src/lib/decorations/path.typ",
   "src/lib/decorations/brace.typ",
+  "src/lib/palette.typ",
 
   // Internals
   "src/coordinate.typ",
@@ -140,26 +141,21 @@
     }))
   }
 
-  if result != () {
+  if result.any(r => r.text != "") {
     heading("Result")
 
-    if result.len() > 1 {
-      list(..result.map(res => {
-        let type = res.type
-        if type == none { type = "any" }
-        block(
-          show-type(type) + [\ ]
-          + eval(res.text, mode: "markup")
-        )
-      }))
-    } else {
-      let res = result.first()
-      let type = res.type
+    let show-result(r) = if r.text != "" {
+      let type = r.type
       if type == none { type = "any" }
       block(
-        show-type(type) + [\ ]
-        + eval(res.text, mode: "markup")
+        show-type(type) + [\ ] + eval(r.text, mode: "markup")
       )
+    }
+
+    if result.len() > 1 {
+      list(..result.map(show-result))
+    } else {
+      show-result(result.first())
     }
   }
 }
@@ -220,6 +216,9 @@
 
 === Braces
 #show-module("src/lib/decorations/brace.typ", level: 4)
+
+== Palette
+#show-module("src/lib/palette.typ", level: 3)
 
 == Internals
 === Coordinate

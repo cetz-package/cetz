@@ -53,7 +53,8 @@
 /// Returns either "ccw" (counter clock-wise) or "cw" (clock-wise) or none.
 ///
 /// - point (array): List of polygon points
-/// -> str,none
+/// -> none
+/// -> str
 #let winding-order(points) = {
   let area = signed-area(points)
   if area > 0 {
