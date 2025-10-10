@@ -351,7 +351,7 @@
 
 /// Resolve a list of coordinates to absolute vectors. Returns an array of the new <Type>context</Type> then the resolved coordinate vectors.
 ///
-/// ```typc example
+/// ```example
 /// line((0,0), (1,1), name: "l")
 /// get-ctx(ctx => {
 ///   // Get the vector of coordinate "l.start" and "l.end"
