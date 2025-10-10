@@ -233,7 +233,7 @@
 /// + If an entry is `auto` or a dictionary, the tree is travelled back up until an entry with the same key is found. If the current entry is `auto` the value of the ancestor's entry is copied. Or if the current entry and ancestor entry is a dictionary, they are merged with the current entry overwriting any values in it's ancestors.
 /// + Each entry that is a dictionary is then resolved from step 1.
 ///
-/// ```typc example
+/// ```example
 /// get-ctx(ctx => {
 ///   // Get the current "mark" style
 ///   content((0,0), [#cetz.styles.resolve(ctx.style, root: "mark")])
