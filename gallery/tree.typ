@@ -5,7 +5,7 @@
 #canvas({
   import draw: *
   let encircle(i) = {
-    std.box(baseline: 2pt, std.circle(stroke: .5pt, radius: .5em)[#move(dx: -0.36em, dy: -1.1em, $#i$)])
+    std.box(baseline: 2pt, std.circle(stroke: .5pt, radius: .5em, std.move(dx: -.35em, dy: -.45em, [#i])))
   }
 
   set-style(content: (padding: 0.5em))
