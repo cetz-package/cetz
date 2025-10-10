@@ -19,7 +19,7 @@
 
 /// Multiplies vectors by a transformation matrix. If multiple vectors are given they are returned as an array, if only one vector is given only one will be returned, if a dictionary is given they will be returned in the dictionary with the same keys.
 ///
-/// - transform (matrix,function): The $4 \times 4$ transformation matrix or a function that accepts and returns a vector.
+/// - transform (matrix,function): The $4 times 4$ transformation matrix or a function that accepts and returns a vector.
 /// - ..vecs (vector): Vectors to get transformed. Only the positional part of the sink is used. A dictionary of vectors can also be passed and all will be transformed.
 /// -> vector,array,dictionary
 #let apply-transform(transform, ..vecs) = {
@@ -179,7 +179,7 @@
   return if type(radius) == array {radius} else {(radius, radius)}
 }
 
-/// Finds the minimum of a set of values while ignoring {{none}} values.
+/// Finds the minimum of a set of values while ignoring `none` values.
 /// - a (float,none):
 /// -> float
 #let min(..a) = {
@@ -187,7 +187,7 @@
   return calc.min(..a)
 }
 
-/// Finds the maximum of a set of values while ignoring {{none}} values.
+/// Finds the maximum of a set of values while ignoring `none` values.
 /// - ..a (float,none):
 /// -> float
 #let max(..a) = {
@@ -228,10 +228,10 @@
 ///
 ///
 /// Type of `padding`:
-/// - {{none}}: All sides padded by 0
-/// - {{number}}: All sides are padded by the same value
-/// - {{array}}: CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`
-/// - {{dictionary}}: Converts a Typst padding dictionary (top, left, bottom, right, x, y, rest) to a dictionary containing top, left, bottom and right.
+/// / `none`: All sides padded by 0
+/// / `number`: All sides are padded by the same value
+/// / `array`: CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`
+/// / `dictionary`: Converts a Typst padding dictionary (top, left, bottom, right, x, y, rest) to a dictionary containing top, left, bottom and right.
 ///
 /// - padding (none, number, array, dictionary): Padding specification
 ///

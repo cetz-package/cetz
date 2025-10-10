@@ -209,7 +209,7 @@
 ///
 /// The number of tooths can be controlled via the `segments` or `segment-length` style key, and the width via `amplitude`.
 ///
-/// ```typc example
+/// ```example
 /// line((0,0), (2,1), stroke: gray)
 /// cetz.decorations.zigzag(line((0,0), (2,1)), amplitude: .25, start: 10%, stop: 90%)
 /// ```
@@ -219,7 +219,7 @@
 /// - name (none,string): Element name
 /// - ..style (style): Style
 ///
-/// ## Styling
+/// == Styling
 /// *Root*: `zigzag`
 /// - factor (ratio) = 100%: Triangle mid between its start and end. Setting this to 0% leads to a falling sawtooth shape, while 100% results in a raising sawtooth.
 #let zigzag(target, name: none, close: auto, ..style) = draw.get-ctx(ctx => {
@@ -275,7 +275,7 @@
 ///
 /// The number of windings can be controlled via the `segments` or `segment-length` style key, and the width via `amplitude`.
 ///
-/// ```typc example
+/// ```example
 /// line((0,0), (2,1), stroke: gray)
 /// cetz.decorations.coil(line((0,0), (2,1)), amplitude: .25, start: 10%, stop: 90%)
 /// ```
@@ -284,7 +284,7 @@
 /// - name (none,string): Element name
 /// - ..style (style): Style
 ///
-/// ## Styling
+/// == Styling
 /// *Root*: `coil`
 /// - factor (ratio) = 150%: Factor of how much the coil overextends its length to form a curl.
 #let coil(target, close: auto, name: none, ..style) = draw.get-ctx(ctx => {
@@ -373,7 +373,7 @@
 ///
 /// The number of phases can be controlled via the `segments` or `segment-length` style key, and the width via `amplitude`.
 ///
-/// ```typc example
+/// ```example
 /// line((0,0), (2,1), stroke: gray)
 /// cetz.decorations.wave(line((0,0), (2,1)), amplitude: .25, start: 10%, stop: 90%)
 /// ```
@@ -383,7 +383,7 @@
 /// - name (none,string): Element name
 /// - ..style (style): Style
 ///
-/// ## Styling
+/// == Styling
 /// *Root*: `wave`
 ///
 /// - tension (float) = 0.5 Catmull-Rom curve tension, see [Catmull](/api/draw-functions/shapes/catmull)
@@ -438,7 +438,7 @@
 ///
 /// The number of phases can be controlled via the `segments` or `segment-length` style key, and the width via `amplitude`.
 ///
-/// ```typc example
+/// ```example
 /// line((0,0), (2,1), stroke: gray)
 /// cetz.decorations.square(line((0,0), (2,1)), amplitude: .25, start: 10%, stop: 90%)
 /// ```
@@ -448,7 +448,7 @@
 /// - name (none,string): Element name
 /// - ..style (style): Style
 ///
-/// ## Styling
+/// == Styling
 /// *Root*: `squre`
 ///
 /// - factor (ratio) = 50% Square-Wave midpoint

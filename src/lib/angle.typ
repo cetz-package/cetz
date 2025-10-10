@@ -42,12 +42,12 @@
 /// - label-radius (number, ratio) = 50%: The radius of the angles label origin. If of type `ratio`, it is relative to `radius`.
 ///
 /// == Anchors
-/// - **a** Point a
-/// - **b** Point b
-/// - **origin** Origin
-/// - **label** Label center
-/// - **start** Arc start
-/// - **end** Arc end
+/// / a: Point a
+/// / b: Point b
+/// / origin: Origin
+/// / label: Label center
+/// / start: Arc start
+/// / end: Arc end
 #let angle(
   origin,
   a,

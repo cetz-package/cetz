@@ -12,6 +12,7 @@ from pathlib import Path
 
 DEFAULT_CETZ_VERSION="@preview/cetz:0.4.2"
 
+
 def typst_template(code, cetz_path):
   """Return full typst code for a cetz docstring example."""
   return f"""
@@ -50,7 +51,7 @@ def convert_typst_to_html_content(text):
             # Write the documentation text as Typst content
             typst_content = f"""
 #set document(title: "Documentation")
-#set text(font: "New Computer Modern")
+//#set text(font: "New Computer Modern")
 #set par(justify: true)
 
 {text}
@@ -91,12 +92,10 @@ def html_to_mdx(html_content):
     if not html_content:
         return ""
     
-    # Clean up the HTML for MDX compatibility
-    # Remove any style attributes
+    # Clean up the HTML for MDX compatibility:
+    # - Remove style attributes
+    # - Convert self closing to closing
     html_content = re.sub(r'\s+style="[^"]*"', '', html_content)
-    
-    # Convert some common HTML elements to JSX-friendly format
-    # Self-closing tags need to be properly closed
     html_content = re.sub(r'<br>', '<br />', html_content)
     html_content = re.sub(r'<hr>', '<hr />', html_content)
     
@@ -118,10 +117,10 @@ def escape_json_string(text):
 
 
 def generate_mdx_file(func_data, output_path, cetz_path=DEFAULT_CETZ_VERSION):
-    """Generate an MDX file for a function matching generate-api.js format."""
+    """Generate an MDX file for a function."""
     comment = func_data.get("comment", {})
     signature = func_data.get("signature", {})
-    func_name = signature.get("name", "unknown")
+    func_name = signature.get("name", "unknown") if signature else "unknown"
     
     # Start MDX content
     mdx_lines = []
@@ -195,7 +194,6 @@ def generate_mdx_file(func_data, output_path, cetz_path=DEFAULT_CETZ_VERSION):
                 mdx_lines.append('</Parameter>')
                 mdx_lines.append('')
     
-    # Write MDX file
     try:
         with open(output_path, 'w') as f:
             f.write('\n'.join(mdx_lines))
@@ -206,7 +204,7 @@ def generate_mdx_file(func_data, output_path, cetz_path=DEFAULT_CETZ_VERSION):
 
 
 def extract_example_blocks(text):
-    """Extract all example code blocks from text."""
+    """Extract all example code blocks from text with proper indentation."""
     if not text:
         return []
     
@@ -214,12 +212,45 @@ def extract_example_blocks(text):
     pattern = r'```(?:typc?\s+)?(?:example|example-vertical)\s*\n(.*?)```'
     matches = re.findall(pattern, text, re.DOTALL)
     
-    return [match.strip() for match in matches]
+    cleaned_blocks = []
+    for match in matches:
+        lines = match.split('\n')
+        if not lines:
+            continue
+            
+        # Remove leading/trailing empty lines
+        while lines and not lines[0].strip():
+            lines.pop(0)
+        while lines and not lines[-1].strip():
+            lines.pop()
+            
+        if not lines:
+            continue
+            
+        # Find the minimum indentation (excluding empty lines)
+        min_indent = float('inf')
+        for line in lines:
+            if line.strip():  # Skip empty lines
+                indent = len(line) - len(line.lstrip())
+                min_indent = min(min_indent, indent)
+        
+        # Remove the common indentation from all lines
+        if min_indent != float('inf') and min_indent > 0:
+            dedented_lines = []
+            for line in lines:
+                if line.strip():  # Non-empty line
+                    dedented_lines.append(line[min_indent:])
+                else:  # Empty line
+                    dedented_lines.append('')
+            cleaned_blocks.append('\n'.join(dedented_lines))
+        else:
+            cleaned_blocks.append('\n'.join(lines))
+    
+    return cleaned_blocks
 
 
 def main():
     """Main function to process docs.json and generate MDX files with optional SVG examples."""
-    # Set up argument parser
     parser = argparse.ArgumentParser(
         description='Generate MDX documentation from CeTZ docs with optional SVG examples'
     )
@@ -253,35 +284,26 @@ def main():
     if args.json_file:
         json_file = Path(args.json_file)
         if not json_file.exists():
-            print(f"Error: {json_file} not found")
+            print(f"Error: {json_file} not found.")
             sys.exit(1)
         
         with open(json_file, 'r') as f:
             data = json.load(f)
     else:
-        # Try to read from stdin
+        # If no filename is provided: read from stdin
         try:
             data = json.loads(sys.stdin.read())
         except:
-            print("Error: Please provide docs.json as argument or via stdin")
+            print("Error: Could not read from stdin.")
             sys.exit(1)
     
-    # Create output directory for MDX files (always generated)
     mdx_dir = Path(args.output)
     mdx_dir.mkdir(exist_ok=True)
-    
-    # Create SVG output directory if SVG generation is requested
     svg_dir = None
     if args.svg:
         svg_dir = Path(args.svg)
         svg_dir.mkdir(exist_ok=True)
     
-    print(f"Using CeTZ package: {args.cetz}")
-    print(f"MDX output directory: {mdx_dir}")
-    if svg_dir:
-        print(f"SVG output directory: {svg_dir}")
-    
-    # Data is actually a list with a single dict element
     if isinstance(data, list) and len(data) > 0:
         data = data[0]
     
@@ -308,15 +330,15 @@ def main():
         # Process each function in the file
         for func_data in functions:
             signature = func_data.get("signature", {})
-            func_name = signature.get("name", "unknown")
+            func_name = signature.get("name", "unknown") if signature else "unknown"
             comment = func_data.get("comment", {})
             text = comment.get("text", "")
             
-            # Skip private functions (starting with _) for combined files
+            # Skip private functions for combined files
             if not func_name.startswith("_"):
                 function_names.append(func_name)
             
-            # Generate MDX documentation (always)
+            # Generate MDX files
             mdx_filename = f"{func_name}.mdx"
             mdx_path = current_mdx_dir / mdx_filename
             
@@ -325,13 +347,12 @@ def main():
             else:
                 print(f"[ERROR] Failed to generate MDX: {'/'.join(path_parts)}/{mdx_filename}")
             
-            # Generate SVG examples if requested
+            # Generate optional SVGs
             if svg_dir:
                 examples = extract_example_blocks(text)
                 
                 if examples:
                     for i, example_code in enumerate(examples):
-                        # Generate unique filename
                         svg_filename = f"{file_base}_{func_name}_{i}.svg"
                         svg_path = svg_dir / svg_filename
                         
@@ -355,11 +376,11 @@ def main():
             try:
                 with open(combined_path, 'w') as f:
                     f.write('\n'.join(combined_lines) + '\n')
-                print(f"[   OK] Generated combined: {'/'.join(path_parts)}/{combined_filename} ({len(function_names)} functions)")
+                print(f"[   OK] Generated combined: {'/'.join(path_parts)}/{combined_filename}")
             except Exception as e:
                 print(f"[ERROR] Failed to generate combined: {e}")
         else:
-            print(f"[INFO] No public functions found for {'/'.join(path_parts)}, skipping combined file")
+            print(f"[ INFO] No public functions found for {'/'.join(path_parts)}, skipping combined file")
 
 
 if __name__ == "__main__":

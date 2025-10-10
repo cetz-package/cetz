@@ -136,24 +136,39 @@
 }
 
 #let parse-docstring(string) = {
-  let argument-re = regex("-\s+(\.*[_a-zA-Z]+[-\w]*)(\s+\\(.*?\\))?(\s*=\s*.*?)?:(.*)")
-  let result-re = regex("->\s+([_a-zA-Z]+[-\w]*)\s+(.*)")
+  let argument-re = regex("-\s+(\.*[_a-zA-Z]+[-\w]*)\s+(\\(.*?\\))?(\s*=\s*.*?)?:(.*)")
+  let result-re = regex("->\s+\(?([_a-zA-Z]+[-\w]*)\)?\s*(.*)")
 
   let lines = string.split("\n")
 
   let text = ""
   let arguments = ()
+  let in-argument = false
   let result = ()
+  let in-result = false
 
   for line in lines {
     let result-m = line.match(result-re)
     let argument-m = line.match(argument-re)
-    if argument-m != none {
+
+    if in-result and not line.starts-with("   ") {
+      in-result = false
+    }
+
+    if in-argument and not line.starts-with("  ") {
+      in-argument = false
+    }
+
+    if in-result {
+      result.last().text += line
+    } else if in-argument {
+      arguments.last().text += line
+    } else if argument-m != none {
       let name = argument-m.captures.at(0).trim()
 
       let type-list = argument-m.captures.at(1)
       if type-list != none {
-        type-list = type-list.slice(2, -1).split(",").map(s => s.trim())
+        type-list = type-list.slice(1, -1).split(",").map(s => s.trim())
       }
 
       let default-value = argument-m.captures.at(2)
@@ -166,6 +181,7 @@
         description = description.trim()
       }
 
+      in-argument = true
       arguments.push((
         name: name,
         types: type-list,
@@ -173,6 +189,7 @@
         text: description,
       ))
     } else if result-m != none {
+      in-result = true
       result.push((
         type: result-m.captures.at(0).trim(),
         text: result-m.captures.at(1).trim()
