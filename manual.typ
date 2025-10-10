@@ -3,6 +3,8 @@
 #import "/docs/style.typ": show-type
 #import "/docs/typlodocus/extractor.typ"
 
+#set heading(numbering: "1.")
+
 #let modules = (
   // Canvas
   "src/canvas.typ",
@@ -172,7 +174,7 @@
       continue
     }
 
-    heading(function-name, level: level)
+    [#heading(function-name, level: level) #label(function-name)]
     show-annotated-signature(item.signature, item.comment)
     show-docstring(item.comment, level)
   }
