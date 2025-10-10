@@ -36,3 +36,4 @@ jobs:
           just install @local
           just install @preview
           just test
+          just docs
