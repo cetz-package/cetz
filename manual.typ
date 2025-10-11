@@ -49,7 +49,6 @@
 // Generate query metadata
 #metadata(docs) <metadata>
 
-
 /// Show a function signature annoted with types from the docstring
 #let show-annotated-signature(signature, comment) = block({
   set par(leading: 0.35em)
@@ -114,14 +113,15 @@
   })
 }
 
+#show raw.where(lang: "example"): it => render-example(it.text)
+#show raw.where(lang: "example-vertical"): it => render-example(it.text, vertical: true)
+#show regex("type:([\w-]+)"): it => show-type(it.text.replace("type:", ""))
+
 #let show-docstring(comment, level) = {
   let text = comment.text
   let arguments = comment.arguments
   let result = comment.result
 
-  show raw.where(lang: "example"): it => render-example(it.text)
-  show raw.where(lang: "example-vertical"): it => render-example(it.text, vertical: true)
-  show regex("type:([\w-]+)"): it => show-type(it.text.replace("type:", ""))
   set heading(outlined: false, offset: level)
 
   block([
@@ -163,7 +163,7 @@
 }
 
 /// Show a single module/file
-#let show-module(name, level: 2) = {
+#let show-module(name, level: 3) = {
   for item in docs.at(name) {
     if item.at("signature", default: none) == none {
       continue
@@ -184,86 +184,168 @@
 #columns(2, outline(depth: 4))
 #pagebreak()
 
-= Canvas
+= Overview
+CeTZ, ein Typst Zeichenpaket, is a drawing package for Typst.
+Its API is similar to Processing but with relative coordinates
+and anchors from TikZ. You also won't have to worry about
+accidentally drawing over other content as the canvas will
+automatically resize. And remember: up is positive!
+
+= Getting Started
+== Usage
+This is the minimal starting point in a `.typ` file:
+```typst
+#import "@preview/cetz:0.4.2"
+#cetz.canvas({
+  import cetz.draw: *
+  ...
+})
+```
+
+Note that draw functions are imported inside the scope of the canvas block.
+This is recommended as some draw functions override Typst's
+functions such as @line[`line`].
+
+== Examples
+From this point on only the code inside the
+canvas block will be shown in examples unless specified otherwise.
+
+```example
+circle((0, 0))
+line((1,-1), (2,1))
+```
+
+= Basics
+The following chapters are about the basic and core concepts of CeTZ.
+They are recommended reading for basic usage.
+
+== Custom Types
+Many CeTZ functions expect data in certain formats which we will call types.
+Note that these are actually made up of Typst primitives.
+
+/ type\:coordinate: A position on the canvas specified by any
+  coordinate system. See @coordinate-systems[Coordinate Systems].
+/ type\:number: Any of type:float, type:int or type:length
+/ type\:style: Represents options passed to draw functions that
+  affect how elements are drawn. They are normally taken in the form of
+  named arguments to the draw functions or sometimes can be a dictionary
+  for a single argument.
+
+== The Canvas
+The @canvas[canvas] function is what handles all of the logic and
+processing in order to produce drawings. It's usually called with
+a code block `{ ... }` as argument. The content of the curly braces is the
+body of the canvas. Import all the draw functions you need at the top of
+the body:
+```typst
+#cetz.canvas({
+  import cetz.draw: *
+})
+```
+
+You can now call the draw functions within the body and they'll
+produce some graphics! Typst will evaluate the code block and pass the
+result to the canvas function for rendering.
+
+The canvas does not have typical width and height parameters.
+Instead its size will grow and shrink to fit the drawn graphic.
+
+By default $1$ coordinate unit is $1 "cm"$, this can be changed by setting the
+`length:` parameter.
+
+== Styling <styling>
+You can style draw elements by passing the relevant named arguments
+to their draw functions. All elements that draw something have
+stroke and fill styling unless said otherwise.
+
+/ fill: type:color or type:none (default: `none`) \
+  How to fill the drawn element.
+/ stroke: type:none or type:auto or type:length or type:color or type:dictionary or type:stroke (default: `black`) \
+  How to stroke the border or the path of the draw element. #link("https://typst.app/docs/reference/visualize/line/#parameters-stroke")[See Typst's line documentation for more details.]
+
+== Coordinate Systems <coordinate-systems>
+
+= API
+== Canvas
 #show-module("src/canvas.typ")
 
-= Shapes
+== Shapes
 #show-module("src/draw/shapes.typ")
 
-= Styling
+== Styling
 #show-module("src/draw/styling.typ")
 
-= Grouping
+== Grouping
 #show-module("src/draw/grouping.typ")
 
-= Transformations
+== Transformations
 #show-module("src/draw/transformations.typ")
 
-= Projection
+== Projection
 #show-module("src/draw/projection.typ")
 
-= Utility
+== Utility
 #show-module("src/draw/util.typ")
 
-= Libraries
-== Angle
-#show-module("src/lib/angle.typ", level: 3)
+== Libraries
+=== Angle
+#show-module("src/lib/angle.typ", level: 4)
 
-== Tree
-#show-module("src/lib/tree.typ", level: 3)
+=== Tree
+#show-module("src/lib/tree.typ", level: 4)
 
-== Decorations
-=== Path Decorations
-#show-module("src/lib/decorations/path.typ", level: 4)
+=== Decorations
+==== Path Decorations
+#show-module("src/lib/decorations/path.typ", level: 5)
 
-=== Braces
-#show-module("src/lib/decorations/brace.typ", level: 4)
+==== Braces
+#show-module("src/lib/decorations/brace.typ", level: 5)
 
-== Palette
-#show-module("src/lib/palette.typ", level: 3)
+=== Palette
+#show-module("src/lib/palette.typ", level: 4)
 
-== Internals
-=== Coordinate
-#show-module("src/coordinate.typ", level: 4)
+=== Internals
+==== Coordinate
+#show-module("src/coordinate.typ", level: 5)
 
-=== Styles
-#show-module("src/styles.typ", level: 4)
+==== Styles
+#show-module("src/styles.typ", level: 5)
 
-=== Process
-#show-module("src/process.typ", level: 4)
+==== Process
+#show-module("src/process.typ", level: 5)
 
-=== Complex
-#show-module("src/complex.typ", level: 4)
+==== Complex
+#show-module("src/complex.typ", level: 5)
 
-=== Vector
-#show-module("src/vector.typ", level: 4)
+==== Vector
+#show-module("src/vector.typ", level: 5)
 
-=== Matrix
-#show-module("src/matrix.typ", level: 4)
+==== Matrix
+#show-module("src/matrix.typ", level: 5)
 
-=== Drawable
-#show-module("src/drawable.typ", level: 4)
+==== Drawable
+#show-module("src/drawable.typ", level: 5)
 
-=== Anchor
-#show-module("src/anchor.typ", level: 4)
+==== Anchor
+#show-module("src/anchor.typ", level: 5)
 
-=== Mark
-#show-module("src/mark.typ", level: 4)
+==== Mark
+#show-module("src/mark.typ", level: 5)
 
-=== Bezier
-#show-module("src/bezier.typ", level: 4)
+==== Bezier
+#show-module("src/bezier.typ", level: 5)
 
-=== AABB
-#show-module("src/aabb.typ", level: 4)
+==== AABB
+#show-module("src/aabb.typ", level: 5)
 
-=== Hobby
-#show-module("src/hobby.typ", level: 4)
+==== Hobby
+#show-module("src/hobby.typ", level: 5)
 
-=== Intersection
-#show-module("src/hobby.typ", level: 4)
+==== Intersection
+#show-module("src/hobby.typ", level: 5)
 
-=== Path-Util
-#show-module("src/path-util.typ", level: 4)
+==== Path-Util
+#show-module("src/path-util.typ", level: 5)
 
-=== Util
-#show-module("src/util.typ", level: 4)
+==== Util
+#show-module("src/util.typ", level: 5)
