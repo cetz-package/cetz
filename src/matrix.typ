@@ -65,7 +65,7 @@
 /// - vec (vector): The column data to insert.
 /// -> matrix
 #let set-column(mat, n, vec) = {
-  assert(vec.len() == matrix.len())
+  assert(vec.len() == mat.len())
   for m in range(0, mat.len()) {
     mat.at(m).at(n) = vec.at(n)
   }
