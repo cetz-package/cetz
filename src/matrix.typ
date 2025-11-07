@@ -198,7 +198,7 @@
 /// Returns a $4 \times 4$ rotation matrix - yaw-pitch-roll
 ///
 /// Calculates the product of the three rotation matrices
-/// $R = Rz(a) Ry(b) Rx(c)$
+/// $R = R_z(a) R_y(b) R_x(c)$
 ///
 /// - a (angle): Yaw
 /// - b (angle): Pitch
@@ -214,7 +214,7 @@
 /// Returns a $4 \times 4$ rotation matrix - euler angles
 ///
 /// Calculates the product of the three rotation matrices
-/// $R = Rz(z) Ry(y) Rx(x)$
+/// $R = R_z(z) R_y(y) R_x(x)$
 ///
 /// - x (angle): Rotation about x
 /// - y (angle): Rotation about y
@@ -276,7 +276,7 @@
 }
 
 // Multiply matrix with vector
-/// Multiplies an $m \times n$ matrix with an $m$th dimensional vector where $m \lte 4$. Prefer the use of `mul4x4-vec3` when possible as it does not use loops.
+/// Multiplies an $m \times n$ matrix with an $m$th dimensional vector where $m \le 4$. Prefer the use of `mul4x4-vec3` when possible as it does not use loops.
 /// - mat (matrix): The matrix to multiply
 /// - vec (vector): The vector to multiply
 /// -> vector
