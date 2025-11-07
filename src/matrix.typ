@@ -17,9 +17,10 @@
 
 #let pi = calc.pi
 
-/// Create a (square) identity matrix with dimensions $"size" times "size"$
+/// Create a (square) identity matrix with dimensions
+/// $mono("size") times mono("size")$.
 ///
-/// - size (int): Size of the matrix
+/// - size (int): Dimensionality of the matrix.
 /// -> matrix
 #let ident(size) = {
   assert(size >= 1, message: "Invalid dimension")
@@ -29,10 +30,9 @@
   }))
 }
 
-/// Create a square matrix with the diagonal set to the
-/// given values
+/// Create a square matrix with the diagonal set to the given values.
 ///
-/// - ..diag (float): Diagonal values
+/// - ..diag (float): Values in the diagonal.
 /// -> matrix
 #let diag(..diag) = {
   assert(diag.pos().len() >= 1, message: "Invalid dimension")
@@ -44,25 +44,28 @@
   }))
 }
 
-/// Returns the dimension of the given matrix as `(m, n)`
-/// - m (matrix): The matrix
+/// Returns the $m times n$ dimension of the given matrix as `(m, n)`.
+///
+/// - m (matrix): The matrix to return the dimensions from.
 /// -> array
 #let dim(m) = {
   return (m.len(), if m.len() > 0 {m.at(0).len()} else {0})
 }
 
-/// Returns the nth column of a matrix as a {{vector}}
-/// - mat (matrix): Input matrix
-/// - n (int): The column's index
+/// Returns the `n`-th column of a matrix as a {{vector}}.
+///
+/// - mat (matrix): Input matrix.
+/// - n (int): The column index.
 /// -> vector
 #let column(mat, n) = {
   range(0, mat.len()).map(m => mat.at(m).at(n))
 }
 
-/// Replaces the nth column of a matrix with the given vector.
+/// Replaces the `n`th column of a matrix with the given {{vector}}.
+///
 /// - mat (matrix): Input matrix.
-/// - n (int): The index of the column to replace
-/// - vec (vector): The column data to insert.
+/// - n (int): The index of the column to replace.
+/// - vec (vector): The column data to replace with.
 /// -> matrix
 #let set-column(mat, n, vec) = {
   assert(vec.len() == mat.len())
@@ -72,17 +75,19 @@
 }
 
 /// Rounds each value in the matrix to a precision.
-/// - mat (matrix): Input matrix
-/// - precision (int) = 8: Rounding precision (digits)
+///
+/// - mat (matrix): Input matrix.
+/// - precision (int) = 8: Rounding precision (digits.)
 /// -> matrix
 #let round(mat, precision: precision) = {
   mat.map(r => r.map(v => _round(v, digits: precision)))
 }
 
-/// Returns a $4 times 4$ translation matrix
-/// - x (float): The translation in the $x$ direction.
-/// - y (float): The translation in the $y$ direction.
-/// - z (float): The translation in the $x$ direction.
+/// Returns a $4 times 4$ translation matrix.
+///
+/// - x (float): Translation displacement in the $x$-direction.
+/// - y (float): Translation displacement in the $y$-direction.
+/// - z (float): Translation displacement in the $z$-direction.
 /// -> matrix
 #let transform-translate(x, y, z) = {
   ((1, 0, 0, x),
@@ -91,8 +96,9 @@
    (0, 0, 0, 1))
 }
 
-/// Returns a $4 times 4$ x-shear matrix
-/// - factor (float): The shear in the $x$ direction.
+/// Returns a $4 times 4$ $x$-shear matrix.
+///
+/// - factor (float): Shear factor in the $x$-direction.
 /// -> matrix
 #let transform-shear-x(factor) = {
   ((1, factor, 0, 0),
@@ -102,8 +108,9 @@
 }
 
 
-/// Returns a $4 times 4$ z-shear matrix
-/// - factor (float): The shear in the $z$ direction.
+/// Returns a $4 times 4$ $z$-shear matrix.
+///
+/// - factor (float): Shear factor in the $z$-direction.
 /// -> matrix
 #let transform-shear-z(factor) = {
   ((1, 0, factor, 0),
@@ -112,8 +119,14 @@
    (0, 0, 0, 1))
 }
 
-/// Returns a $4 times 4$ scale matrix
-/// - f (float,array,dictionary): The scale factor(s) of the matrix. An {{array}} of at least 3 {{float}}s sets the x, y and z scale factors. A {{dictionary}} sets the scale in the direction of the corresponding x, y and z keys. A single {{float}} sets the scale for all directions.
+/// Returns a $4 times 4$ scale matrix.
+///
+/// - f (float, array, dictionary): The scale factor(s.)
+///   An {{array}} of at least 3 {{float}}s sets the $x$, $y$ and $z$ scale
+///   factors.
+///   A {{dictionary}} sets scale factors in the direction of the corresponding
+///   `x`, `y` and `z` keys.
+///   A single {{float}} sets the scale factor in all directions.
 /// -> matrix
 #let transform-scale(f) = {
   let (x, y, z) = if type(f) == array {
@@ -132,9 +145,11 @@
    (0, 0, 0, 1))
 }
 
-/// Returns a $4 times 4$ rotation xyz matrix for a direction and up vector
-/// - dir (vector): idk
-/// - up (vector): idk
+/// Returns a $4 times 4$ rotation matrix on the $x, y, z$ axes provided a
+/// `direction` and `up` {{vector}}s.
+///
+/// - dir (vector):
+/// - up (vector):
 /// -> matrix
 #let transform-rotate-dir(dir, up) = {
   dir = vector.norm(dir)
@@ -150,9 +165,9 @@
    (0,   0,  0, 1))
 }
 
-// Return 4x4 rotate x matrix
-/// Returns a $4 times 4$ $x$ rotation matrix
-/// - angle (angle): The angle to rotate around the $x$ axis
+/// Returns a $4 times 4$ rotation matrix on the $x$-axis.
+///
+/// - angle (angle): The angle to rotate around the $x$-axis.
 /// -> matrix
 #let transform-rotate-x(angle) = {
   ((1, 0, 0, 0),
@@ -161,9 +176,9 @@
    (0, 0, 0, 1))
 }
 
-// Return 4x4 rotate y matrix
-/// Returns a $4 times 4$ $y$ rotation matrix
-/// - angle (angle): The angle to rotate around the $y$ axis
+/// Returns a $4 times 4$ rotation matrix on the $y$-axis.
+///
+/// - angle (angle): The angle to rotate around the $y$-axis.
 /// -> matrix
 #let transform-rotate-y(angle) = {
   ((cos(angle), 0, -sin(angle), 0),
@@ -172,9 +187,9 @@
    (0, 0, 0, 1))
 }
 
-// Return 4x4 rotate z matrix
-/// Returns a $4 times 4$ $z$ rotation matrix
-/// - angle (angle): The angle to rotate around the $z$ axis
+/// Returns a $4 times 4$ rotation matrix on the $z$-axis.
+///
+/// - angle (angle): The angle to rotate around the $z$-axis.
 /// -> matrix
 #let transform-rotate-z(angle) = {
   ((cos(angle), -sin(angle), 0, 0),
@@ -183,10 +198,10 @@
    (0, 0, 0, 1))
 }
 
-// Return 4x4 rotate xz matrix
-/// Returns a $4 times 4$ $x z$ rotation matrix
-/// - x (angle): The angle to rotate around the $x$ axis
-/// - z (angle): The angle to rotate around the $z$ axis
+/// Returns a $4 times 4$ $x, z$-rotation matrix.
+///
+/// - x (angle): The angle to rotate around the $x$-axis.
+/// - z (angle): The angle to rotate around the $z$-axis.
 /// -> matrix
 #let transform-rotate-xz(x, z) = {
   ((cos(z), sin(z), 0, 0),
@@ -195,11 +210,14 @@
    (0, 0, 0, 1))
 }
 
-/// Returns a $4 times 4$ rotation matrix - yaw-pitch-roll
+/// Returns a $4 times 4$ rotation matrix - yaw-pitch-roll.
 ///
-/// - a (angle): Yaw
-/// - b (angle): Pitch
-/// - c (angle): Roll
+/// Calculates the product of the three rotation matrices
+/// $R = R_z(mono(a)) R_y(mono(b)) R_x(mono(c))$.
+///
+/// - a (angle): Yaw.
+/// - b (angle): Pitch.
+/// - c (angle): Roll.
 /// -> matrix
 #let transform-rotate-ypr(a, b, c) = {
   ((cos(a)*cos(b), cos(a)*sin(b)*sin(c) - sin(a)*cos(c), cos(a)*sin(b)*cos(c) + sin(a)*sin(c), 0),
@@ -208,14 +226,14 @@
    (0,0,0,1))
 }
 
-/// Returns a $4 times 4$ rotation matrix - euler angles
+/// Returns a $4 times 4$ rotation matrix - euler angles.
 ///
 /// Calculates the product of the three rotation matrices
-/// $R = R_z(z) R_y(y) R_x(x)$
+/// $R = R_z(mono(z)) R_y(mono(y)) R_x(mono(x))$.
 ///
-/// - x (angle): Rotation about x
-/// - y (angle): Rotation about y
-/// - z (angle): Rotation about z
+/// - x (angle): Rotation about $x$.
+/// - y (angle): Rotation about $y$.
+/// - z (angle): Rotation about $z$.
 /// -> matrix
 #let transform-rotate-xyz(x, y, z) = {
   ((cos(y)*cos(z), sin(x)*sin(y)*cos(z) - cos(x)*sin(z), cos(x)*sin(y)*cos(z) + sin(x)*sin(z), 0),
@@ -225,6 +243,7 @@
 }
 
 /// Multiplies matrices on top of each other.
+///
 /// - ..matrices (matrix): The matrices to multiply from left to right.
 /// -> matrix
 #let mul-mat(..matrices) = {
@@ -248,14 +267,13 @@
   return out
 }
 
-// Multiply 4x4 matrix with vector of size 3 or 4.
-// The value of vec_4 defaults to w (1).
-//
-// The resulting vector is of dimension 3
-/// Multiplies a $4 times 4$ matrix with a vector of size 3 or 4. The resulting is three dimensional
-/// - mat (matrix): The matrix to multiply
-/// - vec (vector): The vector to multiply
-/// - w (float): The default value for the fourth element of the vector if it is three dimensional.
+/// Multiplies a $4 times 4$ matrix with a {{vector}} of size $3$ or $4$. The
+/// result is a three--dimensional {{vector}}.
+///
+/// - mat (matrix): The matrix to multiply.
+/// - vec (vector): The vector to multiply.
+/// - w (float): The default value for the fourth element of the vector if it is
+///   three--dimensional.
 /// -> vector
 #let mul4x4-vec3(mat, vec, w: 1) = {
   assert(vec.len() <= 4)
@@ -272,10 +290,13 @@
     c1 * x + c2 * y + c3 * z + c4 * w)
 }
 
-// Multiply matrix with vector
-/// Multiplies an $m times n$ matrix with an $m$th dimensional vector where $m <= 4$. Prefer the use of `mul4x4-vec3` when possible as it does not use loops.
-/// - mat (matrix): The matrix to multiply
-/// - vec (vector): The vector to multiply
+/// Multiplies an $m times n$ matrix with an $m$-th dimensional {{vector}} where
+/// $m <= 4$.
+///
+/// Prefer the use of `mul4x4-vec3` when possible as it does not use loops.
+///
+/// - mat (matrix): The matrix to multiply.
+/// - vec (vector): The vector to multiply.
 /// -> vector
 #let mul-vec(mat, vec) = {
   let m = mat.len()
@@ -291,7 +312,8 @@
   return new
 }
 
-/// Calculates the inverse matrix of any size.
+/// Calculates the inverse matrix of a `matrix` any size.
+///
 /// - matrix (matrix): The matrix to inverse.
 /// -> matrix
 #let inverse(matrix) = {
@@ -309,7 +331,7 @@
       if matrix.at(i).at(j) != 0 {
         (matrix.at(j), matrix.at(i)) = (matrix.at(i), matrix.at(j))
         (inverted.at(j), inverted.at(i)) = (inverted.at(i), inverted.at(j))
-        
+
         p = 1 / matrix.at(j).at(j)
         for k in N {
           matrix.at(j).at(k) *= p
@@ -332,11 +354,11 @@
   return inverted
 }
 
-/// Swaps the a-th column with the b-th column.
+/// Swaps the `a`-th column with the `b`-th column.
 ///
-/// - mat (matrix): Matrix
-/// - a (int): The index of column a.
-/// - b (int): The index of column b.
+/// - mat (matrix): Matrix to swap columns from.
+/// - a (int): The index of the column to be swapped.
+/// - b (int): The index of the column to swap with.
 /// -> matrix
 #let swap-cols(mat, a, b) = {
   let new = mat
@@ -347,8 +369,9 @@
   return new
 }
 
-/// Translates a matrix by a vector.
-/// - mat (matrix): The matrix to translate
+/// Translates a {{matrix}} by a {{vector}}.
+///
+/// - mat (matrix): The matrix to translate.
 /// - vec (vector): The vector to translate by.
 #let translate(mat, vec) = {
   return mul-mat(
