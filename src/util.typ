@@ -11,7 +11,7 @@
 /// Compare two floating point numbers
 /// - a (float): First number
 /// - b (float): Second number
-/// - epsilon: Maximum distance between both numbers
+/// - epsilon (float): Maximum distance between both numbers
 /// -> bool
 #let float-eq(a, b, epsilon: float-epsilon) = {
   return calc.abs(a - b) <= epsilon
