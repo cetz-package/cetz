@@ -11,7 +11,7 @@
 /// Compare two floating point numbers
 /// - a (float): First number
 /// - b (float): Second number
-/// - epsilon: Maximum distance between both numbers
+/// - epsilon (float): Maximum distance between both numbers
 /// -> bool
 #let float-eq(a, b, epsilon: float-epsilon) = {
   return calc.abs(a - b) <= epsilon
@@ -19,9 +19,11 @@
 
 /// Multiplies vectors by a transformation matrix. If multiple vectors are given they are returned as an array, if only one vector is given only one will be returned, if a dictionary is given they will be returned in the dictionary with the same keys.
 ///
-/// - transform (matrix,function): The $4 \times 4$ transformation matrix or a function that accepts and returns a vector.
+/// - transform (matrix,function): The $4 times 4$ transformation matrix or a function that accepts and returns a vector.
 /// - ..vecs (vector): Vectors to get transformed. Only the positional part of the sink is used. A dictionary of vectors can also be passed and all will be transformed.
-/// -> vector,array,dictionary
+/// -> vector
+/// -> array
+/// -> dictionary
 #let apply-transform(transform, ..vecs) = {
   let t = if type(transform) != function {
     matrix.mul4x4-vec3.with(transform)
@@ -179,7 +181,7 @@
   return if type(radius) == array {radius} else {(radius, radius)}
 }
 
-/// Finds the minimum of a set of values while ignoring {{none}} values.
+/// Finds the minimum of a set of values while ignoring `none` values.
 /// - a (float,none):
 /// -> float
 #let min(..a) = {
@@ -187,7 +189,7 @@
   return calc.min(..a)
 }
 
-/// Finds the maximum of a set of values while ignoring {{none}} values.
+/// Finds the maximum of a set of values while ignoring `none` values.
 /// - ..a (float,none):
 /// -> float
 #let max(..a) = {
@@ -228,13 +230,12 @@
 ///
 ///
 /// Type of `padding`:
-/// - {{none}}: All sides padded by 0
-/// - {{number}}: All sides are padded by the same value
-/// - {{array}}: CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`
-/// - {{dictionary}}: Converts a Typst padding dictionary (top, left, bottom, right, x, y, rest) to a dictionary containing top, left, bottom and right.
+/// / `none`: All sides padded by 0
+/// / `number`: All sides are padded by the same value
+/// / `array`: CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`
+/// / `dictionary`: Converts a Typst padding dictionary (top, left, bottom, right, x, y, rest) to a dictionary containing top, left, bottom and right.
 ///
 /// - padding (none, number, array, dictionary): Padding specification
-///
 /// -> dictionary
 #let as-padding-dict(padding) = {
   if padding == none {
@@ -275,8 +276,7 @@
 ///
 /// - ctx (context): The current canvas context object
 /// - radii (none, number, dictionary): The radius specification. A {{number}} will cause all corners to have the same radius. An {{array}} with two items will cause all corners to have the same rx and ry radius. A {{dictionary}} can be given where the key specifies the corner and the value specifies the radius. The value can be either {{number}} for a circle radius or {{array}} for an x and y radius. The keys `north`, `south`, `east` and `west` targets both corners in that cardinal direction e.g. `south` sets the south west and south east corners. The keys `north-east`, `north-west`, `south-east` and `south-west` targets the corresponding corner. The key `rest` targets all other corners that have not been target by other keys.
-/// - size (???): I'm not sure what this does.
-///
+/// - size (none, array): Tuple of type:number used to clamp the corner radii
 /// -> dictionary
 #let as-corner-radius-dict(ctx, radii, size) = {
   if radii == none or radii == 0 {
@@ -319,11 +319,13 @@
   radii = radii.map(t => t.map(resolve-number.with(ctx)))
 
   // Clamp radii to half the size
-  radii = radii.map(t => t.enumerate().map(((i, v)) => {
-    calc.max(0, calc.min(if type(v) == ratio {
-        v * size.at(i) / 100%
-      } else { v }, size.at(i) / 2))
-  }))
+  if size != none {
+    radii = radii.map(t => t.enumerate().map(((i, v)) => {
+      calc.max(0, calc.min(if type(v) == ratio {
+          v * size.at(i) / 100%
+        } else { v }, size.at(i) / 2))
+    }))
+  }
 
   let (nw, ne, sw, se) = radii
   return (

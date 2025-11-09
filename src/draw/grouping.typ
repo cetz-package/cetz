@@ -18,7 +18,7 @@
 ///
 /// Hidden elements are not drawn to the canvas, are ignored when calculating bounding boxes and discarded by [merge-path](../shapes/merge-path). All other behaviours remain the same as a non-hidden element.
 ///
-/// ```typc example
+/// ```example
 /// set-style(radius: .5)
 /// intersections("i", {
 ///   circle((0,0), name: "a")
@@ -51,7 +51,7 @@
 ///
 /// Floating elements are drawn to the canvas but are ignored when calculating bouding boxes. All other behaviours remain the same.
 ///
-/// ```typc example
+/// ```example
 /// group(name: "g", {
 ///   content((1,0), [Normal])
 ///   content((0,1), [Normal])
@@ -81,7 +81,7 @@
 ///
 /// All resulting anchors will be named numerically, starting at `0`. i.e., a call `intersections("a", ...)` will generate the anchors `"a.0"`, `"a.1"`, `"a.2"` to `"a.n"`, depending of the number of intersections.
 ///
-/// ```typc example
+/// ```example
 /// intersections("i", {
 ///   circle((0, 0))
 ///   bezier((0,0), (3,0), (1,-1), (2,1))
@@ -95,7 +95,7 @@
 ///
 /// You can also use named elements:
 ///
-/// ```typc example
+/// ```example
 /// circle((0,0), name: "a")
 /// rect((0,0), (1,1), name: "b")
 /// intersections("i", "a", "b")
@@ -200,7 +200,7 @@
 
 /// Groups one or more elements together. This element acts as a scope, all state changes such as transformations and styling only affect the elements in the group. Elements after the group are not affected by the changes inside the group.
 ///
-/// ```typc example
+/// ```example
 /// // Create group
 /// group({
 ///   stroke(5pt)
@@ -215,12 +215,12 @@
 /// - name (none, str):
 /// - ..style (style):
 ///
-/// ## Styling
+/// == Styling
 /// *Root:* `group`
 ///
 /// - padding (none, number, array, dictionary) = none: How much padding to add around the group's bounding box. `none` applies no padding. A number applies padding to all sides equally. A dictionary applies padding following Typst's `pad` function: https://typst.app/docs/reference/layout/pad/. An array follows CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`.
 ///
-/// ## Anchors
+/// == Anchors
 /// Supports border and path anchors of the axis aligned bounding box of all the child elements of the group.
 ///
 /// You can add custom named anchors to the group by using the [anchor](./anchor) element while in the scope of said group, see [anchor](./anchor) for more details.
@@ -228,7 +228,7 @@
 /// The default anchor is `"center"` but this can be overridden by using [anchor](./anchor) to place a new anchor called `"default"`.
 ///
 /// When using named elements within a group, you can access the element's anchors outside of the group by using the implicit anchor coordinate. e.g. `"a.b.north"`
-/// ```typc example
+/// ```example
 /// group(name: "a", {
 ///   circle((), name: "b")
 /// })
@@ -354,7 +354,7 @@
 
 /// Creates a new anchor for the current group. The new anchor will be accessible from inside the group by using just the anchor's name as a coordinate.
 ///
-/// ```typc example
+/// ```example
 /// // Inside a group
 /// group(name: "g", {
 ///   circle((0,0))
@@ -363,8 +363,8 @@
 /// })
 /// circle("g.x", radius: .1)
 /// ```
-
-/// ```typc example
+///
+/// ```example
 /// // At the root scope
 /// anchor("x", (1, 1))
 /// // ...
@@ -439,7 +439,7 @@
 /// An advanced element that allows you to modify the current canvas {{context}}. 
 /// Note: The transformation matrix (`transform`) is rounded after calling the `callback` function and therefore might be not exactly the matrix specified. This is due to rounding errors and should not cause any problems.
 ///
-/// ```typc example
+/// ```example
 /// // Setting a custom transformation matrix
 /// set-ctx(ctx => {
 ///   let mat = ((1, 0, .5, 0),
@@ -475,7 +475,7 @@
 
 /// An advanced element that allows you to read the current {{context}} through a callback and return {{element}}s based on it.
 ///
-/// ```typc example
+/// ```example
 /// // Print the transformation matrix
 /// get-ctx(ctx => {
 ///   content((), [#repr(ctx.transform)])
@@ -497,7 +497,7 @@
 
 /// Iterates through all named anchors of an element and calls a callback for each one.
 ///
-/// ```typc example
+/// ```example
 /// // Label nodes anchors
 /// rect((0, 0), (2,2), name: "my-rect")
 /// for-each-anchor("my-rect", exclude: ("start", "mid", "end"), (name) => {
@@ -528,7 +528,7 @@
 ///
 /// Layers can be used to draw behind or in front of other elements, even if the other elements were created before or after. An example would be drawing a background behind a text, but using the text's calculated bounding box for positioning the background.
 ///
-/// ```typc example
+/// ```example
 /// // Draw something behind text
 /// set-style(stroke: none)
 /// content((0, 0), [This is an example.], name: "text")

@@ -165,7 +165,8 @@
 /// - reverse (bool): Travel from end to start
 /// - ignore-subpaths (bool): If false consider the whole path, including sub-paths
 ///
-/// -> none,dictionary Dictionary with the following keys:
+/// -> none
+/// -> dictionary Dictionary with the following keys:
 ///    - point (vector) The point on the path
 ///    - previous-point (vector) Point previous to point
 ///    - direction (vector) Normalized direction vector
@@ -281,7 +282,7 @@
 /// - args (array): List of points
 /// - distance (float): Distance
 /// - reverse (bool): If true, start from the end
-/// -> (origin, points)
+/// -> array Array of the form (origin, points)
 #let _shorten-line(origin, previous, args, distance, reverse: false) = {
   let pt = args.last()
   let length = vector.dist(previous, pt)
@@ -311,7 +312,7 @@
 /// - args (array): List of points
 /// - distance (float): Distance
 /// - reverse (bool): If true, start from the end
-/// -> (origin, points)
+/// -> array Array of the form (origin, points)
 #let _shorten-cubic(origin, previous, args, distance, reverse: false, mode: "CURVED") = {
   let shorten-func = if mode == "CURVED" {
     bezier.cubic-shorten

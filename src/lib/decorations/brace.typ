@@ -41,7 +41,7 @@
 
 /// Draw a curly brace between two points.
 ///
-/// ```typc example
+/// ```example
 /// cetz.decorations.brace((0,1),(2,1))
 /// cetz.decorations.brace((0,0),(2,0), outer-inset: 0)
 /// ```
@@ -51,8 +51,7 @@
 /// - name (string, none): Element name used for querying anchors
 /// - ..style (style): Style key-value pairs
 ///
-/// ## Styling
-///
+/// == Styling
 /// *Root:* `brace`
 /// - amplitude (number) = 0.25cm: Sets the height of the brace, from its baseline to its middle tip.
 /// - thickness (number,ratio) = 0.015cm: Thickness of tapered braces (if ratio, relative to half the amplitude).
@@ -68,12 +67,12 @@
 ///
 /// Use the `fill` style for tapered braces and set `stroke` to none.
 ///
-/// ## Anchors
-/// - **start** Where the brace starts, same as the `start` parameter.
-/// - **end** Where the brace end, same as the `end` parameter.
-/// - **spike** Point of the spike, halfway between `start` and `end` and shifted by `amplitude` towards the pointing direction.
-/// - **content** Point to place content/text at, in front of the spike.
-/// - **center** Center of the enclosing rectangle.
+/// == Anchors
+/// / start: Where the brace starts, same as the `start` parameter.
+/// / end: Where the brace end, same as the `end` parameter.
+/// / spike: Point of the spike, halfway between `start` and `end` and shifted by `amplitude` towards the pointing direction.
+/// / content: Point to place content/text at, in front of the spike.
+/// / center: Center of the enclosing rectangle.
 #let brace(start, end, ..style, name: none) = {
   import draw: line, bezier, merge-path, scope, scale, translate, anchor, group
 
@@ -204,7 +203,7 @@
 
 /// Draw a flat curly brace between two points.
 ///
-/// ```typc example
+/// ```example
 /// cetz.decorations.flat-brace((0,1),(2,1))
 ///
 /// cetz.decorations.flat-brace((0,0),(2,0),
@@ -225,7 +224,7 @@
 /// - debug (bool):
 /// - ..style (style): Style key-value pairs
 ///
-/// ## Styling
+/// == Styling
 ///
 /// *Root:* `flat-brace`
 /// - amplitude (number) = 0.3: Determines how much the brace rises above the base line.
@@ -233,12 +232,12 @@
 /// - curves (number, auto, array) = auto: Curviness factor of the brace, a factor of 0 means no curves.
 /// - outer-curves (number, auto, array) = auto: Curviness factor of the outer curves of the brace. A factor of 0 means no curves.
 ///
-/// ## Anchors
-/// - **start** Where the brace starts, same as the `start` parameter.
-/// - **end** Where the brace end, same as the `end` parameter.
-/// - **spike** Point of the spike's top.
-/// - **content** Point to place content/text at, in front of the spike.
-/// - **center**  Center of the enclosing rectangle.
+/// == Anchors
+/// / start: Where the brace starts, same as the `start` parameter.
+/// / end: Where the brace end, same as the `end` parameter.
+/// / spike: Point of the spike's top.
+/// / content: Point to place content/text at, in front of the spike.
+/// / center:  Center of the enclosing rectangle.
 #let flat-brace(
   start,
   end,

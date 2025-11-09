@@ -47,7 +47,7 @@
 
 /// Rotates the transformation matrix on the z-axis by a given angle or other axes when specified.
 ///
-/// ```typc example
+/// ```example
 /// // Rotate on z-axis
 /// rotate(z: 45deg)
 /// rect((-1,-1), (1,1))
@@ -93,7 +93,7 @@
 
 /// Translates the transformation matrix by the given vector or dictionary.
 ///
-/// ```typc example
+/// ```example
 /// // Outer rect
 /// rect((0, 0), (2, 2))
 /// // Inner rect
@@ -140,7 +140,7 @@
 
 /// Scales the transformation matrix by the given factor(s).
 ///
-/// ```typc example
+/// ```example
 /// // Scale the y-axis
 /// scale(y: 50%)
 /// circle((0,0))
@@ -186,7 +186,7 @@
 
 /// Sets the given position as the new origin `(0, 0, 0)`
 ///
-/// ```typc example
+/// ```example
 /// // Outer rect
 /// rect((0,0), (2,2), name: "r")
 /// // Move origin to top edge
@@ -215,7 +215,7 @@
 /// It is also used as base for relative coordinates if not specified
 /// otherwise.
 ///
-/// ```typc example
+/// ```example
 /// circle((), radius: .25)
 /// move-to((1,0))
 /// circle((), radius: .15)
@@ -231,7 +231,7 @@
 
 /// Span viewport between two coordinates and set-up scaling and translation
 ///
-/// ```typc example
+/// ```example
 /// rect((0,0), (2,2))
 /// set-viewport((0,0), (2,2), bounds: (10, 10))
 /// circle((5,5))

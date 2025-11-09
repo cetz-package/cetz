@@ -34,7 +34,8 @@
 /// - y-dist (number): The furthest distance the test line should go in the y direction.
 /// - drawables (drawables): Drawables to test for an intersection against. Ideally should be of type path but all others are ignored.
 /// - angle (angle): The angle to check for a border anchor at.
-/// -> vector,none
+/// -> none
+/// -> vector
 #let border(center, x-dist, y-dist, drawables, angle) = {
   x-dist += util.float-epsilon
   y-dist += util.float-epsilon

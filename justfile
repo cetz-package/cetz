@@ -9,7 +9,7 @@ build:
     --target wasm32-unknown-unknown; \
   cp target/wasm32-unknown-unknown/release/cetz_core.wasm cetz_core.wasm
 
-package target *options:
+package target *options: build
   ./common/scripts/package "{{target}}" {{options}}
 
 install target="@local": build
@@ -18,8 +18,12 @@ install target="@local": build
 test *filter: build
   tt run {{filter}}
 
-update-test *filter:
+update-test *filter: build
   tt update {{filter}}
 
-gallery:
+gallery: build
   for f in "{{gallery_dir}}"/*.typ; do typst c "$f" "${f/typ/png}"; done
+
+docs: build
+  typst compile --root . manual.typ
+  typst query --root . manual.typ "<metadata>" --field value | python ./docs/genhtml.py -o ./docs/_generated
