@@ -28,9 +28,7 @@
 /// circle((0,2), (rel: (1,1)))
 /// ```
 ///
-/// - ..points-style (coordinate, style): The position to place the circle on.
-///   If given two coordinates, the distance between them is used as radius.
-///   If given a single coordinate, the radius can be set via the `radius` (style)
+/// - ..points-style (coordinate, style): The position to place the circle on. If given two coordinates, the distance between them is used as radius. If given a single coordinate, the radius can be set via the `radius` (style)
 ///   argument.
 /// - name (none,str):
 /// - anchor (none, str):
@@ -41,7 +39,7 @@
 /// - radius (number, array) = 1: A number that defines the size of the circle's radius. Can also be set to a tuple of two numbers to define the radii of an ellipse, the first number is the `x` radius and the second is the `y` radius.
 ///
 /// ### Anchors
-///   Supports border and path anchors. The `"center"` anchor is the default.
+/// Supports border and path anchors. The `"center"` anchor is the default.
 ///
 #let circle(..points-style, name: none, anchor: none) = {
   let style = points-style.named()
@@ -109,9 +107,9 @@
 /// circle("c.center", radius: .05, fill: red)
 /// ```
 ///
-/// - a (coordinate): Coordinate a.
-/// - b (coordinate): Coordinate b.
-/// - c (coordinate): Coordinate c.
+/// - a (coordinate): Coordinate `a`.
+/// - b (coordinate): Coordinate `b`.
+/// - c (coordinate): Coordinate `c`.
 /// - name (none,str):
 /// - anchor (none,str):
 /// - ..style (style):
@@ -119,13 +117,13 @@
 /// ### Styling
 /// *Root*: `circle`
 ///
-///   `circle-through` has the same styling as [circle](./circle#styling) except for `radius` as the circle's radius is calculated by the given coordinates.
+/// `circle-through` has the same styling as [circle](./circle#styling) except for `radius` as the circle's radius is calculated by the given coordinates.
 ///
 /// ### Anchors
 /// Supports the same anchors as [circle](./circle#anchors) as well as:
-/// - **a**: Coordinate a
-/// - **b**: Coordinate b
-/// - **c**: Coordinate c
+/// - **a**: Coordinate `a`
+/// - **b**: Coordinate `b`
+/// - **c**: Coordinate `c`
 #let circle-through(a, b, c, name: none, anchor: none, ..style) = {
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
   style = style.named()
@@ -185,23 +183,23 @@
 /// ```
 ///
 /// Note that two of the three angle arguments (`start`, `stop` and `delta`) must be set.
-/// The current position `()` gets updated to the arc's end coordinate (anchor `arc-end`).
+/// The current position `()` gets updated to the arc's end coordinate (anchor `"arc-end"`).
 ///
 /// - position (coordinate): Position to place the arc at.
 /// - start (auto,angle): The angle at which the arc should start. Remember that `0deg` points directly towards the right and `90deg` points up.
 /// - stop (auto,angle): The angle at which the arc should stop.
 /// - delta (auto,angle): The change in angle away start or stop.
 /// - name (none,str):
-/// - anchor (none, str):
+/// - anchor (none,str):
 /// - ..style (style):
 ///
-/// ## Styling
+/// ### Styling
 /// *Root*: `arc`\
-/// - radius (number, array) = 1: The radius of the arc. An elliptical arc can be created by passing a tuple of numbers where the first element is the x radius and the second element is the y radius.
+/// - radius (number,array) = 1: The radius of the arc. An elliptical arc can be created by passing a tuple of numbers where the first element is the x radius and the second element is the y radius.
 /// - mode (str) = "OPEN": The options are: `"OPEN"` no additional lines are drawn so just the arc is shown; `"CLOSE"` a line is drawn from the start to the end of the arc creating a circular segment; `"PIE"` lines are drawn from the start and end of the arc to the origin creating a circular sector.
 /// - update-position (bool) = true: Update the current canvas position to the arc's end point (anchor `"arc-end"`). This overrides the default of `true`, that allows chaining of (arc) elements.
 ///
-/// ## Anchors
+/// ### Anchors
 /// Supports border and path anchors.
 /// - **arc-start**: The position at which the arc's curve starts, this is the default.
 /// - **arc-end**: The position of the arc's curve end.
@@ -330,7 +328,7 @@
   },)
 }
 
-/// Draws an arc that passes through three points a, b and c.
+/// Draws an arc that passes through three points `a`, `b` and `c`.
 ///
 /// Note that all three points must not lie on a straight line, otherwise
 /// the function fails.
@@ -339,20 +337,19 @@
 /// arc-through((0,1), (1,1), (1,0))
 /// ```
 ///
-/// - a (coordinate): Start position of the arc
-/// - b (coordinate): Position the arc passes through
-/// - c (coordinate): End position of the arc
+/// - a (coordinate): Start position of the arc.
+/// - b (coordinate): Position the arc passes through.
+/// - c (coordinate): End position of the arc.
 /// - name (none, str):
 /// - ..style (style):
 ///
 /// ### Styling
 /// *Root*: `arc`
 ///
-/// Uses the same styling as [arc](./arc#styling)
+/// Uses the same styling as [arc](./arc#styling).
 ///
 /// ### Anchors
-///   For anchors see [arc](./arc#anchors).
-///
+/// For anchors see [arc](./arc#anchors).
 #let arc-through(
   a,
   b,
@@ -429,13 +426,13 @@
 /// ```
 ///
 /// Note: To place a mark centered at the first coodinate (`from`) use
-/// the marks `anchor: "center"` style.
+/// the mark's `anchor: "center"` style.
 ///
 /// - from (coordinate): The position to place the mark.
 /// - to (coordinate,angle): The position or angle the mark should point towards.
 /// - ..style (str,style): If the third positional argument is of type string, it is treated as mark name (e.g. `">"`) and overrules style keys such as `mark.symbol` or `mark.end`
 ///
-/// ## Styling
+/// ### Styling
 /// *Root*: `mark`
 ///
 /// You can directly use the styling from [Mark Styling](/docs/basics/marks).
@@ -490,7 +487,7 @@
   },)
 }
 
-/// Draws a line, more than two points can be given to create a line-strip.
+/// Draws a line. More than two points can be given to create a line-strip.
 ///
 /// ```typc example
 /// line((-1.5, 0), (1.5, 0))
@@ -512,14 +509,14 @@
 /// - close (bool): If true, the line-strip gets closed to form a polygon
 /// - name (none,str):
 ///
-/// ## Styling
+/// ### Styling
 /// *Root:* `line`
 ///
 /// Supports mark styling.
 ///
-/// ## Anchors
-///   Supports path anchors.
-///   - **centroid**: The centroid anchor is calculated for _closed non self-intersecting_ polygons if all vertices share the same z value.
+/// ### Anchors
+/// Supports path anchors.
+/// - **centroid**: The centroid anchor is calculated for _closed non self-intersecting_ polygons if all vertices share the same z value.
 #let line(..pts-style, close: false, name: none) = {
   // Extra positional arguments from the pts-style sink are interpreted as coordinates.
   let pts = pts-style.pos()
@@ -617,10 +614,12 @@
 ///
 /// - origin (coordinate): Coordinate to draw the polygon at
 /// - sides (int): Number of sides of the polygon (>= 3)
-/// - angle (angle) = 0deg: Angle angle to rotate the polygon arround its origin
-/// - name (none, str):
+/// - angle (angle): Angle angle to rotate the polygon arround its origin
+/// - anchor (none,str):
+/// - name (none,str):
+/// - ..style (style):
 ///
-/// ## Styling
+/// ### Styling
 /// *Root*: `polygon`
 /// - radius (number) = 1: Radius of the polygon
 #let polygon(origin, sides, angle: 0deg, name: none, anchor: none, ..style) = {
@@ -686,7 +685,7 @@
 }
 
 
-/// Draws a n-pointed star.
+/// Draws an n-pointed star.
 ///
 /// ```typc example
 /// n-star((0,0), 5)
@@ -700,16 +699,18 @@
 ///
 /// - origin (coordinate): Coordinate to draw the star's center at.
 /// - sides (int): Number of points of the star (>= 3).
-/// - angle (angle) = 0deg: Angle to rotate the star around its origin.
-/// - name (none, str): An optional name to identify the shape.
+/// - angle (angle): Angle to rotate the star around its origin.
+/// - name (none,str): An optional name to identify the shape.
+/// - anchor (none,str):
+/// - ..style (style):
 ///
-/// ## Styling
-/// Root: nstar
+/// ### Styling
+/// Root: `nstar`
 /// - radius (number): The radius of the star's outer points.
 /// - inner-radius (number,ratio): The radius (if of type ratio, relative to the outer radius) of the star's inner points of the star's inner points.
 /// - show-inner (bool) = false: If true, also draws the inner polygon connecting the star's inner points.
-/// - fill (color, gradient): The fill color for the star.
-/// - stroke (color, thickness, ...): The stroke for the star and the inner polygon.
+/// - fill (color,gradient): The fill color for the star.
+/// - stroke (stroke): The stroke for the star and the inner polygon.
 #let n-star(origin, sides, angle: 0deg, name: none, anchor: none, ..style) = {
   assert(type(sides) == int and sides >= 3,
     message: "Invalid number of sides: " + repr(sides))
@@ -818,19 +819,19 @@
 /// grid((1,1), (2,2), stroke: blue, step: .25)
 /// ```
 ///
-/// - from (coordinate): The top left of the grid
-/// - to (coordinate): The bottom right of the grid
+/// - from (coordinate): The top left corner of the grid.
+/// - to (coordinate): The bottom right corner of the grid.
 /// - name (none,str):
 /// - ..style (style):
 ///
-/// ## Styling
+/// ### Styling
 /// *Root*: `grid`
-/// - step (number, array, dictionary) = 1: Distance between grid lines. A distance of $1$ means to draw a grid line every $1$ length units in x- and y-direction. If given a dictionary with `x` and `y` keys or a tuple, the step is set per axis.
-/// - shift (number, array, dictionary) = 0: Offset of the grid lines. Supports an array of the form `(x, y)` or a dictionary of the form `(x: <number>, y: <number>)`.
-/// - help-lines (bool) = false: If true, force the stroke style to `gray + 0.2pt`
+/// - step (number,array,dictionary) = 1: Distance between grid lines. A distance of $1$ means to draw a grid line every $1$ length units in x- and y-direction. If given a dictionary with `x` and `y` keys or a tuple, the step is set per axis.
+/// - shift (number,array,dictionary) = 0: Offset of the grid lines. Supports an array of the form `(x, y)` or a dictionary of the form `(x: <number>, y: <number>)`.
+/// - help-lines (bool) = false: If true, force the stroke style to `gray + 0.2pt`.
 ///
-/// ## Anchors
-///   Supports border anchors.
+/// ### Anchors
+/// Supports border anchors.
 #let grid(from, to, name: none, ..style) = {
   assert.eq(style.pos(), (), message: "Unexpected positional arguments: " + repr(style.pos()))
   style = style.named()
@@ -865,7 +866,7 @@
 
     let (from-x, from-y, ..) = from
     let (to-x, to-y, ..) = to
-    
+
     // Resolve shift parameter
     let shift = style.at("shift", default: 0)
     if type(shift) == dictionary {
@@ -1015,26 +1016,26 @@
 /// )
 /// ```
 ///
-/// - ..args-style (coordinate, content, style): When one coordinate is given as a positional argument, the content will be placed at that position. When two coordinates are given as positional arguments, the content will be placed inside a rectangle between the two positions. All named arguments are styling and any additional positional arguments will panic.
-/// - angle (angle,coordinate): Rotates the content by the given angle. A coordinate can be given to rotate the content by the angle between it and the first coordinate given in `args`. This effectively points the right hand side of the content towards the coordinate. This currently exists because Typst's rotate function does not change the width and height of content.
-/// - anchor (none, str):
-/// - name (none, str):
+/// - ..args-style (coordinate,content,style): When one coordinate is given as a positional argument, the content will be placed at that position. When two coordinates are given as positional arguments, the content will be placed inside a rectangle between the two positions. All named arguments are styling and any additional positional arguments will panic.
+/// - angle (angle,coordinate): Rotates the content by the given angle. A coordinate can be given to rotate the content by the angle between it and the first coordinate given in `args-style`. This effectively points the right hand side of the content towards the coordinate. This currently exists because Typst's rotate function does not change the width and height of content.
+/// - anchor (none,str):
+/// - name (none,str):
 ///
-/// ## Styling
+/// ### Styling
 /// *Root*: `content`
-/// - padding (number, dictionary) = 0: Sets the spacing around content. Can be a single number to set padding on all sides or a dictionary to specify each side specifically. The dictionary follows Typst's `pad` function: https://typst.app/docs/reference/layout/pad/
-/// - frame (str, none) = none: Sets the frame style. Can be {{none}}, `"rect"` or `"circle"` and inherits the `stroke` and `fill` style.
-/// - auto-scale (bool): If `true`, apply current canvas scaling to the content. Defaults to `false`.
+/// - padding (number,dictionary) = 0: Sets the spacing around content. Can be a single number to set padding on all sides or a dictionary to specify each side specifically. The dictionary follows Typst's `pad` function: https://typst.app/docs/reference/layout/pad/.
+/// - frame (none,str) = none: Sets the frame style. Can be {{none}}, `"rect"` or `"circle"` and inherits the `stroke` and `fill` style.
+/// - auto-scale (bool) = false: If `true`, apply current canvas scaling to the content.
 ///
-/// ## Anchors
-/// Supports border anchors, the default anchor is set to **center**.
-/// - **mid**: Content center, from baseline to top bounds
-/// - **mid-east**: Content center extended to the east
-/// - **mid-west**: Content center extended to the west
-/// - **base**: Horizontally centered baseline of the content
-/// - **base-east**: Baseline height extended to the east
-/// - **base-west**: Baseline height extended to the west
-/// - **text**: Position at the content start on the baseline of the content
+/// ### Anchors
+/// Supports border anchors, the default anchor is set to `"center"`.
+/// - **mid**: Content center, from baseline to top bounds.
+/// - **mid-east**: Content center extended to the east.
+/// - **mid-west**: Content center extended to the west.
+/// - **base**: Horizontally centered baseline of the content.
+/// - **base-east**: Baseline height extended to the east.
+/// - **base-west**: Baseline height extended to the west.
+/// - **text**: Position at the content start on the baseline of the content.
 #let content(
     ..args-style,
     angle: 0deg,
@@ -1277,10 +1278,9 @@
 /// - anchor (none, str):
 /// - ..style (style):
 ///
-/// ## Styling
+/// ### Styling
 /// *Root*: `rect`
-/// <Parameter name="radius" types="number,ratio,dictionary" default_value="0">
-/// The rectangle's corner radius. If set to a single number, that radius is applied to all four corners of the rectangle. If passed a dictionary you can set the radii per corner. The following keys support either a <Type>number</Type>, <Type>ratio</Type> or an array of <Type>number</Type> or <Type>ratio</Type> for specifying a different x- and y-radius: `north`, `east`, `south`, `west`, `north-west`, `north-east`, `south-west` and `south-east`. To set a default value for remaining corners, the `rest` key can be used.
+/// - radius (number,ratio,dictionary) = 0: The rectangle's corner radius. If set to a single number, that radius is applied to all four corners of the rectangle. If passed a dictionary you can set the radii per corner. The following keys support either a {{number}}, {{ratio}} or an {{array}} of {{number}} or {{ratio}} for specifying a different x- and y-radius: `north`, `east`, `south`, `west`, `north-west`, `north-east`, `south-west` and `south-east`. To set a default value for the remaining corners, the `rest` key can be used.
 ///
 /// Ratio values are relative to the rectangle's width and height.
 ///
@@ -1292,11 +1292,9 @@
 /// rect((8,0), (rel: (1,1)), radius: (south-west: 0, rest: 50%))
 /// rect((10,0), (rel: (1,1)), radius: (rest: (20%, 50%)))
 /// ```
-/// </Parameter>
 ///
-/// ## Anchors
-///   Supports border and path anchors. It's default is the `"center"` anchor.
-///
+/// ### Anchors
+/// Supports border and path anchors. It's default is the `"center"` anchor.
 #let rect(a, b, name: none, anchor: none, ..style) = {
   // No extra positional arguments from the style sink
   assert.eq(

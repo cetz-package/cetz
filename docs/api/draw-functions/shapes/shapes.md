@@ -7,10 +7,13 @@ Draw functions that draw shapes onto the canvas, be that lines, circles or curve
 - [mark](./mark) Draws a mark at a point in a direction.
 - [line](./line) Draws a line between two points, or a line strip between 3 or more points.
 - [polygon](./polygon) Draws a regular polygon.
+- [n-star](./n-star) Draws an n-pointed star.
 - [grid](./grid) Draws a grid.
 - [content](./content) Places some content on the canvas.
 - [rect](./rect) Draws a rectangle between two points.
+- [rect-around](./rect-around) Draws a rectangle around a set of points/elements.
 - [bezier](./bezier) Draws a bezier with control points.
 - [hobby](./hobby) Draws a hobby curve.
 - [catmull](./catmull) Draws a Catmull-Rom curve.
 - [merge-path](./merge-path) Merges the paths of other draw functions into one continuous path.
+- [compound-path](./compound-path) Creates a new path with each element used as a sub-path.
