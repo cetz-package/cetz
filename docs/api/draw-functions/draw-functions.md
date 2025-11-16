@@ -6,5 +6,5 @@ Draw functions are the functions you import from the `draw` module and call with
 - [grouping](./grouping) For grouping other draw functions together.
 - [styling](./styling) For changing the styling of other draw functions.
 - [transformations](./transformations) For transforming the points on the canvas.
-- [projection](./projections)
+- [projections](./projections) For changing the projection matrix of the whole canvas.
 - [util](./util) For utility functions.

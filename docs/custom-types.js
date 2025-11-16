@@ -6,4 +6,5 @@ export default {
   vector: { link: "/docs/api/internal/vector" },
   matrix: { link: "/docs/api/internal/matrix" },
   element: {link: "/docs/advanced/custom-types#element"},
+  tiling: {link: "https://typst.app/docs/reference/visualize/tiling/"},
 };
