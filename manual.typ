@@ -3,46 +3,79 @@
 #import "/docs/style.typ": show-type
 #import "/docs/typlodocus/extractor.typ"
 
-#set heading(numbering: "1.")
+#set heading(numbering: (..nums) => {
+  let nums = nums.pos()
+  if nums.len() <= 2 {
+    return nums.map(n => [#n]).join([.])
+  }
+}, hanging-indent: 0cm)
 
 #let modules = (
-  // Canvas
+  [Canvas],
   "src/canvas.typ",
 
-  // Draw
-  "src/draw/util.typ",
+  [Shapes],
   "src/draw/shapes.typ",
+  [Styling],
   "src/draw/styling.typ",
+  [Grouping],
   "src/draw/grouping.typ",
-  "src/draw/projection.typ",
+  [Transformation],
   "src/draw/transformations.typ",
+  [Projection],
+  "src/draw/projection.typ",
+  [Utility],
+  "src/draw/util.typ",
 
-  // Libs
+  [Libraries], 1,
+  [Angle],
   "src/lib/angle.typ",
+  [Tree],
   "src/lib/tree.typ",
+  [Decorations],
+  [Path],
   "src/lib/decorations/path.typ",
+  [Brace],
   "src/lib/decorations/brace.typ",
+  [Palette],
   "src/lib/palette.typ",
+  0,
 
-  // Internals
-  "src/coordinate.typ",
-  "src/styles.typ",
-  "src/process.typ",
-  "src/drawable.typ",
-  "src/anchor.typ",
-  "src/mark.typ",
-  "src/bezier.typ",
-  "src/aabb.typ",
-  "src/hobby.typ",
-  "src/intersection.typ",
-  "src/path-util.typ",
-  "src/util.typ",
+  [Internals], 1,
+  [Complex],
   "src/complex.typ",
+  [Vector],
   "src/vector.typ",
+  [Matrix],
   "src/matrix.typ",
+  [Coordinate],
+  "src/coordinate.typ",
+  [Styles],
+  "src/styles.typ",
+  [Process],
+  "src/process.typ",
+  [Drawable],
+  "src/drawable.typ",
+  [Anchor],
+  "src/anchor.typ",
+  [Mark],
+  "src/mark.typ",
+  [Bezier],
+  "src/bezier.typ",
+  [AABB],
+  "src/aabb.typ",
+  [Hobby],
+  "src/hobby.typ",
+  [Intersection],
+  "src/intersection.typ",
+  [Path Util],
+  "src/path-util.typ",
+  [Util],
+  "src/util.typ",
+  0,
 )
 
-#let docs = modules.map(filename => {
+#let docs = modules.filter(item => type(item) == str).map(filename => {
   (filename, extractor.extract-doc-comments(read(filename).split("\n")))
 }).to-dict()
 
@@ -266,86 +299,13 @@ stroke and fill styling unless said otherwise.
 == Coordinate Systems <coordinate-systems>
 
 = API
-== Canvas
-#show-module("src/canvas.typ")
-
-== Shapes
-#show-module("src/draw/shapes.typ")
-
-== Styling
-#show-module("src/draw/styling.typ")
-
-== Grouping
-#show-module("src/draw/grouping.typ")
-
-== Transformations
-#show-module("src/draw/transformations.typ")
-
-== Projection
-#show-module("src/draw/projection.typ")
-
-== Utility
-#show-module("src/draw/util.typ")
-
-== Libraries
-=== Angle
-#show-module("src/lib/angle.typ", level: 4)
-
-=== Tree
-#show-module("src/lib/tree.typ", level: 4)
-
-=== Decorations
-==== Path Decorations
-#show-module("src/lib/decorations/path.typ", level: 5)
-
-==== Braces
-#show-module("src/lib/decorations/brace.typ", level: 5)
-
-=== Palette
-#show-module("src/lib/palette.typ", level: 4)
-
-=== Internals
-==== Coordinate
-#show-module("src/coordinate.typ", level: 5)
-
-==== Styles
-#show-module("src/styles.typ", level: 5)
-
-==== Process
-#show-module("src/process.typ", level: 5)
-
-==== Complex
-#show-module("src/complex.typ", level: 5)
-
-==== Vector
-#show-module("src/vector.typ", level: 5)
-
-==== Matrix
-#show-module("src/matrix.typ", level: 5)
-
-==== Drawable
-#show-module("src/drawable.typ", level: 5)
-
-==== Anchor
-#show-module("src/anchor.typ", level: 5)
-
-==== Mark
-#show-module("src/mark.typ", level: 5)
-
-==== Bezier
-#show-module("src/bezier.typ", level: 5)
-
-==== AABB
-#show-module("src/aabb.typ", level: 5)
-
-==== Hobby
-#show-module("src/hobby.typ", level: 5)
-
-==== Intersection
-#show-module("src/hobby.typ", level: 5)
-
-==== Path-Util
-#show-module("src/path-util.typ", level: 5)
-
-==== Util
-#show-module("src/util.typ", level: 5)
+#for item in modules {
+  let heading-offset = 1
+  if type(item) == int {
+    heading-offset = 1 + item
+  } else if type(item) != str {
+    heading(item, offset: heading-offset)
+  } else {
+    show-module(item, level: 2 + heading-offset)
+  }
+}
