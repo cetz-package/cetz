@@ -143,7 +143,7 @@ def generate_mdx_file(func_data, output_path, cetz_path=DEFAULT_CETZ_VERSION):
                 param_info["default"] = default_value
             parameters[name] = param_info
     
-    # Function component (self-closing, no imports needed)
+    # Function component
     import json
     parameters_json = json.dumps(parameters)
     mdx_lines.append(f'<Function name="{func_name}" parameters={{{parameters_json}}}/>'.replace('null', 'undefined'))
@@ -319,26 +319,21 @@ def main():
         # e.g., "src/draw/shapes.typ" -> "draw/shapes/"
         path_parts = file_path.replace("src/", "").replace(".typ", "").split("/")
         
-        # Create subdirectories for MDX files
         current_mdx_dir = mdx_dir
         for part in path_parts:
             current_mdx_dir = current_mdx_dir / part
             current_mdx_dir.mkdir(exist_ok=True)
         
-        # Create subdirectories for SVG files if needed
         file_base = file_path.replace("src/", "").replace("/", "_").replace(".typ", "")
         
         # Track functions for combined file generation
         function_names = []
-        
-        # Process each function in the file
         for func_data in functions:
             signature = func_data.get("signature", {})
             func_name = signature.get("name", "unknown") if signature else "unknown"
             comment = func_data.get("comment", {})
             text = comment.get("text", "")
             
-            # Skip private functions for combined files
             if not func_name.startswith("_"):
                 function_names.append(func_name)
             
@@ -351,7 +346,7 @@ def main():
             else:
                 print(f"[ERROR] Failed to generate MDX: {'/'.join(path_parts)}/{mdx_filename}")
             
-            # Generate optional SVGs
+            # Generate SVGs
             if svg_dir:
                 examples = extract_example_blocks(text)
                 
@@ -360,7 +355,6 @@ def main():
                         svg_filename = f"{file_base}_{func_name}_{i}.svg"
                         svg_path = svg_dir / svg_filename
                         
-                        # Generate SVG
                         if generate_output_from_typst(example_code, svg_path, "svg", args.cetz):
                             print(f"[   OK] Generated SVG: {svg_filename} ({i+1}/{len(examples)})")
                         else:
@@ -372,15 +366,17 @@ def main():
             combined_filename = f"-combined.mdx"
             combined_path = current_mdx_dir / combined_filename
             
+            combined_imports = []
             combined_lines = []
             for func_name in function_names:
-                # Convert function name to import name (uppercase, no hyphens)
                 import_name = func_name.replace("-", "").upper()
-                combined_lines.append(f'export {{ default as {import_name} }} from "./{func_name}.mdx";')
+                combined_imports.append(f'import {import_name} from "./{func_name}.mdx"')
+                combined_lines.append(f'## {func_name}')
+                combined_lines.append(f'<{import_name}/>\n')
             
             try:
                 with open(combined_path, 'w') as f:
-                    f.write('\n'.join(combined_lines) + '\n')
+                    f.write('\n'.join(combined_imports) + '\n\n' + '\n'.join(combined_lines) + '\n')
                 print(f"[   OK] Generated combined: {'/'.join(path_parts)}/{combined_filename}")
             except Exception as e:
                 print(f"[ERROR] Failed to generate combined: {e}")
