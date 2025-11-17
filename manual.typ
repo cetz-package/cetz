@@ -296,8 +296,6 @@ stroke and fill styling unless said otherwise.
 / stroke: type:none or type:auto or type:length or type:color or type:dictionary or type:stroke (default: `black`) \
   How to stroke the border or the path of the draw element. #link("https://typst.app/docs/reference/visualize/line/#parameters-stroke")[See Typst's line documentation for more details.]
 
-== Coordinate Systems <coordinate-systems>
-
 = API
 #for item in modules {
   let heading-offset = 1
