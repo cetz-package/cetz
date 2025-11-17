@@ -1596,7 +1596,7 @@
 }
 
 /// Draws a cubic bezier curve through a set of three points.
-/// See @bezier for style and anchor details.
+/// See `bezier` for style and anchor details.
 ///
 /// ```example
 /// let (a, b, c) = ((0, 0), (1, 1), (2, -1))
