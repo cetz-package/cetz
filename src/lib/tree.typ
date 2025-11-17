@@ -79,6 +79,8 @@
 /// - node-layer (int): Layer to draw nodes on
 /// - edge-layer (int): Layer to draw edges on
 /// - anchor (none, string): Name of the anchor to align the tree to. Use the root node anchor (`"0"`) to align the tree to the root nodes position.
+/// - node-name-prefix (string): Prefix added to node anchors (e.g. `"node-" → "node-0-0" for the root node`)
+/// - node-group-name-prefix (string): Prefix added to node group names
 #let tree(
   root,
   draw-node: auto,
@@ -91,6 +93,8 @@
   edge-layer: 0,
   measure-content: true,
   anchor: none,
+  node-name-prefix: "",
+  node-group-name-prefix: "g",
 ) = {
   assert(grow >= 0)
   assert(spread >= 0)
@@ -186,8 +190,8 @@
       }
 
       // Render element
-      node.name = name
-      node.group-name = "g" + name
+      node.name = node-name-prefix + name
+      node.group-name = node-group-name-prefix + name
       node.element = {
         draw.anchor(node.name, node-position(node))
         draw.group(name: node.group-name, ctx => {
@@ -206,7 +210,7 @@
       node.edges = if node.children != () {
         draw.group({
           for child in node.children {
-            draw-edge(node.group-name, child.group-name, node, child)
+            draw-edge(node.name, child.name, node, child)
           }
         })
       } else { () }
