@@ -61,9 +61,10 @@
 
 /// Adds `tags` to one or more drawables.
 ///
-/// - drawables (drawable, array) A single drawable or an array of drawables.
-/// - ..tags (str) The list of tags to add to the drawable
-/// -> (drawable, array)
+/// - drawables (drawable, array): A single drawable or an array of type:drawable.
+/// - ..tags (str): The list of tags to add to the drawable
+/// -> drawable A single drawable
+/// -> array An array of type:drawable
 #let apply-tags(drawables, ..tags) = {
   let tags = tags.pos().filter(v => v != none)
   assert(tags.all(v => type(v) == str))
@@ -78,9 +79,10 @@
 
 /// Filter out all drawables that have one of the given tags assigned.
 ///
-/// - drawables (drawable, array) A single drawable or an array of drawables.
-/// - ..tags (str) The list of tags to use as a filter.
-/// -> (drawable, array)
+/// - drawables (drawable, array): A single drawable or an array of type:drawables.
+/// - ..tags (str): The list of tags to use as a filter.
+/// -> drawable A single drawable
+/// -> array An array of type:drawable
 #let filter-tagged(drawables, ..tags) = {
   if type(drawables) == array {
     return drawables.map(d => filter-tagged(d, ..tags)).filter(d => d != none)

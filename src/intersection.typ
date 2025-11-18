@@ -8,7 +8,8 @@
 /// - c (vector): Line 2 point 1
 /// - d (vector): Line 2 point 2
 /// - ray (bool): When `true`, intersections will be found for the whole line instead of inbetween the given points.
-/// -> vector,none
+/// -> none
+/// -> vector
 #let line-line(a, b, c, d, ray: false) = {
   let lli8(x1, y1, x2, y2, x3, y3, x4, y4) = {
     let nx = (x1*y2 - y1*x2)*(x3 - x4)-(x1 - x2)*(x3*y4 - y3*x4)

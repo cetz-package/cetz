@@ -34,10 +34,10 @@
 
 /// Register a custom mark to the canvas
 ///
-/// The mark should contain both anchors called **tip** and **base** that are used to determine the marks orientation. If unset both default to `(0, 0)`.
-/// An anchor named **center** is used as center of the mark, if present. Otherwise the mid between **tip** and **base** is used.
+/// The mark should contain both anchors called *tip* and *base* that are used to determine the marks orientation. If unset both default to `(0, 0)`.
+/// An anchor named *center* is used as center of the mark, if present. Otherwise the mid between *tip* and *base* is used.
 ///
-/// ```typc example
+/// ```example
 /// register-mark(":)", style => {
 ///   circle((0,0), radius: .5, fill: yellow)
 ///   arc((0,0), start: 180deg + 30deg, delta: 180deg - 60deg, anchor: "origin", radius: .3)

@@ -1,8 +1,8 @@
 /// Assert that the cetz version of the canvas matches the given version (range).
 ///
-/// min (version): Minimum version (current >= min)
-/// max (none, version): First unsupported version (current < max)
-/// hint (string): Name of the function/module this assert is called from
+/// - min (version): Minimum version (current >= min)
+/// - max (none, version): First unsupported version (current < max)
+/// - hint (string): Name of the function/module this assert is called from
 #let assert-version(min, max: none, hint: "") = {
   if hint != "" { hint = " by " + hint }
   (ctx => {
@@ -28,7 +28,7 @@
 /// resolvers in reverse registering order. All coordinates get paased to cetz'
 /// default coordinate resolvers.
 ///
-/// ```typc example
+/// ```example
 /// register-coordinate-resolver((ctx, c) => {
 ///   if type(c) == dictionary and "log" in c {
 ///     c = c.log.map(n => calc.log(n, base: 10))

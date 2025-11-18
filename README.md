@@ -73,7 +73,7 @@ You can explore an example gallery of scientific diagrams at [janosh.github.io/d
 
 ## Usage
 
-For information, see the [online manual](https://cetz-package.github.io/docs).
+For information, see the [API Reference (PDF)](./manual.pdf?raw=true) or the [online manual](https://cetz-package.github.io/docs).
 
 To use this package, simply add the following code to your document:
 

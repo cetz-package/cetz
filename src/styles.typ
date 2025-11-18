@@ -216,7 +216,7 @@
 /// You can use this to combine the style in `ctx`, the style given by a user for a single element and an element's default style.
 ///
 /// `base` is first merged onto `dict` without overwriting existing values, and if `root` is given it is merged onto that key of `dict`. `merge` is then merged onto `dict` but does overwrite existing entries, if `root` is given it is merged onto that key of `dict`. Then entries in `dict` that are {{auto}} inherit values from their nearest ancestor and entries of type {{dictionary}} are merged with their closest ancestor.
-/// ```typ example
+/// ```typ
 /// #let dict = (
 ///   stroke: "black",
 ///   fill: none,
@@ -233,7 +233,7 @@
 /// + If an entry is `auto` or a dictionary, the tree is travelled back up until an entry with the same key is found. If the current entry is `auto` the value of the ancestor's entry is copied. Or if the current entry and ancestor entry is a dictionary, they are merged with the current entry overwriting any values in it's ancestors.
 /// + Each entry that is a dictionary is then resolved from step 1.
 ///
-/// ```typc example
+/// ```example
 /// get-ctx(ctx => {
 ///   // Get the current "mark" style
 ///   content((0,0), [#cetz.styles.resolve(ctx.style, root: "mark")])

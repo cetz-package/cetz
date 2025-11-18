@@ -17,7 +17,7 @@
 
 #let pi = calc.pi
 
-/// Create a (square) identity matrix with dimensions $size \times size$
+/// Create a (square) identity matrix with dimensions $"size" times "size"$
 ///
 /// - size (int): Size of the matrix
 /// -> matrix
@@ -79,7 +79,7 @@
   mat.map(r => r.map(v => _round(v, digits: precision)))
 }
 
-/// Returns a $4 \times 4$ translation matrix
+/// Returns a $4 times 4$ translation matrix
 /// - x (float): The translation in the $x$ direction.
 /// - y (float): The translation in the $y$ direction.
 /// - z (float): The translation in the $x$ direction.
@@ -91,7 +91,7 @@
    (0, 0, 0, 1))
 }
 
-/// Returns a $4 \times 4$ x-shear matrix
+/// Returns a $4 times 4$ x-shear matrix
 /// - factor (float): The shear in the $x$ direction.
 /// -> matrix
 #let transform-shear-x(factor) = {
@@ -102,7 +102,7 @@
 }
 
 
-/// Returns a $4 \times 4$ z-shear matrix
+/// Returns a $4 times 4$ z-shear matrix
 /// - factor (float): The shear in the $z$ direction.
 /// -> matrix
 #let transform-shear-z(factor) = {
@@ -112,7 +112,7 @@
    (0, 0, 0, 1))
 }
 
-/// Returns a $4 \times 4$ scale matrix
+/// Returns a $4 times 4$ scale matrix
 /// - f (float,array,dictionary): The scale factor(s) of the matrix. An {{array}} of at least 3 {{float}}s sets the x, y and z scale factors. A {{dictionary}} sets the scale in the direction of the corresponding x, y and z keys. A single {{float}} sets the scale for all directions.
 /// -> matrix
 #let transform-scale(f) = {
@@ -132,7 +132,7 @@
    (0, 0, 0, 1))
 }
 
-/// Returns a $4 \times 4$ rotation xyz matrix for a direction and up vector
+/// Returns a $4 times 4$ rotation xyz matrix for a direction and up vector
 /// - dir (vector): idk
 /// - up (vector): idk
 /// -> matrix
@@ -151,7 +151,7 @@
 }
 
 // Return 4x4 rotate x matrix
-/// Returns a $4 \times 4$ $x$ rotation matrix
+/// Returns a $4 times 4$ $x$ rotation matrix
 /// - angle (angle): The angle to rotate around the $x$ axis
 /// -> matrix
 #let transform-rotate-x(angle) = {
@@ -162,7 +162,7 @@
 }
 
 // Return 4x4 rotate y matrix
-/// Returns a $4 \times 4$ $y$ rotation matrix
+/// Returns a $4 times 4$ $y$ rotation matrix
 /// - angle (angle): The angle to rotate around the $y$ axis
 /// -> matrix
 #let transform-rotate-y(angle) = {
@@ -173,7 +173,7 @@
 }
 
 // Return 4x4 rotate z matrix
-/// Returns a $4 \times 4$ $z$ rotation matrix
+/// Returns a $4 times 4$ $z$ rotation matrix
 /// - angle (angle): The angle to rotate around the $z$ axis
 /// -> matrix
 #let transform-rotate-z(angle) = {
@@ -184,7 +184,7 @@
 }
 
 // Return 4x4 rotate xz matrix
-/// Returns a $4 \times 4$ $x z$ rotation matrix
+/// Returns a $4 times 4$ $x z$ rotation matrix
 /// - x (angle): The angle to rotate around the $x$ axis
 /// - z (angle): The angle to rotate around the $z$ axis
 /// -> matrix
@@ -195,10 +195,7 @@
    (0, 0, 0, 1))
 }
 
-/// Returns a $4 \times 4$ rotation matrix - yaw-pitch-roll
-///
-/// Calculates the product of the three rotation matrices
-/// $R = Rz(a) Ry(b) Rx(c)$
+/// Returns a $4 times 4$ rotation matrix - yaw-pitch-roll
 ///
 /// - a (angle): Yaw
 /// - b (angle): Pitch
@@ -211,10 +208,10 @@
    (0,0,0,1))
 }
 
-/// Returns a $4 \times 4$ rotation matrix - euler angles
+/// Returns a $4 times 4$ rotation matrix - euler angles
 ///
 /// Calculates the product of the three rotation matrices
-/// $R = Rz(z) Ry(y) Rx(x)$
+/// $R = R_z(z) R_y(y) R_x(x)$
 ///
 /// - x (angle): Rotation about x
 /// - y (angle): Rotation about y
@@ -255,7 +252,7 @@
 // The value of vec_4 defaults to w (1).
 //
 // The resulting vector is of dimension 3
-/// Multiplies a $4 \times 4$ matrix with a vector of size 3 or 4. The resulting is three dimensional
+/// Multiplies a $4 times 4$ matrix with a vector of size 3 or 4. The resulting is three dimensional
 /// - mat (matrix): The matrix to multiply
 /// - vec (vector): The vector to multiply
 /// - w (float): The default value for the fourth element of the vector if it is three dimensional.
@@ -276,7 +273,7 @@
 }
 
 // Multiply matrix with vector
-/// Multiplies an $m \times n$ matrix with an $m$th dimensional vector where $m \lte 4$. Prefer the use of `mul4x4-vec3` when possible as it does not use loops.
+/// Multiplies an $m times n$ matrix with an $m$th dimensional vector where $m <= 4$. Prefer the use of `mul4x4-vec3` when possible as it does not use loops.
 /// - mat (matrix): The matrix to multiply
 /// - vec (vector): The vector to multiply
 /// -> vector
