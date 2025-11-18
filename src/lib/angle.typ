@@ -17,14 +17,14 @@
 /// Draw an angle counter-clock-wise between `a` and `b` through origin `origin`
 ///
 /// ```example
-/// line((0,0), (1,1.5), name: "a")
-/// line((0,0), (2,-1), name: "b")
+/// line((0, 0), (60deg, 2), name: "a")
+/// line((0, 0), (330deg, 2), name: "b")
 ///
 /// // Draw an angle between the two lines
-/// cetz.angle.angle("a.start", "a.end", "b.end", label: $ alpha $,
+/// cetz.angle.angle("a.start", "a.end", "b.end", label: $alpha$,
 ///   mark: (end: ">"), radius: 1.5)
-/// cetz.angle.angle("a.start", "b.end", "a.end", label: $ alpha' $,
-///   radius: 50%, direction: "cw")
+/// cetz.angle.angle("a.start", "b.end", "a.end", label: $beta$,
+///   radius: 50%, direction: "ccw")
 /// ```
 ///
 /// - origin (coordinate): Angle origin

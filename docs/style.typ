@@ -148,7 +148,7 @@
     let stroke = 1pt + gray
     let line = if vertical { table.hline } else { table.vline }
 
-    block(radius: 2pt, stroke: stroke, {
+    block(radius: 2pt, stroke: stroke, breakable: false, {
       table(columns: columns, align: align, stroke: none,
         cetz.canvas({
           let preamble = "import cetz.draw: *\n"

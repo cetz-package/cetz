@@ -187,11 +187,12 @@
 /// Sets the given position as the new origin `(0, 0, 0)`
 ///
 /// ```example
-/// // Outer rect
+/// // Draw some rect
 /// rect((0,0), (2,2), name: "r")
-/// // Move origin to top edge
+/// 
+/// // Move (0, 0) to the top edge of “r”
 /// set-origin("r.north")
-/// circle((0, 0), radius: .1)
+/// circle((0, 0), radius: .1, fill: white)
 /// ```
 ///
 /// - origin (coordinate): Coordinate to set as new origin `(0,0,0)`
