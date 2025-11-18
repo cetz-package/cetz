@@ -3,6 +3,7 @@ use ciborium::ser::into_writer;
 use serde::Deserialize;
 use serde::Serialize;
 use wasm_minimal_protocol::*;
+use std::cmp;
 
 mod layout;
 pub use layout::{InputTree, OutputTree};
@@ -117,15 +118,12 @@ fn aabb(init: Option<Bounds>, pts: Vec<Point>) -> Result<Bounds, String> {
     let mut bounds = match init {
         Some(init) => init,
         None => Bounds {
-            low: pts.first().unwrap().clone(),
-            high: pts.first().unwrap().clone(),
+            low: pts.first().unwrap().clone().iter().take(3).cloned().collect(),
+            high: pts.first().unwrap().iter().take(3).cloned().collect(),
         },
     };
     for pt in pts {
-        if pt.len() != 3 {
-            return Err("Point must have 3 dimensions".to_string());
-        }
-        for dim in 0..pt.len() {
+        for dim in 0..cmp::min(3, pt.len()) {
             if pt[dim] < bounds.low[dim] {
                 bounds.low[dim] = pt[dim];
             }
