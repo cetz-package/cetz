@@ -24,6 +24,8 @@ update-test *filter: build
 gallery: build
   for f in "{{gallery_dir}}"/*.typ; do typst c "$f" "${f/typ/png}"; done
 
-docs: build
+manual: build
   typst compile --root . manual.typ
+
+docs: build
   typst query --root . manual.typ "<metadata>" --field value | python ./docs/genhtml.py -o ./docs/_generated
