@@ -257,7 +257,7 @@ Many CeTZ functions expect data in certain formats which we will call types.
 Note that these are actually made up of Typst primitives.
 
 / type\:coordinate: A position on the canvas specified by any
-  coordinate system. See @coordinate-systems[Coordinate Systems].
+  coordinate system. See Coordinate Systems.
 / type\:number: Any of type:float, type:int or type:length
 / type\:style: Represents options passed to draw functions that
   affect how elements are drawn. They are normally taken in the form of
