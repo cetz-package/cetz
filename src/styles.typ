@@ -146,6 +146,9 @@
     stroke: auto,
     // Apply canvas scaling to content
     auto-scale: false,
+    // Function to apply to the content body. For example styling text
+    // via `wrap: text.with(red)`.
+    wrap: none,
   ),
 )
 
