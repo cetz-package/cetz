@@ -148,8 +148,10 @@
 /// All vertices of all elements will be changed in the following way: $mat(x, y, z_"argument")$, where $z_"argument"$ is the z-value given as argument.
 ///
 /// ```example
-/// on-xy({
-///   rect((-1, -1), (1, 1))
+/// ortho({
+///   on-xy({
+///     rect((-1, -1), (1, 1))
+///   })
 /// })
 /// ```
 ///
@@ -167,8 +169,10 @@
 /// All vertices of all elements will be changed in the following way: $mat(x, y_"argument", y)$, where $y_"argument"$ is the y-value given as argument.
 ///
 /// ```example
-/// on-xz({
-///   rect((-1, -1), (1, 1))
+/// ortho({
+///   on-xz({
+///     rect((-1, -1), (1, 1))
+///   })
 /// })
 /// ```
 ///
@@ -186,8 +190,10 @@
 /// All vertices of all elements will be changed in the following way: $mat(x_"argument", y, x)$, where $x_"argument"$ is the x-value given as argument.
 ///
 /// ```example
-/// on-yz({
-///   rect((-1, -1), (1, 1))
+/// ortho({
+///   on-yz({
+///     rect((-1, -1), (1, 1))
+///   })
 /// })
 /// ```
 ///
