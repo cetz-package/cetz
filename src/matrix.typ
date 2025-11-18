@@ -137,8 +137,8 @@
 /// - up (vector): idk
 /// -> matrix
 #let transform-rotate-dir(dir, up) = {
-  dir = vector.norm(dir)
-  up = vector.norm(up)
+  dir = vector.norm(dir.slice(0, 3))
+  up = vector.norm(up.slice(0, 3))
 
   let (dx, dy, dz) = dir
   let (ux, uy, uz) = up
@@ -257,7 +257,7 @@
 /// - vec (vector): The vector to multiply
 /// - w (float): The default value for the fourth element of the vector if it is three dimensional.
 /// -> vector
-#let mul4x4-vec3(mat, vec, w: 1) = {
+#let mul4x4-vec3(mat, vec, w: 1.0) = {
   assert(vec.len() <= 4)
 
   let x = vec.at(0)
