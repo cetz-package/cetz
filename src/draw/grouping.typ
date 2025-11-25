@@ -198,6 +198,98 @@
   },)
 }
 
+/// Finds the closest point on one or more elements to a coordinate and
+/// creates an anchor. Transformations insides the body are scoped and do
+/// not get applied outsides.
+///
+/// - name (str): Anchor name.
+/// - reference-point (coordinate): Coordinate to find the closest point to.
+/// - body (element,str): One or more elements to consider. A least one is required. A function that accepts `ctx` and returns elements is also accepted. If a string is passed, the existing named element is used.
+#let find-closest-point(name, reference-point, body) = {
+  import "/src/bezier.typ": cubic-closest-point
+
+  assert(type(name) == str,
+    message: "Anchor name must be of type string, got " + repr(name))
+  assert(type(body) in (array, function, str),
+    message: "Expected body to be a list of elements, a callback or an elements name")
+  coordinate.resolve-system(reference-point)
+
+  return (ctx => {
+    let (_, pt) = coordinate.resolve(ctx, reference-point)
+    pt = util.apply-transform(ctx.transform, pt)
+
+    let (sub-ctx, drawables, output-drawables) = if type(body) == str {
+      let node = ctx.nodes.at(body)
+      (ctx, node.drawables, false)
+    } else {
+      let group-ctx = ctx
+      group-ctx.groups.push(())
+      let node = process.many(group-ctx, util.resolve-body(ctx, body))
+      (node.ctx, node.drawables, true)
+    }
+
+    ctx.nodes += sub-ctx.nodes
+
+    let min = calc.inf
+    let min-pt = none
+
+    // Compute the closest point on line a-b to point pt
+    let line-closest-pt(pt, a, b) = {
+      let n = vector.sub(b, a)
+      let d = vector.dot(n, pt)
+      d -= vector.dot(a, n)
+
+      let f = d / vector.dot(n, n)
+      return if f < 0 {
+        a
+      } else if f > 1 {
+        b
+      } else  {
+        vector.add(a, vector.scale(n, f))
+      }
+    }
+
+    for d in drawables {
+      if not "segments" in d { continue }
+
+      for ((kind, ..pts)) in d.segments {
+        if kind == "cubic" {
+          let tmp-pt = cubic-closest-point(pt, ..pts)
+          let tmp-min = vector.dist(tmp-pt, pt)
+          if tmp-min < min {
+            min-pt = tmp-pt
+            min = tmp-min
+          }
+        } else {
+          for i in range(1, pts.len()) {
+            let tmp-pt = line-closest-pt(pt, pts.at(i - 1), pts.at(i))
+            let tmp-min = vector.dist(tmp-pt, pt)
+            if tmp-min < min {
+              min-pt = tmp-pt
+              min = tmp-min
+            }
+          }
+        }
+      }
+    }
+
+    let (transform, anchors) = anchor_.setup(
+      anchor => min-pt,
+      ("default",),
+      default: "default",
+      name: name,
+      transform: none
+    )
+
+    return (
+      ctx: ctx,
+      name: name,
+      anchors: anchors,
+      drawables: if output-drawables { drawables } else { () },
+    )
+  },)
+}
+
 /// Groups one or more elements together. This element acts as a scope, all state changes such as transformations and styling only affect the elements in the group. Elements after the group are not affected by the changes inside the group.
 ///
 /// ```example
