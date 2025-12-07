@@ -15,10 +15,13 @@
     } else if char == "\"" and not escape-next {
       in-str = not in-str
     } else if not in-str {
-      if char == "(" { depth += 1 }
-      else if char == ")" { depth -= 1 }
-      else if char == "[" { in-content = true }
-      else if char == "," and depth == 0 {
+      if char == "(" {
+        depth += 1
+      } else if char == ")" {
+        depth -= 1
+      } else if char == "[" {
+        in-content = true
+      } else if char == "," and depth == 0 {
         arguments.push((
           name: current-arg.trim(),
           default-value: current-default.trim(),
@@ -54,84 +57,95 @@
 }
 
 #let parse-function-signature(lines) = {
-  let let-re = regex("^#?let\s+")
-  let identifier-re = regex("^([_a-zA-Z]+[_\w-]*)")
-  
-  let combined-line = lines.join(" ")
-  combined-line = combined-line.trim()
+  let ident = lines
+    .first()
+    .replace(
+      regex(`#let\s+([_[:alnum:]-]+).*`.text),
+      match => match.captures.first(),
+      count: 1,
+    )
 
-  // Cut off #let or let
-  let let-m = combined-line.match(let-re)
-  if let-m == none {
-    return none
-  }
-  combined-line = combined-line.slice(let-m.end)
-  
-  // Parse function name
-  let identifier-m = combined-line.match(identifier-re)
-  if identifier-m == none {
-    return none
-  }
-  
-  let name = identifier-m.captures.at(0)
-  combined-line = combined-line.slice(identifier-m.end)
-  
-  // Check if we have an argument list
-  let paren-match = combined-line.match(regex("^\s*\("))
-  if paren-match == none {
-    return none
-  }
-  
-  // Parse the entire argument list
-  let args-start = paren-match.end
-  let paren-depth = 1
-  let in-str = false
-  let in-content = false
-  let escape-next = false
-  let args-end = none
+  lines.first() = lines
+    .first()
+    .trim(
+      regex(`#let\s+[_[:alnum:]-]+\(?`.text),
+      at: start,
+      repeat: false,
+    )
 
-  // Find the argument list bounds
-  for ((i, char)) in combined-line.slice(paren-match.end).codepoints().enumerate() {
-    if escape-next {
-      escape-next = false
-    } else if in-content {
-      if char == "]" {
-        in-content = false
+  if lines.first().starts-with(regex(`\s*=`.text)) {
+    return (
+      name: ident,
+      arguments: (),
+    )
+  }
+
+  let param-end-line = -1
+  let param-end-char-pos
+  let escape-hit = false
+  let delim-stack = ("(",)
+  let delim-lut = (
+    start: (
+      "\"",
+      "(",
+      "[",
+    ),
+    end: (
+      "\"",
+      ")",
+      "]",
+    ),
+  )
+
+  for line in lines {
+    param-end-char-pos = -1
+
+    for char in line.codepoints() {
+      if char == "\\" {
+        escape-hit = true
+        continue
       }
-    } else if char == "\\" {
-      escape-next = true
-    } else if char == "\"" {
-      in-str = not in-str
-    } else if not in-str {
-      if char == "(" {
-        paren-depth += 1
-      } else if char == ")" {
-        paren-depth -= 1
-        if paren-depth == 0 {
-          args-end = args-start + i
-          break
+      if escape-hit {
+        escape-hit = false
+        continue
+      }
+
+      let stack-top = delim-stack.last()
+      if stack-top == delim-lut.start.first() {
+        if char == delim-lut.end.first() { delim-stack.pop() }
+      } else if stack-top == delim-lut.start.last() {
+        if char == delim-lut.end.last() { delim-stack.pop() }
+      } else {
+        if char in delim-lut.start {
+          delim-stack.push(char)
+        } else if char in delim-lut.end {
+          delim-stack.pop()
         }
-      } else if char == "[" {
-        in-content = true
       }
-    }
-  }
-  
-  if args-end == none {
-    return none
-  }
-  
-  // Parse arguments
-  let arguments = ()
 
-  let args-str = combined-line.slice(args-start, args-end)
-  if args-str.trim() != "" {
-    arguments = parse-argument-list(args-str)
+      param-end-char-pos += 1
+      if delim-stack.len() == 0 { break }
+    }
+
+    param-end-line += 1
+    if delim-stack.len() == 0 { break }
   }
-  
+
+  let param-span = lines
+    .slice(0, param-end-line + 1)
+    .enumerate()
+    .fold("", (accum, (line-num, line)) => {
+      if line-num == param-end-line {
+        accum + " " + line.slice(0, param-end-char-pos)
+      } else {
+        accum + " " + line
+      }
+    })
+    .trim()
+
   return (
-    name: name,
-    arguments: arguments
+    name: ident,
+    arguments: parse-argument-list(param-span),
   )
 }
 
@@ -192,7 +206,7 @@
       in-result = true
       result.push((
         type: result-m.captures.at(0).trim(),
-        text: result-m.captures.at(1).trim()
+        text: result-m.captures.at(1).trim(),
       ))
     } else {
       text += line + "\n"
