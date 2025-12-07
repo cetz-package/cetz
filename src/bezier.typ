@@ -552,7 +552,7 @@
   let b = la.at(0) - lb.at(0)
   let c = la.at(0) * (la.at(1) - lb.at(1)) + la.at(1) * (lb.at(0) - la.at(0))
 
-  /// Get cubic bezier function coefficients
+  // Get cubic bezier function coefficients
   let _cubic-coeff(a, b, c, d) = (
     -a + 3*b - 3*c + d,
     3*a - 6*b + 3*c,
