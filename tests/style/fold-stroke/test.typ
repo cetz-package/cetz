@@ -24,7 +24,7 @@
   line((0,0), (1,0))
 })
 
-// Fold netsted style dictionaries
+// Fold nested style dictionaries
 #test-case({
   import draw: *
 
