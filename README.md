@@ -132,3 +132,4 @@ To run all tests you can run the `just test` target. You need to have
 - [zap](https://github.com/l0uisgrange/zap) Package for drawing standard electronic circuits.
 - [rivet](https://git.kb28.ch/HEL/rivet-typst) Package for drawing instruction / register diagrams.
 - [plotsy-3d](https://github.com/misskacie/plotsy-3d) Package for rendering 3D objects & plots.
+- [alchemist](https://github.com/Typsium/alchemist) A package to render skeletal formulae using a human-readable format using cetz
