@@ -143,14 +143,5 @@
 /// - v2 (vector): The vector to interpolate to.
 /// - t (float): The factor to interpolate by. A value of `0` is `v1` and a value of `1` is `v2`.
 #let lerp(v1, v2, t) = {
-  return add(
-    v1,
-    scale(
-      sub(
-        v2,
-        v1
-      ),
-      t,
-    )
-  )
+  add(v1, scale(sub(v2, v1), t))
 }

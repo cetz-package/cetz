@@ -40,7 +40,7 @@
 
   let diag = diag.pos()
   range(0, diag.len()).map(m => range(0, diag.len()).map(n => {
-    if n == m { diag.at(m) } else { 0 }
+    if n == m { diag.at(m) } else { 0.0 }
   }))
 }
 
@@ -330,33 +330,4 @@
   }
 
   return inverted
-}
-
-/// Swaps the a-th column with the b-th column.
-///
-/// - mat (matrix): Matrix
-/// - a (int): The index of column a.
-/// - b (int): The index of column b.
-/// -> matrix
-#let swap-cols(mat, a, b) = {
-  let new = mat
-  for m in range(mat.len()) {
-    new.at(m).at(a) = mat.at(m).at(b)
-    new.at(m).at(b) = mat.at(m).at(a)
-  }
-  return new
-}
-
-/// Translates a matrix by a vector.
-/// - mat (matrix): The matrix to translate
-/// - vec (vector): The vector to translate by.
-#let translate(mat, vec) = {
-  return mul-mat(
-    mat,
-    transform-translate(
-      vec.at(0),
-      -vec.at(1),
-      vec.at(2),
-    ),
-  )
 }
