@@ -130,7 +130,7 @@
 
   let t = (
     // Translate & rotate to the target coordinate & direction
-    matrix.transform-translate(..pos),
+    matrix.transform-translate(..pos.slice(0, 3)),
     matrix.transform-rotate-dir(dir, up),
     matrix.transform-rotate-z(-90deg),
 
@@ -142,7 +142,7 @@
     }),
 
     // Translate mark to have its anchor (tip, base, center) at (0,0)
-    matrix.transform-translate(..vector.scale(origin, if reverse {1} else {-1})),
+    matrix.transform-translate(..vector.scale(origin.slice(0, 3), if reverse {1} else {-1})),
 
     // Mirror on x and/or y axis
     if not flip or reverse {
