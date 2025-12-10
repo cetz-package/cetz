@@ -1177,8 +1177,15 @@
       bounds-center = matrix.mul4x4-vec3(ctx.transform,
         vector.as-vec(bounds-center, init: (0, 0, 0)))
 
-      let east-dir = vector.rotate-z((1, 0, 0), angle)
-      let north-dir = vector.rotate-z((0, 1, 0), angle)
+      let rotate-z(v, angle) = {
+        let (x, y, _) = v
+        v.at(0) = x * calc.cos(angle) - y * calc.sin(angle)
+        v.at(1) = x * calc.sin(angle) + y * calc.cos(angle)
+        return v
+      }
+
+      let east-dir = rotate-z((1, 0, 0), angle)
+      let north-dir = rotate-z((0, 1, 0), angle)
       let east-scaled = vector.scale(east-dir, +w)
       let west-scaled = vector.scale(east-dir, -w)
       let north-scaled = vector.scale(north-dir, +h)

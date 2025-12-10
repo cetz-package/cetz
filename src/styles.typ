@@ -3,7 +3,7 @@
 #let default = (
   fill: none,
   fill-rule: "non-zero",
-  stroke: black + 1pt,
+  stroke: (paint: black, thickness: 1pt),
   radius: 1,
   /// Bezier shortening mode:
   ///   - "LINEAR" Moving the affected point and it's next control point (like TikZ "quick" key)
@@ -29,7 +29,7 @@
     symbol: none,     // Mark symbol
     xy-up: (0, 0, 1), // Up vector for 2D marks
     z-up: (0, 1, 0),  // Up vector for 3D marks
-    stroke: auto,
+    stroke: (dash: "solid"),
     fill: auto,
     slant: none,      // Slant factor - 0%: no slant, 100%: 45 degree slant
     harpoon: false,
@@ -152,40 +152,48 @@
   ),
 )
 
-#let _is-stroke-compatible-type(value) = {
-  return (type(value) in (stroke, color, length, gradient, tiling) or
-          (type(value) == dictionary and value.keys().all(k => k in (
-            "paint", "thickness", "join", "cap", "miter-limit", "dash"
-          ))))
+// Convert a stroke object to a dictionary
+#let _stroke-to-dict(s) = {
+  let t = type(s)
+  if t in (color, gradient, tiling) {
+    return (paint: s)
+  } else if t == length {
+    return (thickness: s)
+  } else if t == stroke {
+    return (
+      paint: s.paint,
+      thickness: s.thickness,
+      join: s.join,
+      cap: s.cap,
+      miter-limit: s.miter-limit,
+      dash: s.dash,
+    )
+  }
+  return (thickness: 0pt)
 }
 
-#let _fold-stroke(bottom, top) = {
-  if bottom == none {
-    return top
+// This is a little hack to convert all
+// stroke compatible value with the key "stroke"
+// or all stroke values to dictionaries, so we
+// can properly merge them. Typst currently
+// does not support merging two stroke types and
+// also provides no easy method of constructing
+// complex stroke objects.
+#let _fix-types-recursive(dict) = {
+  let fix(dict) = {
+    for (key, value) in dict {
+      if value != auto {
+        if type(value) == std.stroke or (key == "stroke" and type(value) in (std.length, std.tiling, std.gradient, std.color)) {
+          dict.insert(key, _stroke-to-dict(value))
+        } else if type(value) == dictionary {
+          dict.insert(key, fix(value))
+        }
+      }
+    }
+    return dict
   }
-
-  let bottom-type = type(bottom)
-  let top-type = type(top)
-
-  if bottom-type in (color, gradient, tiling) {
-    bottom = (paint: bottom)
-  } else if bottom-type == length {
-    bottom = (thickness: bottom)
-  } else {
-    bottom = util.resolve-stroke(bottom)
-  }
-
-  if top-type in (color, gradient, tiling) {
-    top = (paint: top)
-  } else if top-type == length {
-    top = (thickness: top)
-  } else {
-    top = util.resolve-stroke(top)
-  }
-
-  return util.merge-dictionary(bottom, top)
+  return fix(dict)
 }
-
 
 #let _fold-value(bottom, top, merge-dictionary-fn: util.merge-dictionary) = {
   // Inherit base value
@@ -201,16 +209,6 @@
   // Merge dictionaries
   if type(bottom) == dictionary and type(top) == dictionary {
     return merge-dictionary-fn(bottom, top)
-  }
-
-  // Fold strokes with compatible types if both values
-  // are of different type or both values are strokes.
-  //
-  // Note: _fold-stroke returns a dictionary!
-  if ((type(bottom) != type(top) or type(bottom) == stroke) and
-      _is-stroke-compatible-type(bottom) and
-      _is-stroke-compatible-type(top)) {
-    return _fold-stroke(bottom, top)
   }
 
   return top
@@ -258,7 +256,9 @@
 
   let stack = (
     root-dict, base, dict, merge,
-  ).filter(v => v != none and v != auto and v != (:)).rev()
+  ).filter(v => v != none and v != auto and v != (:))
+   .map(_fix-types-recursive)
+   .rev()
 
   // Traverses upwards and folds values with parent values.
   let traverse-up(key, stack) = {
@@ -329,5 +329,6 @@
     return bottom
   }
 
-  return merge-recursive(bottom, top)
+  return merge-recursive(_fix-types-recursive(bottom),
+                         _fix-types-recursive(top))
 }

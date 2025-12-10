@@ -274,23 +274,5 @@
       a2 + (b2 - a2) * t,
     )
   }
-  range(0, l).map(i => {
-    let a = v1.at(i, default: 0)
-    let b = v2.at(i, default: 0)
-    a + (b - a) * t
-  })
-}
-
-/// Rotates a vector of dimension 2 or 3 around the z-axis by an angle.
-/// - v (vector): The vector to rotate.
-/// - angle (angle): The angle to rotate by.
-/// -> vector
-#let rotate-z(v, angle) = {
-  assert(v.len() >= 2, message: "Vector size must be >= 2")
-  let (x, y, ..) = v
-  let c = calc.cos(angle)
-  let s = calc.sin(angle)
-  v.at(0) = x * c - y * s
-  v.at(1) = x * s + y * c
-  return v
+  add(v1, scale(sub(v2, v1), t))
 }

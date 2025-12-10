@@ -124,7 +124,6 @@ To run all tests you can run the `just test` target. You need to have
 [`tytanic`](https://github.com/tingerrr/tytanic/) in your `PATH`: `cargo install tytanic`.
 
 ## Projects using CeTZ
-- [conchord](https://github.com/sitandr/conchord) Package for writing lyrics with chords that generates fretboard diagrams using CeTZ.
 - [finite](https://github.com/jneug/typst-finite) Finite is a Typst package for rendering finite automata.
 - [fletcher](https://github.com/Jollywatt/typst-fletcher) Package for drawing commutative diagrams and figures with arrows.
 - [chronos](https://git.kb28.ch/HEL/chronos) Package for drawing sequence diagrams.
@@ -132,3 +131,8 @@ To run all tests you can run the `just test` target. You need to have
 - [zap](https://github.com/l0uisgrange/zap) Package for drawing standard electronic circuits.
 - [rivet](https://git.kb28.ch/HEL/rivet-typst) Package for drawing instruction / register diagrams.
 - [plotsy-3d](https://github.com/misskacie/plotsy-3d) Package for rendering 3D objects & plots.
+- [alchemist](https://github.com/Typsium/alchemist) A package to render skeletal formulae using a human-readable format using cetz.
+- [deckz](https://github.com/micheledusi/Deckz) Render Poker-Style playing cards.
+- [neural-netz](https://github.com/edgaremy/neural-netz) Visualize neural network architectures.
+- [energy-dia](https://github.com/Typsium/energy-dia) Library for creating professional energy diagrams in chemistry and physics.
+- [conchord](https://github.com/sitandr/conchord) Package for writing lyrics with chords that generates fretboard diagrams.
