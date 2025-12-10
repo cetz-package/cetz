@@ -143,27 +143,5 @@
 /// - v2 (vector): The vector to interpolate to.
 /// - t (float): The factor to interpolate by. A value of `0` is `v1` and a value of `1` is `v2`.
 #let lerp(v1, v2, t) = {
-  return add(
-    v1,
-    scale(
-      sub(
-        v2,
-        v1
-      ),
-      t,
-    )
-  )
-}
-
-/// Rotates a vector of dimension 2 or 3 around the z-axis by an angle.
-/// - v (vector): The vector to rotate.
-/// - angle (angle): The angle to rotate by.
-/// -> vector
-#let rotate-z(v, angle) = {
-  assert(v.len() >= 2,
-    message: "Vector size must be >= 2")
-  let (x, y, ..) = v
-  v.at(0) = x * calc.cos(angle) - y * calc.sin(angle)
-  v.at(1) = x * calc.sin(angle) + y * calc.cos(angle)
-  return v
+  add(v1, scale(sub(v2, v1), t))
 }
