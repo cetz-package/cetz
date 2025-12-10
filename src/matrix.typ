@@ -221,8 +221,10 @@
 /// -> matrix
 #let mul-mat(..matrices) = {
   matrices = matrices.pos()
-  let out = matrices.remove(0)
-  for matrix in matrices {
+  let out = matrices.first()
+  for i in range(1, matrices.len()) {
+    let matrix = matrices.at(i)
+
     // Short circuit multiplication with the neutral element
     if out in _ident {
       out = matrix
