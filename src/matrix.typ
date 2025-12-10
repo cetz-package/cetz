@@ -17,16 +17,24 @@
 
 #let pi = calc.pi
 
+// List of identity matrices of dimension 1 x 1 to 4 x 4
+#let _ident = (
+  ((1.0),),
+  ((1.0, 0.0), (0.0, 1.0)),
+  ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)),
+  ((1.0, 0.0, 0.0, 0.0), (0.0, 1.0, 0.0, 0.0), (0.0, 0.0, 1.0, 0.0), (0.0, 0.0, 0.0, 1.0)),
+)
+
 /// Create a (square) identity matrix with dimensions $"size" times "size"$
 ///
 /// - size (int): Size of the matrix
 /// -> matrix
 #let ident(size) = {
   assert(size >= 1, message: "Invalid dimension")
-
-  range(0, size).map(j => range(0, size).map(k => {
-    if j == k { 1.0 } else { 0.0 }
-  }))
+  return _ident.at(size - 1, default:
+    range(0, size).map(j => range(0, size).map(k => {
+      if j == k { 1.0 } else { 0.0 }
+    })))
 }
 
 /// Create a square matrix with the diagonal set to the
@@ -231,6 +239,14 @@
   matrices = matrices.pos()
   let out = matrices.remove(0)
   for matrix in matrices {
+    // Short circuit multiplication with the neutral element
+    if out in _ident {
+      out = matrix
+      continue
+    } else if matrix in _ident {
+      continue
+    }
+
     let (m, n, p) = (
       ..dim(out),
       dim(matrix).last()
@@ -257,8 +273,17 @@
 /// - vec (vector): The vector to multiply
 /// - w (float): The default value for the fourth element of the vector if it is three dimensional.
 /// -> vector
-#let mul4x4-vec3(mat, vec, w: 1) = {
+#let mul4x4-vec3(mat, vec, w: 1.0) = {
   assert(vec.len() <= 4)
+
+  // Short circuit the neutral element
+  if mat == _ident.at(3) {
+    return (if vec.len() == 2 {
+      (..vec, 0.0)
+    } else {
+      vec
+    }).map(float)
+  }
 
   let x = vec.at(0)
   let y = vec.at(1)
@@ -282,6 +307,9 @@
   let n = mat.at(0).len()
   assert(n == vec.len(), message: "Matrix columns must be equal to vector rows")
 
+  // Short circuit the neutral element
+  if mat in _ident { return vec }
+
   let new = (0,) * m
   for i in range(0, m) {
     for j in range(0, n) {
@@ -295,6 +323,11 @@
 /// - matrix (matrix): The matrix to inverse.
 /// -> matrix
 #let inverse(matrix) = {
+  // The identity is self inverse
+  if matrix in _ident {
+    return matrix
+  }
+
   let n = {
     let size = dim(matrix)
     assert.eq(size.first(), size.last(), message: "Matrix must be square to perform inversion.")
