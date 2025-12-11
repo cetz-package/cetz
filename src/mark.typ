@@ -116,13 +116,10 @@
   }
 
   assert(style.anchor in ("tip", "base", "center"))
-  let tip = mark.tip
-  let center = mark.at("center", default: tip)
-  let base = mark.at("base", default: tip)
-
-  // Mirror anchors on mark center
-  if reverse {
-    (tip, base) = (base, tip)
+  let (tip, base, center) = if reverse {
+    (mark.reverse-tip, mark.reverse-base, mark.reverse-center)
+  } else {
+    (mark.tip, mark.base, mark.center)
   }
 
   let origin = (tip: tip, base: base, center: center).at(style.anchor)
@@ -141,7 +138,7 @@
       vector.angle2(base, tip)
     }),
 
-    // Translate mark to have its anchor (tip, base, center) at (0,0)
+    // Translate mark to have its anchor (tip, base) at (0,0)
     matrix.transform-translate(..vector.scale(origin, if reverse {1} else {-1})),
 
     // Mirror on x and/or y axis
@@ -213,14 +210,25 @@
     return (anchor-fn)(name)
   }
 
-  let tip = get-anchor("tip", default: (0, 0, 0))
-  let base = get-anchor("base", default: tip)
-  let center = get-anchor("center", default: vector.lerp(tip, base, .5))
+  let tip = get-anchor("tip")
+  assert.ne(tip, none, message: "Mark has no 'tip' anchor!")
+  let base = get-anchor("base")
+  assert.ne(base, none, message: "Mark has no 'base' anchor!")
+  let center = get-anchor("center", default:
+    vector.lerp(tip, base, 0.5))
+
+  let reverse-tip = get-anchor("reverse-tip", default: base)
+  let reverse-base = get-anchor("reverse-base", default: tip)
+  let reverse-center = get-anchor("reverse-center", default:
+    vector.lerp(reverse-tip, reverse-base, 0.5))
 
   return (
     tip: tip,
     base: base,
     center: center,
+    reverse-tip: reverse-tip,
+    reverse-base: reverse-base,
+    reverse-center: reverse-center,
     length: vector.dist(tip, base),
     drawables: drawables,
   )
