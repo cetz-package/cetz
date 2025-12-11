@@ -59,24 +59,12 @@
   return (m.len(), if m.len() > 0 { m.at(0).len() } else { 0 })
 }
 
-/// Returns the nth column of a matrix as a {{vector}}
+/// Returns the n-th column of a matrix as a {{vector}}
 /// - mat (matrix): Input matrix
 /// - n (int): The column's index
 /// -> vector
 #let column(mat, n) = {
   range(0, mat.len()).map(m => mat.at(m).at(n))
-}
-
-/// Replaces the nth column of a matrix with the given vector.
-/// - mat (matrix): Input matrix.
-/// - n (int): The index of the column to replace
-/// - vec (vector): The column data to insert.
-/// -> matrix
-#let set-column(mat, n, vec) = {
-  assert(vec.len() == mat.len())
-  for m in range(0, mat.len()) {
-    mat.at(m).at(n) = vec.at(m)
-  }
 }
 
 /// Rounds each value in the matrix to a precision.
