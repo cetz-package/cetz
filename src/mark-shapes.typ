@@ -276,18 +276,24 @@
 
     let (l, w) = (style.length, style.width)
 
-    let ctrl-a = (l, 0)
-    let ctrl-b = (0, 0)
+    let thickness = style.canvas-thickness / 2
+    let offset = if not style.reverse {
+      thickness
+    } else { 0 }
+    let ctrl-a = (l + offset, 0)
+    let ctrl-b = (0 + offset, 0)
 
     merge-path({
-      bezier((l, w / 2), (0, 0), ctrl-a, ctrl-b)
+      bezier((l + offset, w / 2), (offset, 0), ctrl-a, ctrl-b)
       if not style.harpoon {
-        bezier((0, 0), (l, -w / 2), ctrl-b, ctrl-a)
+        bezier((offset, 0), (l + offset, -w / 2), ctrl-b, ctrl-a)
       }
     }, ..style)
 
-    let offset = style.canvas-thickness / 2
-    create-tip-and-base-anchor(style, (-offset, 0), (2 * offset, 0))
+    anchor("tip", (0, 0))
+    anchor("base", (thickness, 0))
+    anchor("reverse-tip", (0, 0))
+    anchor("reverse-base", (-thickness, 0))
   },
   plus: (style) => {
     import "/src/draw.typ": *
@@ -322,6 +328,20 @@
 
     create-tip-and-base-anchor(style, (0, 0), (0, 0))
   },
+  parenthesis: (style) => {
+    import "/src/draw.typ": *
+
+    let thickness = style.canvas-thickness
+    let width = style.width / 2
+    let angle = style.at("angle", default: 80deg) / 2
+    let radius = width / calc.sin(angle)
+    let offset = radius / 4 + style.canvas-thickness / 2
+
+    arc((-offset, 0), radius: radius, start: -angle, stop: angle, anchor: "center")
+
+     anchor("tip", (0, 0))
+     anchor("base", (-thickness, 0))
+  },
 )
 #let names = marks.keys()
 
@@ -344,7 +364,8 @@
   "x":  ("x",        (:)),
   "*":  ("star",     (:)),
   ")>": ("curved-stealth", (:)),
-  ">>": ("stealth",  (:))
+  ">>": ("stealth",  (:)),
+  ")":  ("parenthesis", (:)),
 )
 
 // Get a mark shape + reverse tuple for a mark name

@@ -54,11 +54,37 @@
 /// ```
 ///
 /// - symbol (str): Mark name
-/// - mnemonic (none,str): Mark short name
+/// - mnemonic (none, str): Mark short name
 /// - body (function): Mark drawing callback, receiving the mark style as argument and returning elements. Format `(styles) => elements`.
-#let register-mark(symbol, body, mnemonic: none) = {
+/// - tip (none, number, coordinate): Tip coordinate (if passed a number, the y component is 0)
+/// - base (none, number, coordinate): Base coordinate (see tip)
+/// - center (none, number, coordinate): Center coordinate (see tip)
+/// - reverse-tip (none, number, coordinate): Reversed tip coordinate (see tip)
+/// - reverse-base (none, number, coordinate): Reversed base coordinate (see tip)
+/// - reverse-center (none, number, coordinate): Reversed center coordinate (see tip)
+#let register-mark(symbol, body, mnemonic: none, tip: none, base: none, center: none, reverse-tip: none, reverse-base: none, reverse-center: none) = {
+  import "/src/draw/grouping.typ": anchor
+
   assert(type(symbol) == str)
   assert(type(body) == function)
+  assert(type(mnemonic) in (none, str))
+
+  // Generate anchors, if passed via arguments
+  let anchors = (("tip", tip), ("base", base), ("reverse-tip", reverse-tip), ("reverse-base", reverse-base)).map(((key, value)) => {
+    if value != none {
+      // Translate atomic values to vectors with the y-component set to 0.
+      if type(value) in (int, float) {
+        value = (value, 0.0)
+      }
+
+      anchor(key, value)
+    }
+  }).filter(v => v != none)
+
+  // Prepend generated anchors to the body function
+  let new-body = (ctx) => {
+    anchors + body(ctx)
+  }
 
   (ctx => {
     ctx.marks.marks.insert(symbol, body)
