@@ -6,6 +6,9 @@
 - The content element now supports the `wrap:` style to apply a function to they Typst content (e.g. applying text attributes) (#964)
 - The PDF API-Reference is back: manual.pdf (#974)
 - All docstrings are now written in Typst (#974)
+- Custom marks now support dedicated `reverse-tip`, `-base` and `-center`
+  anchors (#1003)
+- The `register-mark` function now supports passing anchor coordinates (#1003)
 
 # 0.4.2
 - The `tree` element now has a `anchor:` argument to position the tree (#929)
