@@ -266,13 +266,7 @@
       (bounds.low.at(1), bounds.high.at(1)) = (bounds.high.at(1), bounds.low.at(1))
       let center = aabb.mid(bounds)
       let (width, height, _) = aabb.size(bounds)
-      let path = drawable.line-strip((
-          (bounds.low.at(0), bounds.high.at(1)),
-          bounds.high,
-          (bounds.high.at(0), bounds.low.at(1)),
-          bounds.low,
-        ), close: true)
-
+      let path = drawable.line-strip(aabb.corner-points(bounds), close: true)
       (center, width, height, path)
     } else { (none,) * 4 }
 
@@ -315,7 +309,7 @@
       border-anchors: bounds != none,
       radii: (width, height),
       path: path,
-      nested-anchors: true
+      nested-anchors: true,
     )
 
     // Pass-through shared context data

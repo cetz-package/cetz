@@ -47,8 +47,8 @@
   let test-line = (
     center,
     (
-      center.at(0) + x-dist * calc.cos(angle),
-      center.at(1) + y-dist * calc.sin(angle),
+      center.at(0) + calc.abs(x-dist) * calc.cos(angle),
+      center.at(1) + calc.abs(y-dist) * calc.sin(angle),
       center.at(2),
     )
   )

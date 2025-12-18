@@ -19,6 +19,29 @@
   return vector.scale(vector.add(bounds.low, bounds.high), .5)
 }
 
+/// Get four corner points of the AABB as vectors.
+///
+/// - bounds (aabb): The AABB
+/// - fron (bool): Return the corner points for the high z component
+/// -> array of vectors
+#let corner-points(bounds, front: true) = {
+  let z = if front {
+    bounds.high.at(2)
+  } else {
+    bounds.low.at(2)
+  }
+
+  let (hx, hy, hz) = bounds.high
+  let (lx, ly, lz) = bounds.low
+
+  return (
+    (hx, hy, z),
+    (hx, ly, z),
+    (lx, ly, z),
+    (lx, hy, z),
+  )
+}
+
 /// Get the size of an aabb as vector. This is a vector from the aabb's low to high.
 ///
 /// - bounds (aabb): The aabb to get the size of.

@@ -3,10 +3,10 @@
 
 #let show-group(body: ()) = {
   draw.group({
-    body + draw.rect((-2,-2), (2,2))
+    body + draw.rect((-2, -2), (2, 2))
   }, name: "g")
   draw.for-each-anchor("g", n => {
-    draw.content("g."+n, n)
+    draw.content("g." + n, n)
   })
 }
 
