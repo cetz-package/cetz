@@ -67,7 +67,7 @@
 
   assert(type(symbol) == str)
   assert(type(body) == function)
-  assert(type(mnemonic) in (none, str))
+  assert(type(mnemonic) in (type(none), str))
 
   // Generate anchors, if passed via arguments
   let anchors = (("tip", tip), ("base", base), ("reverse-tip", reverse-tip), ("reverse-base", reverse-base)).map(((key, value)) => {
