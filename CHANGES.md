@@ -9,6 +9,7 @@
 - Custom marks now support dedicated `reverse-tip`, `-base` and `-center`
   anchors (#1003)
 - The `register-mark` function now supports passing anchor coordinates (#1003)
+- Fixed mark elements inheriting element styles (#1008)
 
 # 0.4.2
 - The `tree` element now has a `anchor:` argument to position the tree (#929)

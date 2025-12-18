@@ -281,6 +281,7 @@
     style = merge-flag(style, "reverse")
     style = merge-flag(style, "flip")
     style = merge-flag(style, "harpoon")
+    style.mark = none
 
     let mark = _eval-mark-shape-and-anchors(ctx, mark-fn(style), style)
     let offset = style.at("offset", default: 0)
