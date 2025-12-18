@@ -2,6 +2,45 @@
 #import "path-util.typ"
 #import "vector.typ"
 
+// Custom line function without all the special logic
+// we do not need.
+#let fast-line(..pts, stroke: none, fill: none, fill-rule: "non-zero", close: false) = {
+  let pts = pts.pos()
+  (ctx => {
+    let transform = ctx.transform
+    let drawables = drawable.line-strip(pts,
+      stroke: stroke, fill: fill, close: close,
+      fill-rule: fill-rule)
+
+    return (
+      ctx: ctx,
+      drawables: drawable.apply-transform(transform, drawables),
+    )
+  },)
+}
+
+// Tiny bezier element.
+#let fast-bezier(..pts, stroke: none, fill: none, fill-rule: "non-zero") = {
+  import "bezier.typ" as bezier_
+
+  let pts = pts.pos()
+  if pts.len() == 3 {
+    pts = bezier_.quadratic-to-cubic(..pts)
+  }
+
+  let (p1, p2, p3, p4) = pts
+  (ctx => {
+    let transform = ctx.transform
+    let drawables = drawable.path(((p1, false, (("c", p3, p4, p2),)),),
+      stroke: stroke, fill: fill, fill-rule: fill-rule)
+
+    return (
+      ctx: ctx,
+      drawables: drawable.apply-transform(transform, drawables),
+    )
+  },)
+}
+
 // Calculate triangular tip offset, depending on the strokes
 // join type.
 //
@@ -99,32 +138,30 @@
 // (style) => (<elements..>)
 #let marks = (
   triangle: (style) => {
-    import "/src/draw.typ": *
-
-    if style.harpoon {
-      line((0,0), (style.length, 0), (style.length, style.width / 2), close: true)
+    let pts = if style.harpoon {
+      ((0,0), (style.length, 0), (style.length, style.width / 2))
     } else {
-      line((0,0), (style.length, -style.width / 2), (style.length, style.width / 2), close: true)
+      ((0,0), (style.length, -style.width / 2), (style.length, style.width / 2))
     }
 
+    fast-line(..pts, stroke: style.stroke, fill: style.fill, close: true)
     create-triangle-tip-and-base-anchor(style, (0, 0), (style.length, 0))
   },
   // A mark in the shape of an arrow tip.
   stealth: (style) => {
-    import "/src/draw.typ": *
-
     let (l, w, i) = (style.length, style.width, style.inset)
 
-    if style.harpoon {
-      line((0,0), (l, w / 2), (l - i, 0), close: true)
+    let pts = if style.harpoon {
+      ((0,0), (l, w / 2), (l - i, 0))
     } else {
-      line((0,0), (l, w / 2), (l - i, 0), (l, -w / 2), close: true)
+      ((0,0), (l, w / 2), (l - i, 0), (l, -w / 2))
     }
 
+    fast-line(..pts, stroke: style.stroke, fill: style.fill, close: true)
     create-triangle-tip-and-base-anchor(style, (0, 0), (l - i, 0))
   },
   curved-stealth: (style) => {
-    import "/src/draw.typ": *
+    import "/src/draw.typ": merge-path
 
     let (l, w, i) = (style.length, style.width, style.inset)
 
@@ -132,18 +169,18 @@
     style.stroke.join = "round"
 
     merge-path(
-      fill: style.fill,
       stroke: style.stroke,
+      fill: style.fill,
       close: true, {
-        bezier(
+        fast-bezier(
           (0, 0),
           (l, w / 2),
           (l / 3, w / 8))
-        bezier(
+        fast-bezier(
           (l, w / 2),
           (l, -w / 2),
           (l - i, 0))
-        bezier(
+        fast-bezier(
           (l, -w / 2),
           (0, 0),
           (l / 3, -w / 8))
@@ -154,29 +191,30 @@
     create-triangle-tip-and-base-anchor(style, (0, 0), (l - i + thickness / 2, 0))
   },
   bar: (style) => {
-    import "/src/draw.typ": line, anchor
+    import "/src/draw.typ": anchor
 
     let w = style.width
 
-    if style.harpoon {
-      line((0, w / 2), (0, 0))
+    let pts = if style.harpoon {
+      ((0, w / 2), (0, 0))
     } else {
-      line((0, w / 2), (0, -w / 2))
+      ((0, w / 2), (0, -w / 2))
     }
 
+    fast-line(..pts, stroke: style.stroke, fill: style.fill)
     let offset = style.canvas-thickness / 2
     create-tip-and-base-anchor(style, (-offset, 0), (offset, 0))
     anchor("center", (0, 0))
   },
   ellipse: (style) => {
-    import "/src/draw.typ": *
+    import "/src/draw.typ": arc, circle
 
     let r = (style.length / 2, style.width / 2)
 
     if style.harpoon {
-      arc((0, 0), delta: -180deg, start: 0deg, radius: r, anchor: "origin", mode: "PIE")
+      arc((0, 0), stroke: style.stroke, fill: style.fill, delta: -180deg, start: 0deg, radius: r, anchor: "origin", mode: "PIE")
     } else {
-      circle((0, 0), radius: r)
+      circle((0, 0), radius: r, fill: style.fill, stroke: style.stroke)
     }
 
     create-tip-and-base-anchor(style, (r.at(0), 0), (-r.at(0), 0), respect-stroke-thickness: true)
@@ -187,37 +225,35 @@
     let r = calc.min(style.length, style.width) / 2
 
     if style.harpoon {
-      arc((0, 0), delta: -180deg, start: 0deg, radius: r, anchor: "origin", mode: "PIE")
+      arc((0, 0), delta: -180deg, start: 0deg, radius: r, anchor: "origin", mode: "PIE", stroke: style.stroke, fill: style.fill)
     } else {
-      circle((0, 0), radius: r)
+      circle((0, 0), radius: r, fill: style.fill, stroke: style.stroke)
     }
 
     create-tip-and-base-anchor(style, (r, 0), (-r, 0), respect-stroke-thickness: true)
   },
   bracket: (style) => {
-    import "/src/draw.typ": *
-
     let (l, w, i) = (style.length, style.width, style.inset)
 
-    if style.harpoon {
-      line((l + i, w / 2), (0, w / 2), (0, 0), fill: none)
+    let pts = if style.harpoon {
+      ((l + i, w / 2), (0, w / 2), (0, 0))
     } else {
-      line((l + i, w / 2), (0, w / 2), (0, -w / 2), (l + i, -w / 2), fill: none)
+      ((l + i, w / 2), (0, w / 2), (0, -w / 2), (l + i, -w / 2))
     }
 
+    fast-line(..pts, stroke: style.stroke, fill: none)
     create-tip-and-base-anchor(style, (0, 0), (0, 0), respect-stroke-thickness: true)
   },
   diamond: (style) => {
-    import "/src/draw.typ": *
-
     let (l, w) = (style.length, style.width)
 
-    if style.harpoon {
-      line((0,0), (l / 2, w / 2), (l, 0), close: true)
+    let pts = if style.harpoon {
+      ((0,0), (l / 2, w / 2), (l, 0))
     } else {
-      line((0,0), (l / 2, w / 2), (l, 0), (l / 2, -w / 2), close: true)
+      ((0,0), (l / 2, w / 2), (l, 0), (l / 2, -w / 2))
     }
 
+    fast-line(..pts, stroke: style.stroke, fill: style.fill, close: true)
     create-diamond-tip-and-base-anchor(style, (0, 0), (l, 0))
   },
   rect: (style) => {
@@ -226,42 +262,41 @@
     let (l, w) = (style.length, style.width)
 
     if style.harpoon {
-      rect((0, -w / 2), (-l, +w / 2))
+      rect((0, -w / 2), (-l, +w / 2), stroke: style.stroke)
     } else {
-      rect((0, -w / 2), (-l, +w / 2))
+      rect((0, -w / 2), (-l, +w / 2), stroke: style.stroke)
     }
 
     create-tip-and-base-anchor(style, (0, 0), (-l, 0), respect-stroke-thickness: true)
   },
   hook: (style) => {
-    import "/src/draw.typ": *
+    import "/src/draw.typ": merge-path, arc
 
     let r = calc.min(style.length, style.width / 2) / 2
     let (l, i) = (style.length, style.inset)
 
     merge-path({
-      line((i, -2 * r), (0, -2 * r))
+      fast-line((i, -2 * r), (0, -2 * r))
       arc((0, 0), delta: -180deg, start: -90deg, radius: r, anchor: "end")
       if not style.harpoon {
         arc((0, 0), delta: -180deg, start: -90deg, radius: r, anchor: "start")
-        line((i, +2 * r), (0, +2 * r))
+        fast-line((i, +2 * r), (0, +2 * r))
       }
-    }, fill: none)
+    }, stroke: style.stroke, fill: none)
 
     create-tip-and-base-anchor(style, (-r, 0), (0, 0), center: ((-r + i) / 2, 0))
   },
   // An unfilled mark in the shape of an angle bracket (>).
   straight: (style) => {
-    import "/src/draw.typ": *
-
     let (l, w) = (style.length, style.width)
 
-    if style.harpoon {
-      line((l, w / 2), (0, 0), fill: none)
+    let pts = if style.harpoon {
+      ((l, w / 2), (0, 0))
     } else {
-      line((l, w / 2), (0, 0), (l, -w / 2), fill: none)
+      ((l, w / 2), (0, 0), (l, -w / 2))
     }
 
+    fast-line(..pts, stroke: style.stroke, fill: none)
     if style.harpoon {
       create-tip-and-base-anchor(style, (0, 0), (0, 0))
     } else {
@@ -269,7 +304,7 @@
     }
   },
   barbed: (style) => {
-    import "/src/draw.typ": *
+    import "/src/draw.typ": merge-path, anchor
 
     let style = style
     style.stroke.join = "round"
@@ -284,9 +319,9 @@
     let ctrl-b = (0 + offset, 0)
 
     merge-path({
-      bezier((l + offset, w / 2), (offset, 0), ctrl-a, ctrl-b)
+      fast-bezier((l + offset, w / 2), (offset, 0), ctrl-a, ctrl-b)
       if not style.harpoon {
-        bezier((offset, 0), (l + offset, -w / 2), ctrl-b, ctrl-a)
+        fast-bezier((offset, 0), (l + offset, -w / 2), ctrl-b, ctrl-a)
       }
     }, ..style)
 
@@ -296,34 +331,28 @@
     anchor("reverse-base", (-thickness, 0))
   },
   plus: (style) => {
-    import "/src/draw.typ": *
-
     let (l, w) = (style.length, style.width)
 
-    line((-l / 2, 0), (+l / 2, 0))
-    line((0, -w / 2), (0, +w / 2))
+    fast-line((-l / 2, 0), (+l / 2, 0), stroke: style.stroke)
+    fast-line((0, -w / 2), (0, +w / 2), stroke: style.stroke)
 
     create-tip-and-base-anchor(style, (0, 0), (0, 0))
   },
   x: (style) => {
-    import "/src/draw.typ": *
-
     let (l, w) = (style.length, style.width)
 
-    line((-l / 2, w / 2), (+l / 2, -w / 2))
-    line((-l / 2, -w / 2), (+l / 2, +w / 2))
+    fast-line((-l / 2, w / 2), (+l / 2, -w / 2), stroke: style.stroke)
+    fast-line((-l / 2, -w / 2), (+l / 2, +w / 2), stroke: style.stroke)
 
     create-tip-and-base-anchor(style, (0, 0), (0, 0))
   },
   star: (style) => {
-    import "/src/draw.typ": *
-
     let (l, w) = (style.length, style.width)
 
     let n = 5
     for i in range(0, n) {
       let a = 360deg / n * i
-      line((0, 0), (calc.cos(a) * l / 2, calc.sin(a) * w / 2))
+      fast-line((0, 0), (calc.cos(a) * l / 2, calc.sin(a) * w / 2), stroke: style.stroke)
     }
 
     create-tip-and-base-anchor(style, (0, 0), (0, 0))
@@ -337,10 +366,10 @@
     let radius = width / calc.sin(angle)
     let offset = radius / 4 + style.canvas-thickness / 2
 
-    arc((-offset, 0), radius: radius, start: -angle, stop: angle, anchor: "center")
+    arc((-offset, 0), stroke: style.stroke, radius: radius, start: -angle, stop: angle, anchor: "center")
 
-     anchor("tip", (0, 0))
-     anchor("base", (-thickness, 0))
+    anchor("tip", (0, 0))
+    anchor("base", (-thickness, 0))
   },
 )
 #let names = marks.keys()

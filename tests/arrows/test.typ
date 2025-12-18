@@ -13,7 +13,7 @@
     set-style(fill: blue, mark: (fill: auto))
     rotate(90deg)
 
-    let marks = (">", "<", "|", "<>", "o")
+    let marks = (">", "<", "|", "<>", "o") //(">", "<", "|", "<>", "o")
     for m in marks {
         next((end: m))
     }
@@ -32,7 +32,7 @@
     for m in marks {
         next((start: m))
     }
-} )
+})
 
 #test-case({
   import draw: *
