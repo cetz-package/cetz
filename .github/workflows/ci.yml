@@ -28,7 +28,7 @@ jobs:
           crate: tytanic
       - uses: typst-community/setup-typst@v3
         with:
-          typst-version: '0.14.1'
+          typst-version: '0.14.2'
           cache-dependency-path: src/deps.typ
       - run: |
           typst --version
