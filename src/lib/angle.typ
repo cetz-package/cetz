@@ -111,6 +111,7 @@
   draw.anchor("end", end-pt)
   draw.anchor("a", a)
   draw.anchor("b", b)
+  draw.anchor("center", ("a", 50%, "b"))
 
   if delta != 0deg {
     if style.fill != none {
@@ -203,4 +204,5 @@
   draw.anchor("origin", origin)
   draw.anchor("corner", vm)
   draw.anchor("label", label-pt)
+  draw.anchor("center", ("a", 50%, "b"))
 })

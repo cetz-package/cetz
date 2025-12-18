@@ -1,40 +1,49 @@
 #import "vector.typ"
 #import "util.typ"
 
-/// Checks for a line-line intersection between the given points and returns its position, otherwise {{none}}.
+/// Checks for a line-line intersection between the given points and returns
+/// its position, otherwise {{none}}.
 ///
-/// - a (vector): Line 1 point 1
-/// - b (vector): Line 1 point 2
-/// - c (vector): Line 2 point 1
-/// - d (vector): Line 2 point 2
-/// - ray (bool): When `true`, intersections will be found for the whole line instead of inbetween the given points.
-/// -> none
-/// -> vector
-#let line-line(a, b, c, d, ray: false) = {
-  let lli8(x1, y1, x2, y2, x3, y3, x4, y4) = {
-    let nx = (x1*y2 - y1*x2)*(x3 - x4)-(x1 - x2)*(x3*y4 - y3*x4)
-    let ny = (x1*y2 - y1*x2)*(y3 - y4)-(y1 - y2)*(x3*y4 - y3*x4)
-    let d = (x1 - x2)*(y3 - y4)-(y1 - y2)*(x3 - x4)
-    if d == 0 {
-      return none
-    }
-    return (nx / d, ny / d, 0)
+/// - p1 (vector): Point 1
+/// - p2 (vector): Point 2
+/// - p3 (vector): Point 3
+/// - p4 (vector): Point 4
+/// - ray (bool): If true, handle both lines as infinite rays
+/// - eps (float): Epsilon
+/// -> vector The intersection point between both lines
+/// -> none None, if both lines are parallel
+#let line-line(p1, p2, p3, p4, ray: false, eps: 1e-6) = {
+  let (x1, y1, z1, ..) = if p1.len() >= 3 { p1 } else { (..p1, 0) }
+  let (x2, y2, z2, ..) = if p2.len() >= 3 { p2 } else { (..p2, 0) }
+  let (x3, y3, z3, ..) = if p3.len() >= 3 { p3 } else { (..p3, 0) }
+  let (x4, y4, z4, ..) = if p4.len() >= 3 { p4 } else { (..p4, 0) }
+
+  let d-21-21 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1)
+  let d-43-43 = (x4 - x3) * (x4 - x3) + (y4 - y3) * (y4 - y3) + (z4 - z3) * (z4 - z3)
+  let d-43-21 = (x4 - x3) * (x2 - x1) + (y4 - y3) * (y2 - y1) + (z4 - z3) * (z2 - z1)
+  let d-13-43 = (x1 - x3) * (x4 - x3) + (y1 - y3) * (y4 - y3) + (z1 - z3) * (z4 - z3)
+  let d-13-21 = (x1 - x3) * (x2 - x1) + (y1 - y3) * (y2 - y1) + (z1 - z3) * (z2 - z1)
+
+  let d = calc.round((d-21-21 * d-43-43 - d-43-21 * d-43-21), digits: 6)
+  if calc.abs(d) < eps {
+    return none
   }
-  let pt = lli8(a.at(0), a.at(1), b.at(0), b.at(1),
-                c.at(0), c.at(1), d.at(0), d.at(1))
-  if pt != none {
-    let on-line(pt, a, b) = {
-      let (x, y, ..) = pt
-      let epsilon = util.float-epsilon
-      let mx = calc.min(a.at(0), b.at(0)) - epsilon
-      let my = calc.min(a.at(1), b.at(1)) - epsilon
-      let Mx = calc.max(a.at(0), b.at(0)) + epsilon
-      let My = calc.max(a.at(1), b.at(1)) + epsilon
-      return mx <= x and Mx >= x and my <= y and My >= y
+
+  let m-a = (d-13-43 * d-43-21 - d-13-21 * d-43-43) / d
+  let m-b = (d-13-43 + m-a * d-43-21) / d-43-43
+
+  let a = (x1 + m-a * (x2 - x1), y1 + m-a * (y2 - y1), z1 + m-a * (z2 - z1))
+  let b = (x3 + m-b * (x4 - x3), y3 + m-b * (y4 - y3), z3 + m-b * (z4 - z3))
+  let d-ab = vector.dist(a, b)
+
+  return if calc.abs(d-ab) < eps {
+    if ray or (m-a >= -eps and m-a <= 1 + eps and m-b >= -eps and m-b <= 1 + eps) {
+      a
+    } else {
+      none
     }
-    if ray or (on-line(pt, a, b) and on-line(pt, c, d)) {
-      return pt
-    }
+  } else {
+    none
   }
 }
 
