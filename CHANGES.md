@@ -10,6 +10,8 @@
   anchors (#1003)
 - The `register-mark` function now supports passing anchor coordinates (#1003)
 - Fixed mark elements inheriting element styles (#1008)
+- **BREAKING** The `ortho` element no longer accepts a `name:` argument but
+  leaks elements (like `scope` does) (#1004)
 
 # 0.4.2
 - The `tree` element now has a `anchor:` argument to position the tree (#929)

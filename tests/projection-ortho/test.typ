@@ -147,3 +147,14 @@
     content((0,0), [Text])
   })
 })
+
+// #1004 - Leak objects to the outside
+#test-case({
+  import draw: *
+  ortho({
+    on-xz({ circle((0, 2, 2), name: "a") })
+    on-yz({ circle((2, 0, 0), name: "b") })
+  })
+
+  line("a", "b")
+})

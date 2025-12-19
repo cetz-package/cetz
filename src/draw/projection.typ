@@ -136,7 +136,7 @@
 ///   or `"ccw"` for counter-clockwise. Polygons of the specified order will not get drawn.
 /// - reset-transform (bool): Ignore the current transformation matrix
 /// - body (element): Elements to draw
-#let ortho(x: 35.264deg, y: 45deg, z: 0deg, sorted: true, cull-face: none, reset-transform: false, body, name: none) = group(name: name, ctx => {
+#let ortho(x: 35.264deg, y: 45deg, z: 0deg, sorted: true, cull-face: none, reset-transform: false, body) = scope(ctx => {
   _projection(body, ortho-matrix(x, y, z), ortho-projection-matrix,
     sorted: sorted,
     cull-face: cull-face,
