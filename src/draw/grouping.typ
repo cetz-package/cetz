@@ -324,8 +324,9 @@
   },)
 }
 
-/// This element acts as a scope, all state changes such as transformations and styling only affect the elements in the group. Elements after the scope are not affected by the changes inside the scope.
-/// In contrast to `group`, the `scope` element does not create a named element itself and "leaks" body element to the outside.
+/// This element acts as a scope, all state changes such as transformations and styling only affect the elements in the scope.
+/// Elements after the scope are not affected by the changes inside the scope.
+/// In contrast to `group`, the `scope` element does not create a named element itself and "leaks" body elements and anchors to the outside.
 ///
 /// - body (elements, function): Elements to group together. A least one is required. A function that accepts `ctx` and returns elements is also accepted.
 #let scope(body) = (ctx => {
@@ -343,6 +344,7 @@
   return (
     ctx: ctx,
     drawables: drawables,
+    leak-nodes: true,
   )
 },)
 

@@ -46,6 +46,12 @@
         ctx.groups.last().push(name)
       }
     }
+  } else if element.at("leak-nodes", default: false) {
+    // #930 We need to pass down nodes from scope if the parent
+    //      element is a group.
+    if ctx.groups.len() > 0 {
+      ctx.groups.last() += ctx.nodes.keys()
+    }
   }
 
   // Draw a debug bounding box.
