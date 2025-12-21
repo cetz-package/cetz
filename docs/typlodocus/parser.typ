@@ -1,61 +1,3 @@
-#let parse-argument-list(string) = {
-  let arguments = ()
-  let current-arg = ""
-  let current-default = ""
-  let named-arg = false
-
-  let depth = 0
-  let in-str = false
-  let in-content = false
-  let escape-next = false
-
-  for char in string.codepoints() {
-    if in-content and not escape-next {
-      if char == "]" { in-content = false }
-    } else if char == "\"" and not escape-next {
-      in-str = not in-str
-    } else if not in-str {
-      if char == "(" {
-        depth += 1
-      } else if char == ")" {
-        depth -= 1
-      } else if char == "[" {
-        in-content = true
-      } else if char == "," and depth == 0 {
-        arguments.push((
-          name: current-arg.trim(),
-          default-value: current-default.trim(),
-          has-default: named-arg,
-        ))
-
-        current-arg = ""
-        current-default = ""
-        named-arg = false
-        continue
-      } else if char == ":" and depth == 0 {
-        named-arg = true
-        continue
-      }
-    }
-
-    if named-arg {
-      current-default += char
-    } else {
-      current-arg += char
-    }
-  }
-
-  if current-arg.trim() != "" {
-    arguments.push((
-      name: current-arg.trim(),
-      default-value: current-default.trim(),
-      has-default: named-arg,
-    ))
-  }
-
-  return arguments
-}
-
 #let parse-function-signature(lines) = {
   let ident = lines
     .first()
@@ -80,8 +22,6 @@
     )
   }
 
-  let param-end-line = -1
-  let param-end-char-pos
   let escape-hit = false
   let delim-stack = ("(",)
   let delim-lut = (
@@ -89,16 +29,46 @@
       "\"",
       "(",
       "[",
+      "{",
     ),
     end: (
       "\"",
       ")",
       "]",
+      "}",
     ),
   )
+  let arguments = ()
+  let current-arg = (
+    name: "",
+    default-value: "",
+    has-default: false,
+  )
+  let marker-lut = (
+    ":",
+    ",",
+  )
+  let in-named-arg = false
+  let indent-ws
+  let indent-re = regex(`^(\s+).*`.text)
 
   for line in lines {
-    param-end-char-pos = -1
+    if delim-stack.len() == 1 {
+      let tmp = line.match(indent-re)
+      if tmp != none { indent-ws = tmp.captures.first().len() }
+
+      line = line.trim(at: start)
+    }
+    if in-named-arg {
+      let stack-top = delim-stack.last()
+
+      if stack-top == delim-lut.start.at(1) or stack-top == delim-lut.start.at(3) {
+        let tmp = line.match(regex(`^(\s{`.text + str(indent-ws) + `}).*`.text))
+        if tmp != none { line = line.slice(2) }
+      }
+
+      current-arg.default-value += "\n"
+    }
 
     for char in line.codepoints() {
       if char == "\\" {
@@ -111,41 +81,72 @@
       }
 
       let stack-top = delim-stack.last()
-      if stack-top == delim-lut.start.first() {
-        if char == delim-lut.end.first() { delim-stack.pop() }
-      } else if stack-top == delim-lut.start.last() {
-        if char == delim-lut.end.last() { delim-stack.pop() }
-      } else {
-        if char in delim-lut.start {
-          delim-stack.push(char)
-        } else if char in delim-lut.end {
-          delim-stack.pop()
-        }
-      }
 
-      param-end-char-pos += 1
-      if delim-stack.len() == 0 { break }
+      if char in delim-lut.start or char in delim-lut.end {
+        if stack-top == delim-lut.start.at(0) {
+          if char == delim-lut.end.at(0) { delim-stack.pop() }
+          if in-named-arg { current-arg.default-value += char }
+        } else if stack-top == delim-lut.start.at(2) {
+          if char == delim-lut.end.at(2) { delim-stack.pop() }
+          if in-named-arg { current-arg.default-value += char }
+        } else if stack-top == delim-lut.start.at(3) {
+          if char == delim-lut.end.at(3) { delim-stack.pop() }
+          if in-named-arg { current-arg.default-value += char }
+        } else {
+          if char in delim-lut.start {
+            delim-stack.push(char)
+            if in-named-arg { current-arg.default-value += char }
+          } else if char in delim-lut.end {
+            if in-named-arg and delim-stack.len() > 1 { current-arg.default-value += char }
+            delim-stack.pop()
+          }
+        }
+
+        if delim-stack.len() == 0 {
+          if current-arg.name.len() != 0 {
+            current-arg.name = current-arg.name.trim()
+            if current-arg.has-default {
+              current-arg.default-value = current-arg.default-value.trim()
+            }
+
+            arguments.push(current-arg)
+          }
+          break
+        }
+      } else if delim-stack.len() == 1 {
+        if char not in marker-lut and not in-named-arg {
+          current-arg.name += char
+        } else if char == marker-lut.first() {
+          in-named-arg = true
+          current-arg.has-default = true
+        } else if char == marker-lut.last() {
+          in-named-arg = false
+
+          current-arg.name = current-arg.name.trim()
+          if current-arg.has-default {
+            current-arg.default-value = current-arg.default-value.trim()
+          }
+          arguments.push(current-arg)
+
+          current-arg = (
+            name: "",
+            default-value: "",
+            has-default: false,
+          )
+        } else if in-named-arg {
+          current-arg.default-value += char
+        }
+      } else if in-named-arg {
+        current-arg.default-value += char
+      }
     }
 
-    param-end-line += 1
     if delim-stack.len() == 0 { break }
   }
 
-  let param-span = lines
-    .slice(0, param-end-line + 1)
-    .enumerate()
-    .fold("", (accum, (line-num, line)) => {
-      if line-num == param-end-line {
-        accum + " " + line.slice(0, param-end-char-pos)
-      } else {
-        accum + " " + line
-      }
-    })
-    .trim()
-
   return (
     name: ident,
-    arguments: parse-argument-list(param-span),
+    arguments: arguments,
   )
 }
 
