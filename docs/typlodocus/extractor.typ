@@ -14,13 +14,13 @@
 
   let i = 0
   while i < lines.len() {
-    let line = lines.at(i).trim()
+    let line = lines.at(i).trim(at: end)
 
     if line.starts-with("///") {
       in-comment = true
-      current-comment += line.slice(3) + "\n"
+      current-comment += line.slice(3).trim() + "\n"
     } else if in-comment {
-      if line.starts-with(regex("\#?let\s+")) {
+      if line.starts-with(regex(`#let\s+`.text)) {
         let function = parser.parse-function-signature(lines.slice(i))
         comments.push((
           comment: parser.parse-docstring(current-comment),
