@@ -18,7 +18,7 @@
 
     if line.starts-with("///") {
       in-comment = true
-      current-comment += line.slice(3).trim() + "\n"
+      current-comment += line.slice(3).trim(at: end) + "\n"
     } else if in-comment {
       if line.starts-with(regex(`#let\s+`.text)) {
         let function = parser.parse-function-signature(lines.slice(i))
