@@ -18,13 +18,12 @@
 
     if line.starts-with("///") {
       in-comment = true
-      current-comment += line.slice(3).trim() + "\n"
+      current-comment += line.slice(3) + "\n"
     } else if in-comment {
       if line.starts-with(regex(`#let\s+`.text)) {
-        let function = parser.parse-function-signature(lines.slice(i))
         comments.push((
-          comment: parser.parse-docstring(current-comment),
-          signature: function,
+          comment: parser.parse-docstring-alt(current-comment),
+          signature: parser.parse-function-signature(lines.slice(i)),
         ))
       }
 
