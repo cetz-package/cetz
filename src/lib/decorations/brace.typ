@@ -179,11 +179,15 @@
       }
     }, close: style.taper, stroke: style.stroke, fill: style.fill)
 
+    // Account for flip when positioning anchors
+    let anchor-amplitude = style.amplitude * (if style.flip { -1 } else { 1 })
+    let anchor-offset = style.content-offset * (if style.flip { -1 } else { 1 })
+
     anchor("start", (0, 0))
     anchor("default", (width / 2, 0))
     anchor("end", (width, 0))
-    anchor("spike", (width / 2, style.amplitude))
-    anchor("content", (width / 2, style.amplitude + style.content-offset))
+    anchor("spike", (width / 2, anchor-amplitude))
+    anchor("content", (width / 2, anchor-amplitude + anchor-offset))
 
     draw.move-to(end)
   })
