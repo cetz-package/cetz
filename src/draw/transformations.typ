@@ -21,9 +21,9 @@
   }
 }
 
-/// Sets the transformation matrix.
+/// Overwrites the transformation matrix.
 ///
-/// - mat (none, matrix): The 4x4 transformation matrix to set. If `none` is passed, the transformation matrix is set to the identity matrix (`matrix.ident()`).
+/// - mat (none, matrix): The 4x4 transformation matrix to set. If `none` is passed, the transformation matrix is set to the identity matrix (`matrix.ident(4)`).
 #let set-transform(mat) = {
   let mat = if mat == none {
     matrix.ident(4)
@@ -41,6 +41,33 @@
 
   (ctx => {
     ctx.transform = mat
+    return (ctx: ctx)
+  },)
+}
+
+/// Applies a $4 times 4$ transformation matrix to the current transformation.
+///
+/// Given the current transformation $C$ and the new transformation $T$,
+/// the function sets the new canvas' transformation $C'$ to $C' = C T$.
+///
+/// - mat (none, matrix): The 4x4 transformation matrix to set. If `none` is passed, the transformation matrix is set to the identity matrix (`matrix.ident(4)`).
+#let transform(mat) = {
+  let mat = if mat == none {
+    matrix.ident(4)
+  } else {
+    matrix.round(mat)
+  }
+
+  assert(
+    type(mat) == array,
+    message: "Transformtion matrix must be of type array, got: " + repr(mat))
+  assert.eq(
+    mat.len(),
+    4,
+    message: "Transformation matrix must be of size 4x4, got: " + repr(mat))
+
+  (ctx => {
+    ctx.transform = matrix.mul-mat(ctx.transform, mat)
     return (ctx: ctx)
   },)
 }
