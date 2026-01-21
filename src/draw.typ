@@ -2,5 +2,5 @@
 #import "draw/transformations.typ": set-transform, transform, rotate, translate, scale, set-origin, move-to, set-viewport
 #import "draw/styling.typ": set-style, fill, stroke, register-mark
 #import "draw/shapes.typ": circle, circle-through, arc, arc-through, mark, line, grid, content, rect, bezier, bezier-through, catmull, hobby, merge-path, polygon, compound-path, n-star, rect-around, svg-path
-#import "draw/projection.typ": ortho, on-xy, on-xz, on-yz
+#import "draw/projection.typ": ortho, on-xy, on-xz, on-zy
 #import "draw/util.typ": assert-version, register-coordinate-resolver

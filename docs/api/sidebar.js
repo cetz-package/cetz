@@ -97,7 +97,7 @@ export default [
           "api/draw-functions/projections/ortho",
           "api/draw-functions/projections/on-xy",
           "api/draw-functions/projections/on-xz",
-          "api/draw-functions/projections/on-yz",
+          "api/draw-functions/projections/on-zy",
         ],
       },
       {
