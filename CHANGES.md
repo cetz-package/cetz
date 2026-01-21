@@ -17,6 +17,7 @@
 - Added a new element `svg-path` that accepts a subset of SVG
   commands to construct paths
 - Fixed a bug with `brace` and `flip: true` (#1017)
+- Added a new `transform` function that multiplies a given transformation matrix with the current one (#1019)
 
 # 0.4.2
 - The `tree` element now has a `anchor:` argument to position the tree (#929)
