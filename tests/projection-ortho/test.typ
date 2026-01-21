@@ -68,7 +68,7 @@
   import draw: *
   ortho({
     axes(4)
-    on-yz({
+    on-zy({
       checkerboard()
     })
   })
@@ -78,7 +78,7 @@
   import draw: *
   ortho(sorted: true, {
     axes(4)
-    on-yz(x: -1, {
+    on-zy(x: -1, {
       checkerboard()
     })
     on-xy(z: -1, {
@@ -153,7 +153,7 @@
   import draw: *
   ortho({
     on-xz({ circle((0, 2, 2), name: "a") })
-    on-yz({ circle((2, 0, 0), name: "b") })
+    on-zy({ circle((2, 0, 0), name: "b") })
   })
 
   line("a", "b")

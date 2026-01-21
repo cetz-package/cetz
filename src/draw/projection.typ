@@ -185,13 +185,15 @@
   }, matrix.transform-rotate-x(90deg))
 })
 
-/// Draw elements on the yz-plane with optional x offset.
+/// Draw elements on the zy-plane with optional x offset.
 ///
-/// All vertices of all elements will be changed in the following way: $mat(x_"argument", y, x)$, where $x_"argument"$ is the x-value given as argument.
+/// All vertices of all elements will be changed in the following way:
+/// $mat(x_"argument", y, x)$, where $x_"argument"$ is the x-value given
+/// as argument.
 ///
 /// ```example
 /// ortho({
-///   on-yz({
+///   on-zy({
 ///     rect((-1, -1), (1, 1))
 ///   })
 /// })
@@ -199,7 +201,7 @@
 ///
 /// - x (number): X offset for all coordinates
 /// - body (element): Elements to draw
-#let on-yz(x: 0, body) = get-ctx(ctx => {
+#let on-zy(x: 0, body) = get-ctx(ctx => {
   let x = util.resolve-number(ctx, x)
   scoped-transform(body, if x != 0 {
     matrix.transform-translate(x, 0, 0)

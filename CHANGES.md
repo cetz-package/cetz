@@ -18,6 +18,7 @@
   commands to construct paths
 - Fixed a bug with `brace` and `flip: true` (#1017)
 - Added a new `transform` function that multiplies a given transformation matrix with the current one (#1019)
+- **BREAKING** Renamed `on-yz` to `on-zy` (#1020)
 
 # 0.4.2
 - The `tree` element now has a `anchor:` argument to position the tree (#929)
