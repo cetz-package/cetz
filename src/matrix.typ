@@ -123,8 +123,8 @@
 /// - up (vector): idk
 /// -> matrix
 #let transform-rotate-dir(dir, up) = {
-  dir = vector.norm(dir)
-  up = vector.norm(up)
+  dir = vector.norm(dir.slice(0, 3))
+  up = vector.norm(up.slice(0, 3))
 
   let (dx, dy, dz) = dir
   let (ux, uy, uz) = up

@@ -145,7 +145,7 @@
       place(top + left, float: false, if drawable.type == "path" {
         let vertices = ()
 
-        let transform-point((x, y, _)) = {
+        let transform-point((x, y, ..)) = {
           (( x - offset-x - segment-x) * length,
            (-y - offset-y - segment-y) * length)
         }
