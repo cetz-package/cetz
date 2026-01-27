@@ -1,6 +1,6 @@
 // Copied from https://github.com/janosh/tikz/blob/87754ea/assets/plate-capacitor/plate-capacitor.typ
 
-#import "@preview/cetz:0.4.2": canvas, draw
+#import "@preview/cetz:0.5.0": canvas, draw
 #import draw: line, rect, content, bezier, group, anchor
 
 #set page(width: auto, height: auto, margin: 5pt)

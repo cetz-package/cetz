@@ -10,7 +10,7 @@ import argparse
 from pathlib import Path
 
 
-DEFAULT_CETZ_VERSION="@preview/cetz:0.4.2"
+DEFAULT_CETZ_VERSION="@preview/cetz:0.5.0"
 
 
 def typst_template(code, cetz_path):
