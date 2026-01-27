@@ -1,6 +1,6 @@
 // Copied from https://github.com/janosh/tikz/blob/da1b4582/assets/periodic-table/periodic-table.typ
 
-#import "@preview/cetz:0.4.2": canvas, draw
+#import "@preview/cetz:0.5.0": canvas, draw
 
 #set page(width: auto, height: auto, margin: 15pt)
 

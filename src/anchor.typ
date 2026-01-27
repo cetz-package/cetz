@@ -143,7 +143,6 @@
       anchor = anchor.first()
     }
 
-
     if type(anchor) == str {
       if anchor in anchor-names or (anchor == "default" and default != none) {
         if anchor == "default" {

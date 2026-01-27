@@ -22,7 +22,7 @@ update-test *filter: build
   tt update {{filter}}
 
 gallery: build
-  for f in "{{gallery_dir}}"/*.typ; do typst c "$f" "${f/typ/png}"; done
+  for f in "{{gallery_dir}}"/*.typ; do echo "Rendering: $f"; typst c "$f" "${f/typ/png}"; done
 
 manual: build
   typst compile --root . manual.typ
