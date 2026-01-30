@@ -99,52 +99,54 @@
   return (calc.cos(angle) * rx + x, calc.sin(angle) * ry + y, z)
 }
 
-/// Calculates the center of a circle from 3 points. The z coordinate is taken from point a.
+/// Calculates the center of a circle from 3 points. The points are 3D, the center is in the plane containing the 3 points. It fails if the points are aligned.
+/// The center p is computed by solving for scalars lambda, mu such that p=a+lambda(b-a)+mu(c-a). Using the scalar product we obtain that lambda=||w||^2(||v||^2-scal(v,w))/denom where v=b-a, w=c-a and denom=2(||v||^2||w||^2-scal(v,w)^2), and mu has the reverse formula. denom is zero iff a, b, c are aligned.
 ///
 /// - a (vector): Point 1
 /// - b (vector): Point 2
 /// - c (vector): Point 3
 /// -> vector
 #let calculate-circle-center-3pt(a, b, c) = {
-  let m-ab = line-pt(a, b, .5)
-  let m-bc = line-pt(b, c, .5)
-  let m-cd = line-pt(c, a, .5)
-
-  let args = () // a, c, b, d
-  for i in range(0, 3) {
-    let (p1, p2) = ((a,b,c).at(calc.rem(i,3)),
-                    (b,c,a).at(calc.rem(i,3)))
-    let m = line-pt(p1, p2, .5)
-    let n = line-normal(p1, p2)
-
-    // Find a line with a non upwards normal
-    if n.at(0) == 0 { continue }
-
-    let la = n.at(1) / n.at(0)
-    args.push(la)
-    args.push(m.at(1) - la * m.at(0))
-
-    // We need only 2 lines
-    if args.len() == 4 { break }
-  }
-
-  // Find intersection point of two 2d lines
-  // L1: a*x + c
-  // L2: b*x + d
-  let line-intersection-2d(a, c, b, d) = {
-    if a - b == 0 {
-      if c == d {
-        return (0, c, 0)
-      }
-      return none
+  let (vx, vy, vz) = (0, 1, 2).map(i => b.at(i) - a.at(i)) // v=b-a
+  let (wx, wy, wz) = (0, 1, 2).map(i => c.at(i) - a.at(i)) // w=c-a
+  let v2 = (vx * vx + vy * vy + vz * vz) // ||v||^2
+  let w2 = (wx * wx + wy * wy + wz * wz) // ||w||^2
+  let vw = vx * wx + vy * wy + vz * wz // <v, w>
+  let denom = 2 * (v2 * w2 - calc.pow(vw, 2)) // norm of "v cross w"
+  // if the points are aligned, then if two points are the same we take the midpoint with the third. Otherwise we send an error message with the assert.
+  if denom == 0 {
+    if a == b or b == c { return ligne-pt(a, c, 0.5) } else if a == c { return line-pt(a, b, 0.5) } else {
+      assert(
+        denom != 0,
+        message: "The points are aligned, and no two points are equal, so the circle center is at infinity.
+        Coordinates: a=( "
+          + str(a.at(0))
+          + ", "
+          + str(a.at(1))
+          + ", "
+          + str(a.at(2))
+          + ") and b =( "
+          + str(b.at(0))
+          + ", "
+          + str(b.at(1))
+          + ", "
+          + str(b.at(2))
+          + "), and c = ( "
+          + str(c.at(0))
+          + ", "
+          + str(c.at(1))
+          + ", "
+          + str(c.at(2))
+          + ") ",
+      )
     }
-    let x = (d - c)/(a - b)
-    let y = a * x + c
-    return (x, y)
   }
 
-  assert(args.len() == 4, message: "Could not find circle center")
-  return vector.as-vec(line-intersection-2d(..args), init: (0, 0, a.at(2)))
+
+  let lambda = w2 * (v2 - vw) / denom
+  let mu = v2 * (w2 - vw) / denom
+  let p = (0, 1, 2).map(i => lambda * (vx, vy, vz).at(i) + mu * (wx, wy, wz).at(i) + a.at(i)) // p=lambda v+ mu w+a
+  return p
 }
 
 /// Converts a {{number}} to "canvas units"
@@ -168,7 +170,7 @@
 /// - fn (function) Transformation function
 /// -> dictionary
 #let map-dict(d, fn) = {
-  for ((key, value)) in d {
+  for (key, value) in d {
     d.at(key) = fn(key, value)
   }
   return d
@@ -178,7 +180,7 @@
 /// - radius (number, array):
 /// -> array
 #let resolve-radius(radius) = {
-  return if type(radius) == array {radius} else {(radius, radius)}
+  return if type(radius) == array { radius } else { (radius, radius) }
 }
 
 /// Finds the minimum of a set of values while ignoring `none` values.
@@ -222,7 +224,7 @@
   let size = std.measure(cnt)
   return (
     calc.abs(size.width / ctx.length),
-    calc.abs(size.height / ctx.length)
+    calc.abs(size.height / ctx.length),
   )
 }
 
@@ -244,8 +246,10 @@
 
   if type(padding) == array {
     // Allow CSS like padding array
-    assert(padding.len() in (2, 3, 4),
-      message: "Padding array formats are: (y, x), (top, x, bottom), (top, right, bottom, left)")
+    assert(
+      padding.len() in (2, 3, 4),
+      message: "Padding array formats are: (y, x), (top, x, bottom), (top, right, bottom, left)",
+    )
     if padding.len() == 2 {
       let (y, x) = padding
       return (top: y, right: x, bottom: y, left: x)
@@ -280,51 +284,63 @@
 /// -> dictionary
 #let as-corner-radius-dict(ctx, radii, size) = {
   if radii == none or radii == 0 {
-    return (north-west: (0,0), north-east: (0,0),
-            south-west: (0,0), south-east: (0,0))
+    return (north-west: (0, 0), north-east: (0, 0), south-west: (0, 0), south-east: (0, 0))
   }
 
-  let radii = (if type(radii) == dictionary {
-    let rest = radii.at("rest", default: (0,0))
-    let north = radii.at("north", default: auto)
-    let south = radii.at("south", default: auto)
-    let west = radii.at("west", default: auto)
-    let east = radii.at("east", default: auto)
+  let radii = (
+    if type(radii) == dictionary {
+      let rest = radii.at("rest", default: (0, 0))
+      let north = radii.at("north", default: auto)
+      let south = radii.at("south", default: auto)
+      let west = radii.at("west", default: auto)
+      let east = radii.at("east", default: auto)
 
-    if north != auto or south != auto {
-      assert(west == auto and east == auto,
-        message: "Corner radius north/south and west/east are mutually exclusive! Use per corner radii: north-west, .. instead.")
+      if north != auto or south != auto {
+        assert(
+          west == auto and east == auto,
+          message: "Corner radius north/south and west/east are mutually exclusive! Use per corner radii: north-west, .. instead.",
+        )
+      }
+      if west != auto or east != auto {
+        assert(
+          north == auto and south == auto,
+          message: "Corner radius north/south and west/east are mutually exclusive! Use per corner radii: north-west, .. instead.",
+        )
+      }
+
+      let north-east = if north != auto { north } else if east != auto { east } else { rest }
+      let north-west = if north != auto { north } else if west != auto { west } else { rest }
+      let south-east = if south != auto { south } else if east != auto { east } else { rest }
+      let south-west = if south != auto { south } else if west != auto { west } else { rest }
+
+      (
+        radii.at("north-west", default: north-west),
+        radii.at("north-east", default: north-east),
+        radii.at("south-west", default: south-west),
+        radii.at("south-east", default: south-east),
+      )
+    } else if type(radii) == array {
+      panic("Invalid corner radius type: " + type(radii))
+    } else {
+      (radii, radii, radii, radii)
     }
-    if west != auto or east != auto {
-      assert(north == auto and south == auto,
-        message: "Corner radius north/south and west/east are mutually exclusive! Use per corner radii: north-west, .. instead.")
-    }
-
-    let north-east = if north != auto { north } else if east != auto { east } else {rest}
-    let north-west = if north != auto { north } else if west != auto { west } else {rest}
-    let south-east = if south != auto { south } else if east != auto { east } else {rest}
-    let south-west = if south != auto { south } else if west != auto { west } else {rest}
-
-    (radii.at("north-west", default: north-west),
-     radii.at("north-east", default: north-east),
-     radii.at("south-west", default: south-west),
-     radii.at("south-east", default: south-east))
-  } else if type(radii) == array {
-    panic("Invalid corner radius type: " + type(radii))
-  } else {
-    (radii, radii, radii, radii)
-  }).map(v => if type(v) != array { (v, v) } else { v })
+  ).map(v => if type(v) != array { (v, v) } else { v })
 
   // Resolve lengths to floats
   radii = radii.map(t => t.map(resolve-number.with(ctx)))
 
   // Clamp radii to half the size
   if size != none {
-    radii = radii.map(t => t.enumerate().map(((i, v)) => {
-      calc.max(0, calc.min(if type(v) == ratio {
-          v * size.at(i) / 100%
-        } else { v }, size.at(i) / 2))
-    }))
+    radii = radii.map(t => t
+      .enumerate()
+      .map(((i, v)) => {
+        calc.max(0, calc.min(
+          if type(v) == ratio {
+            v * size.at(i) / 100%
+          } else { v },
+          size.at(i) / 2,
+        ))
+      }))
   }
 
   let (nw, ne, sw, se) = radii
@@ -347,7 +363,8 @@
 
   // Sort by transforming points into tuples of (point, distance),
   // sorting them by key 1 and then transforming them back to points.
-  return pts.map(p => {
+  return pts
+    .map(p => {
       return (p, vector.dist(p, base))
     })
     .sorted(key: t => t.at(1))
@@ -394,8 +411,7 @@
 
 /// Asserts whether a "body" has the correct type.
 #let assert-body(body) = {
-  assert(body == none or type(body) in (array, function),
-    message: "Body must be of type none, array or function")
+  assert(body == none or type(body) in (array, function), message: "Body must be of type none, array or function")
 }
 
 // Returns body if of type array, an
@@ -423,7 +439,7 @@
   "em": 1em,
   "in": 1in,
   "deg": 1deg,
-  "rad": 1rad
+  "rad": 1rad,
 )
 #let str-is-number(string) = string.match(str-to-number-regex) != none
 #let str-to-number(string) = {
