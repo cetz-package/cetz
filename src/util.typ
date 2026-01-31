@@ -108,41 +108,19 @@
 /// -> vector
 #let calculate-circle-center-3pt(a, b, c) = {
   // If two points are the same we take the midpoint with the two other.
-  if a == b or b == c { return ligne-pt(a, c, 0.5) } else if a == c { return line-pt(a, b, 0.5) }
+  if a == b or b == c { return vector.lerp(a, c, 0.5) } else if a == c { return vector.lerp(a, b, 0.5) }
   // we compute the vectors b-a and c-a and the norm of their cross product
-  let (vx, vy, vz) = (0, 1, 2).map(i => b.at(i) - a.at(i)) // v=b-a
-  let (wx, wy, wz) = (0, 1, 2).map(i => c.at(i) - a.at(i)) // w=c-a
+  let (vx, vy, vz) = range(3).map(i => b.at(i) - a.at(i)) // v=b-a
+  let (wx, wy, wz) = range(3).map(i => c.at(i) - a.at(i)) // w=c-a
   let v2 = (vx * vx + vy * vy + vz * vz) // ||v||^2
   let w2 = (wx * wx + wy * wy + wz * wz) // ||w||^2
   let vw = vx * wx + vy * wy + vz * wz // <v, w>
   let denom = 2 * (v2 * w2 - calc.pow(vw, 2)) // 2*norm of "v cross w"
   // if the points are aligned, we fail with error message returning the coordinates of the points
-  assert(
-    denom != 0,
-    message: "The points are aligned, and no two points are equal, so the circle center is at infinity.
-    Coordinates: a=( "
-      + str(a.at(0))
-      + ", "
-      + str(a.at(1))
-      + ", "
-      + str(a.at(2))
-      + ") and b =( "
-      + str(b.at(0))
-      + ", "
-      + str(b.at(1))
-      + ", "
-      + str(b.at(2))
-      + "), and c = ( "
-      + str(c.at(0))
-      + ", "
-      + str(c.at(1))
-      + ", "
-      + str(c.at(2))
-      + ") ",
-  )
+  if denom==0 {panic( "The points are aligned, and no two points are equal, so the circle center is at infinity. Coordinates: a=(" + str(a.at(0)) + ", " + str(a.at(1)) + ", " + str(a.at(2)) + ") and b =(" + str(b.at(0)) + ", " + str(b.at(1)) + ", " + str(b.at(2)) + "), and c = ( " + str(c.at(0)) + ", " + str(c.at(1)) + ", " + str(c.at(2)) + ") ",)}
 let lambda = w2 * (v2 - vw) / denom
   let mu = v2 * (w2 - vw) / denom
-  let p = (0, 1, 2).map(i => lambda * (vx, vy, vz).at(i) + mu * (wx, wy, wz).at(i) + a.at(i)) // p=lambda v+ mu w+a
+  let p = range(3).map(i => lambda * (vx, vy, vz).at(i) + mu * (wx, wy, wz).at(i) + a.at(i)) // p=lambda v+ mu w+a
   return p
 }
 
