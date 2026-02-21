@@ -95,6 +95,7 @@ export default [
         },
         items: [
           "api/draw-functions/projections/ortho",
+          "api/draw-functions/projections/perspective",
           "api/draw-functions/projections/on-xy",
           "api/draw-functions/projections/on-xz",
           "api/draw-functions/projections/on-zy",
