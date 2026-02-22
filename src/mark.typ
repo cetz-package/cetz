@@ -358,7 +358,7 @@
   let distance = (0, 0)
   let snap-to = (none, none)
   let drawables = ()
-  let perspective-mode = ctx.shared-state.at("_perspective-projection", default: false)
+  let perspective-mode = ctx.at("_perspective-projection", default: false)
 
   if style == none {
     style = (start: none, end: none, symbol: none)

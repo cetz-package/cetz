@@ -167,8 +167,9 @@
   (ctx => {
     let transform = ctx.transform
     let perspective-mode = type(projection-matrix) == function
+    let previous-perspective-mode = ctx.at("_perspective-projection", default: false)
     if perspective-mode {
-      ctx.shared-state.insert("_perspective-projection", true)
+      ctx._perspective-projection = true
     }
     ctx.transform = view-matrix
 
@@ -189,7 +190,7 @@
 
     ctx.transform = transform
     if perspective-mode {
-      ctx.shared-state.insert("_perspective-projection", false)
+      ctx._perspective-projection = previous-perspective-mode
     }
     if not reset-transform {
       drawables = drawable.apply-transform(ctx.transform, drawables)
@@ -317,7 +318,7 @@
 /// Coordinates are transformed by a view matrix and then projected with
 /// perspective division:
 /// $x' = (d_"ref" * x) / w$ and $y' = (d_"ref" * y) / w$,
-/// where $w = max(-z, near)$ in view space.
+/// where $w = max(-z, "near")$ in view space.
 ///
 /// By default this uses the same isometric camera angles as `ortho`, but with
 /// perspective foreshortening.
