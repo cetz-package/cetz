@@ -157,6 +157,41 @@
   ((cos(angle), -sin(angle), 0, 0), (sin(angle), cos(angle), 0, 0), (0, 0, 1, 0), (0, 0, 0, 1))
 }
 
+// 3D rotation matrix around an arbitrary axis (ax, ay, az).
+#let _rotate-axis-angle(ax, ay, az, angle) = {
+  let c = cos(angle)
+  let s = sin(angle)
+  (
+    (ax * ax * (1 - c) + c, ax * ay * (1 - c) - az * s, ax * az * (1 - c) + ay * s, 0),
+    (ay * ax * (1 - c) + az * s, ay * ay * (1 - c) + c, ay * az * (1 - c) - ax * s, 0),
+    (az * ax * (1 - c) - ay * s, az * ay * (1 - c) + ax * s, az * az * (1 - c) + c, 0),
+    (0, 0, 0, 1),
+  )
+}
+
+/// Returns a $4 times 4$ rotation matrix from azimuth/elevation/roll.
+/// Assumes the viewing convention where $z$ points up and $x$ points toward the viewer.
+/// - azimuth (angle): Rotation around z.
+/// - elevation (angle): Tilt above the xy plane.
+/// - roll (angle): Rotation around the current viewing axis.
+/// -> matrix
+#let transform-rotate-aer(azimuth, elevation, roll: 0deg) = {
+  let rotate-z-up = transform-rotate-x(-90deg)
+  let rotate-azimuth = transform-rotate-z(-90deg - azimuth)
+  let (ax, ay, az) = (-sin(azimuth), cos(azimuth), 0)
+  let rotate-elevation = _rotate-axis-angle(ax, ay, az, elevation)
+  let base = mul-mat(ident(4), rotate-z-up, rotate-azimuth, rotate-elevation)
+
+  if roll == 0deg {
+    return base
+  }
+
+  // Roll around the current viewing axis after azimuth/elevation.
+  let (vx, vy, vz) = vector.norm(mul4x4-vec3(base, (1, 0, 0), w: 0))
+  let rotate-roll = _rotate-axis-angle(vx, vy, vz, roll)
+  mul-mat(ident(4), rotate-roll, base)
+}
+
 // Return 4x4 rotate xz matrix
 /// Returns a $4 times 4$ $x z$ rotation matrix
 /// - x (angle): The angle to rotate around the $x$ axis
