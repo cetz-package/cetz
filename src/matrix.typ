@@ -180,7 +180,7 @@
   let rotate-azimuth = transform-rotate-z(-90deg - azimuth)
   let (ax, ay, az) = (-sin(azimuth), cos(azimuth), 0)
   let rotate-elevation = _rotate-axis-angle(ax, ay, az, elevation)
-  let base = mul-mat(ident(4), rotate-z-up, rotate-azimuth, rotate-elevation)
+  let base = mul-mat(rotate-z-up, rotate-azimuth, rotate-elevation)
 
   if roll == 0deg {
     return base
@@ -189,7 +189,7 @@
   // Roll around the current viewing axis after azimuth/elevation.
   let (vx, vy, vz) = vector.norm(mul4x4-vec3(base, (1, 0, 0), w: 0))
   let rotate-roll = _rotate-axis-angle(vx, vy, vz, roll)
-  mul-mat(ident(4), rotate-roll, base)
+  mul-mat(rotate-roll, base)
 }
 
 // Return 4x4 rotate xz matrix
