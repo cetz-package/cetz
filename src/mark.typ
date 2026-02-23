@@ -358,9 +358,13 @@
   let distance = (0, 0)
   let snap-to = (none, none)
   let drawables = ()
+  let perspective-mode = ctx.at("_perspective-projection", default: false)
 
   if style == none {
     style = (start: none, end: none, symbol: none)
+  }
+  if perspective-mode {
+    style.transform-shape = true
   }
   let both-symbol = style.at("symbol", default: none)
   let start-symbol = style.at("start",
