@@ -26,7 +26,6 @@
 // Build perspective view matrix from rotation and camera distance.
 #let _perspective-view-matrix(view-rotation-matrix, distance) = {
   matrix.mul-mat(
-    matrix.ident(4),
     matrix.transform-translate(0, 0, -distance),
     view-rotation-matrix,
   )
