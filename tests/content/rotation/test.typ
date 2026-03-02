@@ -19,3 +19,13 @@
     content((0,0), [Content], angle: pt)
   })
 }
+
+// Rotate to coordinate with transformation != id (#1032)
+#test-case({
+  import draw: *
+
+  line((0, 0), (1, 0), name: "a")
+  rotate(90deg)
+  line((0, 0), (1, 0), name: "b")
+  content((0,0), [Content], angle: "a.end")
+})
