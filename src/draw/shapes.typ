@@ -1125,9 +1125,8 @@
     }
 
     let angle = if type(angle) != std.angle {
-      let c
-      (ctx, c) = coordinate.resolve(ctx, angle)
-      vector.angle2(a, c)
+      let (_, c) = coordinate.resolve(ctx, angle)
+      vector.angle2(a, util.apply-transform(ctx.transform, c))
     } else {
       angle
     }

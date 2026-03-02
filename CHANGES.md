@@ -22,6 +22,8 @@
 - New `perspective` element for perspective division.
   There is a known issue with intersections of perspective elements
   outsides the `perspective` environment! (#1033)
+- Fixed a bug when passing a coordinate to the `angle:` argument of
+  `content` and a transformation matrix ≠ id.
 
 # 0.4.2
 - The `tree` element now has a `anchor:` argument to position the tree (#929)
