@@ -5,17 +5,19 @@
 #let axes(l) = {
   import draw: *
 
-  set-style(mark: (end: ">", transform-shape: false))
+  scope({
+    set-style(mark: (end: ">", transform-shape: false))
 
-  on-layer(-1, {
-    line((-l,0), (l,0), stroke: red, name: "x")
-    content((rel: ((name: "x", anchor: 50%), .5, "x.end"), to: "x.end"), text(red, $x$))
+    on-layer(-1, {
+      line((-l,0), (l,0), stroke: red, name: "x")
+      content((rel: ((name: "x", anchor: 50%), .5, "x.end"), to: "x.end"), text(red, $x$))
 
-    line((0,-l), (0,l), stroke: blue, name: "y")
-    content((rel: ((name: "y", anchor: 50%), .5, "y.end"), to: "y.end"), text(blue, $y$))
+      line((0,-l), (0,l), stroke: blue, name: "y")
+      content((rel: ((name: "y", anchor: 50%), .5, "y.end"), to: "y.end"), text(blue, $y$))
 
-    line((0,0,-l), (0,0,l), stroke: green, name: "z", mark: (z-up: (1,0,0)))
-    content((rel: ((name: "z", anchor: 50%), .5, "z.end"), to: "z.end"), text(green, $z$))
+      line((0,0,-l), (0,0,l), stroke: green, name: "z", mark: (z-up: (1,0,0)))
+      content((rel: ((name: "z", anchor: 50%), .5, "z.end"), to: "z.end"), text(green, $z$))
+    })
   })
 }
 
@@ -140,13 +142,12 @@
   })
 })
 
-// #1004 - Leak objects to the outside
 #test-case({
   import draw: *
   perspective({
-    on-xz({ circle((0, 2, 2), name: "a") })
+    axes(3)
+    on-xz({ circle((2, 0, 0), name: "a", radius: 1) })
     on-zy({ circle((2, 0, 0), name: "b") })
+    line("a", "b")
   })
-
-  line("a", "b")
 })
