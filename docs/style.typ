@@ -21,6 +21,15 @@
   "function": rgb("#f9dfff"),
 )
 
+// HTML compatibility wrapper
+#let canvas(..args) = context {
+  if target() == "paged" {
+    cetz.canvas(..args)
+  } else {
+    html.frame(cetz.canvas(..args))
+  }
+}
+
 #let show-type(name) = {
   box(raw(name), inset: 2pt, baseline: 2pt, radius: 2pt,
     fill: colors.at(name, default: colors.at("any")), stroke: none)
@@ -150,14 +159,14 @@
 
     block(radius: 2pt, stroke: stroke, breakable: false, {
       table(columns: columns, align: align, stroke: none,
-        cetz.canvas({
+        canvas({
           let preamble = "import cetz.draw: *\n"
           eval(preamble + code, mode: "code", scope: (
             cetz: cetz,
           ))
         }),
         line(stroke: (paint: gray, thickness: 1pt, dash: "dashed")),
-        raw(code, lang: "typc"),
+        raw(code, lang: "typc", block: true),
       )
     })
   }
