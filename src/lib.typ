@@ -22,3 +22,6 @@
 #import "lib/angle.typ"
 #import "lib/tree.typ"
 #import "lib/decorations.typ"
+
+// expose name
+#let name = "cetz"
