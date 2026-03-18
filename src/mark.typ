@@ -15,6 +15,14 @@
     style.at(key, default: none) != none)
 }
 
+#let _normalize-mark-stroke(stroke) = {
+  stroke = util.resolve-stroke(stroke)
+  if stroke != none and (stroke.paint == none or stroke.thickness == 0pt) {
+    return none
+  }
+  return stroke // can also be none!
+}
+
 /// Processes the mark styling.
 /// TODO: remember what is actually going on here.
 ///
@@ -69,8 +77,12 @@
       style = styles.resolve(style, root: root, base: base-style)
     }
 
-    style.stroke = util.resolve-stroke(style.stroke)
-    style.canvas-thickness = util.resolve-number(ctx, style.stroke.thickness)
+    style.stroke = _normalize-mark-stroke(style.stroke)
+    style.canvas-thickness = util.resolve-number(ctx, if style.stroke != none {
+      style.stroke.thickness
+    } else {
+      0pt
+    })
 
     if "angle" in style and type(style.angle) == angle {
       style.width = calc.tan(style.angle / 2) * style.length * 2
@@ -183,7 +195,7 @@
   import "/src/draw.typ"
   let body = draw.group({
     draw.set-style(
-      stroke: util.resolve-stroke(style.at("stroke", default: none)),
+      stroke: _normalize-mark-stroke(style.at("stroke", default: none)),
       fill: style.at("fill", default: none),
       mark: none,
       line: (mark: none),

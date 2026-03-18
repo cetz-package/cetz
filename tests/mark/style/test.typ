@@ -27,3 +27,14 @@
 #test-case({
   line((0,0), (1,0), stroke: (dash: "dotted", paint: blue), mark: (end: ">"))
 })
+
+// Gracefully handle disabled stroke variants
+#test-case({
+  line((0,0), (1,0), stroke: none, mark: (end: ">"))
+})
+#test-case({
+  line((0,0), (1,0), stroke: (paint: none, dash: "dotted"), mark: (end: ">"))
+})
+#test-case({
+  line((0,0), (1,0), stroke: (paint: blue, thickness: 0pt), mark: (end: ">"))
+})
