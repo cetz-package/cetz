@@ -24,6 +24,7 @@
   outsides the `perspective` environment! (#1033)
 - Fixed a bug when passing a coordinate to the `angle:` argument of
   `content` and a transformation matrix ≠ id.
+- Fixed a bug with cetz creating invalid stroke objects for `stroke: none` (#1059).
 
 # 0.4.2
 - The `tree` element now has a `anchor:` argument to position the tree (#929)

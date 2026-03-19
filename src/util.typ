@@ -359,7 +359,7 @@
 /// -> dictionary
 #let resolve-stroke(stroke) = {
   if stroke == none {
-    return (paint: none, thickness: 0pt, join: none, cap: none, miter-limit: 4)
+    return (paint: auto, thickness: 0pt, join: auto, cap: auto, miter-limit: 4)
   }
 
   if type(stroke) in (std.color, std.length) {
