@@ -507,6 +507,10 @@
     } else {
       style.symbol
     }
+
+    assert.ne(style.end, none,
+      message: "Missing mark symbol! You need to pass a mark name to the mark element.")
+
     style.start = none
     style.symbol = none
 
