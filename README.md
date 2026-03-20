@@ -115,7 +115,7 @@ The installed version can be imported by prefixing the package name with `@local
 This project uses [just](https://github.com/casey/just), a handy command runner.
 
 You can run all commands without having `just` installed, just have a look into the `justfile`.
-To install `just` on your system, use your systems package manager. On Windows, [Cargo](https://doc.rust-lang.org/cargo/) (`cargo install just`), [Chocolatey](https://chocolatey.org/) (`choco install just`) and [some other sources](https://just.systems/man/en/chapter_4.html) can be used. You need to run it from a `sh` compatible shell on Windows (e.g git-bash).
+To install `just` on your system, use your systems package manager. On Windows, [Cargo](https://doc.rust-lang.org/cargo/) (`cargo install just`), [Chocolatey](https://chocolatey.org/) (`choco install just`) and [some other sources](https://just.systems/man/en/packages.html) can be used. You need to run it from a `sh` compatible shell on Windows (e.g git-bash).
 
 ## Testing
 
