@@ -3,6 +3,7 @@
 CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https://typst.app) with an API inspired by TikZ and [Processing](https://processing.org/).
 
 ## Examples
+
 <!-- img width is set so the table gets evenly spaced by GitHubs css -->
 <table>
 <tr>
@@ -67,7 +68,7 @@ CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https:
 </tr>
 </table>
 
-*Click on the example image to jump to the code.*
+_Click on the example image to jump to the code._
 
 You can explore an example gallery of scientific diagrams at [janosh.github.io/diagrams](https://janosh.github.io/diagrams).
 
@@ -94,6 +95,30 @@ To use this package, simply add the following code to your document:
 ## Installing
 
 To install the CeTZ package under [your local typst package dir](https://github.com/typst/packages?tab=readme-ov-file#local-packages) you can use the `install` script from the repository.
+
+Make sure to first perform a recursive git clone
+
+```bash
+# to fetch a clean clone:
+git clone --recursive https://github.com/cetz-package/cetz.git
+# or if you forgot the `--recursive` flag before:
+git submodule update --init
+```
+
+and also ensure you have `just` and `cargo` installed.
+
+<details>
+  <summary>For nix users</summary>
+
+After enabling flakes, use:
+
+```bash
+nix --extra-experimental-features 'nix-command flakes' develop
+```
+
+</details>
+
+Now use the installation script:
 
 ```bash
 just install
@@ -124,6 +149,7 @@ To run all tests you can run the `just test` target. You need to have
 [`tytanic`](https://github.com/tingerrr/tytanic/) in your `PATH`: `cargo install tytanic`.
 
 ## Projects using CeTZ
+
 - [finite](https://github.com/jneug/typst-finite) Finite is a Typst package for rendering finite automata.
 - [fletcher](https://github.com/Jollywatt/typst-fletcher) Package for drawing commutative diagrams and figures with arrows.
 - [chronos](https://git.kb28.ch/HEL/chronos) Package for drawing sequence diagrams.
