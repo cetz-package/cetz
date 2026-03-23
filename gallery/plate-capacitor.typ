@@ -46,20 +46,10 @@
 
 // Helper function to draw a dipole
 #let dipole(x, y, ..style) = group({
-  let plus-grad = gradient.linear(
-    angle: 90deg,
-    minus-color.lighten(30%),
-    minus-color.darken(30%),
-  )
-  let minus-grad = gradient.linear(
-    angle: 90deg,
-    plus-color.lighten(30%),
-    plus-color.darken(30%),
-  )
-  rect(x, ((x, "|-", y), 50%, y), fill: plus-grad, radius: (west: .5), name: "minus", ..style)
-  rect(y, ((x, "-|", y), 50%, x), fill: minus-grad, radius: (east: .5), name: "plus", ..style)
-  content("plus", [+])
-  content("minus", [--])
+  rect(x, ((x, "|-", y), 50%, y), fill: plus-color, radius: (west: 45%), name: "minus", ..style)
+  rect(y, ((x, "-|", y), 50%, x), fill: minus-color, radius: (east: 45%), name: "plus", ..style)
+  content((rel: (0, .025), to: "plus"), [+])
+  content((rel: (0, .025), to: "minus"), [--])
 })
 
 #canvas({
