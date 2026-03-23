@@ -7,7 +7,7 @@
   import draw: *
   let phi = (1 + calc.sqrt(5)) / 2
 
-  ortho({
+  ortho(flatten: true, {
     hide({
       line(
         (-phi, -1, 0), (-phi, 1, 0), (phi, 1, 0), (phi, -1, 0), close: true, name: "xy",
@@ -33,11 +33,11 @@
     line("a.0", (0, -phi, 1), "b.2")
 
     anchor("A", (0, phi, 1))
-    content("A", [$A$], anchor: "north", padding: .1)
+    content("A", [$A$], anchor: "south", padding: .1)
     anchor("B", (-1, 0, phi))
-    content("B", [$B$], anchor: "south", padding: .1)
+    content("B", [$B$], anchor: "east", padding: .1)
     anchor("C", (1, 0, phi))
-    content("C", [$C$], anchor: "south", padding: .1)
+    content("C", [$C$], anchor: "north", padding: .1)
     line("A", "B", stroke: (dash: "dashed"))
     line("A", "C", stroke: (dash: "dashed"))
   })

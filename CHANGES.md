@@ -27,6 +27,8 @@
 - Fixed a bug with cetz creating invalid stroke objects for `stroke: none` (#1059).
 - Increased the rounding digits from 8 to 10, fixing some rounding bugs
   with `ortho`.
+- Added a `flatten: (bool)` argument to `ortho`, that allows setting all z
+  components to zero.
 
 # 0.4.2
 - The `tree` element now has a `anchor:` argument to position the tree (#929)
