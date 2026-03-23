@@ -162,7 +162,8 @@
 // - sorted (bool): Sort drawables by maximum distance (front to back)
 // - cull-face (none,str): Enable back-face culling if set to `"cw"` for clockwise
 //   or `"ccw"` for counter-clockwise. Polygons of the specified order will not get drawn.
-#let _projection(body, view-matrix, projection-matrix, reset-transform: true, sorted: true, cull-face: "cw") = {
+// - flatten (bool): Set $z=0$ for all geometry
+#let _projection(body, view-matrix, projection-matrix, reset-transform: true, sorted: true, cull-face: "cw", flatten: false) = {
   (ctx => {
     let transform = ctx.transform
     let perspective-mode = type(projection-matrix) == function
@@ -170,25 +171,31 @@
     if perspective-mode {
       ctx._perspective-projection = true
     }
-    ctx.transform = view-matrix
 
-    let (ctx, drawables, bounds) = process.many(ctx, util.resolve-body(ctx, body))
+    let local-ctx = ctx
+    let local-transform = if flatten {
+      local-ctx.transform = matrix.mul-mat(
+        ((1,0,0,0), (0,1,0,0), (0,0,0,0), (0,0,0,1.0)),
+        view-matrix)
+    } else {
+      local-ctx.transform = view-matrix
+    }
+
+    let (ctx, drawables, bounds) = process.many(local-ctx, util.resolve-body(ctx, body))
 
     if cull-face != none {
       assert(cull-face in ("cw", "ccw"),
         message: "cull-face must be none, cw or ccw.")
       drawables = _filter-cw-faces(drawables, mode: cull-face)
     }
+
     if sorted {
       drawables = _sort-by-distance(drawables)
     }
 
-    if projection-matrix != none {
-      drawables = drawable.apply-transform(projection-matrix, drawables)
-    }
-
     ctx.transform = transform
     if perspective-mode {
+      drawable.apply-transform(projection-matrix, drawables)
       ctx._perspective-projection = previous-perspective-mode
     }
     if not reset-transform {
