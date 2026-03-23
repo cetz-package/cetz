@@ -246,12 +246,14 @@
 /// - cull-face (none,str): Enable back-face culling if set to `"cw"` for clockwise
 ///   or `"ccw"` for counter-clockwise. Polygons of the specified order will not get drawn.
 /// - reset-transform (bool): Ignore the current transformation matrix
+/// - flatten (bool): Set all z-components to 0.
 /// - body (element): Elements to draw
-#let ortho(x: 35.264deg, y: 45deg, z: 0deg, sorted: true, cull-face: none, reset-transform: false, body) = scope(ctx => {
+#let ortho(x: 35.264deg, y: 45deg, z: 0deg, sorted: true, cull-face: none, reset-transform: false, flatten: false, body) = scope(ctx => {
   _projection(body, ortho-matrix(x, y, z), ortho-projection-matrix,
     sorted: sorted,
     cull-face: cull-face,
-    reset-transform: reset-transform)
+    reset-transform: reset-transform,
+    flatten: flatten)
 })
 
 /// Draw elements on the xy-plane with optional z offset.
