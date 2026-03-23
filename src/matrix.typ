@@ -3,7 +3,7 @@
 #let cetz-core = plugin("../cetz-core/cetz_core.wasm")
 
 // Global rounding precision
-#let precision = 8
+#let precision = 10
 
 #let _round = calc.round.with(digits: precision)
 
@@ -243,7 +243,7 @@
 /// - ..matrices (matrix): The matrices to multiply from left to right.
 /// -> matrix
 #let mul-mat(..matrices) = {
-  matrices = matrices.pos()
+  matrices = matrices.pos().filter(m => m != none)
   let out = matrices.first()
   for i in range(1, matrices.len()) {
     let matrix = matrices.at(i)

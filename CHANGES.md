@@ -25,6 +25,8 @@
 - Fixed a bug when passing a coordinate to the `angle:` argument of
   `content` and a transformation matrix ≠ id.
 - Fixed a bug with cetz creating invalid stroke objects for `stroke: none` (#1059).
+- Increased the rounding digits from 8 to 10, fixing some rounding bugs
+  with `ortho`.
 
 # 0.4.2
 - The `tree` element now has a `anchor:` argument to position the tree (#929)
