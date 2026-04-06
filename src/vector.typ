@@ -241,7 +241,8 @@
   if v1.len() == 2 or v1.len() == 3 {
     v1 = sub(v1, c)
     v2 = sub(v2, c)
-    return calc.acos(dot(norm(v1), norm(v2)))
+    let ip = dot(norm(v1), norm(v2))
+    return calc.acos(calc.clamp(ip, -1, 1))
   } else {
     panic("Invalid vector dimension")
   }
