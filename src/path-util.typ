@@ -170,6 +170,7 @@
 ///    - point (vector) The point on the path
 ///    - previous-point (vector) Point previous to point
 ///    - direction (vector) Normalized direction vector
+///    - t (float) Relative segment parameter in $[0, 1]$
 ///    - subpath-index (int) Index of the subpath
 ///    - segment-index (int) Index of the segment
 ///    None is returned, if the path is empty/of length zero.
@@ -205,12 +206,14 @@
       let pt = args.last()
       let length = vector.dist(origin, pt)
       if length != 0 {
+        let t = calc.min(1, distance / length)
         return (
-          vector.lerp(origin, pt, calc.min(1, distance / length)),
-          vector.norm(vector.sub(pt, origin)))
+          vector.lerp(origin, pt, t),
+          vector.norm(vector.sub(pt, origin)),
+          t)
       } else {
         return (
-          pt, (1, 0, 0))
+          pt, (1, 0, 0), 0.0)
       }
     } else if kind == "c" {
       let (c1, c2, e) = args
@@ -219,7 +222,8 @@
 
       return (
         bezier.cubic-point(origin, e, c1, c2, t),
-        bezier.cubic-derivative(origin, e, c1, c2, t))
+        bezier.cubic-derivative(origin, e, c1, c2, t),
+        t)
     }
   }
 
@@ -232,7 +236,7 @@
           origin = segments.at(segment-index - 1).last()
         }
 
-        let (point, direction) = point-on-segment(
+        let (point, direction, t) = point-on-segment(
           origin, segment, distance - travelled)
         if reverse {
           direction = vector.scale(direction, -1)
@@ -259,6 +263,7 @@
           previous-point: origin,
           point: point,
           direction: direction,
+          t: t,
           subpath-index: subpath-index,
           segment-index: segment-index,
           distance: relative-distance,
@@ -271,6 +276,28 @@
     if ignore-subpaths {
       break
     }
+  }
+}
+
+/// Returns the point on a specific path segment at parameter `t`.
+///
+/// - path (path): The path
+/// - subpath-index (int): Subpath index
+/// - segment-index (int): Segment index
+/// - t (float): Relative segment parameter in $[0, 1]$
+/// -> vector
+#let segment-point-at(path, subpath-index, segment-index, t) = {
+  let (origin, _, segments) = path.at(subpath-index)
+  let (kind, ..args) = segments.at(segment-index)
+  if segment-index > 0 {
+    origin = segments.at(segment-index - 1).last()
+  }
+
+  return if kind == "l" {
+    vector.lerp(origin, args.last(), t)
+  } else if kind == "c" {
+    let (c1, c2, e) = args
+    bezier.cubic-point(origin, e, c1, c2, t)
   }
 }
 
