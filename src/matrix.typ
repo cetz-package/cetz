@@ -157,7 +157,7 @@
   ((cos(angle), -sin(angle), 0, 0), (sin(angle), cos(angle), 0, 0), (0, 0, 1, 0), (0, 0, 0, 1))
 }
 
-// 3D rotation matrix around an arbitrary axis (ax, ay, az).
+// 3D rotation matrix around an arbitrary axis (ax, ay, az) using the Rodrigues' rotation formula
 #let _rotate-axis-angle(ax, ay, az, angle) = {
   let c = cos(angle)
   let s = sin(angle)
@@ -167,29 +167,6 @@
     (az * ax * (1 - c) - ay * s, az * ay * (1 - c) + ax * s, az * az * (1 - c) + c, 0),
     (0, 0, 0, 1),
   )
-}
-
-/// Returns a $4 times 4$ rotation matrix from azimuth/elevation/roll.
-/// Assumes the viewing convention where $z$ points up and $x$ points toward the viewer.
-/// - azimuth (angle): Rotation around z.
-/// - elevation (angle): Tilt above the xy plane.
-/// - roll (angle): Rotation around the current viewing axis.
-/// -> matrix
-#let transform-rotate-aer(azimuth, elevation, roll: 0deg) = {
-  let rotate-z-up = transform-rotate-x(-90deg)
-  let rotate-azimuth = transform-rotate-z(-90deg - azimuth)
-  let (ax, ay, az) = (-sin(azimuth), cos(azimuth), 0)
-  let rotate-elevation = _rotate-axis-angle(ax, ay, az, elevation)
-  let base = mul-mat(rotate-z-up, rotate-azimuth, rotate-elevation)
-
-  if roll == 0deg {
-    return base
-  }
-
-  // Roll around the current viewing axis after azimuth/elevation.
-  let (vx, vy, vz) = vector.norm(mul4x4-vec3(base, (1, 0, 0), w: 0))
-  let rotate-roll = _rotate-axis-angle(vx, vy, vz, roll)
-  mul-mat(rotate-roll, base)
 }
 
 // Return 4x4 rotate xz matrix
@@ -305,6 +282,85 @@
     }
   }
   return out
+}
+
+/// Returns a $4 times 4$ rotation matrix from azimuth/elevation/roll.
+///
+/// `up` defines the world-space vertical direction. `forward` defines the
+/// world-space azimuth zero direction. If `forward` is `auto`, it is derived
+/// from `up` so the axis-aligned defaults stay compatible:
+/// `(0, 0, 1) -> (1, 0, 0)`, `(0, 1, 0) -> (0, 0, 1)`,
+/// `(1, 0, 0) -> (0, 1, 0)`.
+///
+/// The canonical local convention is unchanged: local $z$ points up, local
+/// $x$ points toward the viewer, azimuth rotates around local $z$, elevation
+/// is measured from the local $xy$ plane, and roll rotates around the current
+/// viewing axis after azimuth/elevation.
+///
+/// - azimuth (angle): Rotation around the direction given by `up`.
+/// - elevation (angle): Tilt above the plane perpendicular to `up`.
+/// - roll (angle): Rotation around the current viewing axis.
+/// - up (vector): The world-space vertical direction.
+/// - forward (auto, vector): The world-space azimuth zero direction.
+/// -> matrix
+#let transform-rotate-aer(azimuth, elevation, roll: 0deg, up: (0, 0, 1), forward: auto) = {
+  let epsilon = 0.00000001
+  let normalize(v, message) = {
+    let len = vector.len(v)
+    assert(len > epsilon, message: message)
+    vector.scale(v, 1 / len)
+  }
+
+  assert(type(up) == array and up.len() == 3,
+    message: "up must be a 3D vector.")
+  let up = normalize(vector.as-vec(up, init: (0, 0, 0)),
+    "up must not be the zero vector.")
+  let project-forward(v) = {
+    let projected = vector.sub(v, vector.scale(up, vector.dot(v, up)))
+    let len = vector.len(projected)
+    if len <= epsilon { none } else { vector.scale(projected, 1 / len) }
+  }
+
+  let forward = if forward == auto {
+    let (ux, uy, uz) = up
+    let resolved = project-forward((uz, ux, uy))
+    if resolved != none {
+      resolved
+    } else {
+      project-forward((1, 0, 0))
+    }
+  } else {
+    assert(type(forward) == array and forward.len() == 3,
+      message: "forward must be a 3D vector.")
+    let resolved = project-forward(forward)
+    assert(resolved != none,
+      message: "forward must not be parallel to up.")
+    resolved
+  }
+
+  let rotate-z-up = transform-rotate-x(-90deg)
+  let rotate-azimuth = transform-rotate-z(-90deg - azimuth)
+  let (ax, ay, az) = (-sin(azimuth), cos(azimuth), 0)
+  let rotate-elevation = _rotate-axis-angle(ax, ay, az, elevation)
+  let base = mul-mat(rotate-z-up, rotate-azimuth, rotate-elevation)
+  let local = if roll == 0deg {
+    base
+  } else {
+    let (vx, vy, vz) = normalize(column(base, 0).slice(0, 3),
+      "Could not resolve local viewing axis.")
+    let rotate-roll = _rotate-axis-angle(vx, vy, vz, roll)
+    mul-mat(rotate-roll, base)
+  }
+
+  let side = normalize(vector.cross(up, forward),
+    "Could not resolve a side direction from up and forward.")
+  let (fx, fy, fz) = forward
+  let (sx, sy, sz) = side
+  let (ux, uy, uz) = up
+  return mul-mat(
+    local,
+    ((fx, fy, fz, 0), (sx, sy, sz, 0), (ux, uy, uz, 0), (0, 0, 0, 1)),
+  )
 }
 
 // Multiply 4x4 matrix with vector of size 3 or 4.
