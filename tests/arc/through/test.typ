@@ -57,3 +57,9 @@
   set-style(arc: (radius: 5))
   test((0,0), (1, 1), (2, 0))
 })
+
+
+#test-case({
+  // test robustness to floating point rounding errors
+  test((-1.5, 0.1), (0.1, 1.5), (1.5, -0.1))
+})
