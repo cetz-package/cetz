@@ -29,6 +29,7 @@
   with `ortho`.
 - Added a `flatten: (bool)` argument to `ortho`, that allows setting all z
   components to zero.
+- Placing marks on a path bypasses custom coordinate resolvers.
 
 # 0.4.2
 - The `tree` element now has a `anchor:` argument to position the tree (#929)

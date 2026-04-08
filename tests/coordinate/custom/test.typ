@@ -24,3 +24,18 @@
     content(pt, repr(i), anchor: "north", padding: (top: .5))
   }
 })
+
+#test-case({
+  import draw: *
+  register-coordinate-resolver((cxt, c) => {
+    if type(c) == array {
+      let (r, theta, ..) = c
+      return (r * calc.cos(theta), r * calc.sin(theta))
+    }
+    return c
+  })
+
+  circle((1, calc.pi / 2), radius: 0.1)
+  circle((1, 0), radius: 0.1)
+  line((1, calc.pi / 2), (1, 0), mark: (start: ">", end: ">", fill: white))
+})
