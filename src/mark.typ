@@ -360,6 +360,9 @@
   let drawables = ()
   let perspective-mode = ctx.at("_perspective-projection", default: false)
 
+  // Temp. disable custom coordinate resolvers for placing marks on paths.
+  ctx.resolve-coordinate = ()
+
   if style == none {
     style = (start: none, end: none, symbol: none)
   }
