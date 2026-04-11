@@ -214,6 +214,21 @@
   return top
 }
 
+#let _at-root(style, root) = {
+  if root == () or root == none {
+    return none
+  }
+
+  for key in root {
+    style = style.at(key, default: none)
+    if style == none {
+      break
+    }
+  }
+
+  return style
+}
+
 /// You can use this to combine the style in `ctx`, the style given by a user for a single element and an element's default style.
 ///
 /// `base` is first merged onto `dict` without overwriting existing values, and if `root` is given it is merged onto that key of `dict`. `merge` is then merged onto `dict` but does overwrite existing entries, if `root` is given it is merged onto that key of `dict`. Then entries in `dict` that are {{auto}} inherit values from their nearest ancestor and entries of type {{dictionary}} are merged with their closest ancestor.
@@ -246,10 +261,17 @@
 /// - root (none, str, array): Style root element name or list of nested roots (`("my-package", "my-element")`).
 /// - base (none, style): Style values to merge into `dict` without overwriting it.
 /// -> style
-#let resolve(dict, root: none, merge: (:), base: (:)) = {
+#let resolve(dict, root: (), merge: (:), base: (:)) = {
   let root-dict = dict
-  if root != none {
-    dict = dict.at(root, default: none)
+
+  if root == none {
+    root = ()
+  } else if type(root) != array {
+    root = (root,)
+  }
+
+  if root != () {
+    dict = _at-root(dict, root)
   } else {
     root-dict = none
   }
@@ -264,9 +286,9 @@
   let traverse-up(key, stack) = {
     let value = stack.first().at(key, default: auto)
     for style in stack {
-      if root != none and root in style {
-        let root-style = style.at(root)
-        if root-style != auto {
+      let root-style = _at-root(style, root)
+      if root-style != none and root-style != auto {
+        if type(root-style) == dictionary {
           value = _fold-value(root-style.at(key, default: auto), value)
         }
       }
@@ -278,7 +300,14 @@
   // List of keys the final dictionary contains
   let keys = (dict, base, merge)
     .filter(v => v != none and v != auto)
-    .map(v => v.keys())
+    .map(v => {
+      let keys = v.keys()
+      let root-style = _at-root(v, root)
+      if type(root-style) == dictionary {
+        keys += root-style.keys()
+      }
+      keys
+    })
     .flatten()
     .dedup()
 
