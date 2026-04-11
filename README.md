@@ -4,7 +4,7 @@ CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https:
 
 ## Examples
 
-<!-- img width is set so the table gets evenly spaced by GitHubs css -->
+<!-- img width is set so the table gets evenly spaced by GitHub's css -->
 <table>
 <tr>
   <td>

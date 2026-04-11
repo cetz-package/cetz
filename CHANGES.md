@@ -140,7 +140,7 @@ package called `cetz-plot`.
   leaking child elements to the outside. This element can be used for scoping
   transformations, without having to scope children under a group name.
 - The center anchor of `content()` with two coordinates got fixed when using
-  negative cordinates.
+  negative coordinates.
 - Element names are now checked to not contain a "." character.
 - Fixed intersection bug for content with `anchor:` set.
 - **BREAKING** The winding order of _all_ elements has been changed to CCW.
@@ -199,7 +199,7 @@ package called `cetz-plot`.
 - Fixed piechart styles when using `clockwise: true`.
 - Fixed `decorations.flat-brace` vertical positioning
 - Fixed drawing of mirrored plot axis ticks.
-- Fixed plots with only annotions.
+- Fixed plots with only annotations.
 - Added matrix rounding to fix rounding errors when using lots of transforms
 
 # 0.2.1
@@ -351,7 +351,7 @@ CeTZ requires Typst 0.8.0.
 - Changed transformation matrix multiplication order from `Local * World to`
   World * Local.
 - Added `set-viewport` function for setting up scaling and translation to draw
-  insides a rectangular region.
+  inside a rectangular region.
 - The function `rect` now emits rotated anchors,
   before it did not set anchors but used the bounding box.
 - New function `copy-anchors` to copy anchors of an element into a group.

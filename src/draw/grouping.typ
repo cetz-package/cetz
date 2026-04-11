@@ -16,7 +16,7 @@
 
 /// Hides an element.
 ///
-/// Hidden elements are not drawn to the canvas, are ignored when calculating bounding boxes and discarded by [merge-path](../shapes/merge-path). All other behaviours remain the same as a non-hidden element.
+/// Hidden elements are not drawn to the canvas, are ignored when calculating bounding boxes and discarded by [`merge-path`](../shapes/merge-path). All other behaviours remain the same as a non-hidden element.
 ///
 /// ```example
 /// set-style(radius: .5)
@@ -49,7 +49,7 @@
 
 /// Places an element without affecting bounding boxes.
 ///
-/// Floating elements are drawn to the canvas but are ignored when calculating bouding boxes. All other behaviours remain the same.
+/// Floating elements are drawn to the canvas but are ignored when calculating bounding boxes. All other behaviours remain the same.
 ///
 /// ```example
 /// group(name: "g", {
@@ -104,7 +104,7 @@
 /// })
 /// ```
 ///
-/// You can calculate intersections with hidden elements by using [hide](./hide).
+/// You can calculate intersections with hidden elements by using [`hide`](./hide).
 ///
 /// - name (str): Name to prepend to the generated anchors. (Not to be confused with other `name` arguments that allow the use of anchor coordinates.)
 /// - ..elements (elements,str): Elements and/or element names to calculate intersections with. Elements referred to by name are (unlike elements passed) not drawn by the intersections function!
@@ -210,7 +210,7 @@
 /// rect((-1,-1),(1,1))
 /// ```
 ///
-/// - body (elements, function): Elements to group together. A least one is required. A function that accepts `ctx` and returns elements is also accepted.
+/// - body (elements, function): Elements to group together. At least one is required. A function that accepts `ctx` and returns elements is also accepted.
 /// - anchor (none, str): Anchor to position the group and it's children relative to. For translation the difference between the groups `"default"` anchor and the passed anchor is used.
 /// - name (none, str):
 /// - ..style (style):
@@ -328,7 +328,7 @@
 /// Elements after the scope are not affected by the changes inside the scope.
 /// In contrast to `group`, the `scope` element does not create a named element itself and "leaks" body elements and anchors to the outside.
 ///
-/// - body (elements, function): Elements to group together. A least one is required. A function that accepts `ctx` and returns elements is also accepted.
+/// - body (elements, function): Elements to group together. At least one is required. A function that accepts `ctx` and returns elements is also accepted.
 #let scope(body) = (ctx => {
   let bounds = none
   let drawables = ()
