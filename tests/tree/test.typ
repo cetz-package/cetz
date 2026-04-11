@@ -16,10 +16,10 @@
     fill: gray.lighten(70%),
     stroke: gray.lighten(70%))
 
-  tree(data, spread: 2.5, grow: 2, draw-node: (node, ..) => {
+  tree(data, spread: 2.5, grow: 2, draw-node: (node) => {
     content((), node.content, frame: "circle")
-  }, draw-edge: (from, to, ..) => {
-    line(from, to, mark: (start: "stealth", end: "stealth"))
+  }, draw-edge: (parent, child) => {
+    line(parent.group-name, child.group-name, mark: (start: "stealth", end: "stealth"))
   }, name: "tree")
 
   // Draw a "custom" connection between two nodes
@@ -37,12 +37,12 @@
 
 #test-case(edge-layer => {
   import cetz.draw: *
-  cetz.tree.tree(data, edge-layer: edge-layer, draw-node: (node, ..) => {
+  cetz.tree.tree(data, edge-layer: edge-layer, draw-node: (node) => {
     circle((), radius: .3, fill: white)
     content((), node.content)
-  }, draw-edge: (from, to, ..) => {
-    line((anchor: "center", name: from),
-         (anchor: "center", name: to), stroke: red + 2pt)
+  }, draw-edge: (parent, child) => {
+    line((anchor: "center", name: parent.group-name),
+         (anchor: "center", name: child.group-name), stroke: red + 2pt)
   })
 }, args: (0, 1))
 

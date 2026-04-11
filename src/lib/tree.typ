@@ -13,19 +13,17 @@
 #let cetz-core = plugin("../../cetz-core/cetz_core.wasm")
 
 
-// Default edge draw callback
-//
-// - from (string): Source element name
-// - to (string): Target element name
-// - parent (node): Parent (source) tree node
-// - child (node): Child (target) tree node
-#let default-draw-edge(from, to, parent, child) = {
-  draw.line(from, to)
+/// Default edge draw callback
+///
+/// - parent (node): Parent tree node. The field `group-name` (str) provides the elements name.
+/// - child (node): Child tree node. The field `group-name` (str) provides the elements name.
+#let default-draw-edge(parent, child) = {
+  draw.line(parent.group-name, child.group-name)
 }
 
-// Default node draw callback
-//
-// - node (node): The node to draw
+/// Default node draw callback
+///
+/// - node (node): The node to draw
 #let default-draw-node(node) = {
   let text = if type(node) in (content, str, int, float) {
     [#node]
@@ -69,9 +67,16 @@
 /// tree.tree(([Root], ([A], [A.A], [A.B]), ([B], [B.A])))
 /// ```
 ///
+/// The `node` object passed to callbacks contains the following keys:
+///   - `name` (str): Name of the node's anchor
+///   - `group-name` (str): Name of the node's group element
+///   - `depth` (int): Depth of the node
+///   - `n` (int): Sibling index of the node
+///   - `content` (any): Content of the node
+///
 /// - root (array): A nested array of content that describes the structure the tree should take. Example: `([root], [child 1], ([child 2], [grandchild 1]))`
-/// - draw-node (auto,function): The function to call to draw a node. The function will be passed the node to draw (a dictionary with a `content` key) and is expected to return elements (`(node, parent-node) => elements`). The node must be drawn at the `(0,0)` coordinate. If `auto` is given, just the node's value will be drawn as content.
-/// - draw-edge (none,auto,function): The function to call draw an edge between two nodes. The function will be passed the name of the starting node, the name of the ending node, the start node, the end node, and is expected to return elements (`(source-name, target-name, parent-node, child-node) => elements`). If `auto` is given, a straight line will be drawn between nodes.
+/// - draw-node (auto,function): The function to call to draw a node. The function will be passed the node to draw (a dictionary with a `content` key) and is expected to return elements (`(node) => elements`). The node must be drawn at the `(0,0)` coordinate. If `auto` is given, just the node's value will be drawn as content.
+/// - draw-edge (none,auto,function): The function to call draw an edge between two nodes. The function will be passed the name of the starting node, the name of the ending node, the start node, the end node, and is expected to return elements (`(parent-node, child-node) => elements`). If `auto` is given, a straight line will be drawn between nodes.
 /// - direction (str): A string describing the direction the tree should grow in ("up", "down", "left", "right")
 /// - grow (float): Depth grow factor
 /// - spread (float): Sibling spread factor
@@ -79,6 +84,7 @@
 /// - node-layer (int): Layer to draw nodes on
 /// - edge-layer (int): Layer to draw edges on
 /// - anchor (none, string): Name of the anchor to align the tree to. Use the root node anchor (`"0"`) to align the tree to the root nodes position.
+/// - group-name-prefix (string): Prefix of node group names
 #let tree(
   root,
   draw-node: auto,
@@ -91,6 +97,7 @@
   edge-layer: 0,
   measure-content: true,
   anchor: none,
+  group-name-prefix: "g",
 ) = {
   assert(grow >= 0)
   assert(spread >= 0)
@@ -187,7 +194,7 @@
 
       // Render element
       node.name = name
-      node.group-name = "g" + name
+      node.group-name = group-name-prefix + name
       node.element = {
         draw.anchor(node.name, node-position(node))
         draw.group(name: node.group-name, ctx => {
@@ -206,7 +213,7 @@
       node.edges = if node.children != () {
         draw.group({
           for child in node.children {
-            draw-edge(node.group-name, child.group-name, node, child)
+            draw-edge(node, child)
           }
         })
       } else { () }
