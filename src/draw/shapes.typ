@@ -388,6 +388,8 @@
   ..style,
 ) = get-ctx(ctx => {
   let (ctx, a, b, c) = coordinate.resolve(ctx, a, b, c)
+  (a, b, c) = (a, b, c).map(pt => pt.map(calc.round.with(digits: matrix.precision)))
+
   assert(a.at(2) == b.at(2) and b.at(2) == c.at(2),
     message: "The z coordinate of all points must be equal, but is: " + repr((a, b, c).map(v => v.at(2))))
 
