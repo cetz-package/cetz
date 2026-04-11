@@ -19,17 +19,19 @@
 - Fixed a bug with `brace` and `flip: true` (#1017)
 - Added a new `transform` function that multiplies a given transformation matrix with the current one (#1019)
 - **BREAKING** Renamed `on-yz` to `on-zy` (#1020)
-- New `perspective` element for perspective division.
+- New `perspective` element for perspective division
   There is a known issue with intersections of perspective elements
   outsides the `perspective` environment! (#1033)
 - Fixed a bug when passing a coordinate to the `angle:` argument of
-  `content` and a transformation matrix ≠ id.
-- Fixed a bug with cetz creating invalid stroke objects for `stroke: none` (#1059).
+  `content` and a transformation matrix ≠ id
+- Fixed a bug with cetz creating invalid stroke objects for `stroke: none` (#1059)
 - Increased the rounding digits from 8 to 10, fixing some rounding bugs
-  with `ortho`.
+  with `ortho`
 - Added a `flatten: (bool)` argument to `ortho`, that allows setting all z
-  components to zero.
-- Placing marks on a path bypasses custom coordinate resolvers.
+  components to zero
+- Placing marks on a path bypasses custom coordinate resolvers (#1070).
+- Fixed multilevel style roots (#1072)
+- Content elements now (correctly) support path- and border-anchors (#1073)
 
 # 0.4.2
 - The `tree` element now has a `anchor:` argument to position the tree (#929)
