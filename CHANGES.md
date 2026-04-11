@@ -32,6 +32,8 @@
 - Placing marks on a path bypasses custom coordinate resolvers (#1070).
 - Fixed multilevel style roots (#1072)
 - Content elements now (correctly) support path- and border-anchors (#1073)
+- **BREAKING** The `draw-edge` and `draw-node` callback signatures changed (#979)
+- The tree node-group prefix is now configurable (#979)
 
 # 0.4.2
 - The `tree` element now has a `anchor:` argument to position the tree (#929)
