@@ -110,6 +110,16 @@
   let m-bc = line-pt(b, c, .5)
   let m-cd = line-pt(c, a, .5)
 
+  // If two of three points are the same,
+  // we already know the center.
+  if a == b {
+    return m-cd
+  } else if a == c {
+    return m-bc
+  } else if b == c {
+    return m-ab
+  }
+
   let args = () // a, c, b, d
   for i in range(0, 3) {
     let (p1, p2) = ((a,b,c).at(calc.rem(i,3)),
