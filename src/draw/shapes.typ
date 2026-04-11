@@ -468,7 +468,7 @@
 /// mark((0, 0), (1, 1), symbol: ">>", anchor: "center", scale: 5)
 /// ```
 ///
-/// Note: To place a mark centered at the first coodinate (`from`) use
+/// Note: To place a mark centered at the first coordinate (`from`) use
 /// the marks `anchor: "center"` style.
 ///
 /// - from (coordinate): The position to place the mark.
@@ -1812,7 +1812,7 @@
 /// This can be used to create paths with holes.
 ///
 /// Unlike `merge-path`, this function groups the shapes as sub-paths
-/// instead of concattenating them into a single continous path.
+/// instead of concatenating them into a single continuous path.
 ///
 /// ```example
 /// compound-path({
@@ -1880,7 +1880,7 @@
   )
 }
 
-/// Merges two or more paths by concattenating their elements. Anchors and visual styling, such as `stroke` and `fill`, are not preserved. When an element's path does not start at the same position the previous element's path ended, a straight line is drawn between them so that the final path is continuous. You must then pay attention to the direction in which element paths are drawn.
+/// Merges two or more paths by concatenating their elements. Anchors and visual styling, such as `stroke` and `fill`, are not preserved. When an element's path does not start at the same position the previous element's path ended, a straight line is drawn between them so that the final path is continuous. You must then pay attention to the direction in which element paths are drawn.
 ///
 /// ```example
 /// merge-path(fill: white, {
@@ -1896,7 +1896,7 @@
 ///   Supports path anchors and shapes where all vertices share the same z-value.
 ///
 /// - body (elements): Elements with paths to be merged together.
-/// - join (bool): Connect all sup-paths with a straight line
+/// - join (bool): Connect all sub-paths with a straight line
 /// - close (bool): Close the path with a straight line from the start of the path to its end.
 /// - ignore-marks (bool): If true, remove marks from input elements
 /// - ignore-hidden (bool): If true, ignore all hidden elements
