@@ -2,7 +2,7 @@
 #import "util.typ"
 #import "path-util.typ"
 
-/// Tag constants
+// Tag constants
 #let TAG = (
   hidden: "hidden",
   no-bounds: "no-bounds",
