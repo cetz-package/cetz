@@ -59,3 +59,25 @@
     content((0,0), [#a (scale)], anchor: a)
   })
 }
+
+// Path & Border Anchors #1071
+#test-case({
+  import draw: *
+  content((0, 0), text(size: 40pt)[Ponder], name: "content")
+  cross("content.50%")
+  cross("content.45deg")
+})
+
+#test-case({
+  import draw: *
+  content((0, 0), text(size: 40pt)[Preordain], frame: "circle", name: "content")
+  cross("content.50%")
+  cross("content.45deg")
+})
+
+#test-case({
+  import draw: *
+    content((0, 0), text(size: 40pt)[Divination], frame: "rect", name: "content", padding: 1)
+  cross("content.50%")
+  cross("content.45deg")
+})

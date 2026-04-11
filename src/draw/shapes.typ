@@ -1241,13 +1241,16 @@
     let frame-fill = if style.frame != none {
       style.fill
     }
-    let frame-shape = if style.frame in (none, "rect") {
-      drawable.line-strip(
+
+    let rect-shape = drawable.line-strip(
         (anchors.north-west, anchors.north-east,
          anchors.south-east, anchors.south-west),
         close: true,
         stroke: frame-stroke,
         fill: frame-fill,)
+
+    let frame-shape = if style.frame in (none, "rect") {
+      rect-shape
     } else if style.frame == "circle" {
       let (x, y, z) = util.calculate-circle-center-3pt(anchors.north-west, anchors.south-west, anchors.south-east)
       let r = vector.dist((x, y, z), anchors.north-west)
@@ -1256,6 +1259,14 @@
         r, r,
         stroke: frame-stroke,
         fill: frame-fill,)
+    }
+
+    // Shape used for path & border-anchors. Defaults
+    // to "rect" if the content frame is unset.
+    let anchor-shape = if frame-shape != none {
+      frame-shape
+    } else {
+      rect-shape
     }
 
     let (aabb-width, aabb-height, ..) = aabb.size(aabb.aabb(
@@ -1309,6 +1320,10 @@
       offset-anchor: anchor,
       transform: none, // Content does not get transformed, see the calculation of anchors.
       name: name,
+      path-anchors: anchor-shape != none,
+      border-anchors: anchor-shape != none,
+      path: anchor-shape,
+      radii: (calc.max(width, height) * 2, calc.max(width, height) * 2),
     )
 
     return (
