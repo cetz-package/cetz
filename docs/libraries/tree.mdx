@@ -61,12 +61,12 @@ let data = ([\*], ([A], [A.A], [A.B]), ([B], [B.A]))
 tree.tree(
   data,
   direction: "right",
-  draw-node: (node, ..) => {
+  draw-node: (node) => {
     circle((), radius: .35, fill: blue, stroke: none)
     content((), text(white, [#node.content]))
   },
-  draw-edge: (from, to, ..) => {
-    let (a, b) = (from + ".center", to + ".center")
+  draw-edge: (parent, child) => {
+    let (a, b) = (parent.group-name, child.group-name)
     line((a, .4, b), (b, .4, a))
   }
 )
