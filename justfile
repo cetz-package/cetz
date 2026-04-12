@@ -29,3 +29,6 @@ manual: build
 
 docs: build
   typst query --root . manual.typ "<metadata>" --field value | python ./docs/genhtml.py -o ./docs/_generated
+
+zip: build
+  TMP="$(mktemp -d)"; just package "$TMP"; tar -cjf "cetz.tar.bz2" -C "$TMP/cetz/"* .;
