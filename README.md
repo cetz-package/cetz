@@ -14,7 +14,7 @@ CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https:
   </td>
   <td>
     <a href="gallery/paciolis.typ">
-      <img src="gallery/paciolis.png" width="250px">
+      <img src="gallery/paciolis.png" width="250px" alt="Pacioli's construction of the icosahedron">
     </a>
   </td>
   <td>
