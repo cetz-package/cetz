@@ -1,3 +1,6 @@
+# 0.5.1
+- Fixed border-anchor calculation for small rounded rects (#1083)
+
 # 0.5.0
 - **BREAKING** The default matrix changed to id (#967)
 - Fixed a coordinate rounding issue when placing `angle` elements (#968)
