@@ -9,17 +9,17 @@ CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https:
 <tr>
   <td>
     <a href="gallery/karls-picture.typ">
-      <img src="gallery/karls-picture.png" width="250px">
+      <img src="gallery/karls-picture.png" width="250px" alt="Right triangle on the unit circle illustrating sine and cosine">
     </a>
   </td>
   <td>
     <a href="gallery/paciolis.typ">
-      <img src="gallery/paciolis.png" width="250px">
+      <img src="gallery/paciolis.png" width="250px" alt="Pacioli's construction of the icosahedron">
     </a>
   </td>
   <td>
     <a href="gallery/plate-capacitor.typ">
-      <img src="gallery/plate-capacitor.png" width="250px">
+      <img src="gallery/plate-capacitor.png" width="250px" alt="Plate capacitor">
     </a>
   </td>
 </tr>
@@ -31,17 +31,17 @@ CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https:
 <tr>
   <td>
     <a href="gallery/tree.typ">
-      <img src="gallery/tree.png" width="250px">
+      <img src="gallery/tree.png" width="250px" alt="Simple tree graph">
     </a>
   </td>
   <td>
     <a href="gallery/periodic-table.typ">
-      <img src="gallery/periodic-table.png" width="250px">
+      <img src="gallery/periodic-table.png" width="250px" alt="Periodic table of elements">
     </a>
   </td>
   <td>
     <a href="gallery/waves.typ">
-      <img src="gallery/waves.png" width="250px">
+      <img src="gallery/waves.png" width="250px" alt="3D diagram showing two sine waves">
     </a>
   </td>
 </tr>
@@ -53,7 +53,7 @@ CeTZ (CeTZ, ein Typst Zeichenpaket) is a library for drawing with [Typst](https:
 <tr>
   <td>
     <a href="gallery/torus.typ">
-      <img src="gallery/torus.png" width="250px">
+      <img src="gallery/torus.png" width="250px" alt="3D torus figure">
     </a>
   </td>
   <td>
