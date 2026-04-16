@@ -1245,11 +1245,11 @@
     }
 
     let rect-shape = drawable.line-strip(
-        (anchors.north-west, anchors.north-east,
-         anchors.south-east, anchors.south-west),
-        close: true,
-        stroke: frame-stroke,
-        fill: frame-fill,)
+      (anchors.north-west, anchors.north-east,
+       anchors.south-east, anchors.south-west),
+      close: true,
+      stroke: frame-stroke,
+      fill: frame-fill,)
 
     let frame-shape = if style.frame in (none, "rect") {
       rect-shape
@@ -1525,7 +1525,7 @@
         transform: ctx.transform,
         border-anchors: true,
         path-anchors: true,
-        radii: (width, height),
+        radii: (width * 2, height * 2),
         path: drawables,
       )
 
