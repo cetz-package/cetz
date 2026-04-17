@@ -41,6 +41,40 @@
   (ref-depth * x / w, ref-depth * y / w, z)
 }
 
+// Adapt mark placement for flat perspective marks by projecting the path first,
+// then scaling mark-local geometry from the matching view-space tip depth.
+#let _perspective-mark-placement-adapter(projection, scale-factor, transform, path) = {
+  let view-path = if transform != none {
+    drawable.apply-transform(transform, path).first()
+  } else {
+    path
+  }
+  let path = drawable.apply-transform(projection, view-path).first()
+  let path = drawable.apply-transform(matrix.transform-scale((1, 1, 0)), path).first()
+
+  let adjust-style = (style, mark-tip-info) => {
+    let view-point = path-util.segment-point-at(
+      view-path.segments,
+      mark-tip-info.subpath-index,
+      mark-tip-info.segment-index,
+      mark-tip-info.t,
+    )
+    let factor = scale-factor(view-point)
+    style = style
+    for key in ("length", "width", "inset") {
+      style.insert(key, style.at(key) * factor)
+    }
+    style
+  }
+
+  (
+    path: path,
+    transform: none,
+    projected: true,
+    adjust-style: adjust-style,
+  )
+}
+
 #let _sort-by-distance(drawables) = {
   return drawables.sorted(key: d => {
     let z = none
@@ -99,6 +133,9 @@
 #let _resolve-reference-depth(ctx, body, view-rotation-matrix, distance, near) = {
   let probe-ctx = ctx
   probe-ctx.transform = view-rotation-matrix
+  // Probe the underlying scene only, otherwise mark placement can change
+  // the camera scaling when `transform-shape` toggles.
+  probe-ctx.ignore-marks = true
   let (ctx: _, bounds: _, drawables: probe-drawables, elements: _) = process.many(
     probe-ctx,
     util.resolve-body(probe-ctx, body))
@@ -118,6 +155,9 @@
 
   let probe-ctx = ctx
   probe-ctx.transform = view-rotation-matrix
+  // Probe the underlying scene only, otherwise mark placement can change
+  // the camera scaling when `transform-shape` toggles.
+  probe-ctx.ignore-marks = true
   let (ctx: _, bounds: _, drawables: probe-drawables, elements: _) = process.many(
     probe-ctx,
     util.resolve-body(probe-ctx, body))
@@ -163,13 +203,12 @@
 // - cull-face (none,str): Enable back-face culling if set to `"cw"` for clockwise
 //   or `"ccw"` for counter-clockwise. Polygons of the specified order will not get drawn.
 // - flatten (bool): Set $z=0$ for all geometry
-#let _projection(body, view-matrix, projection-matrix, reset-transform: true, sorted: true, cull-face: "cw", flatten: false) = {
+#let _projection(body, view-matrix, projection-matrix, mark-placement-adapter: none, reset-transform: true, sorted: true, cull-face: "cw", flatten: false) = {
   (ctx => {
     let transform = ctx.transform
-    let perspective-mode = type(projection-matrix) == function
-    let previous-perspective-mode = ctx.at("_perspective-projection", default: false)
-    if perspective-mode {
-      ctx._perspective-projection = true
+    let previous-mark-placement-adapter = ctx.at("mark-placement-adapter", default: none)
+    if mark-placement-adapter != none {
+      ctx.mark-placement-adapter = mark-placement-adapter
     }
 
     let local-ctx = ctx
@@ -193,10 +232,19 @@
       drawables = _sort-by-distance(drawables)
     }
 
+    if projection-matrix != none {
+      drawables = drawables.map(d => {
+        if drawable.TAG.projected in d.at("tags", default: ()) {
+          d
+        } else {
+          drawable.apply-transform(projection-matrix, d).first()
+        }
+      })
+    }
+
     ctx.transform = transform
-    if perspective-mode {
-      drawable.apply-transform(projection-matrix, drawables)
-      ctx._perspective-projection = previous-perspective-mode
+    if mark-placement-adapter != none {
+      ctx.mark-placement-adapter = previous-mark-placement-adapter
     }
     if not reset-transform {
       drawables = drawable.apply-transform(ctx.transform, drawables)
@@ -367,8 +415,14 @@
 
   let ref-depth = _resolve-reference-depth(ctx, body, view-rotation-matrix, distance, near)
   let projection = pt => _perspective-project-point(pt, near, ref-depth)
+  let scale-factor = pt => ref-depth / calc.max(-pt.at(2, default: 0.0), near)
+  let mark-placement-adapter = _perspective-mark-placement-adapter.with(
+    projection,
+    scale-factor,
+  )
 
   _projection(body, view-matrix, projection,
+    mark-placement-adapter: mark-placement-adapter,
     sorted: sorted,
     cull-face: cull-face,
     reset-transform: reset-transform)

@@ -40,6 +40,42 @@
 
 #test-case({
   import draw: *
+  perspective(x: 40deg, y: 25deg, distance: 7, {
+    line(
+      (0, 0, 0),
+      (2.8, 0, 0),
+      stroke: blue + 1pt,
+      mark: (start:"o", end: "stealth", transform-shape: false, scale: 1.5, fill: blue),
+    )
+    line(
+      (0, 1.1, 3.8),
+      (2.8, 1.1, 3.8),
+      stroke: red + 1pt,
+      mark: (start:"o", end: "stealth", transform-shape: false, scale: 1.5, fill: red),
+    )
+  })
+})
+
+#test-case({
+  import draw: *
+  perspective(x: 40deg, y: 25deg, distance: 7, {
+    line(
+      (0, 0, 0),
+      (2.8, 0, 0),
+      stroke: blue + 1pt,
+      mark: (start:"o", end: "stealth", transform-shape: true, scale: 1.5, fill: blue),
+    )
+    line(
+      (0, 1.1, 3.8),
+      (2.8, 1.1, 3.8),
+      stroke: red + 1pt,
+      mark: (start:"o", end: "stealth", transform-shape: true, scale: 1.5, fill: red),
+    )
+  })
+})
+
+#test-case({
+  import draw: *
   perspective({
     axes(4)
     on-xy({

@@ -151,4 +151,7 @@ line(..c)
 <Parameter name="transform-shape" types="bool" default_value="true">
   When `false` marks will not be stretched/affected by the current
   transformation, marks will be placed after the path is transformed.
+  Under `perspective`, `false` keeps marks flat in paper space while still
+  scaling them by depth. Mark placement and path shortening also happen in that
+  projected paper space.
 </Parameter>

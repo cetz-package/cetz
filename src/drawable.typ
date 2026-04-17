@@ -7,6 +7,8 @@
   hidden: "hidden",
   no-bounds: "no-bounds",
   mark: "mark",
+  // Drawable geometry already lives in projected paper space.
+  projected: "projected",
   debug: "debug",
 )
 

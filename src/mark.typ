@@ -246,7 +246,7 @@
 /// - segments (drawable): The path to place the mark on.
 /// - is-end (bool): Start from the end of the path
 /// -> dictionary Dictionary with the following keys: pt, distance and drawable.
-#let place-mark-on-path(ctx, styles, segments, is-end: false) = {
+#let place-mark-on-path(ctx, styles, segments, is-end: false, adjust-style: none) = {
   if type(styles) != array {
     styles = (styles,)
   }
@@ -283,22 +283,28 @@
     style = merge-flag(style, "harpoon")
     style.mark = none
 
-    let mark = _eval-mark-shape-and-anchors(ctx, mark-fn(style), style)
-    let offset = style.at("offset", default: 0)
-    let inset = style.at("inset", default: 0)
-
     let mark-tip-info = path-util.point-at(
         segments, distance, reverse: is-end)
+
+    // Do not try to place this mark, if we failed to
+    // get a tip/base info.
+    if mark-tip-info == none {
+      continue
+    }
+
+    if adjust-style != none {
+      style = adjust-style(style, mark-tip-info)
+    }
+
+    let mark = _eval-mark-shape-and-anchors(ctx, mark-fn(style), style)
+    let inset = style.at("inset", default: 0)
     let mark-base-info = if mark.length != 0 {
       path-util.point-at(
           segments, distance + mark.length - inset, reverse: is-end)
     } else {
       mark-tip-info
     }
-
-    // Do not try to place this mark, if we failed to
-    // get a tip/base info.
-    if mark-tip-info == none or mark-base-info == none {
+    if mark-base-info == none {
       continue
     }
 
@@ -346,6 +352,36 @@
   )
 }
 
+#let _adapt-mark-placement(ctx, style, transform, path) = {
+  let transform-shape = style.at("transform-shape", default: true)
+  let mark-placement-adapter = ctx.at("mark-placement-adapter", default: none)
+
+  let projected = false
+  let adjust-style = none
+
+  if not transform-shape and mark-placement-adapter != none {
+    let adapted = mark-placement-adapter(
+      transform,
+      path,
+    )
+    path = adapted.path
+    transform = adapted.transform
+    projected = adapted.at("projected", default: false)
+    adjust-style = adapted.at("adjust-style", default: none)
+  } else if not transform-shape and transform != none {
+    path = drawable.apply-transform(
+      matrix.mul-mat(matrix.transform-scale((1,1,0)), transform), path).first()
+    transform = none
+  }
+
+  (
+    path: path,
+    transform: transform,
+    projected: projected,
+    adjust-style: adjust-style,
+  )
+}
+
 /// Places marks along a path. Returns them as an {{array}} of {{drawable}}.
 ///
 /// - ctx (context): The context object.
@@ -355,10 +391,13 @@
 /// - add-path (bool): When `true` the shortened path will returned as the first {{drawable}} in the {{array}}
 /// -> array
 #let place-marks-along-path(ctx, style, transform, path, add-path: true) = {
-  let distance = (0, 0)
-  let snap-to = (none, none)
-  let drawables = ()
-  let perspective-mode = ctx.at("_perspective-projection", default: false)
+  if ctx.at("ignore-marks", default: false) {
+    return if add-path {
+      drawable.apply-transform(transform, path)
+    } else {
+      ()
+    }
+  }
 
   // Temp. disable custom coordinate resolvers for placing marks on paths.
   ctx.resolve-coordinate = ()
@@ -366,26 +405,24 @@
   if style == none {
     style = (start: none, end: none, symbol: none)
   }
-  if perspective-mode {
-    style.transform-shape = true
-  }
+  let adapted = _adapt-mark-placement(ctx, style, transform, path)
+  path = adapted.path
+  transform = adapted.transform
+  let projected = adapted.projected
+  let adjust-style = adapted.adjust-style
+
+  let distance = (0, 0)
+  let snap-to = (none, none)
+  let drawables = ()
+
   let both-symbol = style.at("symbol", default: none)
-  let start-symbol = style.at("start",
-    default: both-symbol)
+  let start-symbol = style.at("start", default: both-symbol)
   if start-symbol == none {
     start-symbol = both-symbol
   }
-  let end-symbol = style.at("end",
-    default: both-symbol)
+  let end-symbol = style.at("end", default: both-symbol)
   if end-symbol == none {
     end-symbol = both-symbol
-  }
-
-  let (path, is-transformed) = if not style.at("transform-shape", default: true) and transform != none {
-    (drawable.apply-transform(
-      matrix.mul-mat(matrix.transform-scale((1,1,0)), transform), path).first(), true)
-  } else {
-    (path, false)
   }
 
   let segments = path.segments
@@ -393,7 +430,8 @@
     let (drawables: start-drawables, distance: start-distance, pos: pt) = place-mark-on-path(
       ctx,
       process-style(ctx, style, "start", path-util.length(segments)),
-      segments
+      segments,
+      adjust-style: adjust-style,
     )
     drawables += start-drawables
     distance.first() = start-distance
@@ -404,7 +442,8 @@
       ctx,
       process-style(ctx, style, "end", path-util.length(segments)),
       segments,
-      is-end: true
+      is-end: true,
+      adjust-style: adjust-style,
     )
 
     drawables += end-drawables
@@ -424,10 +463,11 @@
     drawables.insert(0, path)
   }
 
-  // If not transformed pre mark placement,
-  // transform everything after mark placement.
-  if not is-transformed {
+  if transform != none {
     drawables = drawable.apply-transform(transform, drawables)
+  }
+  if projected {
+    drawables = drawable.apply-tags(drawables, drawable.TAG.projected)
   }
 
   return drawables
