@@ -283,6 +283,8 @@
       (:)
     }
 
+    let is-degenerate = (width != none and util.float-eq(width, 0)) or (height != none and util.float-eq(height, 0))
+
     let (transform, anchors) = anchor_.setup(
       anchor => {
         let (name, ..nested-anchors) = if type(anchor) == array {
@@ -310,6 +312,15 @@
       radii: (width, height),
       path: path,
       nested-anchors: true,
+      border-anchor-callback: if is-degenerate {
+        (center, angle) => {
+          let x = if util.float-eq(height, 0) { 0 } else { calc.cos(angle) }
+          let y = if util.float-eq(width, 0) { 0 } else { calc.sin(angle) }
+          return vector.add(center, (x * width / 2, y * height / 2))
+        }
+      } else {
+        none
+      }
     )
 
     // Pass-through shared context data
