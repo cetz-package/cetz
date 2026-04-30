@@ -5,6 +5,7 @@
 #import "wasm.typ": call_wasm
 
 #let cetz-core = plugin("../cetz-core/cetz_core.wasm")
+#let epsilon = 1e-6
 
 // Map number v from range (ds, de) to (ts, te)
 #let _map(v, ds, de, ts, te) = {
@@ -477,7 +478,6 @@
 ///
 /// -> array Array of roots
 #let _cubic-roots(a, b, c, d) = {
-  let epsilon = 1e-6
   if calc.abs(a) < epsilon {
     if calc.abs(b) < epsilon {
       // Constant
@@ -487,7 +487,7 @@
 
       // Linear
       let root = -1 * d / c
-      if root < 0 - epsilon and root > 1 + epsilon {
+      if root < 0 - epsilon or root > 1 + epsilon {
         return ()
       }
       return (root,)
@@ -569,7 +569,11 @@
 
   let pts = ()
   for t in roots {
-    let pt = cubic-point(s, e, c1, c2, t)
+    if t < 0 - epsilon or t > 1 + epsilon {
+      continue
+    }
+
+    let pt = cubic-point(s, e, c1, c2, calc.clamp(t, 0, 1))
     if ray {
       pts.push(pt)
     } else {
