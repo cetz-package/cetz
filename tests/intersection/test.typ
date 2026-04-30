@@ -2,69 +2,88 @@
 #import "/src/lib.typ": *
 #import "/tests/helper.typ": *
 
-#let test(body) = canvas(length: 1cm, {
+#let show-intersections(body) = test-case({
   import draw: *
-
   group({
     intersections("i", {
       body
     })
     for-each-anchor("i", (name) => {
-      circle("i."+name, radius: .1, fill: red)
+      content((), [#name], frame: "circle", fill: white.transparentize(50%))
     })
-  })
+  }, name: "g")
 })
 
-#box(stroke: 2pt + red, {
+#show-intersections({
   import draw: *
-  test({
-    line((-1,-1), (1,1))
-  })
-  test({
-    line((-1,-1), (1,1))
-    line((-1,1), (1,-1))
-  })
-  test({
-    line((-1,.5),(1,.5))
-    line((-1,-1), (1,1))
-    line((-1,1), (1,-1))
-  })
-  test({
-    circle((0,0))
-    line((-1,-1), (1,1))
-  })
-  test({
-    circle((0,0))
-    line((-1,.5),(1,.5))
-  })
-  test({
-    bezier-through((-1,0), (0,1), (1,0))
-    line((-1,.5),(1,.5))
-  })
-  test({
-    bezier-through((-1,0), (0,.5), (1,0))
-    circle((0,0), radius: .8)
-  })
-  test({
-    bezier-through((-1,0), (0,.5), (1,0))
-    bezier-through((-1,.5), (0,-.5), (1,.5))
-  })
-  test({
-    bezier((-1,-1), (1,1), (-.5,2), (.5,-2))
-    bezier((-1,1), (1,-1), (-.5,-2), (.5,2))
-  })
-  test({
-    grid((0,0), (2,2), step: 1)
-  })
-  test({
-    rect((0,0), (2,2))
-    rotate(45deg)
-    line((0,0), (calc.sqrt(2*calc.pow(2,2)),0))
-  })
-  test({
-    // The marks must not generate intersections with the line!
-    line((0,0), (2,2), mark: (start: ">", end: ">"))
-  })
+  line((-1,-1), (1,1))
+})
+
+#show-intersections({
+  import draw: *
+  line((-1,-1), (1,1))
+  line((-1,1), (1,-1))
+})
+
+#show-intersections({
+  import draw: *
+  line((-1,.5),(1,.5))
+  line((-1,-1), (1,1))
+  line((-1,1), (1,-1))
+})
+
+#show-intersections({
+  import draw: *
+  circle((0,0))
+  line((-1,-1), (1,1))
+})
+
+#show-intersections({
+  import draw: *
+  circle((0,0))
+  line((-1,.5),(1,.5))
+})
+
+#show-intersections({
+  import draw: *
+  bezier-through((-1,0), (0,1), (1,0))
+  line((-1,.5),(1,.5))
+})
+
+#show-intersections({
+  import draw: *
+  bezier-through((-1,0), (0,.5), (1,0))
+  circle((0,0), radius: .8)
+})
+
+#show-intersections({
+  import draw: *
+  bezier-through((-1,0), (0,.5), (1,0))
+  bezier-through((-1,.5), (0,-.5), (1,.5))
+})
+
+#show-intersections({
+  import draw: *
+  bezier((-1,-1), (1,1), (-.5,2), (.5,-2))
+  bezier((-1,1), (1,-1), (-.5,-2), (.5,2))
+})
+
+#show-intersections({
+  import draw: *
+  grid((0,0), (2,2), step: 1)
+})
+
+#show-intersections({
+  import draw: *
+  rect((0,0), (2,2))
+  rotate(45deg)
+  line((0,0), (calc.sqrt(2*calc.pow(2,2)),0))
+})
+
+#show-intersections({
+  import draw: *
+  // The marks must not generate intersections with the line!
+  line((0,0), (2,2), mark: (start: ">", end: ">"))
 })
 
 #test-case({
@@ -88,7 +107,7 @@
     line((-1,-1), (1,1))
   })
   for-each-anchor("i", (name) => {
-    circle("i."+name, radius: .1, fill: red)
+    content("i." + name, [#name], frame: "circle", fill: white)
   })
 })
 
@@ -120,3 +139,17 @@
     content((), [#name], frame: "circle", fill: white)
   })
 })
+
+#{
+  import "/src/intersection.typ": line-line
+  import "/src/vector.typ"
+
+  let pt = line-line(
+    (0, 0, 0),
+    (0.001, 0.001, 0.001),
+    (0, 0.001, 0.001),
+    (0.001, 0, 0),
+  )
+  assert.ne(pt, none)
+  assert(vector.dist(pt, (0.0005, 0.0005, 0.0005)) < 1e-9)
+}
