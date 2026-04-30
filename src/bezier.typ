@@ -477,17 +477,17 @@
 /// Find the roots of a cubic polynomial with the coefficients a, b, c and d.
 ///
 /// -> array Array of roots
-#let _cubic-roots(a, b, c, d) = {
-  if calc.abs(a) < epsilon {
-    if calc.abs(b) < epsilon {
+#let _cubic-roots(a, b, c, d, eps: epsilon) = {
+  if calc.abs(a) < eps {
+    if calc.abs(b) < eps {
       // Constant
-      if c == 0 {
+      if calc.abs(c) < eps {
         return ()
       }
 
       // Linear
       let root = -1 * d / c
-      if root < 0 - epsilon or root > 1 + epsilon {
+      if root < -eps or root > 1 + eps {
         return ()
       }
       return (root,)
@@ -499,7 +499,7 @@
       dq = calc.sqrt(dq)
       let roots = (-1 * (dq + c) / (2 * b),
                         (dq - c) / (2 * b))
-      return roots.filter(t => t >= 0 - epsilon and t <= 1 + epsilon)
+      return roots.filter(t => t >= -eps and t <= 1 + eps)
     } else {
       // No real roots
       return ()
@@ -517,7 +517,7 @@
     let S = sgn(R + calc.sqrt(D)) * calc.pow(calc.abs(R + calc.sqrt(D)), 1/3)
     let T = sgn(R - calc.sqrt(D)) * calc.pow(calc.abs(R - calc.sqrt(D)), 1/3)
 
-    if (S - T) != 0 {
+    if calc.abs(S - T) > eps {
       // Roots 2 and 3 are complex
       (aa + (S + T),)
     } else {
@@ -531,7 +531,7 @@
      qq * calc.cos((th + 4 * calc.pi) / 3) + aa)
   }
 
-  return roots.filter(t => t >= 0 - epsilon and t <= 1 + epsilon)
+  return roots.filter(t => t >= -eps and t <= 1 + eps)
 }
 
 /// Calculate the intersection points between a 2D cubic-bezier and a straight line. Returns an array of <Type>vector</Type>
@@ -544,7 +544,7 @@
 /// - lb  (vector): Line end point
 /// - ray (bool): If set to true, ignore line length
 /// -> array
-#let line-cubic-intersections(la, lb, s, e, c1, c2, ray: false) = {
+#let line-cubic-intersections(la, lb, s, e, c1, c2, ray: false, eps: epsilon) = {
   // Based on:
   //   http://www.particleincell.com/blog/2013/cubic-line-intersection/
   // with some rounding improvements
@@ -569,7 +569,7 @@
 
   let pts = ()
   for t in roots {
-    if t < 0 - epsilon or t > 1 + epsilon {
+    if t <  -eps or t > 1 + eps {
       continue
     }
 
@@ -577,12 +577,12 @@
     if ray {
       pts.push(pt)
     } else {
-      let s = if calc.abs(lb.at(0) - la.at(0)) >= 1e-6 {
+      let s = if calc.abs(lb.at(0) - la.at(0)) >= eps {
         (pt.at(0) - la.at(0)) / (lb.at(0) - la.at(0))
       } else {
         (pt.at(1) - la.at(1)) / (lb.at(1) - la.at(1))
       }
-      if s >= 0 and s <= 1 {
+      if s > -eps and s <= 1 + eps {
         pts.push(pt)
       }
     }
