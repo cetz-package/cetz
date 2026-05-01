@@ -94,6 +94,11 @@
     fill: auto,
     fill-rule: auto,
   ),
+  path-bool: (
+    stroke: auto,
+    fill: auto,
+    fill-rule: auto,
+  ),
   rect: (
     /// Rect corner radius that supports the following types:
     /// - <radius>: Same x and y radius for all corners

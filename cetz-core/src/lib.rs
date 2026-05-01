@@ -3,9 +3,9 @@ use ciborium::ser::into_writer;
 use serde::Deserialize;
 use serde::Serialize;
 use wasm_minimal_protocol::*;
-use std::cmp;
 
 mod layout;
+mod path_bool;
 pub use layout::{InputTree, OutputTree};
 initiate_protocol!();
 
@@ -66,7 +66,7 @@ fn cubic_extrema(s: Point, e: Point, c1: Point, c2: Point) -> Result<Vec<Point>,
     for dim in 0..dims {
         let ts = dim_extrema(s[dim], e[dim], c1[dim], c2[dim]);
         for t in ts {
-            if t >= 0.0 && t <= 1.0 {
+            if (0.0..=1.0).contains(&t) {
                 let pt = cubic_point(&s, &e, &c1, &c2, t);
                 pts.push(pt);
             }
@@ -117,18 +117,25 @@ struct Bounds {
 fn aabb(init: Option<Bounds>, pts: Vec<Point>) -> Result<Bounds, String> {
     let mut bounds = match init {
         Some(init) => init,
-        None => Bounds {
-            low: pts.first().unwrap().clone().iter().take(3).cloned().collect(),
-            high: pts.first().unwrap().iter().take(3).cloned().collect(),
-        },
+        None => {
+            match pts.first() {
+                Some(p) => Bounds {
+                    low: p.iter().take(3).cloned().collect(),
+                    high: p.iter().take(3).cloned().collect(),
+                },
+                None => {
+                    return Err("Cannot compute AABB: Point list is empty and no initial bounds were provided.".to_string());
+                }
+            }
+        }
     };
     for pt in pts {
-        for dim in 0..cmp::min(3, pt.len()) {
-            if pt[dim] < bounds.low[dim] {
-                bounds.low[dim] = pt[dim];
+        for (dim, &val) in pt.iter().take(3).enumerate() {
+            if val < bounds.low[dim] {
+                bounds.low[dim] = val;
             }
-            if bounds.high[dim] < pt[dim] {
-                bounds.high[dim] = pt[dim];
+            if bounds.high[dim] < val {
+                bounds.high[dim] = val;
             }
         }
     }
@@ -157,4 +164,11 @@ pub fn layout_tree_func(input: &[u8]) -> Result<Vec<u8>, String> {
         }
         Err(e) => Err(e.to_string()),
     }
+}
+
+#[wasm_func]
+pub fn path_bool_func(input: &[u8]) -> Result<Vec<u8>, String> {
+    handle_cbor(input, |args: path_bool::PathBoolArgs| {
+        path_bool::path_bool(args).map_err(|e| e.to_string())
+    })
 }
