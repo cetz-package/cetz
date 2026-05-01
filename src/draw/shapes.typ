@@ -1244,23 +1244,24 @@
       style.fill
     }
 
-    let rect-shape = drawable.line-strip(
+    let rect-shape = drawable.apply-tags(drawable.line-strip(
         (anchors.north-west, anchors.north-east,
          anchors.south-east, anchors.south-west),
         close: true,
         stroke: frame-stroke,
-        fill: frame-fill,)
+        fill: frame-fill,), drawable.TAG.content-frame)
 
     let frame-shape = if style.frame in (none, "rect") {
       rect-shape
     } else if style.frame == "circle" {
       let (x, y, z) = util.calculate-circle-center-3pt(anchors.north-west, anchors.south-west, anchors.south-east)
       let r = vector.dist((x, y, z), anchors.north-west)
-      drawable.ellipse(
+      drawable.apply-tags(drawable.ellipse(
         x, y, z,
         r, r,
         stroke: frame-stroke,
-        fill: frame-fill,)
+        fill: frame-fill,
+      ), drawable.TAG.content-frame)
     }
 
     // Shape used for path & border-anchors. Defaults

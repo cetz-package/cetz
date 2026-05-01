@@ -6,6 +6,7 @@
 #let TAG = (
   hidden: "hidden",
   no-bounds: "no-bounds",
+  content-frame: "content-frame",
   mark: "mark",
   debug: "debug",
 )

@@ -7,28 +7,55 @@
 
 #let cetz-core = plugin("/cetz-core/cetz_core.wasm")
 
-// Runs a CeTZ body through `process.element`, filters marks/hidden drawables,
-// and collects every path drawable's subpaths into a flat 3D path (an array
-// of `(origin, closed, segments)` triples) plus the fill-rules observed across
-// those drawables.
-#let _collect-path3d(ctx, body, ignore-marks: true, ignore-hidden: true) = {
+// extract path subpaths and fill-rules from an array of resolved drawables
+#let _extract-paths(drawables, ignore-marks: true, ignore-hidden: true) = {
+  // exclude debug and content-frame drawables
+  let tags = (drawable.TAG.debug, drawable.TAG.content-frame)
+  if ignore-hidden { tags.push(drawable.TAG.hidden) }
+  if ignore-marks { tags.push(drawable.TAG.mark) }
+
+  let drawables = drawable.filter-tagged(drawables, ..tags)
+  let path-drawables = drawables.filter(d => d.type == "path")
+  let subpaths = path-drawables.map(d => d.segments).join(default: ())
+  let fill-rules = path-drawables.map(d => d.fill-rule)
+  return (subpaths, fill-rules)
+}
+
+// Resolves an operand into (subpaths, fill-rules). The operand can be:
+//   - a string: the name of an existing element in `ctx.nodes`
+//   - a CeTZ body
+#let _collect-path3d(ctx, operand, ignore-marks: true, ignore-hidden: true) = {
+  if type(operand) == str {
+    assert(
+      operand in ctx.nodes,
+      message: "path-bool: no element named " + repr(operand),
+    )
+    let element = ctx.nodes.at(operand)
+    let raw = element.at("drawables", default: ())
+    let (subpaths, fill-rules) = _extract-paths(
+      raw,
+      ignore-marks: ignore-marks,
+      ignore-hidden: ignore-hidden,
+    )
+    return (subpaths, fill-rules)
+  }
+
   let subpaths = ()
   let fill-rules = ()
-  for element in body {
+  for element in operand {
     let r = process.element(ctx, element)
     if r != none {
       ctx = r.ctx
-      let tags = (drawable.TAG.debug,)
-      if ignore-hidden { tags.push(drawable.TAG.hidden) }
-      if ignore-marks { tags.push(drawable.TAG.mark) }
-
-      let drawables = drawable.filter-tagged(r.drawables, ..tags)
-      let path-drawables = drawables.filter(d => d.type == "path")
-      subpaths += path-drawables.map(d => d.segments).join()
-      fill-rules += path-drawables.map(d => d.fill-rule)
+      let (extracted-subpaths, extracted-fill-rules) = _extract-paths(
+        r.drawables,
+        ignore-marks: ignore-marks,
+        ignore-hidden: ignore-hidden,
+      )
+      subpaths += extracted-subpaths
+      fill-rules += extracted-fill-rules
     }
   }
-  return (ctx, subpaths, fill-rules)
+  return (subpaths, fill-rules)
 }
 
 // Picks a fill-rule for one operand:
@@ -53,30 +80,21 @@
     return ((subpaths: ()), 0.0)
   }
 
-  let z0 = path3d.first().at(0).at(2)
-  let z-mismatch = false
+  let (z0, same-z) = path-util.same-z-plane(path3d, tol: tol)
+  assert(same-z, message: "path-bool: all input vertices must lie in a single z-plane.")
 
   let drop-z(v) = (v.at(0), v.at(1))
-  let check-z(v) = {
-    if calc.abs(v.at(2) - z0) > tol { z-mismatch = true }
-  }
 
   let wire-subpaths = ()
   for (origin, closed, segments) in path3d {
     assert(closed, message: "path-bool: every input subpath must be closed; got an open subpath")
-    check-z(origin)
 
     let wire-segments = segments.map(seg => {
       let (kind, ..args) = seg
       if kind == "l" {
-        let to = args.at(0)
-        check-z(to)
-        (kind: "l", to: drop-z(to))
+        (kind: "l", to: drop-z(args.at(0)))
       } else if kind == "c" {
         let (c1, c2, to) = args
-        check-z(c1)
-        check-z(c2)
-        check-z(to)
         (kind: "c", c1: drop-z(c1), c2: drop-z(c2), to: drop-z(to))
       } else {
         panic("path-bool: unsupported path segment kind " + repr(kind))
@@ -89,8 +107,6 @@
       segments: wire-segments,
     ))
   }
-
-  assert(not z-mismatch, message: "path-bool: all input vertices must lie in a single z-plane.")
 
   return ((subpaths: wire-subpaths), z0)
 }
@@ -125,6 +141,14 @@
 /// )
 /// ```
 ///
+/// Each operand can either be a CeTZ body or the name of an already-defined element (a string).
+///
+/// ```example
+/// rect((-1, -1), (1, 1), name: "r")
+/// circle((0, 0), radius: 0.8, name: "c")
+/// path-bool("r", "c", op: "difference", fill: blue)
+/// ```
+///
 /// All input subpaths must be closed and lie in a single z-plane. The output
 /// is a single path drawable in the z-plane of the first input.
 ///
@@ -136,8 +160,10 @@
 /// "even-odd")`), that value is used; otherwise it falls back to
 /// `path-bool`'s own resolved style.
 ///
-/// - a (elements): First operand body.
-/// - b (elements): Second operand body.
+/// - a (elements, str): First operand. Either an element body or the name
+///   of an existing element.
+/// - b (elements, str): Second operand. Either an element body or the name
+///   of an existing element.
 /// - op (string): One of `"union"`, `"intersection"`, `"difference"`, `"xor"`.
 /// - fill-rule-a (auto, string): `"non-zero"` or `"even-odd"`, applied to `a`. If `auto`, inferred from `a`'s drawables
 /// - fill-rule-b (auto, string): `"non-zero"` or `"even-odd"`, applied to `b`. If `auto`, inferred from `b`'s drawables
@@ -183,13 +209,13 @@
 
   return (
     ctx => {
-      let (_, a-path3d, a-fill-rules) = _collect-path3d(
+      let (a-path3d, a-fill-rules) = _collect-path3d(
         ctx,
         a,
         ignore-marks: ignore-marks,
         ignore-hidden: ignore-hidden,
       )
-      let (_, b-path3d, b-fill-rules) = _collect-path3d(
+      let (b-path3d, b-fill-rules) = _collect-path3d(
         ctx,
         b,
         ignore-marks: ignore-marks,
