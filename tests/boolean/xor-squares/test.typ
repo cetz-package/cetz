@@ -4,7 +4,7 @@
 
 #test-case({
   import draw: *
-  path-bool(
+  boolean(
     { rect((0, 0), (1, 1)) },
     { rect((0.5, 0.5), (1.5, 1.5)) },
     op: "xor",

@@ -18,13 +18,13 @@
   let C = circle((1, 0), radius: 1.5)
 
   // Y is the empty set: a shape minus itself.
-  let Y = path-bool({ C }, { C }, op: "difference", stroke: black)
+  let Y = boolean({ C }, { C }, op: "difference", stroke: black)
 
   Y
 
   // Difference with empty Y: ∅ - A = ∅. Must not panic.
-  path-bool({ Y }, { A }, op: "difference", fill: red, stroke: black)
+  boolean({ Y }, { A }, op: "difference", fill: red, stroke: black)
 
   // Empty input as a (b non-empty): ∅ inter A = ∅. Must not panic.
-  path-bool({ Y }, { A }, op: "intersection", fill: blue, stroke: none)
+  boolean({ Y }, { A }, op: "intersection", fill: blue, stroke: none)
 })

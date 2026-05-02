@@ -1244,12 +1244,16 @@
       style.fill
     }
 
-    let rect-shape = drawable.apply-tags(drawable.line-strip(
+    let rect-shape = drawable.apply-tags(
+      drawable.line-strip(
         (anchors.north-west, anchors.north-east,
          anchors.south-east, anchors.south-west),
         close: true,
         stroke: frame-stroke,
-        fill: frame-fill,), drawable.TAG.content-frame)
+        fill: frame-fill,
+      ),
+      drawable.TAG.content-frame,
+    )
 
     let frame-shape = if style.frame in (none, "rect") {
       rect-shape
@@ -1526,7 +1530,7 @@
         transform: ctx.transform,
         border-anchors: true,
         path-anchors: true,
-        radii: (width, height),
+        radii: (width * 2, height * 2),
         path: drawables,
       )
 

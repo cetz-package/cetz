@@ -28,7 +28,7 @@
   if type(operand) == str {
     assert(
       operand in ctx.nodes,
-      message: "path-bool: no element named " + repr(operand),
+      message: "boolean: no element named " + repr(operand),
     )
     let element = ctx.nodes.at(operand)
     let raw = element.at("drawables", default: ())
@@ -81,13 +81,13 @@
   }
 
   let (z0, same-z) = path-util.same-z-plane(path3d, tol: tol)
-  assert(same-z, message: "path-bool: all input vertices must lie in a single z-plane.")
+  assert(same-z, message: "boolean: all input vertices must lie in a single z-plane.")
 
   let drop-z(v) = (v.at(0), v.at(1))
 
   let wire-subpaths = ()
   for (origin, closed, segments) in path3d {
-    assert(closed, message: "path-bool: every input subpath must be closed; got an open subpath")
+    assert(closed, message: "boolean: every input subpath must be closed; got an open subpath")
 
     let wire-segments = segments.map(seg => {
       let (kind, ..args) = seg
@@ -97,7 +97,7 @@
         let (c1, c2, to) = args
         (kind: "c", c1: drop-z(c1), c2: drop-z(c2), to: drop-z(to))
       } else {
-        panic("path-bool: unsupported path segment kind " + repr(kind))
+        panic("boolean: unsupported path segment kind " + repr(kind))
       }
     })
 
@@ -121,7 +121,7 @@
       } else if seg.kind == "c" {
         ("c", inflate(seg.c1), inflate(seg.c2), inflate(seg.to))
       } else {
-        panic("path-bool: unexpected wire segment kind " + repr(seg.kind))
+        panic("boolean: unexpected wire segment kind " + repr(seg.kind))
       }
     })
     (inflate(sp.origin), sp.closed, segments)
@@ -133,7 +133,7 @@
 /// and `"xor"`.
 ///
 /// ```example
-/// path-bool(
+/// boolean(
 ///   { rect((-1, -1), (1, 1)) },
 ///   { circle((0, 0), radius: 0.8) },
 ///   op: "difference",
@@ -146,7 +146,7 @@
 /// ```example
 /// rect((-1, -1), (1, 1), name: "r")
 /// circle((0, 0), radius: 0.8, name: "c")
-/// path-bool("r", "c", op: "difference", fill: blue)
+/// boolean("r", "c", op: "difference", fill: blue)
 /// ```
 ///
 /// All input subpaths must be closed and lie in a single z-plane. The output
@@ -158,7 +158,7 @@
 /// from the operand: if every path drawable produced by the body agrees on
 /// one fill-rule (e.g. the body is a single `compound-path(..., fill-rule:
 /// "even-odd")`), that value is used; otherwise it falls back to
-/// `path-bool`'s own resolved style.
+/// `boolean`'s own resolved style.
 ///
 /// - a (elements, str): First operand. Either an element body or the name
 ///   of an existing element.
@@ -172,7 +172,7 @@
 /// - ignore-hidden (bool): Drop hidden elements from the inputs.
 /// - name (none, string):
 /// - ..style (style):
-#let path-bool(
+#let boolean(
   a,
   b,
   op: "difference",
@@ -187,13 +187,13 @@
   assert.eq(
     style.pos(),
     (),
-    message: "path-bool: unexpected positional arguments: " + repr(style.pos()),
+    message: "boolean: unexpected positional arguments: " + repr(style.pos()),
   )
   let style = style.named()
 
   assert(
     op in ("union", "intersection", "difference", "xor"),
-    message: "path-bool: invalid op "
+    message: "boolean: invalid op "
       + repr(op)
       + ". Expected one of: \"union\", \"intersection\", \"difference\", \"xor\"",
   )
@@ -201,7 +201,7 @@
   let validate-fill-rule(name, value) = {
     assert(
       value == auto or value in ("non-zero", "even-odd"),
-      message: "path-bool: invalid " + name + " " + repr(value) + ". Expected `auto`, \"non-zero\", or \"even-odd\".",
+      message: "boolean: invalid " + name + " " + repr(value) + ". Expected `auto`, \"non-zero\", or \"even-odd\".",
     )
   }
   validate-fill-rule("fill-rule-a", fill-rule-a)
@@ -227,10 +227,10 @@
 
       assert(
         calc.abs(az - bz) < 1e-6,
-        message: "path-bool: input paths must lie in the same z-plane; got z=" + repr(az) + " and z=" + repr(bz),
+        message: "boolean: input paths must lie in the same z-plane; got z=" + repr(az) + " and z=" + repr(bz),
       )
 
-      let resolved-style = styles.resolve(ctx.style, merge: style, root: "path-bool")
+      let resolved-style = styles.resolve(ctx.style, merge: style, root: "boolean")
       let resolved-fill-rule-a = _infer-fill-rule(fill-rule-a, a-fill-rules, resolved-style.fill-rule)
       let resolved-fill-rule-b = _infer-fill-rule(fill-rule-b, b-fill-rules, resolved-style.fill-rule)
 
@@ -252,7 +252,7 @@
           name: name,
           anchors: anchor => {
             if anchor == () { () } else {
-              panic("path-bool: result is empty; no anchor `" + repr(anchor) + "` available")
+              panic("boolean: result is empty; no anchor `" + repr(anchor) + "` available")
             }
           },
           drawables: (),

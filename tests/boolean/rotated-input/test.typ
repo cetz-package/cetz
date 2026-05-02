@@ -16,7 +16,7 @@
   })
 
 
-  path-bool(
+  boolean(
     {
       rotate(30deg, origin: (0.5, 0.5))
       rect((0, 0), (1, 1))

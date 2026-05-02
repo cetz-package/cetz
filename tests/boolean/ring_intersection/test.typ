@@ -19,25 +19,25 @@
   let D = circle((1, 0), radius: 1.2)
   let H = rect((-2, 0), (2, 4))
 
-  let X = path-bool(
+  let X = boolean(
     A,
     B,
     op: "difference",
   )
 
-  let Y = path-bool(
+  let Y = boolean(
     C,
     D,
     op: "difference",
   )
 
-  let O = path-bool(
+  let O = boolean(
     X,
     Y,
     op: "intersection",
   )
 
-  path-bool(
+  boolean(
     X,
     C,
     op: "difference",
@@ -45,7 +45,7 @@
     stroke: none,
   )
 
-  path-bool(
+  boolean(
     X,
     D,
     op: "intersection",
@@ -53,7 +53,7 @@
     stroke: none,
   )
 
-  path-bool(
+  boolean(
     Y,
     B,
     op: "intersection",
@@ -61,7 +61,7 @@
     stroke: none,
   )
 
-  path-bool(
+  boolean(
     Y,
     A,
     op: "difference",
@@ -69,7 +69,7 @@
     stroke: none,
   )
 
-  path-bool(
+  boolean(
     O,
     H,
     op: "intersection",
@@ -77,7 +77,7 @@
     stroke: (paint: gray, dash: "dashed"),
   )
 
-  path-bool(
+  boolean(
     O,
     H,
     op: "difference",

@@ -12,7 +12,7 @@
   let D = circle((1, 0), radius: 1.2)
   let H = rect((-2, 0), (2, 4))
 
-  path-bool(
+  boolean(
     {
       A
       circle((-1, 0), radius: 1.7)
@@ -25,7 +25,7 @@
 
   set-origin((0, -4.3))
 
-  path-bool(
+  boolean(
     compound-path(
       {
         A

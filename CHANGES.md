@@ -1,3 +1,9 @@
+# 0.5.1
+- Added the `boolean` draw function for path boolean operations.
+- Fixed border-anchor calculation for small rounded rects (#1083)
+- Fixed a bug with bezier intersections finding roots outsides the curve (#1090)
+- Fixed line/line intersection
+
 # 0.5.0
 - **BREAKING** The default matrix changed to id (#967)
 - Fixed a coordinate rounding issue when placing `angle` elements (#968)

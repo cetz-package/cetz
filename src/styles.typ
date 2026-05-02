@@ -94,7 +94,7 @@
     fill: auto,
     fill-rule: auto,
   ),
-  path-bool: (
+  boolean: (
     stroke: auto,
     fill: auto,
     fill-rule: auto,
