@@ -135,9 +135,10 @@
       // Typst path elements have strange bounding boxes. We need to
       // offset all paths to start at (0, 0) to make gradients work.
       let (segment-x, segment-y, _) = if drawable.type == "path" {
-        vector.sub(
-          vector.element-product(aabb.aabb(path-util.bounds(drawable.segments)).low, (1, -1, 1)),
-          bounds.low)
+        let path-bounds = aabb.aabb(path-util.bounds(drawable.segments))
+        (path-bounds.low.at(0) - bounds.low.at(0),
+         bounds.high.at(1) - path-bounds.high.at(1),
+         0)
       } else {
         (0, 0, 0)
       }
