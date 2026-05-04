@@ -36,7 +36,7 @@
 /// - angle (angle): The angle to check for a border anchor at.
 /// -> none
 /// -> vector
-#let border(center, x-dist, y-dist, drawables, angle) = {
+#let shape-border(center, x-dist, y-dist, drawables, angle) = {
   x-dist += util.float-epsilon
   y-dist += util.float-epsilon
 
@@ -90,6 +90,8 @@
 /// - path-anchors (bool): If true, add path anchors.
 /// - radii (none,array): Radius tuple used for border anchor calculation.
 /// - path (none,drawable): Path used for path and border anchor calculation.
+/// - path-anchor-callback (none,function): Callback of the form `(center, anchor) → vector`. If not `none`, this callback gets invoked for calculating path anchors.
+/// - border-anchor-callback (none,function): Callback of the form `(center, anchor) → vector`.  If not `none`, this callback gets invoked for calculating border anchors.
 /// -> array
 #let setup(
     callback,
@@ -102,7 +104,9 @@
     path-anchors: false,
     radii: none,
     path: none,
-    nested-anchors: false
+    nested-anchors: false,
+    path-anchor-callback: none, /* (center, anchor) -> vector */
+    border-anchor-callback: none, /* (center, anchor) -> vector */
   ) = {
   // Passing no callback is valid!
   if callback == auto {
@@ -171,12 +175,20 @@
     if out == none {
       if type(anchor) in (ratio, float, int) {
         assert(path-anchors, message: strfmt("Element '{}' does not support path anchors.", name))
-        let point-info = path-util.point-at(path.segments, anchor)
-        assert.ne(point-info, none)
-        out = point-info.point
+        out = if path-anchor-callback != none {
+          path-anchor-callback(callback("center"), anchor)
+        } else {
+          let info = path-util.point-at(path.segments, anchor)
+          assert.ne(info, none)
+          info.point
+        }
       } else if type(anchor) == angle {
         assert(border-anchors, message: strfmt("Element '{}' does not support border anchors.", name))
-        out = border(callback("center"), ..radii, path, anchor)
+        out = if border-anchor-callback != none {
+          border-anchor-callback(callback("center"), anchor)
+        } else {
+          shape-border(callback("center"), ..radii, path, anchor)
+        }
         assert(out != none, message: strfmt("Element '{}' does not have a border for anchor '{}'.", name, anchor))
       } else {
         panic(strfmt("Unknown anchor '{}' for element '{}'", repr(anchor), name))

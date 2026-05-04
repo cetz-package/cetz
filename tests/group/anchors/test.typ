@@ -21,3 +21,35 @@
     })
   })
 })
+
+// Group with 0 height #1088
+#test-case(arg => {
+  import cetz.draw: *
+
+  group(name: "g", {
+    line((0,0), (1,0))
+  })
+
+  cross("g." + arg)
+}, args: ("0deg", "45deg", "90deg", "200deg"))
+
+// Group with 0 width #1088
+#test-case(arg => {
+  import cetz.draw: *
+
+  group(name: "g", {
+    line((0,0), (0,1))
+  })
+
+  cross("g." + arg)
+}, args: ("0deg", "45deg", "90deg", "200deg"))
+
+#test-case(arg => {
+  import cetz.draw: *
+
+  group(name: "g", {
+    rect((0,0), (1,1))
+  })
+
+  cross("g." + arg)
+}, args: ("0deg", "45deg", "90deg", "200deg"))
