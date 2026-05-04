@@ -265,7 +265,7 @@
     let (center, width, height, path) = if bounds != none {
       (bounds.low.at(1), bounds.high.at(1)) = (bounds.high.at(1), bounds.low.at(1))
       let center = aabb.mid(bounds)
-      let (width, height, _) = aabb.size(bounds)
+      let (width, height, ..) = aabb.size(bounds)
       let path = drawable.line-strip(aabb.corner-points(bounds), close: true)
       (center, width, height, path)
     } else { (none,) * 4 }

@@ -20,10 +20,9 @@
 /// Multiplies vectors by a transformation matrix. If multiple vectors are given they are returned as an array, if only one vector is given only one will be returned, if a dictionary is given they will be returned in the dictionary with the same keys.
 ///
 /// - transform (matrix,function): The $4 times 4$ transformation matrix or a function that accepts and returns a vector.
-/// - ..vecs (vector): Vectors to get transformed. Only the positional part of the sink is used. A dictionary of vectors can also be passed and all will be transformed.
+/// - ..vecs (vector): Vectors to get transformed. Only the positional part of the sink is used.
 /// -> vector
 /// -> array
-/// -> dictionary
 #let apply-transform(transform, ..vecs) = {
   let t = if type(transform) != function {
     matrix.mul4x4-vec3.with(transform)
@@ -50,17 +49,7 @@
 /// - vec (vector): Vector to be transformed
 /// -> vector
 #let revert-transform(transform, ..vecs) = {
-  apply-transform(matrix.inverse(transform), ..vecs)
-}
-
-/// Linearly interpolates between two points and returns its position
-///
-/// - a (vector): Start point
-/// - b (vector): End point
-/// - t (float):  Position on the line $[0, 1]$
-/// -> vector
-#let line-pt(a, b, t) = {
-  return vector.add(a, vector.scale(vector.sub(b, a), t))
+  return apply-transform(matrix.inverse(transform), ..vecs)
 }
 
 /// Get orthogonal vector to line
@@ -73,32 +62,6 @@
   return (0 - v.at(1), v.at(0), v.at(2, default: 0))
 }
 
-/// Calculates the arc-length of a circle or arc
-///
-/// - radius (float): Circle or arc radius
-/// - angle (angle): The angle of the arc.
-/// -> float
-#let circle-arclen(radius, angle: 360deg) = {
-  calc.abs(angle / 360deg * 2 * calc.pi)
-}
-
-/// Get point on an ellipse for an angle
-///
-/// - center (vector): Center
-/// - radius (float,array): Radius or tuple of x/y radii
-/// - angled (angle): Angle to get the point at
-/// -> vector
-#let ellipse-point(center, radius, angle) = {
-  let (rx, ry) = if type(radius) == array {
-    radius
-  } else {
-    (radius, radius)
-  }
-
-  let (x, y, z) = center
-  return (calc.cos(angle) * rx + x, calc.sin(angle) * ry + y, z)
-}
-
 /// Calculates the center of a circle from 3 points. The z coordinate is taken from point a.
 ///
 /// - a (vector): Point 1
@@ -106,9 +69,9 @@
 /// - c (vector): Point 3
 /// -> vector
 #let calculate-circle-center-3pt(a, b, c) = {
-  let m-ab = line-pt(a, b, .5)
-  let m-bc = line-pt(b, c, .5)
-  let m-cd = line-pt(c, a, .5)
+  let m-ab = vector.lerp(a, b, .5)
+  let m-bc = vector.lerp(b, c, .5)
+  let m-cd = vector.lerp(c, a, .5)
 
   // If two of three points are the same,
   // we already know the center.
@@ -124,7 +87,7 @@
   for i in range(0, 3) {
     let (p1, p2) = ((a,b,c).at(calc.rem(i,3)),
                     (b,c,a).at(calc.rem(i,3)))
-    let m = line-pt(p1, p2, .5)
+    let m = vector.lerp(p1, p2, .5)
     let n = line-normal(p1, p2)
 
     // Find a line with a non upwards normal
@@ -157,14 +120,15 @@
   return vector.as-vec(line-intersection-2d(..args), init: (0, 0, a.at(2)))
 }
 
-/// Converts a {{number}} to "canvas units"
+/// Converts a length to "canvas units"
 /// - ctx (context): The current context object.
 /// - num (number): The number to resolve.
-/// -> float
+/// -> float or ratio
 #let resolve-number(ctx, num) = {
-  return if type(num) == length {
+  let t = type(num)
+  return if t == length {
     float(num.to-absolute() / ctx.length)
-  } else if type(num) == ratio {
+  } else if t == ratio {
     num
   } else {
     float(num)
