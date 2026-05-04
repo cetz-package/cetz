@@ -142,7 +142,7 @@
       } else {
         for sub in elem {
           let sub-drawables = ()
-          (ctx: ctx, drawables: sub-drawables, ..) = process.element(ctx, sub)
+          (ctx: ctx, drawables: sub-drawables, bounds: _) = process.element(ctx, sub, compute-bounds: false)
           if sub-drawables != none and sub-drawables != () {
             drawables.push(sub-drawables)
           }
@@ -273,14 +273,13 @@
     let children = group-ctx.groups.last().map(name => ((name): group-ctx.nodes.at(name))).join()
 
     // Children can be none if the groups array is empty
-    let anchors = if children != none {
-      children.pairs().map(((name, child)) => {
+    let anchors = (:)
+    if children != none {
+      for (name, child) in children {
         if "anchors" in child {
-          ((name): child.anchors)
+          anchors.insert(name, child.anchors)
         }
-      }).join()
-    } else {
-      (:)
+      }
     }
 
     let is-degenerate = (width != none and util.float-eq(width, 0)) or (height != none and util.float-eq(height, 0))
@@ -341,12 +340,11 @@
 ///
 /// - body (elements, function): Elements to group together. At least one is required. A function that accepts `ctx` and returns elements is also accepted.
 #let scope(body) = (ctx => {
-  let bounds = none
   let drawables = ()
   let group-ctx = ctx
   group-ctx.groups.push(())
 
-  (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, util.resolve-body(group-ctx, body))
+  (ctx: group-ctx, drawables, bounds: _) = process.many(group-ctx, util.resolve-body(group-ctx, body), compute-bounds: false)
 
   // Pass-through nodes and shared context data
   ctx.nodes += group-ctx.nodes
@@ -495,7 +493,7 @@
   (ctx => {
     let body = callback(ctx)
     if body != none {
-      let (ctx, drawables) = process.many(ctx, body)
+      let (ctx, drawables) = process.many(ctx, body, compute-bounds: false)
       return (ctx: ctx, drawables: drawables)
     }
     return (ctx: ctx)
@@ -554,7 +552,7 @@
     message: "Layer must be a float or integer, 0 being the default layer. Got: " + repr(layer))
 
   return (ctx => {
-    let (ctx, drawables, ..) = process.many(ctx, util.resolve-body(ctx, body))
+    let (ctx, drawables, bounds: _) = process.many(ctx, util.resolve-body(ctx, body), compute-bounds: false)
     drawables = drawables.map(d => {
       if d.at("z-index", default: none) == none {
         d.z-index = layer

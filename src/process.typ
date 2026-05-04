@@ -9,13 +9,15 @@
 ///
 /// - ctx (ctx): The current context object.
 /// - element-func (function): A function that when passed {{ctx}}, it should return an element dictionary.
-#let element(ctx, element-func) = {
+/// - compute-bounds (bool): Enable bounds computation.
+/// -> dictionary (ctx:, bounds:, drawables:)
+#let element(ctx, element-func, compute-bounds: true) = {
   let bounds = none
   let element
   let anchors = (:)
 
   (ctx, ..element,) = element-func(ctx)
-  if "drawables" in element {
+  if compute-bounds and "drawables" in element {
     if type(element.drawables) == dictionary {
       element.drawables = (element.drawables,)
     }
@@ -81,13 +83,14 @@
 /// Runs the `element` function for a list of element functions and aggregates the results.
 /// - ctx (ctx): The current context object.
 /// - body (array): The array of element functions to process.
+/// - compute-bounds (bool): Enable bounds computation.
 /// -> dictionary (ctx:, bounds:, drawables:)
-#let many(ctx, body) = {
+#let many(ctx, body, compute-bounds: true) = {
   let drawables = ()
   let bounds = none
 
   for el in body {
-    let r = element(ctx, el)
+    let r = element(ctx, el, compute-bounds: compute-bounds)
     if r != none {
       bounds = aabb.merge(bounds, r.bounds)
 
