@@ -20,7 +20,7 @@
   import draw: *
 
   line((0, -1), (0, 1), stroke: green)
-  line((-1, 0), (0,0), mark: (end: "stealth", anchor: args.anchor))
+  line((-1, 0), (0,0), mark: (end: ")>", anchor: args.anchor))
 }, args: (
   (anchor: "tip"),
   (anchor: "center"),
