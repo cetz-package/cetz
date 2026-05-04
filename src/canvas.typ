@@ -26,17 +26,13 @@
   if body == none {
     return []
   }
-  assert(
-    type(body) == array,
-    message: "Incorrect type for body: " + repr(type(body)),
-  )
-
-  // TODO: Remove in later versions
-  if type(length) == ratio {
-    panic("Canvas relative length support got removed! Wrap your canvas in `layout(ly => canvas(length: <ratio> * ly.width, ...))`")
+  if type(body) != array {
+    panic("Incorrect type for body: " + repr(type(body)))
+  }
+  if type(length) != std.length {
+    panic("Expected `length` to be of type length, got " + repr(length))
   }
 
-  assert(type(length) == std.length, message: "Expected `length` to be of type length, got " + repr(length))
   let length = length.to-absolute()
   assert(length / 1cm != 0,
     message: "Canvas length must be != 0!")

@@ -515,10 +515,10 @@
 /// - exclude (array): An array of anchor names to not include in the loop.
 #let for-each-anchor(name, callback, exclude: ()) = {
   get-ctx(ctx => {
-    assert(
-      name in ctx.nodes,
-      message: strfmt("Unknown element {} in elements {}", name, repr(ctx.nodes.keys()))
-    )
+    if not name in ctx.nodes {
+      panic(strfmt("Unknown element {} in elements {}", name, repr(ctx.nodes.keys())))
+    }
+
     for anchor in (ctx.nodes.at(name).anchors)(()) {
       if anchor == none or (anchor in exclude) { continue }
       move-to(name + "." + anchor)

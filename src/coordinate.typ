@@ -2,7 +2,6 @@
 #import "matrix.typ"
 #import "util.typ"
 #import "deps.typ"
-#import deps.oxifmt: strfmt
 
 #let resolve-xyz(c) = {
   // (x: <number> or <none>, y: <number> or <none>, z: <number> or <none>)

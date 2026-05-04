@@ -174,7 +174,9 @@
 
     if out == none {
       if type(anchor) in (ratio, float, int) {
-        assert(path-anchors, message: strfmt("Element '{}' does not support path anchors.", name))
+        if not path-anchors {
+          panic(strfmt("Element '{}' does not support path anchors.", name))
+        }
         out = if path-anchor-callback != none {
           path-anchor-callback(callback("center"), anchor)
         } else {
@@ -183,13 +185,17 @@
           info.point
         }
       } else if type(anchor) == angle {
-        assert(border-anchors, message: strfmt("Element '{}' does not support border anchors.", name))
+        if not border-anchors {
+          panic(strfmt("Element '{}' does not support border anchors.", name))
+        }
         out = if border-anchor-callback != none {
           border-anchor-callback(callback("center"), anchor)
         } else {
           shape-border(callback("center"), ..radii, path, anchor)
         }
-        assert(out != none, message: strfmt("Element '{}' does not have a border for anchor '{}'.", name, anchor))
+        if out == none {
+          panic(strfmt("Element '{}' does not have a border for anchor '{}'.", name, anchor))
+        }
       } else {
         panic(strfmt("Unknown anchor '{}' for element '{}'", repr(anchor), name))
       }
