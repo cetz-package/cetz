@@ -237,8 +237,9 @@
 /// ```
 #let group(body, name: none, anchor: none, ..style) = {
   // No extra positional arguments from the style sink
-  assert.eq(style.pos(), (),
-    message: "Unexpected positional arguments: " + repr(style.pos()),)
+  if style.pos().len() > 0 {
+    panic("Unexpected positional arguments: " + repr(style.pos()),)
+  }
   util.assert-body(body)
 
   (ctx => {
@@ -249,40 +250,52 @@
     let group-ctx = ctx
     group-ctx.groups.push(())
 
-    (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, util.resolve-body(group-ctx, body))
+    let wants-bounds = name != none or anchor != none
+    (ctx: group-ctx, drawables, bounds) = process.many(group-ctx, util.resolve-body(group-ctx, body), compute-bounds: wants-bounds)
+
+    // Pass-through shared context data
+    ctx.shared-state = group-ctx.shared-state
+
+    // Fast path for anonymous groups
+    if name == none and anchor == none {
+      return (ctx: ctx, drawables: drawables)
+    }
 
     // Apply bounds padding
     bounds = if bounds != none {
       let padding = util.map-dict(util.as-padding-dict(style.padding), (_, v) => {
         util.resolve-number(ctx, v)
       })
-
       aabb.padded(bounds, padding)
     }
 
-    // Calculate a bounding box path used for border
-    // anchor calculation.
-    let (center, width, height, path) = if bounds != none {
+    // Calculate a bounding box path used for border anchor calculation.
+    let center = none
+    let width = none
+    let height = none
+    let path = none
+    if bounds != none {
       (bounds.low.at(1), bounds.high.at(1)) = (bounds.high.at(1), bounds.low.at(1))
-      let center = aabb.mid(bounds)
-      let (width, height, ..) = aabb.size(bounds)
-      let path = drawable.line-strip(aabb.corner-points(bounds), close: true)
-      (center, width, height, path)
-    } else { (none,) * 4 }
+      center = aabb.mid(bounds)
+      (width, height, ..) = aabb.size(bounds)
 
-    let children = group-ctx.groups.last().map(name => ((name): group-ctx.nodes.at(name))).join()
+      path = drawable.line-strip(aabb.corner-points(bounds), close: true)
+    }
 
     // Children can be none if the groups array is empty
     let anchors = (:)
-    if children != none {
-      for (name, child) in children {
-        if "anchors" in child {
-          anchors.insert(name, child.anchors)
-        }
+    for name in group-ctx.groups.last() {
+      let child = group-ctx.nodes.at(name)
+      if "anchors" in child {
+        anchors.insert(name, child.anchors)
       }
     }
 
     let is-degenerate = (width != none and util.float-eq(width, 0)) or (height != none and util.float-eq(height, 0))
+
+    let all-anchors = if bounds != none {
+      (default: center, center: center)
+    } + anchors
 
     let (transform, anchors) = anchor_.setup(
       anchor => {
@@ -291,11 +304,7 @@
         } else {
           (anchor,)
         }
-        anchor = (
-          if bounds != none {
-            (default: center, center: center)
-          } + anchors
-        ).at(name)
+        anchor = all-anchors.at(name)
         if type(anchor) == function {
           anchor(if nested-anchors == () { "default" } else { nested-anchors })
         } else {
@@ -321,9 +330,6 @@
         none
       }
     )
-
-    // Pass-through shared context data
-    ctx.shared-state = group-ctx.shared-state
 
     return (
       ctx: ctx,
