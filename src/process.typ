@@ -19,16 +19,19 @@
     if type(element.drawables) == dictionary {
       element.drawables = (element.drawables,)
     }
+
+    let points = ()
     for drawable in drawable.filter-tagged(element.drawables, drawable.TAG.no-bounds) {
-      bounds = aabb.aabb(
-        if drawable.type == "path" {
-          path-util.bounds(drawable.segments)
-        } else if drawable.type == "content" {
-          let (x, y, _, w, h,) = drawable.pos + (drawable.width, drawable.height)
-          ((x + w / 2, y - h / 2, 0.0), (x - w / 2, y + h / 2, 0.0))
-        },
-        init: bounds
-      )
+      points += if drawable.type == "path" {
+        path-util.bounds(drawable.segments)
+      } else if drawable.type == "content" {
+        let (x, y, _, w, h,) = drawable.pos + (drawable.width, drawable.height)
+        ((x + w / 2, y - h / 2, 0.0), (x - w / 2, y + h / 2, 0.0))
+      }
+    }
+
+    if points.len() > 0 {
+      bounds = aabb.aabb(points)
     }
   }
 
@@ -87,10 +90,8 @@
   for el in body {
     let r = element(ctx, el)
     if r != none {
-      if r.bounds != none {
-        let pts = (r.bounds.low, r.bounds.high,)
-        bounds = aabb.aabb(pts, init: bounds)
-      }
+      bounds = aabb.merge(bounds, r.bounds)
+
       ctx = r.ctx
       drawables += r.drawables
     }
