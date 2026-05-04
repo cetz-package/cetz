@@ -40,9 +40,9 @@
 /// -> array of vectors
 #let corner-points(bounds, front: true) = {
   let z = if front {
-    bounds.high.at(2)
+    bounds.high.at(2, default: 0)
   } else {
-    bounds.low.at(2)
+    bounds.low.at(2, default: 0)
   }
 
   let (hx, hy, hz) = bounds.high

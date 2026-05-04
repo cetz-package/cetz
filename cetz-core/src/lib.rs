@@ -11,13 +11,62 @@ initiate_protocol!();
 
 type Point = Vec<f64>;
 
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum F64ish {
+    Float(f64),
+    Signed(i64),
+    Unsigned(u64),
+}
+
+impl F64ish {
+    fn into_f64<E>(self) -> Result<f64, E>
+    where
+        E: serde::de::Error,
+    {
+        match self {
+            Self::Float(v) => Ok(v),
+            Self::Signed(v) => Ok(v as f64),
+            Self::Unsigned(v) => Ok(v as f64),
+        }
+    }
+}
+
+fn deserialize_point<'de, D>(deserializer: D) -> Result<Point, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Vec::<F64ish>::deserialize(deserializer)?
+        .into_iter()
+        .map(F64ish::into_f64)
+        .collect()
+}
+
+fn deserialize_points<'de, D>(deserializer: D) -> Result<Vec<Point>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Vec::<Vec<F64ish>>::deserialize(deserializer)?
+        .into_iter()
+        .map(|point| point.into_iter().map(F64ish::into_f64).collect())
+        .collect()
+}
+
+fn normalize_point3(mut p: Point) -> Point {
+    p.truncate(3);
+    while p.len() < 3 {
+        p.push(0.0);
+    }
+    p
+}
+
 fn round(x: f64, digits: u32) -> f64 {
     let factor = 10.0_f64.powi(digits as i32);
     (x * factor).round() / factor
 }
 
 fn cubic_point(a: &Point, b: &Point, c1: &Point, c2: &Point, t: f64) -> Point {
-    (0..a.len())
+    (0..3)
         .map(|i| {
             // (1-t)^3*a + 3*(1-t)^2*t*c1 + 3*(1-t)*t^2*c2 + t^3*b
             let term1 = (1.0 - t).powi(3) * a[i];
@@ -94,34 +143,48 @@ where
 
 #[derive(Deserialize)]
 struct CubicExtremaArgs {
+    #[serde(deserialize_with = "deserialize_point")]
     s: Point,
+    #[serde(deserialize_with = "deserialize_point")]
     e: Point,
+    #[serde(deserialize_with = "deserialize_point")]
     c1: Point,
+    #[serde(deserialize_with = "deserialize_point")]
     c2: Point,
 }
 
 #[wasm_func]
 pub fn cubic_extrema_func(input: &[u8]) -> Result<Vec<u8>, String> {
     handle_cbor(input, |args: CubicExtremaArgs| {
-        cubic_extrema(args.s, args.e, args.c1, args.c2)
+        cubic_extrema(
+            normalize_point3(args.s),
+            normalize_point3(args.e),
+            normalize_point3(args.c1),
+            normalize_point3(args.c2),
+        )
     })
 }
 
 #[derive(Serialize, Deserialize)]
 struct Bounds {
+    #[serde(deserialize_with = "deserialize_point")]
     low: Point,
+    #[serde(deserialize_with = "deserialize_point")]
     high: Point,
 }
 
 /// Compute the axis-aligned bounding box (aabb).
 fn aabb(init: Option<Bounds>, pts: Vec<Point>) -> Result<Bounds, String> {
     let mut bounds = match init {
-        Some(init) => init,
+        Some(init) => Bounds {
+            low: normalize_point3(init.low),
+            high: normalize_point3(init.high),
+        },
         None => {
             match pts.first() {
                 Some(p) => Bounds {
-                    low: p.iter().take(3).cloned().collect(),
-                    high: p.iter().take(3).cloned().collect(),
+                    low: normalize_point3(p.clone()),
+                    high: normalize_point3(p.clone()),
                 },
                 None => {
                     return Err("Cannot compute AABB: Point list is empty and no initial bounds were provided.".to_string());
@@ -130,7 +193,8 @@ fn aabb(init: Option<Bounds>, pts: Vec<Point>) -> Result<Bounds, String> {
         }
     };
     for pt in pts {
-        for (dim, &val) in pt.iter().take(3).enumerate() {
+        let pt = normalize_point3(pt);
+        for (dim, &val) in pt.iter().enumerate() {
             if val < bounds.low[dim] {
                 bounds.low[dim] = val;
             }
@@ -144,6 +208,7 @@ fn aabb(init: Option<Bounds>, pts: Vec<Point>) -> Result<Bounds, String> {
 
 #[derive(Deserialize)]
 struct AabbArgs {
+    #[serde(deserialize_with = "deserialize_points")]
     pts: Vec<Point>,
     init: Option<Bounds>,
 }

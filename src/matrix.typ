@@ -399,6 +399,10 @@
 /// - m (matrix): Matrix to check
 /// -> bool
 #let is-identity(m) = {
+  if type(m) != array {
+    return false
+  }
+
   if m in _ident {
     return true
   } else if m.len() > 4 {
