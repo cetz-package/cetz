@@ -188,7 +188,7 @@
     )
 
     let thickness = style.canvas-thickness
-    create-triangle-tip-and-base-anchor(style, (0, 0), (l - i + thickness / 2, 0))
+    create-triangle-tip-and-base-anchor(style, (0, 0), (l - i + thickness / 2, 0)) // BUG: Base is the control point, but not the curve extrema
   },
   bar: (style) => {
     import "/src/draw.typ": anchor
