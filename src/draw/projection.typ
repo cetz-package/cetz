@@ -99,7 +99,7 @@
 #let _resolve-reference-depth(ctx, body, view-rotation-matrix, distance, near) = {
   let probe-ctx = ctx
   probe-ctx.transform = view-rotation-matrix
-  let (ctx: _, bounds: _, drawables: probe-drawables, elements: _) = process.many(
+  let (ctx: _, bounds: _, drawables: probe-drawables) = process.many(
     probe-ctx,
     util.resolve-body(probe-ctx, body))
   let probe-bounds = _drawables-bounds(probe-drawables)
@@ -118,7 +118,7 @@
 
   let probe-ctx = ctx
   probe-ctx.transform = view-rotation-matrix
-  let (ctx: _, bounds: _, drawables: probe-drawables, elements: _) = process.many(
+  let (ctx: _, bounds: _, drawables: probe-drawables) = process.many(
     probe-ctx,
     util.resolve-body(probe-ctx, body))
   let probe-bounds = _drawables-bounds(probe-drawables)

@@ -81,11 +81,10 @@
 /// Runs the `element` function for a list of element functions and aggregates the results.
 /// - ctx (ctx): The current context object.
 /// - body (array): The array of element functions to process.
-/// -> dictionary
+/// -> dictionary (ctx:, bounds:, drawables:)
 #let many(ctx, body) = {
   let drawables = ()
   let bounds = none
-  let elements = ()
 
   for el in body {
     let r = element(ctx, el)
@@ -95,7 +94,6 @@
       ctx = r.ctx
       drawables += r.drawables
     }
-    elements.push(r.element)
   }
-  return (ctx: ctx, bounds: bounds, drawables: drawables, elements: elements)
+  return (ctx: ctx, bounds: bounds, drawables: drawables)
 }
