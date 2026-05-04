@@ -77,6 +77,30 @@
   return body
 }
 
+/// This element acts as a scope, all state changes such as transformations and styling only affect the elements in the scope.
+/// Elements after the scope are not affected by the changes inside the scope.
+/// In contrast to `group`, the `scope` element does not create a named element itself and "leaks" body elements and anchors to the outside.
+///
+/// - body (elements, function): Elements to group together. At least one is required. A function that accepts `ctx` and returns elements is also accepted.
+#let scope(body) = (ctx => {
+  let drawables = ()
+  let group-ctx = ctx
+  group-ctx.groups.push(())
+
+  (ctx: group-ctx, drawables, bounds: _) = process.many(group-ctx, util.resolve-body(group-ctx, body), compute-bounds: false)
+
+  // Pass-through nodes and shared context data
+  ctx.nodes += group-ctx.nodes
+  ctx.shared-state = group-ctx.shared-state
+
+  return (
+    ctx: ctx,
+    drawables: drawables,
+    leak-nodes: true,
+  )
+},)
+
+
 /// Calculates the intersections between multiple paths and creates one anchor per intersection point.
 ///
 /// All resulting anchors will be named numerically, starting at `0`. i.e., a call `intersections("a", ...)` will generate the anchors `"a.0"`, `"a.1"`, `"a.2"` to `"a.n"`, depending of the number of intersections.
@@ -124,9 +148,7 @@
   assert(elements.pos() != (),
     message: "You must at least give one element to intersections.")
 
-  return (ctx => {
-    let ctx = ctx
-
+  return scope((ctx => {
     // List of drawables to calc intersections for;
     // grouped by element.
     let named-drawables = ()
@@ -195,7 +217,7 @@
       ).last(),
       drawables: drawables.flatten()
     )
-  },)
+  },))
 }
 
 /// Groups one or more elements together. This element acts as a scope, all state changes such as transformations and styling only affect the elements in the group. Elements after the group are not affected by the changes inside the group.
@@ -322,8 +344,8 @@
       nested-anchors: true,
       border-anchor-callback: if is-degenerate {
         (center, angle) => {
-          let x = if util.float-eq(height, 0) { 0 } else { calc.cos(angle) }
-          let y = if util.float-eq(width, 0) { 0 } else { calc.sin(angle) }
+          let x = if util.float-eq(width, 0) { 0 } else { calc.cos(angle) }
+          let y = if util.float-eq(height, 0) { 0 } else { calc.sin(angle) }
           return vector.add(center, (x * width / 2, y * height / 2))
         }
       } else {
@@ -339,29 +361,6 @@
     )
   },)
 }
-
-/// This element acts as a scope, all state changes such as transformations and styling only affect the elements in the scope.
-/// Elements after the scope are not affected by the changes inside the scope.
-/// In contrast to `group`, the `scope` element does not create a named element itself and "leaks" body elements and anchors to the outside.
-///
-/// - body (elements, function): Elements to group together. At least one is required. A function that accepts `ctx` and returns elements is also accepted.
-#let scope(body) = (ctx => {
-  let drawables = ()
-  let group-ctx = ctx
-  group-ctx.groups.push(())
-
-  (ctx: group-ctx, drawables, bounds: _) = process.many(group-ctx, util.resolve-body(group-ctx, body), compute-bounds: false)
-
-  // Pass-through nodes and shared context data
-  ctx.nodes += group-ctx.nodes
-  ctx.shared-state = group-ctx.shared-state
-
-  return (
-    ctx: ctx,
-    drawables: drawables,
-    leak-nodes: true,
-  )
-},)
 
 /// Creates a new anchor for the current group. The new anchor will be accessible from inside the group by using just the anchor's name as a coordinate.
 ///
@@ -447,7 +446,7 @@
   },)
 }
 
-/// An advanced element that allows you to modify the current canvas {{context}}. 
+/// An advanced element that allows you to modify the current canvas {{context}}.
 /// Note: The transformation matrix (`transform`) is rounded after calling the `callback` function and therefore might be not exactly the matrix specified. This is due to rounding errors and should not cause any problems.
 ///
 /// ```example

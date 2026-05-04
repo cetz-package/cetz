@@ -23,7 +23,9 @@
 /// -> vector
 /// -> array
 #let apply-transform(transform, ..vecs) = {
-  let t = if type(transform) != function {
+  let t = if transform == none {
+    v => v
+  } else if type(transform) != function {
     matrix.mul4x4-vec3.with(transform)
   } else {
     transform

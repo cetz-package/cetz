@@ -32,7 +32,7 @@
       panic("Expected drawable, got: ", drawable)
     }
 
-    if drawable.type == "path" {
+    if "segments" in drawable {
       drawable.segments = drawable.segments.map(((origin, closed, segments)) => {
         origin = util.apply-transform(transform, origin)
         if segments != () {
@@ -52,10 +52,9 @@
 
         return (origin, closed, segments)
       })
-    } else if drawable.type == "content" {
+    }
+    if drawable.type == "content" {
       drawable.pos = util.apply-transform(transform, drawable.pos)
-    } else {
-      panic()
     }
     (drawable,)
   }

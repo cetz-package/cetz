@@ -2,6 +2,7 @@
 #import "util.typ"
 #import "vector.typ"
 #import "bezier.typ"
+#import "matrix.typ"
 #import "deps.typ"
 
 // A path is an array of subpaths.
@@ -114,18 +115,27 @@
 /// Calculates the bounding points for a list of path segments
 ///
 /// - path (array): Path
+/// - transform (none, matrix): Transformation to apply on each coordinate
 /// -> array
-#let bounds(path) = {
+#let bounds(path, transform: none) = {
   let bounds = ()
 
   for ((origin, closed, segments)) in path {
-    bounds.push(origin)
+    bounds.push(if transform != none { util.apply-transform(transform, origin) } else { origin })
 
     for ((kind, ..args)) in segments {
       if kind == "l" {
-        bounds += args
+        bounds += if transform != none {
+          args.map(matrix.mul4x4-vec3.with(transform))
+        } else {
+          args
+        }
       } else if kind == "c" {
-        let (c1, c2, e) = args
+        let (c1, c2, e) = if transform != none {
+          args.map(matrix.mul4x4-vec3.with(transform))
+        } else {
+          args
+        }
         bounds += bezier.cubic-extrema(bounds.last(), e, c1, c2)
         bounds.push(e)
       }
