@@ -23,12 +23,17 @@
     }
 
     let points = ()
-    for drawable in drawable.filter-tagged(element.drawables, drawable.TAG.no-bounds) {
-      points += if drawable.type == "path" {
-        path-util.bounds(drawable.segments)
-      } else if drawable.type == "content" {
-        let (x, y, _, w, h,) = drawable.pos + (drawable.width, drawable.height)
-        ((x + w / 2, y - h / 2, 0.0), (x - w / 2, y + h / 2, 0.0))
+    for d in element.drawables {
+      // We inline the filter here to not pay function-call cost in the hot path
+      if drawable.TAG.no-bounds in d.tags {
+        continue
+      }
+
+      points += if d.type == "path" {
+        path-util.bounds(d.segments)
+      } else if d.type == "content" {
+        let (x, y, _, w, h,) = d.pos + (d.width, d.height)
+        ((x - w / 2, y - h / 2, 0.0), (x + w / 2, y + h / 2, 0.0))
       }
     }
 
@@ -76,7 +81,6 @@
     ctx: ctx,
     bounds: bounds,
     drawables: element.at("drawables", default: ()),
-    element: element,
   )
 }
 
