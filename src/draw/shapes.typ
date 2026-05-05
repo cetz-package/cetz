@@ -84,8 +84,8 @@
     } else {
       util.resolve-radius(style.radius).map(util.resolve-number.with(ctx))
     }
-    let (cx, cy, cz) = center
 
+    let (cx, cy, cz) = center
     let drawables = drawable.ellipse(
       cx, cy, cz,
       rx, ry,
@@ -93,9 +93,10 @@
       stroke: style.stroke
     )
 
+    let named-anchors = anchor_.ellipse-compass(center, rx, ry)
     let (transform, anchors) = anchor_.setup(
-      (_) => center,
-      ("center",),
+      name => named-anchors.at(name),
+      anchor_.compass-anchors + ("center",),
       default: "center",
       name: name,
       offset-anchor: anchor,
@@ -1522,12 +1523,39 @@
           fill: style.fill, stroke: style.stroke)
       }
 
-      // Calculate border anchors
+      // Named anchors
+      let corner-anchor-point(quadrant, x, y, z, (rx, ry)) = {
+        let t = util.sin45 - 1
+        if quadrant == 0 {
+          (x + t * rx, y + t * ry)
+        } else if quadrant == 1 {
+          (x - t * rx, y + t * ry)
+        } else if quadrant == 2 {
+          (x - t * rx, y - t * ry)
+        } else {
+          (x + t * rx, y - t * ry)
+        }
+      }
+
       let center = vector.lerp(a, b, .5)
       let (width, height, ..) = size
+      let (cx, cy, cz) = center
+      let named-anchors = (
+        center: center,
+        north: (cx, cy + height / 2, cz),
+        north-east: corner-anchor-point(0, cx + width / 2, cy + height / 2, cz, ne),
+        north-west: corner-anchor-point(1, cx - width / 2, cy + height / 2, cz, nw),
+        south: (cx, cy - height / 2, cz),
+        south-west: corner-anchor-point(2, cx - width / 2, cy - height / 2, cz, sw),
+        south-east: corner-anchor-point(3, cx + width / 2, cy - height / 2, cz, se),
+        east: (cx + width / 2, cy, cz),
+        west: (cx - width / 2, cy, cz),
+      )
+
+      // Calculate border anchors
       let (transform, anchors) = anchor_.setup(
-        _ => center,
-        ("center",),
+        name => named-anchors.at(name),
+        named-anchors.keys(),
         default: "center",
         name: name,
         offset-anchor: anchor,

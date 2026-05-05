@@ -7,7 +7,7 @@
 #import "path-util.typ"
 #import "matrix.typ"
 #import "vector.typ"
-#import "anchor-helper.typ": compute-rect-border, compute-rect-path, compute-ellipse-border, compute-ellipse-path
+#import "anchor-helper.typ": compute-rect-border, compute-rect-path, compute-ellipse-border, compute-ellipse-path, ellipse-compass
 
 // Compass direction to angle
 #let named-border-anchors = (
@@ -20,6 +20,9 @@
   south: 270deg,
   south-east: 315deg,
 )
+
+/// Compass Anchor Names
+#let compass-anchors = named-border-anchors.keys();
 
 // Path anchors
 #let named-path-anchors = (

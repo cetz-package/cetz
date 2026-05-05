@@ -5,7 +5,10 @@
 #import "bezier.typ"
 
 /// Constant to be used as float rounding error
-#let float-epsilon = 0.000001
+#let float-epsilon = 1e-6
+
+/// Precomputed sin(45deg) = cos(45deg)
+#let sin45 = 0.7071067811
 
 /// Compare two floating point numbers
 /// - a (float): First number

@@ -1,5 +1,5 @@
 #import "vector.typ"
-#import "util.typ": float-epsilon
+#import "util.typ": float-epsilon, sin45
 
 #let _sampled-quarter-samples = 16
 #let _sampled-quarter = range(0, _sampled-quarter-samples + 1).map(t => {
@@ -255,4 +255,26 @@
 
   let (cx, cy, cz) = center
   return (cx + ox, cy + oy, cz)
+}
+
+/// Returns a list of ellipse compass anchors (including center)
+///
+/// - center (vector): Ellipse center
+/// - x-radius (float): X radius
+/// - y-radius (float): Y radius
+///
+/// -> array
+#let ellipse-compass(center, x-radius, y-radius) = {
+  let (cx, cy, cz) = center
+  let (ox, oy) = (sin45 * x-radius, sin45 * y-radius)
+
+  (center: center,
+   north: (cx, cy + y-radius, cz),
+   north-west: (cx - ox, cy + oy, cz),
+   north-east: (cx + ox, cy + oy, cz),
+   south: (cx, cy - y-radius, cz),
+   south-west: (cx - ox, cy - oy, cz),
+   south-east: (cx + ox, cy - oy, cz),
+   east: (cx + x-radius, cy, cz),
+   west: (cx - x-radius, cy, cz))
 }
