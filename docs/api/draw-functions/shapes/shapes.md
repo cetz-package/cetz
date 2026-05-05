@@ -14,3 +14,4 @@ Draw functions that draw shapes onto the canvas, be that lines, circles or curve
 - [hobby](./hobby) Draws a hobby curve.
 - [catmull](./catmull) Draws a Catmull-Rom curve.
 - [merge-path](./merge-path) Merges the paths of other draw functions into one continuous path.
+- [boolean](./boolean) Perform a boolean operations on paths.

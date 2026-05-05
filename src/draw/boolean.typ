@@ -134,17 +134,17 @@
 ///
 /// ```example
 /// boolean(
-///   { rect((-1, -1), (1, 1)) },
+///   { rect((-1, -1), (1, 0)) },
 ///   { circle((0, 0), radius: 0.8) },
 ///   op: "difference",
 ///   fill: blue,
 /// )
 /// ```
 ///
-/// Each operand can either be a CeTZ body or the name of an already-defined element (a string).
+/// Each operand can either be one or more type:elements or the name of an already-defined element (a string).
 ///
 /// ```example
-/// rect((-1, -1), (1, 1), name: "r")
+/// rect((-1, -1), (1, 0), name: "r")
 /// circle((0, 0), radius: 0.8, name: "c")
 /// boolean("r", "c", op: "difference", fill: blue)
 /// ```
@@ -163,13 +163,13 @@
 /// - a (elements, str): First operand. Either an element body or the name
 ///   of an existing element.
 /// - b (elements, str): Second operand. Either an element body or the name
-///   of an existing element.
+///   of an elementxisting element.
 /// - op (string): One of `"union"`, `"intersection"`, `"difference"`, `"xor"`.
 /// - fill-rule-a (auto, string): `"non-zero"` or `"even-odd"`, applied to `a`. If `auto`, inferred from `a`'s drawables
 /// - fill-rule-b (auto, string): `"non-zero"` or `"even-odd"`, applied to `b`. If `auto`, inferred from `b`'s drawables
 /// - eps (auto, float): Numerical accuracy. `auto` uses an automatically determined value.
-/// - ignore-marks (bool): Drop marks from the inputs.
-/// - ignore-hidden (bool): Drop hidden elements from the inputs.
+/// - ignore-marks (bool): Drop marks from the inputs (default: `true`).
+/// - ignore-hidden (bool): Drop hidden elements from the inputs (default: `true`).
 /// - name (none, string):
 /// - ..style (style):
 #let boolean(
@@ -184,6 +184,8 @@
   name: none,
   ..style,
 ) = {
+  let valid-op = ("union", "intersection", "difference", "xor")
+
   assert.eq(
     style.pos(),
     (),
@@ -192,10 +194,10 @@
   let style = style.named()
 
   assert(
-    op in ("union", "intersection", "difference", "xor"),
+    op in valid-op,
     message: "boolean: invalid op "
       + repr(op)
-      + ". Expected one of: \"union\", \"intersection\", \"difference\", \"xor\"",
+      + ". Expected one of: " + valid-op.join(", "),
   )
 
   let validate-fill-rule(name, value) = {
