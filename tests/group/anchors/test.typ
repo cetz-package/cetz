@@ -5,6 +5,12 @@
 #test-case({
   import cetz.draw: *
 
+  rect((-1,-1),(1,1), name:"r")
+  cross("r.0deg")
+})
+#test-case({
+  import cetz.draw: *
+
   set-style(circle: (stroke: none, fill: gray))
 
   circle((0, 0), radius: .1cm, fill: blue)

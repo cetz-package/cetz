@@ -1,7 +1,8 @@
 #set page(width: auto, height: auto)
 #import "/src/lib.typ": *
+#import "/tests/helper.typ": *
 
-#box(stroke: 2pt + red, canvas({
+#test-case({
   import draw: *
 
   group(name: "g", {
@@ -12,9 +13,9 @@
   on-layer(-1, {
     rect("g.south-west", "g.north-east", stroke: .5pt + green)
   })
-}))
+})
 
-#box(stroke: 2pt + red, canvas({
+#test-case({
   import draw: *
 
   group(name: "g", {
@@ -23,9 +24,9 @@
   on-layer(-1, {
     rect("g.south-west", "g.north-east", stroke: .5pt + green)
   })
-}))
+})
 
-#box(stroke: 2pt + red, canvas({
+#test-case({
   import draw: *
 
   let pts = ((-1.414213562373095, 0),
@@ -39,4 +40,4 @@
   on-layer(-1, {
     rect("g.south-west", "g.north-east", stroke: .5pt + green)
   })
-}))
+})
