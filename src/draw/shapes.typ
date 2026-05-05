@@ -102,8 +102,8 @@
       transform: ctx.transform,
       border-anchors: true,
       path-anchors: true,
-      radii: (rx*2, ry*2),
-      path: drawables,
+      border-anchor-callback: anchor_.compute-ellipse-border.with(x-radius: rx, y-radius: ry),
+      path-anchor-callback: anchor_.compute-ellipse-path.with(x-radius: rx, y-radius: ry, unit-length: ctx.length),
     )
 
     return (
@@ -1020,16 +1020,16 @@
       s, stroke: style.stroke, close: at-border.all(v => v)))
 
     let center = vector.lerp(from, to, .5)
+    let width = calc.abs(to-x - from-x)
+    let height = calc.abs(to-y - from-y)
+
     let (transform, anchors) = anchor_.setup(
       _ => center,
       ("center",),
       name: name,
       transform: ctx.transform,
       border-anchors: true,
-      radii: (vector.dist(center, from) * 2,) * 2,
-      path: drawable.line-strip(
-        (from, (from.first(), to.at(1), 0), to, (to.first(), from.at(1), 0)),
-        close: true)
+      border-anchor-callback: anchor_.compute-rect-border.with(width: width, height: height)
     )
 
     return (
@@ -1419,7 +1419,7 @@
       let (north-west: nw, north-east: ne,
            south-west: sw, south-east: se) = util.as-corner-radius-dict(ctx, style.radius, size)
 
-      let no-radius = style.radius == none or style.radius == 0
+      let no-radius = style.radius == none or style.radius == 0 or (nw == (0,0) and ne == (0,0) and sw == (0,0) and se == (0,0))
       let drawables = if no-radius {
         let segments = ()
         // Four corner points for a non-rounded rectangle:
@@ -1536,6 +1536,8 @@
         path-anchors: true,
         radii: (width * 2, height * 2),
         path: drawables,
+        border-anchor-callback: if no-radius { anchor_.compute-rect-border.with(width: width, height: height) },
+        path-anchor-callback: if no-radius { anchor_.compute-rect-path.with(width: width, height: height, unit-length: ctx.length) },
       )
 
       return (
