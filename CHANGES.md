@@ -12,6 +12,9 @@
 - `rect-around` now uses the shape instead of all anchors to compute an elements bounding box (#1022)
 - Fixed transformation of content frame paths along with the position in `drawable.apply-transform`
 - `intersections` is now using a `scope` internally to not leak body transformations
+- Added special border & path anchor calculation for rects and ellipses
+- Added commented out code that prepares for tikz-like border anchors
+  (north-east ≠ 45°) - this will be a breaking change
 
 # 0.5.0
 - **BREAKING** The default matrix changed to id (#967)
