@@ -554,7 +554,8 @@
 /// If the first or last coordinates are given as the name of an element,
 /// that has a `"default"` anchor, the intersection of that element's border
 /// and a line from the first or last two coordinates given is used as coordinate.
-/// This is useful to span a line between the borders of two elements.
+/// This is useful to span a line between the borders of two elements. Note, that passing
+/// strings bypasses custom resolvers when trying to find elements!
 ///
 /// ```example
 /// circle((1,2), radius: .5, name: "a")
@@ -604,18 +605,21 @@
 
   return (ctx => {
     let first-elem = pts.first()
+    let first-is-elem = type(first-elem) == str and not first-elem.contains(".")
+
     let last-elem = pts.last()
-    let pts-system = pts.map(coordinate.resolve-system.with(ctx))
+    let last-is-elem = type(last-elem) == str and not last-elem.contains(".")
+
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
 
     // If the first/last element, test for intersection
     // of that element and a line from the two first/last coordinates of this
     // line strip.
-    if pts-system.first() == "element" {
+    if first-is-elem {
       let elem = ctx.nodes.at(first-elem)
       pts.first() = element-line-intersection(ctx, elem, ..pts.slice(0, 2))
     }
-    if pts-system.last() == "element" {
+    if last-is-elem {
       let elem = ctx.nodes.at(last-elem)
       pts.last() = element-line-intersection(ctx, elem, ..pts.slice(-2).rev())
     }

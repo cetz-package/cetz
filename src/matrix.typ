@@ -394,12 +394,37 @@
   return new
 }
 
+/// Returns true if m is 1.
+///
+/// - m (matrix): Matrix to check
+/// -> bool
+#let is-identity(m) = {
+  if type(m) != array {
+    return false
+  }
+
+  if m in _ident {
+    return true
+  } else if m.len() > 4 {
+    for r in range(0, m.len()) {
+      for c in range(0, m.at(r).len()) {
+        if int(r == c) != m.at(r).at(c) {
+          return false
+        }
+      }
+    }
+    return true
+  }
+
+  return false
+}
+
 /// Calculates the inverse matrix of any size.
 /// - matrix (matrix): The matrix to inverse.
 /// -> matrix
 #let inverse(matrix) = {
   // The identity is self inverse
-  if matrix in _ident {
+  if is-identity(matrix) {
     return matrix
   }
 

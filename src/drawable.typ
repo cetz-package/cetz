@@ -1,6 +1,7 @@
 #import "vector.typ"
 #import "util.typ"
 #import "path-util.typ"
+#import "matrix.typ"
 
 // Tag constants
 #let TAG = (
@@ -22,7 +23,7 @@
   if drawables.len() == 0 {
     return ()
   }
-  if transform == none {
+  if transform == none or matrix.is-identity(transform) {
     return drawables
   }
 

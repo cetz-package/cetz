@@ -9,26 +9,36 @@
 ///
 /// - ctx (ctx): The current context object.
 /// - element-func (function): A function that when passed {{ctx}}, it should return an element dictionary.
-#let element(ctx, element-func) = {
+/// - compute-bounds (bool): Enable bounds computation.
+/// -> dictionary (ctx:, bounds:, drawables:)
+#let element(ctx, element-func, compute-bounds: true) = {
   let bounds = none
   let element
   let anchors = (:)
 
   (ctx, ..element,) = element-func(ctx)
-  if "drawables" in element {
+  if compute-bounds and "drawables" in element {
     if type(element.drawables) == dictionary {
       element.drawables = (element.drawables,)
     }
-    for drawable in drawable.filter-tagged(element.drawables, drawable.TAG.no-bounds) {
-      bounds = aabb.aabb(
-        if drawable.type == "path" {
-          path-util.bounds(drawable.segments)
-        } else if drawable.type == "content" {
-          let (x, y, _, w, h,) = drawable.pos + (drawable.width, drawable.height)
-          ((x + w / 2, y - h / 2, 0.0), (x - w / 2, y + h / 2, 0.0))
-        },
-        init: bounds
-      )
+
+    let points = ()
+    for d in element.drawables {
+      // We inline the filter here to not pay function-call cost in the hot path
+      if drawable.TAG.no-bounds in d.tags {
+        continue
+      }
+
+      points += if d.type == "path" {
+        path-util.bounds(d.segments)
+      } else if d.type == "content" {
+        let (x, y, _, w, h,) = d.pos + (d.width, d.height)
+        ((x - w / 2, y - h / 2, 0.0), (x + w / 2, y + h / 2, 0.0))
+      }
+    }
+
+    if points.len() > 0 {
+      bounds = aabb.aabb(points)
     }
   }
 
@@ -71,30 +81,26 @@
     ctx: ctx,
     bounds: bounds,
     drawables: element.at("drawables", default: ()),
-    element: element,
   )
 }
 
 /// Runs the `element` function for a list of element functions and aggregates the results.
 /// - ctx (ctx): The current context object.
 /// - body (array): The array of element functions to process.
-/// -> dictionary
-#let many(ctx, body) = {
+/// - compute-bounds (bool): Enable bounds computation.
+/// -> dictionary (ctx:, bounds:, drawables:)
+#let many(ctx, body, compute-bounds: true) = {
   let drawables = ()
   let bounds = none
-  let elements = ()
 
   for el in body {
-    let r = element(ctx, el)
+    let r = element(ctx, el, compute-bounds: compute-bounds)
     if r != none {
-      if r.bounds != none {
-        let pts = (r.bounds.low, r.bounds.high,)
-        bounds = aabb.aabb(pts, init: bounds)
-      }
+      bounds = aabb.merge(bounds, r.bounds)
+
       ctx = r.ctx
       drawables += r.drawables
     }
-    elements.push(r.element)
   }
-  return (ctx: ctx, bounds: bounds, drawables: drawables, elements: elements)
+  return (ctx: ctx, bounds: bounds, drawables: drawables)
 }

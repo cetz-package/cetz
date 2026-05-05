@@ -161,14 +161,14 @@
     create-triangle-tip-and-base-anchor(style, (0, 0), (l - i, 0))
   },
   curved-stealth: (style) => {
-    import "/src/draw.typ": merge-path
+    import "/src/draw.typ": merge-path, intersections, line, anchor, hide
 
     let (l, w, i) = (style.length, style.width, style.inset)
 
     // Force round join
     style.stroke.join = "round"
 
-    merge-path(
+    intersections("i", merge-path(
       stroke: style.stroke,
       fill: style.fill,
       close: true, {
@@ -184,11 +184,13 @@
           (l, -w / 2),
           (0, 0),
           (l / 3, -w / 8))
-      },
+      }),
+      hide(fast-line((0,0), (l, 0)))
     )
 
     let thickness = style.canvas-thickness
-    create-triangle-tip-and-base-anchor(style, (0, 0), (l - i + thickness / 2, 0))
+    create-triangle-tip-and-base-anchor(style, (0, 0), (l - i + thickness / 2, 0)) // BUG: Base is the control point, but not the curve extrema
+    anchor("base", "i.1")
   },
   bar: (style) => {
     import "/src/draw.typ": anchor

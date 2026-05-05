@@ -3,6 +3,7 @@
 - Fixed border-anchor calculation for small rounded rects (#1083)
 - Fixed a bug with bezier intersections finding roots outsides the curve (#1090)
 - Fixed line/line intersection
+- Various performance improvements (#1094)
 
 # 0.5.0
 - **BREAKING** The default matrix changed to id (#967)
