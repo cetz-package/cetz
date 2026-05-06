@@ -1,3 +1,13 @@
+# 0.5.1
+- Added the `boolean` draw function for path boolean operations.
+- Fixed border-anchor calculation for small rounded rects (#1083)
+- Fixed a bug with bezier intersections finding roots outsides the curve (#1090)
+- Fixed line/line intersection
+- Various performance improvements (#1094)
+- `rect-around` now uses the shape instead of all anchors to compute an elements bounding box (#1022)
+- Fixed transformation of content frame paths along with the position in `drawable.apply-transform`
+- `intersections` is now using a `scope` internally to not leak body transformations
+
 # 0.5.0
 - **BREAKING** The default matrix changed to id (#967)
 - Fixed a coordinate rounding issue when placing `angle` elements (#968)

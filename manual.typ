@@ -9,6 +9,8 @@
 
   [Shapes],
   "src/draw/shapes.typ",
+  [Boolean Operations],
+  "src/draw/boolean.typ",
   [Styling],
   "src/draw/styling.typ",
   [Grouping],
@@ -91,7 +93,7 @@ automatically resize. And remember: up is positive!
 == Usage
 This is the minimal starting point in a `.typ` file:
 ```typst
-#import "@preview/cetz:0.5.0"
+#import "@preview/cetz:0.5.1"
 #cetz.canvas({
   import cetz.draw: *
   ...
@@ -122,13 +124,19 @@ They are recommended reading for basic usage.
 Many CeTZ functions expect data in certain formats which we will call types.
 Note that these are actually made up of Typst primitives.
 
-/ type\:coordinate: A position on the canvas specified by any
+/ type\:coordinate<type-coordinate>: A position on the canvas specified by any
   coordinate system. See Coordinate Systems.
-/ type\:number: Any of type:float, type:int or type:length
-/ type\:style: Represents options passed to draw functions that
+/ type\:number<type-number>: Any of type:float, type:int or type:length
+/ type\:style<type-style>: Represents options passed to draw functions that
   affect how elements are drawn. They are normally taken in the form of
   named arguments to the draw functions or sometimes can be a dictionary
   for a single argument.
+/ type\:elements<type-elements>: One or more elements such as `line`, `rect`
+  or `group`. To pass multiple elements, you can wrap them in curly braces `{}`,
+  like a normal Typst scope.
+/ type\:context<type-context>: CeTZ's internal context object that holds the
+  canvas' state.
+// NOTE: Add new types to the custom-types list in style.typ!
 
 == The Canvas
 The @canvas[canvas] function is what handles all of the logic and
@@ -157,7 +165,7 @@ You can style draw elements by passing the relevant named arguments
 to their draw functions. All elements that draw something have
 stroke and fill styling unless said otherwise.
 
-/ fill: type:color or type:none (default: `none`) \
+/ fill: type:none or type:auto or type:color or type:gradient or type:tiling (default: `none`) \
   How to fill the drawn element.
 / stroke: type:none or type:auto or type:length or type:color or type:dictionary or type:stroke (default: `black`) \
   How to stroke the border or the path of the draw element. #link("https://typst.app/docs/reference/visualize/line/#parameters-stroke")[See Typst's line documentation for more details.]

@@ -181,7 +181,7 @@
   ctx.transform = matrix.ident(4)
 
   import "/src/draw.typ"
-  let body = draw.group({
+  let body = {
     draw.set-style(
       stroke: util.resolve-stroke(style.at("stroke", default: none)),
       fill: style.at("fill", default: none),
@@ -191,23 +191,17 @@
       arc: (mark: none),
     )
     mark
-  }, name: "mark")
-  let (ctx: ctx, bounds: bounds, drawables: drawables) = process.many(ctx, body)
-  let anchor-fn = ctx.nodes.at("mark").anchors
-
-  // Check if the mark has named anchor
-  let has-anchor(name) = {
-    return name in (anchor-fn)(())
   }
+  let (ctx: ctx, bounds: _, drawables: drawables) = process.many(ctx, body, compute-bounds: false)
 
   // Fetch special mark anchors
   let get-anchor(name, default: none) = {
     if default != none {
-      if not has-anchor(name) {
+      if not name in ctx.nodes {
         return default
       }
     }
-    return (anchor-fn)(name)
+    return (ctx.nodes.at(name).anchors)("default")
   }
 
   let tip = get-anchor("tip")

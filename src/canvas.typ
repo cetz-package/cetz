@@ -26,17 +26,13 @@
   if body == none {
     return []
   }
-  assert(
-    type(body) == array,
-    message: "Incorrect type for body: " + repr(type(body)),
-  )
-
-  // TODO: Remove in later versions
-  if type(length) == ratio {
-    panic("Canvas relative length support got removed! Wrap your canvas in `layout(ly => canvas(length: <ratio> * ly.width, ...))`")
+  if type(body) != array {
+    panic("Incorrect type for body: " + repr(type(body)))
+  }
+  if type(length) != std.length {
+    panic("Expected `length` to be of type length, got " + repr(length))
   }
 
-  assert(type(length) == std.length, message: "Expected `length` to be of type length, got " + repr(length))
   let length = length.to-absolute()
   assert(length / 1cm != 0,
     message: "Canvas length must be != 0!")
@@ -135,9 +131,10 @@
       // Typst path elements have strange bounding boxes. We need to
       // offset all paths to start at (0, 0) to make gradients work.
       let (segment-x, segment-y, _) = if drawable.type == "path" {
-        vector.sub(
-          vector.element-product(aabb.aabb(path-util.bounds(drawable.segments)).low, (1, -1, 1)),
-          bounds.low)
+        let path-bounds = aabb.aabb(path-util.bounds(drawable.segments))
+        (path-bounds.low.at(0) - bounds.low.at(0),
+         bounds.high.at(1) - path-bounds.high.at(1),
+         0)
       } else {
         (0, 0, 0)
       }

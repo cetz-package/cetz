@@ -1,7 +1,7 @@
 #import "vector.typ"
+#import "matrix.typ"
 #import "util.typ"
 #import "deps.typ"
-#import deps.oxifmt: strfmt
 
 #let resolve-xyz(c) = {
   // (x: <number> or <none>, y: <number> or <none>, z: <number> or <none>)
@@ -52,43 +52,39 @@
   )
 }
 
-
-#let resolve-anchor(ctx, c) = {
+#let resolve-anchor(ctx, inverse, c) = {
   // (name: <string>, anchor: <number, angle, string> or <none>)
   // "name.anchor"
   // "name"
   let (name, anchor) = if type(c) == str {
-    let (name, ..anchor) = c.split(".")
-    if anchor.len() == 0 {
-      anchor = "default"
+    if not c.contains(".") {
+      (c, "default")
+    } else {
+      let (name, ..anchor) = c.split(".")
+      (name, anchor)
     }
-    (name, anchor)
   } else {
     (c.name, c.at("anchor", default: "default"))
   }
 
   // Check if node is known
-  assert(name in ctx.nodes,
-    message: "Unknown element '" + name + "' in elements " + repr(ctx.nodes.keys()))
+  let node = ctx.nodes.at(name, default: none)
+  if node == none {
+    panic("Unknown element '" + name + "' in elements " + repr(ctx.nodes.keys()))
+  }
 
   // Resolve length anchors
   if type(anchor) == length {
     anchor = util.resolve-number(ctx, anchor)
   }
 
-  // Check if anchor is known
-  let node = ctx.nodes.at(name)
-  let pos = (node.anchors)(anchor)
-
-  let pos = util.revert-transform(
-    ctx.transform,
-    pos
+  return util.apply-transform(
+    inverse,
+    (node.anchors)(anchor)
   )
-
-  return pos
 }
 
-#let resolve-barycentric(ctx, c) = {
+#let resolve-barycentric(ctx, inverse, c) = {
   // dictionary of numbers
   return vector.scale(
     c.bary.pairs().fold(
@@ -97,7 +93,7 @@
           vector.add(
             vec,
             vector.scale(
-              resolve-anchor(ctx, k),
+              resolve-anchor(ctx, inverse, k),
               v
             )
           )
@@ -124,16 +120,16 @@
   return c
 }
 
-#let resolve-tangent(resolve, ctx, c) = {
+#let resolve-tangent(resolve, inverse, ctx, c) = {
   // (element: <string>, point: <coordinate>, solution: <integer>)
 
   // 1) center + query point
-  let C = resolve-anchor(ctx, c.element)
+  let C = resolve-anchor(ctx, inverse, c.element)
   let (ctx, P) = resolve(ctx, c.point, update: false)
 
   // 2) semi-axes a (east), b (north)
-  let a = vector.len(vector.sub(resolve-anchor(ctx, c.element + ".east"),  C))
-  let b = vector.len(vector.sub(resolve-anchor(ctx, c.element + ".north"), C))
+  let a = vector.len(vector.sub(resolve-anchor(ctx, inverse, c.element + ".east"),  C))
+  let b = vector.len(vector.sub(resolve-anchor(ctx, inverse, c.element + ".north"), C))
 
   // 3) vector center→P
   let D = vector.sub(P, C)
@@ -281,26 +277,19 @@
   func(..c)
 }
 
-/// Figures out what system a coordinate belongs to and returns the corresponding string.
-/// - c (coordinate): The coordinate to find the system of.
-/// -> str
-#let resolve-system(ctx, c) = {
-  let resolver = if type(ctx.resolve-coordinate) == array {
-    ctx.resolve-coordinate
-  } else {
-    ()
-  }
-
-  for resolve-fn in resolver.rev() {
-    c = resolve-fn(ctx, c)
-  }
-
+// Figures out what system a coordinate belongs to and returns the corresponding string.
+// - c (coordinate): The coordinate to find the system of.
+// -> str
+#let _resolve-system(c) = {
   let t = if type(c) == dictionary {
     let keys = c.keys()
     let len = c.len()
     if len in (1, 2, 3) and keys.all(k => k in ("x", "y", "z")) {
       "xyz"
-    } else if len == 2 and keys.all(k => k in ("angle", "radius")) and (type(c.radius) in (int, float, length) or (type(c.radius) == array and c.radius.len() == 2)) {
+    } else if len == 2 and keys.all(k => k in ("angle", "radius")) and {
+      let radius-type = type(c.radius)
+      radius-type in (int, float, length) or (radius-type == array and c.radius.len() == 2)
+    } {
       "polar"
     } else if len == 1 and keys == ("bary",) {
       "barycentric"
@@ -319,20 +308,27 @@
     }
   } else if type(c) == array {
     let len = c.len()
-    let types = c.map(type)
+    let t0 = if len > 0 { type(c.first()) }
+    let t1 = if len > 1 { type(c.at(1)) }
+    let t2 = if len > 2 { type(c.at(2)) }
+
     if len == 0 {
       "previous"
-    } else if len in (2, 3) and types.all(t => t in (int, float, length)) {
+    } else if len == 2 and t0 in (int, float, length) and t1 in (int, float, length) {
       "xyz"
-    } else if len == 2 and types.first() == angle {
+    } else if len == 3 and t0 in (int, float, length) and t1 in (int, float, length) and t2 in (int, float, length) {
+      "xyz"
+    } else if len == 2 and t0 == angle {
       "polar"
     } else if len == 3 and c.at(1) in ("-|", "|-") {
       "perpendicular"
-    } else if len in (3, 4) and types.at(1) in (int, float, length, ratio) and (len == 3 or (len == 4 and types.at(2) == angle)) {
+    } else if len == 3 and t1 in (int, float, length, ratio) {
+      "lerp"
+    } else if len == 4 and t1 in (int, float, length, ratio) and t2 == angle {
       "lerp"
     } else if len == 4 and c.at(1) in ("_|_", "⟂") {
       "project"
-    } else if len >= 2 and types.first() == function {
+    } else if len >= 2 and t0 == function {
       "function"
     }
   } else if type(c) == str {
@@ -347,6 +343,23 @@
     panic("Failed to resolve coordinate system: " + repr(c))
   }
   return t
+}
+
+// Fast path for resolving 3 element vectors of numbers.
+#let _resolve-vec(ctx, v) = {
+  let (x, y, z, ..) = v
+  let t0 = type(x)
+  let t1 = type(y)
+  let t2 = type(z)
+  let int-float = (int, float)
+
+  if t0 in int-float and t1 in int-float and t2 in int-float {
+    return (float(x), float(y), float(z))
+  }
+
+  return (util.resolve-number(ctx, x),
+          util.resolve-number(ctx, y),
+          util.resolve-number(ctx, z))
 }
 
 /// Resolve a list of coordinates to absolute vectors. Returns an array of the new <Type>context</Type> then the resolved coordinate vectors.
@@ -366,6 +379,8 @@
 /// - update (bool): Update the context's last position
 /// -> array
 #let resolve(ctx, ..coordinates, update: true) = {
+  let cached-inverse = none
+
   let resolver = if type(ctx.resolve-coordinate) == array {
     ctx.resolve-coordinate
   } else {
@@ -378,19 +393,28 @@
       c = resolve-fn(ctx, c)
     }
 
-    let t = resolve-system(ctx, c)
-    c = if t == "xyz" {
+    let t = _resolve-system(c)
+    c = _resolve-vec(ctx, if t == "xyz" {
       resolve-xyz(c)
     } else if t == "previous" {
       ctx.prev.pt
     } else if t == "polar" {
       resolve-polar(c)
     } else if t == "barycentric" {
-      resolve-barycentric(ctx, c)
+      if cached-inverse == none {
+        cached-inverse = matrix.inverse(ctx.transform)
+      }
+      resolve-barycentric(ctx, cached-inverse, c)
     } else if t in ("element", "anchor") {
-      resolve-anchor(ctx, c)
+      if cached-inverse == none {
+        cached-inverse = matrix.inverse(ctx.transform)
+      }
+      resolve-anchor(ctx, cached-inverse, c)
     } else if t == "tangent" {
-      resolve-tangent(resolve, ctx, c)
+      if cached-inverse == none {
+        cached-inverse = matrix.inverse(ctx.transform)
+      }
+      resolve-tangent(resolve, cached-inverse, ctx, c)
     } else if t == "perpendicular" {
       resolve-perpendicular(resolve, ctx, c)
     } else if t == "relative" {
@@ -404,7 +428,7 @@
       resolve-function(resolve, ctx, c)
     } else {
       panic("Failed to resolve coordinate of format: " + repr(c))
-    }.map(util.resolve-number.with(ctx))
+    })
 
     if update {
       ctx.prev.pt = c

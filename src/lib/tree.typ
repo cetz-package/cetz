@@ -148,7 +148,7 @@
         })
 
         if bounds != none {
-          (node.width, node.height, _) = aabb.size(bounds)
+          (node.width, node.height, ..) = aabb.size(bounds)
         }
       }
 

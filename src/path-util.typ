@@ -2,8 +2,8 @@
 #import "util.typ"
 #import "vector.typ"
 #import "bezier.typ"
+#import "matrix.typ"
 #import "deps.typ"
-#import deps.oxifmt: strfmt
 
 // A path is an array of subpaths.
 // A subpath is a triplet of the form:
@@ -88,21 +88,54 @@
   return none
 }
 
+/// Tests whether every vertex in `path` lies on the same z-plane, returning
+/// `(z, same-z)` where `z` is the z-coordinate of the first vertex and `same-z` is
+/// `true` iff every other vertex is within `tol` of that z-coordinate.
+/// 
+/// - path (path): Input path; must be non-empty
+/// - tol (float): Absolute z tolerance
+/// -> array Tuple of the form (z, same-z)
+#let same-z-plane(path, tol: 1e-6) = {
+  assert(
+    path.len() > 0,
+    message: "Cannot determine z-plane of an empty path",
+  )
+  let z0 = path.first().at(0).at(2)
+  for (origin, _, segments) in path {
+    if calc.abs(origin.at(2) - z0) > tol { return (z0, false) }
+    for (kind, ..args) in segments {
+      for v in args {
+        if calc.abs(v.at(2) - z0) > tol { return (z0, false) }
+      }
+    }
+  }
+  return (z0, true)
+}
+
 /// Calculates the bounding points for a list of path segments
 ///
 /// - path (array): Path
+/// - transform (none, matrix): Transformation to apply on each coordinate
 /// -> array
-#let bounds(path) = {
+#let bounds(path, transform: none) = {
   let bounds = ()
 
   for ((origin, closed, segments)) in path {
-    bounds.push(origin)
+    bounds.push(if transform != none { util.apply-transform(transform, origin) } else { origin })
 
     for ((kind, ..args)) in segments {
       if kind == "l" {
-        bounds += args
+        bounds += if transform != none {
+          args.map(matrix.mul4x4-vec3.with(transform))
+        } else {
+          args
+        }
       } else if kind == "c" {
-        let (c1, c2, e) = args
+        let (c1, c2, e) = if transform != none {
+          args.map(matrix.mul4x4-vec3.with(transform))
+        } else {
+          args
+        }
         bounds += bezier.cubic-extrema(bounds.last(), e, c1, c2)
         bounds.push(e)
       }

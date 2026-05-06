@@ -36,6 +36,17 @@ export default [
       },
       {
         type: "category",
+        label: "Boolean Operations",
+        link: {
+          type: "doc",
+          id: "api/draw-functions/shapes/boolean",
+        },
+        items: [
+          "api/draw-functions/shapes/boolean",
+        ],
+      },
+      {
+        type: "category",
         label: "Grouping",
         link: {
           type: "doc",

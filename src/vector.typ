@@ -234,10 +234,10 @@
 /// - c (vector): The vector to measure the angle at.
 /// - v2 (vector): The vector to measure the angle to.
 #let angle(v1, c, v2) = {
-  assert(
-    v1.len() == v2.len(),
-    message: "Vectors " + repr(v1) + " and " + repr(v2) + " do not have the same dimensions.",
-  )
+  if v1.len() != v2.len() {
+    panic("Vectors " + repr(v1) + " and " + repr(v2) + " do not have the same dimensions.")
+  }
+
   if v1.len() == 2 or v1.len() == 3 {
     v1 = sub(v1, c)
     v2 = sub(v2, c)

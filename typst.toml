@@ -1,6 +1,6 @@
 [package]
 name = "cetz"
-version = "0.5.0"
+version = "0.5.1"
 compiler = "0.14.0"
 repository = "https://github.com/cetz-package/cetz"
 homepage = "https://cetz-package.github.io/"
@@ -11,6 +11,6 @@ authors = [
 ]
 categories = [ "visualization" ]
 license = "LGPL-3.0-or-later"
-description = "Drawing with Typst made easy, providing an API inspired by TikZ and Processing. Includes modules for plotting, charts and tree layout."
+description = "Drawing with Typst made easy, providing an API inspired by TikZ and Processing."
 keywords = [ "draw", "canvas", "tree" ]
 exclude = [ "/gallery/*", "manual.pdf", "manual.typ" ]

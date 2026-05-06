@@ -1,11 +1,13 @@
 #import "vector.typ"
 #import "util.typ"
 #import "path-util.typ"
+#import "matrix.typ"
 
 // Tag constants
 #let TAG = (
   hidden: "hidden",
   no-bounds: "no-bounds",
+  content-frame: "content-frame",
   mark: "mark",
   debug: "debug",
 )
@@ -21,7 +23,7 @@
   if drawables.len() == 0 {
     return ()
   }
-  if transform == none {
+  if transform == none or matrix.is-identity(transform) {
     return drawables
   }
 
@@ -30,7 +32,7 @@
       panic("Expected drawable, got: ", drawable)
     }
 
-    if drawable.type == "path" {
+    if "segments" in drawable {
       drawable.segments = drawable.segments.map(((origin, closed, segments)) => {
         origin = util.apply-transform(transform, origin)
         if segments != () {
@@ -50,10 +52,9 @@
 
         return (origin, closed, segments)
       })
-    } else if drawable.type == "content" {
+    }
+    if drawable.type == "content" {
       drawable.pos = util.apply-transform(transform, drawable.pos)
-    } else {
-      panic()
     }
     (drawable,)
   }

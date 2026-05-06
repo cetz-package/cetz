@@ -11,6 +11,20 @@
   return call_wasm(cetz-core.aabb_func, (pts: pts, init: init))
 }
 
+#let merge(a, b) = {
+  if a == none { return b }
+  if b == none { return a }
+
+  import calc: min, max
+  let (alx, aly, alz) = a.low
+  let (ahx, ahy, ahz) = a.high
+  let (blx, bly, blz) = b.low
+  let (bhx, bhy, bhz) = b.high
+
+  (low:  (min(alx, blx), min(aly, bly), min(alz, blz)),
+   high: (max(ahx, bhx), max(ahy, bhy), max(ahz, bhz)))
+}
+
 /// Get the mid-point of an AABB as vector.
 ///
 /// - bounds (aabb): The AABB to get the mid-point of.
@@ -26,9 +40,9 @@
 /// -> array of vectors
 #let corner-points(bounds, front: true) = {
   let z = if front {
-    bounds.high.at(2)
+    bounds.high.at(2, default: 0)
   } else {
-    bounds.low.at(2)
+    bounds.low.at(2, default: 0)
   }
 
   let (hx, hy, hz) = bounds.high
