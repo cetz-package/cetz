@@ -93,7 +93,7 @@ automatically resize. And remember: up is positive!
 == Usage
 This is the minimal starting point in a `.typ` file:
 ```typst
-#import "@preview/cetz:0.5.0"
+#import "@preview/cetz:0.5.1"
 #cetz.canvas({
   import cetz.draw: *
   ...
