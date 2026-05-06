@@ -446,29 +446,29 @@
   },)
 }
 
-/// An advanced element that allows you to modify the current canvas {{context}}.
+/// An advanced element that allows you to modify the current canvas type:context.
 /// Note: The transformation matrix (`transform`) is rounded after calling the `callback` function and therefore might be not exactly the matrix specified. This is due to rounding errors and should not cause any problems.
 ///
 /// ```example
-/// // Setting a custom transformation matrix
+/// // Setting custom shared state
 /// set-ctx(ctx => {
-///   let mat = ((1, 0, .5, 0),
-///              (0, 1,  0, 0),
-///              (0, 0,  1, 0),
-///              (0, 0,  0, 1))
-///   ctx.transform = mat
+///   ctx.shared-state.my-state = (
+///     key: 123
+///   )
 ///   return ctx
 /// })
-/// circle((z: 0), fill: red)
-/// circle((z: 1), fill: blue)
-/// circle((z: 2), fill: green)
+///
+/// // ...
+///
+/// // Access the context object
+/// get-ctx(ctx => content((), [#repr(ctx.shared-state)]))
 /// ```
 ///
-/// You can store shared context data under a key in the `ctx.shared-data`
-/// dictionary. The `ctx.shared-data` dictionary is not scoped by
+/// You can store shared context data under a key in the `ctx.shared-state`
+/// dictionary. Note: the `ctx.shared-state` dictionary is not scoped by
 /// `group` or `scope` elements and can be used for canvas global state.
 ///
-/// - callback (function): A function that accepts the context dictionary and only returns a new one.
+/// - callback (function): A function that accepts the type:context dictionary and only returns a new one.
 #let set-ctx(callback) = {
   assert(type(callback) == function)
   return (ctx => {
@@ -483,7 +483,7 @@
   },)
 }
 
-/// An advanced element that allows you to read the current {{context}} through a callback and return {{element}}s based on it.
+/// An advanced element that allows you to read the current `context` through a callback and return `element`s based on it.
 ///
 /// ```example
 /// // Print the transformation matrix
@@ -492,7 +492,7 @@
 /// })
 /// ```
 ///
-/// - callback (function): A function that accepts the {{context}} and can return elements.
+/// - callback (function): A function that accepts the type:context and can return elements.
 #let get-ctx(callback) = {
   assert(type(callback) == function)
   (ctx => {

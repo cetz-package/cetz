@@ -21,8 +21,14 @@
   "function": rgb("#f9dfff"),
 )
 
-#let show-type(name) = {
-  box(raw(name), inset: 2pt, baseline: 2pt, radius: 2pt,
+#let custom-types = ("context", "coordinate", "number", "style", "elements")
+
+#let show-type(name, ref: true) = {
+  if not name in custom-types {
+    ref = false
+  }
+
+  box(if ref { link(label("type-" + name), raw(name)) } else { raw(name) }, inset: 2pt, baseline: 2pt, radius: 2pt,
     fill: colors.at(name, default: colors.at("any")), stroke: none)
 }
 
