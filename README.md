@@ -154,7 +154,8 @@ To run all tests you can run the `just test` target. You need to have
 - [fletcher](https://github.com/Jollywatt/typst-fletcher) Package for drawing commutative diagrams and figures with arrows.
 - [chronos](https://git.kb28.ch/HEL/chronos) Package for drawing sequence diagrams.
 - [circuiteria](https://git.kb28.ch/HEL/circuiteria) Package for drawing circuits.
-- [zap](https://github.com/l0uisgrange/zap) Package for drawing standard electronic circuits.
+- [zap](https://codeberg.org/grangelouis/zap) Package for drawing standard electronic circuits.
+- [bone](https://codeberg.org/grangelouis/bone)  Package to draw structural analysis and kinematic diagrams
 - [rivet](https://git.kb28.ch/HEL/rivet-typst) Package for drawing instruction / register diagrams.
 - [plotsy-3d](https://github.com/misskacie/plotsy-3d) Package for rendering 3D objects & plots.
 - [alchemist](https://github.com/Typsium/alchemist) A package to render skeletal formulae using a human-readable format using cetz.
