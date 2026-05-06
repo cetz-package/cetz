@@ -17,28 +17,31 @@
   let anchors = (:)
 
   (ctx, ..element,) = element-func(ctx)
-  if compute-bounds and "drawables" in element {
+
+  if "drawables" in element {
     if type(element.drawables) == dictionary {
       element.drawables = (element.drawables,)
     }
 
-    let points = ()
-    for d in element.drawables {
-      // We inline the filter here to not pay function-call cost in the hot path
-      if drawable.TAG.no-bounds in d.tags {
-        continue
+    if compute-bounds {
+      let points = ()
+      for d in element.drawables {
+        // We inline the filter here to not pay function-call cost in the hot path
+        if drawable.TAG.no-bounds in d.tags {
+          continue
+        }
+
+        points += if d.type == "path" {
+          path-util.bounds(d.segments)
+        } else if d.type == "content" {
+          let (x, y, _, w, h,) = d.pos + (d.width, d.height)
+          ((x - w / 2, y - h / 2, 0.0), (x + w / 2, y + h / 2, 0.0))
+        }
       }
 
-      points += if d.type == "path" {
-        path-util.bounds(d.segments)
-      } else if d.type == "content" {
-        let (x, y, _, w, h,) = d.pos + (d.width, d.height)
-        ((x - w / 2, y - h / 2, 0.0), (x + w / 2, y + h / 2, 0.0))
+      if points.len() > 0 {
+        bounds = aabb.aabb(points)
       }
-    }
-
-    if points.len() > 0 {
-      bounds = aabb.aabb(points)
     }
   }
 
