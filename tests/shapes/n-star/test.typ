@@ -3,11 +3,23 @@
 #import "/tests/helper.typ": *
 
 #test-case(sides => {
-    import cetz.draw: *
-    n-star((0, 0), sides, angle: 9deg)
+  import cetz.draw: *
+  n-star((0, 0), sides, angle: 9deg)
 }, args: (3, 4, 5, 6, 7))
 
 #test-case(sides => {
-    import cetz.draw: *
-    n-star((0, 0), inner-radius: 0.8, sides, fill: blue)
-}, args: (3, 4, 5, 6, 7))
+  import cetz.draw: *
+  n-star((0, 0), inner-radius: 0.8, sides)
+}, args: (5, 6, 7))
+
+#test-case({
+  import cetz.draw: *
+  n-star((0, 0), 5, name: "star")
+  show-compass-anchors(element: "star")
+})
+
+#test-case({
+  import cetz.draw: *
+  n-star((0, 0), 5, name: "star")
+  show-border-anchors(element: "star")
+})
