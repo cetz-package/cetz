@@ -44,7 +44,7 @@
 /// -> matrix
 #let diag(..diag) = {
   assert(diag.pos().len() >= 1, message: "Invalid dimension")
-  assert.eq(diag.named(), (), messaged: "Unexpected named argument")
+  assert.eq(diag.named(), (:), message: "Unexpected named argument")
 
   let diag = diag.pos()
   range(0, diag.len()).map(m => range(0, diag.len()).map(n => {
