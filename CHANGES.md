@@ -1,3 +1,7 @@
+# 0.5.3
+- Fixed mark `inset:` style getting applied twice (#1099)
+- Fixes `matrix.diag` function typo
+
 # 0.5.1
 - Added the `boolean` draw function for path boolean operations.
 - Fixed border-anchor calculation for small rounded rects (#1083)
