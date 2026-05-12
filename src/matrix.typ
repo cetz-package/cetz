@@ -19,7 +19,7 @@
 
 // List of identity matrices of dimension 1 x 1 to 4 x 4
 #let _ident = (
-  ((1.0),),
+  ((1.0,),),
   ((1.0, 0.0), (0.0, 1.0)),
   ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)),
   ((1.0, 0.0, 0.0, 0.0), (0.0, 1.0, 0.0, 0.0), (0.0, 0.0, 1.0, 0.0), (0.0, 0.0, 0.0, 1.0)),
@@ -31,10 +31,12 @@
 /// -> matrix
 #let ident(size) = {
   assert(size >= 1, message: "Invalid dimension")
-  return _ident.at(size - 1, default:
-    range(0, size).map(j => range(0, size).map(k => {
-      if j == k { 1.0 } else { 0.0 }
-    })))
+  if _ident.len() >= size {
+    return _ident.at(size - 1)
+  }
+  return range(0, size).map(j => range(0, size).map(k => {
+    if j == k { 1.0 } else { 0.0 }
+  }))
 }
 
 /// Create a square matrix with the diagonal set to the
@@ -69,7 +71,7 @@
 
 /// Rounds each value in the matrix to a precision.
 /// - mat (matrix): Input matrix
-/// - precision (int) = 8: Rounding precision (digits)
+/// - precision (int) = 10: Rounding precision (digits)
 /// -> matrix
 #let round(mat, precision: precision) = {
   mat.map(r => r.map(v => _round(v, digits: precision)))
