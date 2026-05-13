@@ -205,8 +205,9 @@
 
     fast-line(..pts, stroke: style.stroke, fill: style.fill)
     let offset = style.canvas-thickness / 2
-    create-tip-and-base-anchor(style, (-offset, 0), (offset, 0))
     anchor("center", (0, 0))
+    anchor("tip", (offset, 0))
+    anchor("base", (-offset, 0))
   },
   ellipse: (style) => {
     import "/src/draw.typ": arc, circle
