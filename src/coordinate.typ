@@ -84,23 +84,25 @@
   )
 }
 
-#let resolve-barycentric(ctx, inverse, c) = {
-  // dictionary of numbers
+#let resolve-barycentric(resolve, ctx, inverse, c) = {
+  // (bary: (anchor: <float>, ...)) or (bary: ((<coordinate>, <float>), ...))
+  let pairs = if type(c.bary) == dictionary {
+    c.bary.pairs()
+  } else {
+    c.bary
+  }
   return vector.scale(
-    c.bary.pairs().fold(
+    pairs.fold(
       (0, 0, 0),
       (vec, (k, v)) => {
-          vector.add(
-            vec,
-            vector.scale(
-              resolve-anchor(ctx, inverse, k),
-              v
-            )
-          )
-        }
-      ),
-    1 / c.bary.values().sum()
-    )
+        let (_, pt) = resolve(ctx, k)
+        vector.add(
+          vec,
+          vector.scale(pt, v)
+        )
+    }),
+    1 / pairs.map(((k, v)) => v).sum()
+  )
 }
 
 #let resolve-relative(resolve, ctx, c) = {
@@ -404,7 +406,7 @@
       if cached-inverse == none {
         cached-inverse = matrix.inverse(ctx.transform)
       }
-      resolve-barycentric(ctx, cached-inverse, c)
+      resolve-barycentric(resolve, ctx, cached-inverse, c)
     } else if t in ("element", "anchor") {
       if cached-inverse == none {
         cached-inverse = matrix.inverse(ctx.transform)
