@@ -230,8 +230,8 @@ specified by these vectors and numbers is
 $(alpha_1 v_1 + alpha_2 v_2 + dots.c + alpha_n v_n)/(alpha_1 + alpha_2 + dots.c + alpha_n)$.
 
 / Syntax:
-  - `(bary: (anchor: type:float, ...))`, where `anchor` is the name of an element or anchor.
-  - `(bary: ((type:coordinate, type:float), ...))`
+  - `(bary: (anchor: type:float or type:ratio, ...))`, where `anchor` is the name of an element or anchor.
+  - `(bary: ((type:coordinate, type:float or type:ratio), ...))`
 
 ```example
 anchor("a", (90deg, 2))
@@ -245,7 +245,7 @@ set-style(radius: 1pt, fill: black, content: (padding: 0.8em))
 circle((bary: (a: 0, b: 0, c: 1)), name: "ca")
 content("ca", [A], anchor: "west")
 
-circle((bary: (a: 0.5, b: 0.2, c: 0.3)), name: "cb")
+circle((bary: (a: 50%, b: 20%, c: 30%)), name: "cb")
 content("cb", [B], anchor: "east")
 
 circle((bary: (("a", 0.8), ("b", 0.8), ("c", 0.8))), name: "cc")

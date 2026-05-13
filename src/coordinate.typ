@@ -85,7 +85,7 @@
 }
 
 #let resolve-barycentric(resolve, ctx, inverse, c) = {
-  // (bary: (anchor: <float>, ...)) or (bary: ((<coordinate>, <float>), ...))
+  // (bary: (anchor: <float/ratio>, ...)) or (bary: ((<coordinate>, <float/ratio>), ...))
   let pairs = if type(c.bary) == dictionary {
     c.bary.pairs()
   } else {
@@ -98,10 +98,10 @@
         let (_, pt) = resolve(ctx, k)
         vector.add(
           vec,
-          vector.scale(pt, v)
+          vector.scale(pt, if type(v) == ratio { v / 100% } else { v })
         )
     }),
-    1 / pairs.map(((k, v)) => v).sum()
+    1 / pairs.map(((k, v)) => if type(v) == ratio { v / 100% } else { v }).sum()
   )
 }
 
