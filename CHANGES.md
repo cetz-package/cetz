@@ -1,6 +1,7 @@
 # 0.5.3
 - Fixed mark `inset:` style getting applied twice (#1099)
 - Fixes `matrix.diag` function typo
+- Barycentric coordinates now support contstruction using tuples of coordinates and floats/ratios
 
 # 0.5.1
 - Added the `boolean` draw function for path boolean operations.

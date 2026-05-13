@@ -160,6 +160,190 @@ Instead its size will grow and shrink to fit the drawn graphic.
 By default $1$ coordinate unit is $1 "cm"$, this can be changed by setting the
 `length:` parameter.
 
+== Coordinates <coordinates>
+=== XYZ
+Specifies a point as a multiple of the $x$, $y$, and $z$ vectors of the current
+canvas' transformation.
+
+/ Syntax:
+  - `(x type:number, y type:number, z type:number = 0)`
+  - `(x: type:number = 0, y: type:number = 0, z: type:number = 0)`
+
+```example
+// Short form: (x, y, [z])
+line((0, 0), (1, 0, 0))
+
+// Dictionary form (x:, y:, z:)
+line((x: 0cm, y: 0), (y: 1))
+```
+
+=== Polar
+Specifies a point in polar coordinates.
+
+/ Syntax:
+  - `(α type:angle, r type:number or (type:number, type:number))`
+  - `(angle: type:angle, radius: type:number or (type:number, type:number))`
+
+```example
+circle((0, 0))
+
+// Draw a line from (0, 0) to 30deg on the unit circle
+line((0, 0), (30deg, 1),
+     mark: (start: ")>", end: ")>"))
+```
+
+=== Previous
+You can access the previous coordinate by passing an empty array `()`. The initial
+previous coordinate is at `(0, 0, 0)`.
+
+```example
+// Draw a line to (1, 0)
+line((), (1, 0))
+
+// A dot at the previous coordinate, (1, 0, 0)
+circle((), radius: 1pt, fill: black)
+```
+
+=== Relative
+You can add two coordinates using the relative coordinate syntax.
+
+/ Syntax:
+  - (rel: type:coordinate) specifies a coordinate relative to the previous coordinate `()`
+  - (rel: type:coordinate, to: type:coordinat) specifies a coordinate relative to `to` by adding both vectors
+
+```example
+anchor("a", (1,3))
+
+set-style(radius: 1pt, fill: black, content: (padding: 0.8em))
+circle("a")
+content((), [A], anchor: "north")
+
+circle((rel: (2, 1), to: "a"))
+content((), `(rel: (2, 1), to: "a")`, anchor: "south")
+```
+
+=== Barycentric
+In the barycentric coordinate system a point is expressed as the linear combination
+of multiple vectors. The idea is that you specify vectors $v_1, v_2, ..., v_n$
+and numbers $alpha_1, alpha_2, ..., alpha_n$. Then the barycentric coordinate
+specified by these vectors and numbers is
+$(alpha_1 v_1 + alpha_2 v_2 + dots.c + alpha_n v_n)/(alpha_1 + alpha_2 + dots.c + alpha_n)$.
+
+/ Syntax:
+  - `(bary: (anchor: type:float or type:ratio, ...))`, where `anchor` is the name of an element or anchor.
+  - `(bary: ((type:coordinate, type:float or type:ratio), ...))`
+
+```example
+anchor("a", (90deg, 2))
+anchor("b", (210deg, 2))
+anchor("c", (330deg, 2))
+
+line("a", "b", "c", close: true)
+
+// Place points as a combination of a, b and c
+set-style(radius: 1pt, fill: black, content: (padding: 0.8em))
+circle((bary: (a: 0, b: 0, c: 1)), name: "ca")
+content("ca", [A], anchor: "west")
+
+circle((bary: (a: 50%, b: 20%, c: 30%)), name: "cb")
+content("cb", [B], anchor: "east")
+
+circle((bary: (("a", 0.8), ("b", 0.8), ("c", 0.8))), name: "cc")
+content("cc", [C], anchor: "east")
+```
+
+=== Anchor
+Defines a point relative to a named element using anchors.
+
+/ Syntax:
+  - `element type:string` gives the `"default"` anchor of element `element`, `"center"` for most elements
+  - `element.anchor type:string` gives the named anchor `anchor` of element `element`
+  - `element.<angle> type:string` gives the border anchor of `element` at angle `angle`, that is the coordinate at which a ray with angle `angle` intersects the elements path
+  - `element.<number or ratio> type:string` gives the path anchor of `element` at distance `number`, that is the coordinat traveled along the path by distance `number`
+  - `(name: type:string, anchor: type:string or type:number or type:ratio or type:angle)` explicit, typed form
+
+```example
+hobby((0, 0), (1, 2), (2, 1), (3, 3), name: "l")
+
+set-style(radius: 1pt, fill: black, content: (padding: 0.8em))
+// Access a named anchor
+circle("l.end")
+content((), `l.end`, anchor: "south")
+
+// Access a relative path anchor
+circle("l.25%")
+content((), `l.25%`, anchor: "south-east")
+
+// Access an absolute path anchor
+circle((name: "l", anchor: 0.5cm))
+content((), `(name: "l", anchor: 0.5cm)`, anchor: "west")
+```
+
+```example
+rect((0, 0), (2, 2), name: "r")
+
+set-style(radius: 1pt, fill: black, content: (padding: 0.8em))
+// Access the default anchor
+circle("r")
+content((), `r`, anchor: "south")
+
+// Access a border anchor
+circle("r.30deg")
+content((), `r.30deg`, anchor: "west")
+```
+
+=== Perpendicular
+
+=== Tangent
+
+=== Projection
+
+/ Syntax:
+  - `(p type:coordinate, "⟂", a type:coordinate, b type:coordinate)`
+  - `(p type:coordinate, "_|_", a type:coordinate, b type:coordinate)`
+  - `(project: type:coordinate, onto: (a type:coordinate, b type:coordinate))`
+
+```example
+line((1, 1), (3, 2), name: "l")
+
+anchor("pt", (1.5, 2))
+
+// Project "pt" onto the line from "l.start" to "l.end"
+anchor("x", (project: "pt", onto: ("l.start", "l.end")))
+
+set-style(radius: 1pt, fill: black, content: (padding: 0.8em))
+circle("pt")
+content((), [pt], anchor: "south")
+circle("x")
+content((), [x], anchor: "north")
+
+line("pt", "x")
+```
+
+=== Callback/Function
+Specifies a coordinate by evaluating a callback function with resolved
+coordinates passed as arguments.
+
+/ Syntax:
+  - `(type:function, type:coordinate, ...)` an array of a funciton and zero or more coordinates
+
+Thet function gets called with $n$ vectors, where $n$ is the number of coordinates passed along with the function.
+
+```example
+anchor("a", (1.2, 3.7))
+
+set-style(radius: 1pt, fill: black, content: (padding: 0.8em))
+// Access the default anchor
+circle("a")
+content((), `A`, anchor: "north")
+
+// Pass a custom function that rounds each component of "a"
+circle((a => {
+  a.map(calc.round)
+}, "a"))
+content((), `function`, anchor: "south")
+```
+
 == Styling <styling>
 You can style draw elements by passing the relevant named arguments
 to their draw functions. All elements that draw something have
