@@ -120,7 +120,7 @@
   return c
 }
 
-#let resolve-tangent(resolve, inverse, ctx, c) = {
+#let resolve-tangent(resolve, inverse, ctx, c, eps: 1e-6) = {
   // (element: <string>, point: <coordinate>, solution: <integer>)
 
   // 1) center + query point
@@ -137,27 +137,32 @@
   // 4) move into unit-circle coords
   let Dscaled = (D.at(0)/a, D.at(1)/b)
   let rho = vector.len(Dscaled)
-  if rho < 1 {
+  if rho < 1 - eps {
     panic("No tangent solution for element " + c.element + " and point " + repr(c.point))
   }
 
   // 5) normalize & compute tangent parameters
   let ux = Dscaled.at(0) / rho
   let uy = Dscaled.at(1) / rho
-  let t  = 1 / rho
-  let h  = calc.sqrt(1 - t*t)
+
+  // 5.1) Special case: Point is on the ellipse border
+  //
+  //      We return a point at rho = 1 + eps
+  //      to get a usable tangent solution.
+  if rho <= 1 + eps {
+    rho = 1 + eps
+  }
+
+  let t = 1 / rho
+  let h = calc.sqrt((rho - 1) * (rho + 1)) / rho
 
   // 6) pick one of the two solutions on the unit circle
   let (sx, sy) = if c.solution == 1 {
-    (
-      ux*t - uy*h,
-      uy*t + ux*h
-    )
+    (ux*t - uy*h,
+     uy*t + ux*h)
   } else {
-    (
-      ux*t + uy*h,
-      uy*t - ux*h
-    )
+    (ux*t + uy*h,
+     uy*t - ux*h)
   }
 
   // 7) map back through the ellipse‐stretch and return
