@@ -7,6 +7,7 @@
 #import "path-util.typ"
 #import "matrix.typ"
 #import "vector.typ"
+#import "anchor-helper.typ": compute-rect-border, compute-rect-path, compute-ellipse-border, compute-ellipse-path
 
 // Compass direction to angle
 #let named-border-anchors = (
@@ -27,37 +28,37 @@
   end: 100%,
 )
 
-/// Calculates a border anchor at the given angle by testing for an intersection between a line and the given drawables. Returns `none` if no intersection is found for better error reporting.
+/// Calculates a border anchor at the given angle by testing for an
+/// intersection between a line and the given drawables. The scan-line
+/// goes from `center` to the border of an ellipse with radius `x-radius`, `y-radiu`
+/// at angle `angle`. If multiple intersection points are found, the
+/// one with the largest distance from `center` is returned.
+///
+/// Returns `none` if no intersection is found for better error reporting.
 ///
 /// - center (vector): The position from which to start the test line.
-/// - x-dist (number): The furthest distance the test line should go in the x direction.
-/// - y-dist (number): The furthest distance the test line should go in the y direction.
-/// - drawables (drawables): Drawables to test for an intersection against. Ideally should be of type path but all others are ignored.
+/// - x-radius (number): The furthest distance the test line should go in the x direction.
+/// - y-radius (number): The furthest distance the test line should go in the y direction.
 /// - angle (angle): The angle to check for a border anchor at.
+/// - drawables (drawables): Drawables to test for an intersection against. Ideally should be of type path but all others are ignored.
 /// -> none
 /// -> vector
-#let shape-border(center, x-dist, y-dist, drawables, angle) = {
-  x-dist += util.float-epsilon
-  y-dist += util.float-epsilon
-
+#let _shape-border(center, x-dist, y-dist, angle, drawables) = {
+  let eps = util.float-epsilon
   if type(drawables) == dictionary {
     drawables = (drawables,)
   }
 
+  let (cx, cy, cz) = center
   let test-line = (
     center,
-    (
-      center.at(0) + calc.abs(x-dist) * calc.cos(angle),
-      center.at(1) + calc.abs(y-dist) * calc.sin(angle),
-      center.at(2),
-    )
+    (cx + calc.abs(x-dist + eps) * calc.cos(angle),
+     cy + calc.abs(y-dist + eps) * calc.sin(angle),
+     cz)
   )
 
   let pts = ()
   for drawable in drawables {
-    if drawable.type != "path" {
-      continue
-    }
     pts += intersection.line-path(..test-line, drawable)
   }
 
@@ -72,7 +73,6 @@
     util.sort-points-by-distance(center, pts).last()
   }
 }
-
 
 /// Setup an anchor calculation and handling function for an element. Unifies anchor error checking and calculation of the offset transform.
 ///
@@ -113,13 +113,17 @@
     callback = (anchor) => {}
   }
 
+  if type(radii) != array {
+    radii = (radii, radii)
+  }
+
   // Add enabled anchor names
   if name != none or offset-anchor != none {
-    if border-anchors {
+    if border-anchors and border-anchor-callback == none {
       assert("center" in anchor-names and radii != none and path != none,
         message: "Border anchors need a center anchor, radii and the path set!")
     }
-    if path-anchors {
+    if path-anchors and path-anchor-callback == none {
       assert.ne(path, none,
         message: "Path anchors need the path set!")
     }
@@ -193,7 +197,7 @@
         out = if border-anchor-callback != none {
           border-anchor-callback(callback("center"), anchor)
         } else {
-          shape-border(callback("center"), ..radii, path, anchor)
+          _shape-border(callback("center"), ..radii, anchor, path)
         }
         if out == none {
           panic(strfmt("Element '{}' does not have a border for anchor '{}'.", name, anchor))
