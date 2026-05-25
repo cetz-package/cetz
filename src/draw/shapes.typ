@@ -1692,7 +1692,7 @@
 #let catmull(..pts-style, close: false, name: none) = {
   let (pts, style)  = (pts-style.pos(), pts-style.named())
 
-  assert(pts.len() >= 2, message: "Catmull-rom curve requires at least two points. Got " + repr(pts.len()) + "instead.")
+  assert(pts.len() >= 2, message: "Catmull-rom curve requires at least two points. Got " + repr(pts.len()) + " instead.")
 
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
@@ -1764,7 +1764,7 @@
 #let hobby(..pts-style, ta: auto, tb: auto, close: false, name: none) = {
   let (pts, style)  = (pts-style.pos(), pts-style.named())
 
-  assert(pts.len() >= 2, message: "Hobby curve requires at least two points. Got " + repr(pts.len()) + "instead.")
+  assert(pts.len() >= 2, message: "Hobby curve requires at least two points. Got " + repr(pts.len()) + " instead.")
 
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
