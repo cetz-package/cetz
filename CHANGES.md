@@ -2,6 +2,7 @@
 - Fixed mark `inset:` style getting applied twice (#1099)
 - Fixes `matrix.diag` function typo
 - Added a new `make-ctx` function for creating a new canvas context without a canvas
+- Fixed a bug with hobby and boolean rejecting two component vectors
 
 # 0.5.1
 - Added the `boolean` draw function for path boolean operations.
