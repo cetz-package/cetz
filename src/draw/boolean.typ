@@ -75,12 +75,12 @@
 
 // Projects a CeTZ 3D path to a 2D wire path, asserting all vertices share the
 // same z-plane (within `tol`) and all subpaths are closed.
-#let _path3d-to-wire2d(path3d, tol: 1e-6) = {
+#let _path3d-to-wire2d(path3d, eps: 1e-6) = {
   if path3d.len() == 0 {
     return ((subpaths: ()), 0.0)
   }
 
-  let (z0, same-z) = path-util.same-z-plane(path3d, tol: tol)
+  let (z0, same-z) = path-util.same-z-plane(path3d, eps: eps)
   assert(same-z, message: "boolean: all input vertices must lie in a single z-plane.")
 
   let drop-z(v) = (v.at(0), v.at(1))
