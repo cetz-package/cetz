@@ -75,170 +75,6 @@
   mat.map(r => r.map(v => _round(v, digits: precision)))
 }
 
-/// Returns a $4 times 4$ translation matrix
-/// - x (float): The translation in the $x$ direction.
-/// - y (float): The translation in the $y$ direction.
-/// - z (float): The translation in the $x$ direction.
-/// -> matrix
-#let transform-translate(x, y, z) = {
-  ((1, 0, 0, x), (0, 1, 0, y), (0, 0, 1, z), (0, 0, 0, 1))
-}
-
-/// Returns a $4 times 4$ x-shear matrix
-/// - factor (float): The shear in the $x$ direction.
-/// -> matrix
-#let transform-shear-x(factor) = {
-  ((1, factor, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1))
-}
-
-
-/// Returns a $4 times 4$ z-shear matrix
-/// - factor (float): The shear in the $z$ direction.
-/// -> matrix
-#let transform-shear-z(factor) = {
-  ((1, 0, factor, 0), (0, 1, -factor, 0), (0, 0, 1, 0), (0, 0, 0, 1))
-}
-
-/// Returns a $4 times 4$ scale matrix
-/// - f (float,array,dictionary): The scale factor(s) of the matrix. An {{array}} of at least 3 {{float}}s sets the x, y and z scale factors. A {{dictionary}} sets the scale in the direction of the corresponding x, y and z keys. A single {{float}} sets the scale for all directions.
-/// -> matrix
-#let transform-scale(f) = {
-  let (x, y, z) = if type(f) == array {
-    vector.as-vec(f, init: (1, 1, 1))
-  } else if type(f) == dictionary {
-    (f.at("x", default: 1), f.at("y", default: 1), f.at("z", default: 1))
-  } else {
-    (f, f, f)
-  }
-  return (
-    (x, 0, 0, 0),
-    (0, y, 0, 0),
-    (0, 0, z, 0),
-    (0, 0, 0, 1),
-  )
-}
-
-/// Returns a $4 times 4$ rotation xyz matrix for a direction and up vector
-/// - dir (vector): idk
-/// - up (vector): idk
-/// -> matrix
-#let transform-rotate-dir(dir, up) = {
-  dir = vector.norm(dir.slice(0, 3))
-  up = vector.norm(up.slice(0, 3))
-
-  let (dx, dy, dz) = dir
-  let (ux, uy, uz) = up
-  let (rx, ry, rz) = vector.norm(vector.cross(dir, up))
-
-  ((rx, dx, ux, 0), (ry, dy, uy, 0), (rz, dz, uz, 0), (0, 0, 0, 1))
-}
-
-// Return 4x4 rotate x matrix
-/// Returns a $4 times 4$ $x$ rotation matrix
-/// - angle (angle): The angle to rotate around the $x$ axis
-/// -> matrix
-#let transform-rotate-x(angle) = {
-  ((1, 0, 0, 0), (0, cos(angle), -sin(angle), 0), (0, sin(angle), cos(angle), 0), (0, 0, 0, 1))
-}
-
-// Return 4x4 rotate y matrix
-/// Returns a $4 times 4$ $y$ rotation matrix
-/// - angle (angle): The angle to rotate around the $y$ axis
-/// -> matrix
-#let transform-rotate-y(angle) = {
-  ((cos(angle), 0, -sin(angle), 0), (0, 1, 0, 0), (sin(angle), 0, cos(angle), 0), (0, 0, 0, 1))
-}
-
-// Return 4x4 rotate z matrix
-/// Returns a $4 times 4$ $z$ rotation matrix
-/// - angle (angle): The angle to rotate around the $z$ axis
-/// -> matrix
-#let transform-rotate-z(angle) = {
-  ((cos(angle), -sin(angle), 0, 0), (sin(angle), cos(angle), 0, 0), (0, 0, 1, 0), (0, 0, 0, 1))
-}
-
-// 3D rotation matrix around an arbitrary axis (ax, ay, az).
-#let _rotate-axis-angle(ax, ay, az, angle) = {
-  let c = cos(angle)
-  let s = sin(angle)
-  (
-    (ax * ax * (1 - c) + c, ax * ay * (1 - c) - az * s, ax * az * (1 - c) + ay * s, 0),
-    (ay * ax * (1 - c) + az * s, ay * ay * (1 - c) + c, ay * az * (1 - c) - ax * s, 0),
-    (az * ax * (1 - c) - ay * s, az * ay * (1 - c) + ax * s, az * az * (1 - c) + c, 0),
-    (0, 0, 0, 1),
-  )
-}
-
-/// Returns a $4 times 4$ rotation matrix from azimuth/elevation/roll.
-/// Assumes the viewing convention where $z$ points up and $x$ points toward the viewer.
-/// - azimuth (angle): Rotation around z.
-/// - elevation (angle): Tilt above the xy plane.
-/// - roll (angle): Rotation around the current viewing axis.
-/// -> matrix
-#let transform-rotate-aer(azimuth, elevation, roll: 0deg) = {
-  let rotate-z-up = transform-rotate-x(-90deg)
-  let rotate-azimuth = transform-rotate-z(-90deg - azimuth)
-  let (ax, ay, az) = (-sin(azimuth), cos(azimuth), 0)
-  let rotate-elevation = _rotate-axis-angle(ax, ay, az, elevation)
-  let base = mul-mat(rotate-z-up, rotate-azimuth, rotate-elevation)
-
-  if roll == 0deg {
-    return base
-  }
-
-  // Roll around the current viewing axis after azimuth/elevation.
-  let (vx, vy, vz) = vector.norm(mul4x4-vec3(base, (1, 0, 0), w: 0))
-  let rotate-roll = _rotate-axis-angle(vx, vy, vz, roll)
-  mul-mat(rotate-roll, base)
-}
-
-// Return 4x4 rotate xz matrix
-/// Returns a $4 times 4$ $x z$ rotation matrix
-/// - x (angle): The angle to rotate around the $x$ axis
-/// - z (angle): The angle to rotate around the $z$ axis
-/// -> matrix
-#let transform-rotate-xz(x, z) = {
-  (
-    (cos(z), sin(z), 0, 0),
-    (-cos(x) * sin(z), cos(x) * cos(z), -sin(x), 0),
-    (sin(x) * sin(z), -sin(x) * cos(z), cos(x), 1),
-    (0, 0, 0, 1),
-  )
-}
-
-/// Returns a $4 times 4$ rotation matrix - yaw-pitch-roll
-///
-/// - a (angle): Yaw
-/// - b (angle): Pitch
-/// - c (angle): Roll
-/// -> matrix
-#let transform-rotate-ypr(a, b, c) = {
-  (
-    (cos(a) * cos(b), cos(a) * sin(b) * sin(c) - sin(a) * cos(c), cos(a) * sin(b) * cos(c) + sin(a) * sin(c), 0),
-    (sin(a) * cos(b), sin(a) * sin(b) * sin(c) + cos(a) * cos(c), sin(a) * sin(b) * cos(c) - cos(a) * sin(c), 0),
-    (-sin(b), cos(b) * sin(c), cos(b) * cos(c), 1),
-    (0, 0, 0, 1),
-  )
-}
-
-/// Returns a $4 times 4$ rotation matrix - euler angles
-///
-/// Calculates the product of the three rotation matrices
-/// $R = R_z(z) R_y(y) R_x(x)$
-///
-/// - x (angle): Rotation about x
-/// - y (angle): Rotation about y
-/// - z (angle): Rotation about z
-/// -> matrix
-#let transform-rotate-xyz(x, y, z) = {
-  (
-    (cos(y) * cos(z), sin(x) * sin(y) * cos(z) - cos(x) * sin(z), cos(x) * sin(y) * cos(z) + sin(x) * sin(z), 0),
-    (cos(y) * sin(z), sin(x) * sin(y) * sin(z) + cos(x) * cos(z), cos(x) * sin(y) * sin(z) - sin(x) * cos(z), 0),
-    (-sin(y), sin(x) * cos(y), cos(x) * cos(y), 0),
-    (0, 0, 0, 1),
-  )
-}
-
 /// Multiplies matrices on top of each other.
 /// - ..matrices (matrix): The matrices to multiply from left to right.
 /// -> matrix
@@ -463,4 +299,168 @@
   }
 
   return inverted
+}
+
+/// Returns a $4 times 4$ translation matrix
+/// - x (float): The translation in the $x$ direction.
+/// - y (float): The translation in the $y$ direction.
+/// - z (float): The translation in the $x$ direction.
+/// -> matrix
+#let transform-translate(x, y, z) = {
+  ((1, 0, 0, x), (0, 1, 0, y), (0, 0, 1, z), (0, 0, 0, 1))
+}
+
+/// Returns a $4 times 4$ x-shear matrix
+/// - factor (float): The shear in the $x$ direction.
+/// -> matrix
+#let transform-shear-x(factor) = {
+  ((1, factor, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1))
+}
+
+
+/// Returns a $4 times 4$ z-shear matrix
+/// - factor (float): The shear in the $z$ direction.
+/// -> matrix
+#let transform-shear-z(factor) = {
+  ((1, 0, factor, 0), (0, 1, -factor, 0), (0, 0, 1, 0), (0, 0, 0, 1))
+}
+
+/// Returns a $4 times 4$ scale matrix
+/// - f (float,array,dictionary): The scale factor(s) of the matrix. An {{array}} of at least 3 {{float}}s sets the x, y and z scale factors. A {{dictionary}} sets the scale in the direction of the corresponding x, y and z keys. A single {{float}} sets the scale for all directions.
+/// -> matrix
+#let transform-scale(f) = {
+  let (x, y, z) = if type(f) == array {
+    vector.as-vec(f, init: (1, 1, 1))
+  } else if type(f) == dictionary {
+    (f.at("x", default: 1), f.at("y", default: 1), f.at("z", default: 1))
+  } else {
+    (f, f, f)
+  }
+  return (
+    (x, 0, 0, 0),
+    (0, y, 0, 0),
+    (0, 0, z, 0),
+    (0, 0, 0, 1),
+  )
+}
+
+/// Returns a $4 times 4$ rotation xyz matrix for a direction and up vector
+/// - dir (vector): idk
+/// - up (vector): idk
+/// -> matrix
+#let transform-rotate-dir(dir, up) = {
+  dir = vector.norm(dir.slice(0, 3))
+  up = vector.norm(up.slice(0, 3))
+
+  let (dx, dy, dz) = dir
+  let (ux, uy, uz) = up
+  let (rx, ry, rz) = vector.norm(vector.cross(dir, up))
+
+  ((rx, dx, ux, 0), (ry, dy, uy, 0), (rz, dz, uz, 0), (0, 0, 0, 1))
+}
+
+// Return 4x4 rotate x matrix
+/// Returns a $4 times 4$ $x$ rotation matrix
+/// - angle (angle): The angle to rotate around the $x$ axis
+/// -> matrix
+#let transform-rotate-x(angle) = {
+  ((1, 0, 0, 0), (0, cos(angle), -sin(angle), 0), (0, sin(angle), cos(angle), 0), (0, 0, 0, 1))
+}
+
+// Return 4x4 rotate y matrix
+/// Returns a $4 times 4$ $y$ rotation matrix
+/// - angle (angle): The angle to rotate around the $y$ axis
+/// -> matrix
+#let transform-rotate-y(angle) = {
+  ((cos(angle), 0, -sin(angle), 0), (0, 1, 0, 0), (sin(angle), 0, cos(angle), 0), (0, 0, 0, 1))
+}
+
+// Return 4x4 rotate z matrix
+/// Returns a $4 times 4$ $z$ rotation matrix
+/// - angle (angle): The angle to rotate around the $z$ axis
+/// -> matrix
+#let transform-rotate-z(angle) = {
+  ((cos(angle), -sin(angle), 0, 0), (sin(angle), cos(angle), 0, 0), (0, 0, 1, 0), (0, 0, 0, 1))
+}
+
+// 3D rotation matrix around an arbitrary axis (ax, ay, az).
+#let _rotate-axis-angle(ax, ay, az, angle) = {
+  let c = cos(angle)
+  let s = sin(angle)
+  (
+    (ax * ax * (1 - c) + c, ax * ay * (1 - c) - az * s, ax * az * (1 - c) + ay * s, 0),
+    (ay * ax * (1 - c) + az * s, ay * ay * (1 - c) + c, ay * az * (1 - c) - ax * s, 0),
+    (az * ax * (1 - c) - ay * s, az * ay * (1 - c) + ax * s, az * az * (1 - c) + c, 0),
+    (0, 0, 0, 1),
+  )
+}
+
+/// Returns a $4 times 4$ rotation matrix from azimuth/elevation/roll.
+/// Assumes the viewing convention where $z$ points up and $x$ points toward the viewer.
+/// - azimuth (angle): Rotation around z.
+/// - elevation (angle): Tilt above the xy plane.
+/// - roll (angle): Rotation around the current viewing axis.
+/// -> matrix
+#let transform-rotate-aer(azimuth, elevation, roll: 0deg) = {
+  let rotate-z-up = transform-rotate-x(-90deg)
+  let rotate-azimuth = transform-rotate-z(-90deg - azimuth)
+  let (ax, ay, az) = (-sin(azimuth), cos(azimuth), 0)
+  let rotate-elevation = _rotate-axis-angle(ax, ay, az, elevation)
+  let base = mul-mat(rotate-z-up, rotate-azimuth, rotate-elevation)
+
+  if roll == 0deg {
+    return base
+  }
+
+  // Roll around the current viewing axis after azimuth/elevation.
+  let (vx, vy, vz) = vector.norm(mul4x4-vec3(base, (1, 0, 0), w: 0))
+  let rotate-roll = _rotate-axis-angle(vx, vy, vz, roll)
+  mul-mat(rotate-roll, base)
+}
+
+// Return 4x4 rotate xz matrix
+/// Returns a $4 times 4$ $x z$ rotation matrix
+/// - x (angle): The angle to rotate around the $x$ axis
+/// - z (angle): The angle to rotate around the $z$ axis
+/// -> matrix
+#let transform-rotate-xz(x, z) = {
+  (
+    (cos(z), sin(z), 0, 0),
+    (-cos(x) * sin(z), cos(x) * cos(z), -sin(x), 0),
+    (sin(x) * sin(z), -sin(x) * cos(z), cos(x), 1),
+    (0, 0, 0, 1),
+  )
+}
+
+/// Returns a $4 times 4$ rotation matrix - yaw-pitch-roll
+///
+/// - a (angle): Yaw
+/// - b (angle): Pitch
+/// - c (angle): Roll
+/// -> matrix
+#let transform-rotate-ypr(a, b, c) = {
+  (
+    (cos(a) * cos(b), cos(a) * sin(b) * sin(c) - sin(a) * cos(c), cos(a) * sin(b) * cos(c) + sin(a) * sin(c), 0),
+    (sin(a) * cos(b), sin(a) * sin(b) * sin(c) + cos(a) * cos(c), sin(a) * sin(b) * cos(c) - cos(a) * sin(c), 0),
+    (-sin(b), cos(b) * sin(c), cos(b) * cos(c), 1),
+    (0, 0, 0, 1),
+  )
+}
+
+/// Returns a $4 times 4$ rotation matrix - euler angles
+///
+/// Calculates the product of the three rotation matrices
+/// $R = R_z(z) R_y(y) R_x(x)$
+///
+/// - x (angle): Rotation about x
+/// - y (angle): Rotation about y
+/// - z (angle): Rotation about z
+/// -> matrix
+#let transform-rotate-xyz(x, y, z) = {
+  (
+    (cos(y) * cos(z), sin(x) * sin(y) * cos(z) - cos(x) * sin(z), cos(x) * sin(y) * cos(z) + sin(x) * sin(z), 0),
+    (cos(y) * sin(z), sin(x) * sin(y) * sin(z) + cos(x) * cos(z), cos(x) * sin(y) * sin(z) - sin(x) * cos(z), 0),
+    (-sin(y), sin(x) * cos(y), cos(x) * cos(y), 0),
+    (0, 0, 0, 1),
+  )
 }
