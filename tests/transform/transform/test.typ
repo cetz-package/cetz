@@ -19,3 +19,10 @@
   transform(matrix.transform-scale((1, 0.5, 1)))
   arrow
 })
+
+#test-case({
+  import draw: *
+
+  transform(matrix.transform-rotate-aer(10deg, 20deg, roll: 30deg))
+  arrow
+})
