@@ -427,7 +427,7 @@
   (
     (cos(z), sin(z), 0, 0),
     (-cos(x) * sin(z), cos(x) * cos(z), -sin(x), 0),
-    (sin(x) * sin(z), -sin(x) * cos(z), cos(x), 1),
+    (sin(x) * sin(z), -sin(x) * cos(z), cos(x), 0),
     (0, 0, 0, 1),
   )
 }
@@ -442,7 +442,7 @@
   (
     (cos(a) * cos(b), cos(a) * sin(b) * sin(c) - sin(a) * cos(c), cos(a) * sin(b) * cos(c) + sin(a) * sin(c), 0),
     (sin(a) * cos(b), sin(a) * sin(b) * sin(c) + cos(a) * cos(c), sin(a) * sin(b) * cos(c) - cos(a) * sin(c), 0),
-    (-sin(b), cos(b) * sin(c), cos(b) * cos(c), 1),
+    (-sin(b), cos(b) * sin(c), cos(b) * cos(c), 0),
     (0, 0, 0, 1),
   )
 }
