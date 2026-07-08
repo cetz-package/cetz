@@ -7,6 +7,9 @@
 #cetz.canvas(length: 3cm, {
   import cetz.draw: *
 
+  // Control the angle
+  let angle = 30deg
+
   // Change the design for all elements after it
   set-style(
     // Design of arrow tips at the end of lines
@@ -48,29 +51,35 @@
     content((), anchor: "east", ct)
   }
 
-  // Draw the green angle
-  cetz.angle.angle((0,0), (1,0), (1, calc.tan(30deg)),
-    label: text(green, [#sym.alpha]))
+  // Position on the unit circle
+  let pos = (calc.cos(angle), calc.sin(angle))
 
-  // Draw the hypothenuse of the triangle
-  line((0,0), (1, calc.tan(30deg)))
+  // Draw the green angle
+  cetz.angle.angle((0,0), (1,0), pos,
+    label: text(green, $alpha$))
+
+  // Draw the hypotenuse of the triangle
+  line(pos, (1, calc.tan(angle)))
+  line(pos, (0, 0))
+
 
   // Change the stroke for all upcoming elements
   set-style(stroke: (thickness: 1.2pt))
 
   // Draw the inner opposite leg of the triangle:
   // "The intersection of a vertical line (|-) through (30deg, 1) and a horizontal line through (0, 0)"
-  line((30deg, 1), ((), "|-", (0,0)), stroke: (paint: red), name: "sin")
+  line((angle, 1), ((), "|-", (0,0)), stroke: (paint: red), name: "sin")
   // Place the text halfway through on the opposite leg
   content(("sin.start", 50%, "sin.end"), text(red)[$ sin alpha $])
-  
+
   // Draw the adjacent leg of the triangle
   line("sin.end", (0,0), stroke: (paint: blue), name: "cos")
   // Place the text halfway and position it below the line
   content(("cos.start", 50%, "cos.end"), text(blue)[$ cos alpha $], anchor: "north")
 
   // Draw the outer opposite leg of the triangle
-  line((1, 0), (1, calc.tan(30deg)), name: "tan", stroke: (paint: orange))
-  // Draw the tangent equasion at the top and to the right of the line
+  line((1, 0), (1, calc.tan(angle)), name: "tan", stroke: (paint: orange))
+
+  // Draw the tangent equation at the top and to the right of the line
   content("tan.end", $ text(#orange, tan alpha) = text(#red, sin alpha) / text(#blue, cos alpha) $, anchor: "west")
 })
