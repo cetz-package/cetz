@@ -52,7 +52,7 @@
   }
 
   // Position on the unit circle
-  let pos = (calc.cos(angle), calc.sin(angle))
+  let pos = (angle, 1)
 
   // Draw the green angle
   cetz.angle.angle((0,0), (1,0), pos,
