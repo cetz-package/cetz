@@ -78,7 +78,7 @@
   content(("cos.start", 50%, "cos.end"), text(blue)[$ cos alpha $], anchor: "north")
 
   // Draw the outer opposite leg of the triangle
-  line((1, 0), (1, calc.tan(angle)), name: "tan", stroke: (paint: orange))
+  line((1, 0), (1, calc.tan(angle)), name: "tan", stroke: orange)
 
   // Draw the tangent equation at the top and to the right of the line
   content("tan.end", $ text(#orange, tan alpha) = text(#red, sin alpha) / text(#blue, cos alpha) $, anchor: "west")
