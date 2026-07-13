@@ -1,11 +1,14 @@
 #import "@preview/cetz:0.5.3"
 #set page(width: auto, height: auto, margin: .5cm)
 
-#show math.equation: block.with(fill: white, inset: 1pt)
+#show math.equation: block.with(fill: white.transparentize(30%), inset: 1pt, radius: 2pt)
 
 // Create a new canvas to draw on
 #cetz.canvas(length: 3cm, {
   import cetz.draw: *
+
+  // Control the angle
+  let angle = 212deg
 
   // Change the design for all elements after it
   set-style(
@@ -18,14 +21,15 @@
       radius: 0.3,
       label-radius: .22,
       fill: green.lighten(80%),
-      stroke: (paint: green.darken(50%))
+      stroke: green.darken(50%)
     ),
     // Design of all text elements with an anchor
     content: (padding: 1pt)
   )
 
-  // Draws the grid behind the circle
-  grid((-1.5, -1.5), (1.4, 1.4), step: 0.5, stroke: gray + 0.2pt)
+  // Draw the grids behind the circle
+  grid((-1.5, -1.5), (1.5, 1.5), step: 0.25, stroke: gray + 0.1pt)
+  grid((-1.5, -1.5), (1.5, 1.5), step: 0.5,  stroke: gray + 0.2pt)
 
   // Draw the unit circle
   circle((0,0), radius: 1)
@@ -48,29 +52,35 @@
     content((), anchor: "east", ct)
   }
 
-  // Draw the green angle
-  cetz.angle.angle((0,0), (1,0), (1, calc.tan(30deg)),
-    label: text(green, [#sym.alpha]))
+  // Position on the unit circle (in polar coordinates)
+  let pos = (angle, 1)
 
-  // Draw the hypothenuse of the triangle
-  line((0,0), (1, calc.tan(30deg)))
+  // Draw the green angle
+  cetz.angle.angle((0,0), (1,0), pos,
+    label: text(green, $alpha = angle.deg() degree$))
+
+  // Draw the hypotenuse of the triangle
+  line(pos, (1, calc.tan(angle)))
+  line(pos, (0, 0))
+
 
   // Change the stroke for all upcoming elements
   set-style(stroke: (thickness: 1.2pt))
 
   // Draw the inner opposite leg of the triangle:
   // "The intersection of a vertical line (|-) through (30deg, 1) and a horizontal line through (0, 0)"
-  line((30deg, 1), ((), "|-", (0,0)), stroke: (paint: red), name: "sin")
+  line(pos, ((), "|-", (0,0)), stroke: red, name: "sin")
   // Place the text halfway through on the opposite leg
   content(("sin.start", 50%, "sin.end"), text(red)[$ sin alpha $])
-  
+
   // Draw the adjacent leg of the triangle
-  line("sin.end", (0,0), stroke: (paint: blue), name: "cos")
+  line("sin.end", (0,0), stroke: blue, name: "cos")
   // Place the text halfway and position it below the line
   content(("cos.start", 50%, "cos.end"), text(blue)[$ cos alpha $], anchor: "north")
 
   // Draw the outer opposite leg of the triangle
-  line((1, 0), (1, calc.tan(30deg)), name: "tan", stroke: (paint: orange))
-  // Draw the tangent equasion at the top and to the right of the line
+  line((1, 0), (1, calc.tan(angle)), name: "tan", stroke: orange)
+
+  // Draw the tangent equation at the top and to the right of the line
   content("tan.end", $ text(#orange, tan alpha) = text(#red, sin alpha) / text(#blue, cos alpha) $, anchor: "west")
 })
