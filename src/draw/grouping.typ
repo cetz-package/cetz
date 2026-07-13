@@ -291,17 +291,14 @@
       aabb.padded(bounds, padding)
     }
 
-    // Calculate a bounding box path used for border anchor calculation.
+    // Calculate a bounding box used for border anchor calculation.
     let center = none
     let width = none
     let height = none
-    let path = none
     if bounds != none {
       (bounds.low.at(1), bounds.high.at(1)) = (bounds.high.at(1), bounds.low.at(1))
       center = aabb.mid(bounds)
       (width, height, ..) = aabb.size(bounds)
-
-      path = drawable.line-strip(aabb.corner-points(bounds), close: true)
     }
 
     // Children can be none if the groups array is empty
@@ -312,8 +309,6 @@
         anchors.insert(name, child.anchors)
       }
     }
-
-    let is-degenerate = (width != none and util.float-eq(width, 0)) or (height != none and util.float-eq(height, 0))
 
     let all-anchors = if bounds != none {
       (default: center, center: center)
@@ -337,20 +332,11 @@
       name: name,
       default: if bounds != none or "default" in anchors { "default" },
       offset-anchor: anchor,
+      nested-anchors: true,
       path-anchors: bounds != none,
       border-anchors: bounds != none,
-      radii: (width, height),
-      path: path,
-      nested-anchors: true,
-      border-anchor-callback: if is-degenerate {
-        (center, angle) => {
-          let x = if util.float-eq(width, 0) { 0 } else { calc.cos(angle) }
-          let y = if util.float-eq(height, 0) { 0 } else { calc.sin(angle) }
-          return vector.add(center, (x * width / 2, y * height / 2))
-        }
-      } else {
-        none
-      }
+      border-anchor-callback: anchor_.compute-rect-border.with(width: width, height: height),
+      path-anchor-callback: anchor_.compute-rect-path.with(width: width, height: height, unit-length: ctx.length),
     )
 
     return (
