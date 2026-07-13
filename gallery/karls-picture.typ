@@ -1,7 +1,7 @@
 #import "@preview/cetz:0.5.3"
 #set page(width: auto, height: auto, margin: .5cm)
 
-#show math.equation: block.with(fill: white, inset: 1pt, radius: 2pt)
+#show math.equation: block.with(fill: white.transparentize(30%), inset: 1pt, radius: 2pt)
 
 // Create a new canvas to draw on
 #cetz.canvas(length: 3cm, {
