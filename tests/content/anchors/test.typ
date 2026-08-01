@@ -15,6 +15,26 @@
 
 #test-case({
   import draw: *
+  content((0, 0), text(size: 40pt)[$limits(sum)_(i in I)F(U_i)$], padding: (rest: 1, top: 2), frame: "rect", name: "content")
+  line("content.base-west", "content.base-east", stroke: green)
+  for-each-anchor("content", name => {
+    content((), text(size: 6pt)[#name], frame: "rect",
+      fill: white, stroke: none)
+  })
+})
+
+#test-case({
+  import draw: *
+  content((0, 0), text(size: 40pt)[$ limits(sum)_(i in I)F(U_i) $], padding: (rest: 1, top: 2), frame: "rect", name: "content")
+  line("content.base-west", "content.base-east", stroke: green)
+  for-each-anchor("content", name => {
+    content((), text(size: 6pt)[#name], frame: "rect",
+      fill: white, stroke: none)
+  })
+})
+
+#test-case({
+  import draw: *
   content((0, 0), text(size: 40pt)[River \ Kelpie], frame: "rect", name: "content")
   line("content.base-west", "content.base-east", stroke: green)
   for-each-anchor("content", name => {
