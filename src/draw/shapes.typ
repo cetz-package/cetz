@@ -1044,6 +1044,87 @@
   },)
 }
 
+// Checks whether `body` is an equation, either directly or wrapped in one or
+// more text elements.
+#let _is-equation-content(body) = {
+  if type(body) != type([]) {
+    return false
+  }
+
+  if body.func() == math.equation {
+    return true
+  }
+
+  // A text style wraps its content in a `styled` element. Unwrap these
+  // elements so equations such as `text(size: 20pt, $x$)` are detected too.
+  let fields = body.fields()
+  if "child" in fields and "styles" in fields {
+    return _is-equation-content(fields.child)
+  }
+
+  false
+}
+
+#let _measure-equation(ctx, equation) = {
+  // Use the actual glyph bounds as the text's top and bottom edges.
+  let bounded = text(
+    top-edge: "bounds",
+    bottom-edge: "bounds",
+    equation,
+  )
+
+  let size = std.measure(bounded)
+
+  // size.height is the total height of the equation:
+  //
+  //   total-height = ascent + descent
+  //
+  let total-height = size.height
+
+  // The probe must extend farther below the baseline than the equation. Since:
+  //
+  //   descent <= total-height
+  //
+  // choosing total-height + 1pt is sufficient.
+  //
+  let probe-descent = total-height + 1pt
+
+  // A zero-width probe box whose baseline is at its top edge.
+  // The whole probe lies below its baseline and
+  // its descent is exactly `probe-descent`.
+  //
+  let probe = box(
+    width: 0pt,
+    height: probe-descent,
+    baseline: 100%,
+  )
+
+  // `bounded` and `probe` are placed on the same baseline.
+  // Because the probe extends farther down than the equation,
+  // the combined box has:
+  //
+  //   combined-height = ascent + probe-descent
+  //
+  let combined = box[#box(bounded)#probe]
+
+  let combined-height = std.measure(combined).height
+
+  // Recover the equation's ascent and descent:
+  //
+  //   ascent = combined-height - probe-descent
+  //   descent = total-height - ascent
+  //
+  let ascent = combined-height - probe-descent
+  let descent = total-height - ascent
+
+  (
+    body: bounded,
+    width: calc.abs(size.width / ctx.length),
+    ascent: calc.abs(ascent / ctx.length),
+    descent: calc.abs(descent / ctx.length),
+  )
+}
+
 /// Positions Typst content in the canvas. Note that the content itself is not transformed only its position is.
 ///
 /// ```example
@@ -1126,6 +1207,7 @@
     } else {
       body
     }
+    let is-equation = _is-equation-content(body)
 
     let (ctx, a) = coordinate.resolve(ctx, a)
     let b = b
@@ -1150,16 +1232,35 @@
       body = std.scale(x: sx * 100%, y: sy * 100%, body, reflow: true)
     }
 
-    // Compute the baseline offset
-    let (_, line-baseline-height) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "baseline",
-      [ #show linebreak: [ ]; #body]))
-    let (_, line-bounds-height) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "bounds",
-      [ #show linebreak: [ ]; #body]))
-    let baseline-offset = line-bounds-height - line-baseline-height
+    let equation-metrics = if is-equation {
+      _measure-equation(ctx, body)
+    }
+
+    // Compute the baseline offset. Equations need a probe because Typst's text
+    // edge measurements do not expose their baseline correctly.
+    let baseline-offset = if equation-metrics != none {
+      equation-metrics.descent
+    } else {
+      let (_, line-baseline-height) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "baseline",
+        [ #show linebreak: [ ]; #body]))
+      let (_, line-bounds-height) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "bounds",
+        [ #show linebreak: [ ]; #body]))
+      line-bounds-height - line-baseline-height
+    }
+
+    let layout-body = if equation-metrics != none {
+      equation-metrics.body
+    } else {
+      text(top-edge: "cap-height", bottom-edge: "baseline", body)
+    }
 
     // Size of the bounding box
     let (content-width, content-height, ..) = if auto-size {
-      util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "baseline", body))
+      if equation-metrics != none {
+        (equation-metrics.width, equation-metrics.ascent)
+      } else {
+        util.measure(ctx, layout-body)
+      }
     } else {
       vector.sub(b, a)
     }
@@ -1315,7 +1416,7 @@
               bottom: padding.at("bottom", default: 0) * ctx.length,
               right: padding.at("right", default: 0) * ctx.length,
             ),
-            text(top-edge: "cap-height", bottom-edge: "baseline", body)
+            layout-body
           )
         )
       )
