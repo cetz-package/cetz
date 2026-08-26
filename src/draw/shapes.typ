@@ -2173,7 +2173,7 @@
       if cmd in ("z", "Z") {
         assert.eq(args.len(), 0)
         if current != () {
-          paths.push(path-util.make-subpath(origin, current, closed: cmd == "z"))
+          paths.push(path-util.make-subpath(origin, current, closed: true))
         }
 
         current = ()
