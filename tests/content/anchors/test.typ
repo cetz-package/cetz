@@ -35,6 +35,26 @@
 
 #test-case({
   import draw: *
+  // Bottom bounds above the baseline: negative descent.
+  line((-0.5, 0), (1.5, 0), stroke: green)
+  content((0, 0), text(size: 40pt)[$ − $], anchor: "base", frame: "rect")
+  content((1, 0), text(size: 40pt)[$ ⋅ $], anchor: "base", frame: "rect")
+})
+
+#test-case({
+  import draw: *
+  // Top bound below the baseline: negative ascent.
+  line((-0.5, 0), (0.5, 0), stroke: green)
+  content((0, 0), $ #box(
+    width: 10pt,
+    height: 2pt,
+    baseline: (at: top, shift: 3pt),
+    fill: black,
+  ) $, anchor: "base", frame: "rect")
+})
+
+#test-case({
+  import draw: *
   content((0, 0), text(size: 40pt)[River \ Kelpie], frame: "rect", name: "content")
   line("content.base-west", "content.base-east", stroke: green)
   for-each-anchor("content", name => {
