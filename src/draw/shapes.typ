@@ -1075,53 +1075,88 @@
 
   let size = std.measure(bounded)
 
-  // size.height is the total height of the equation:
+  // Let the y-coordinates of the baseline, bounds top, and bounds bottom be: 0, A, and -D, respectively:
   //
-  //   total-height = ascent + descent
+  //   bounds top      ─────┬─────  y = A
+  //                        │
+  //   baseline        ─────┼─────  y = 0
+  //                        │
+  //   bounds bottom   ─────┴─────  y = -D
   //
+  // So A and D are the signed ascent and descent respectively. And we have
+  //
+  //   total-height = A + D =: H
+  //
+  // Either A or D may be negative when the baseline lies outside the bounds.
   let total-height = size.height
 
-  // The probe must extend farther below the baseline than the equation. Since:
+  // Use probes of size P > H on both sides of the baseline:
   //
-  //   descent <= total-height
+  //   up-probe top       ─────┬─────  y = P
+  //                           │ P
+  //   baseline           ─────┼─────  y = 0
+  //                           │ P
+  //   down-probe bottom  ─────┴─────  y = -P
   //
-  // choosing total-height + 1pt is sufficient.
-  //
-  let probe-descent = total-height + 1pt
+  let probe-size = total-height + 1pt
 
-  // A zero-width probe box whose baseline is at its top edge.
-  // The whole probe lies below its baseline and
-  // its descent is exactly `probe-descent`.
-  //
-  let probe = box(
+  let up-probe = box(
     width: 0pt,
-    height: probe-descent,
-    baseline: 100%,
+    height: probe-size,
+    baseline: bottom,
   )
 
-  // `bounded` and `probe` are placed on the same baseline.
-  // Because the probe extends farther down than the equation,
-  // the combined box has:
-  //
-  //   combined-height = ascent + probe-descent
-  //
-  let combined = box[#box(bounded)#probe]
+  let down-probe = box(
+    width: 0pt,
+    height: probe-size,
+    baseline: top,
+  )
 
-  let combined-height = std.measure(combined).height
+  // bounded equation bounds = [-D, A]
+  // down-probe bounds       = [-P, 0]
+  // up-probe bounds         = [ 0, P]
+  // height([a,b] ∪ [c,d]) = max(b,d) - min(a,c)
 
-  // Recover the equation's ascent and descent:
+  // combine bounded equation and up-probe
+  // h↑ = max(A, P) - min(-D, 0) = max(A, P) + max(D, 0)
+  let up-height = std.measure(box[#box(bounded)#up-probe]).height
+
+  // combine bounded equation and down-probe
+  // h↓ = max(A, 0) - min(-D, -P) = max(A, 0) + max(D, P)
+  let down-height = std.measure(box[#box(bounded)#down-probe]).height
+
+  // Recover the signed ascent A.
   //
-  //   ascent = combined-height - probe-descent
-  //   descent = total-height - ascent
+  // If A >= 0, then D <= A + D = H < P, so the downward probe
+  // extends below the equation and:
   //
-  let ascent = combined-height - probe-descent
+  //   down-height = h↓ = max(A, 0) + max(D, P) = A + P
+  //   A = h↓ - P
+  //
+  // If A < 0, then D = H - A > 0 and we have:
+  //
+  //   up-height = h↑ = max(A, P) + max(D, 0) = P + D = P + H - A
+  //   A = P + H - h↑
+  //
+  // Criterion: h↑ - h↓ > H <=> A < 0
+  // Proof:
+  // - If A < 0, h↑ - h↓ = min(P, D) > H.
+  // - If A >= 0, h↑ - h↓ = -min(P, A) or (H - 2A) <= H.
+
+  let ascent = if up-height - down-height > total-height {
+    probe-size + total-height - up-height
+  } else {
+    down-height - probe-size
+  }
   let descent = total-height - ascent
+
+  let unit = calc.abs(ctx.length)
 
   (
     body: bounded,
-    width: calc.abs(size.width / ctx.length),
-    ascent: calc.abs(ascent / ctx.length),
-    descent: calc.abs(descent / ctx.length),
+    width: size.width / unit,
+    ascent: ascent / unit,
+    descent: descent / unit,
   )
 }
 
@@ -1265,7 +1300,6 @@
       vector.sub(b, a)
     }
 
-    let baseline-height = calc.abs(content-height)
     let bounds-width = calc.abs(content-width)
     let bounds-height = calc.abs(content-height + baseline-offset)
     let content-width = calc.abs(content-width)
