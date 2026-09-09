@@ -1,3 +1,6 @@
+# Unreleased
+- Added `decorations.text-along` for placing text along a path (#395).
+
 # 0.5.1
 - Added the `boolean` draw function for path boolean operations.
 - Fixed border-anchor calculation for small rounded rects (#1083)
@@ -379,4 +382,3 @@ CeTZ requires Typst 0.8.0.
 
 ## Plot
 - Added new library `plot` for drawing line charts (of functions), replacing `typst-plot`.
-
