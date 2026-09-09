@@ -1103,6 +1103,9 @@
     angle: 0deg,
     anchor: none,
     name: none,
+    _metrics: none,
+    _resolved-style: none,
+    _resolved-padding: none,
   ) = {
   let (args, style) = (args-style.pos(), args-style.named())
 
@@ -1116,10 +1119,14 @@
   }
 
   return (ctx => {
-    let style = styles.resolve(ctx.style, merge: style, root: "content")
-    let padding = util.map-dict(util.as-padding-dict(style.padding), (_, v) => {
-      util.resolve-number(ctx, v)
-    })
+    let style = if _resolved-style == none {
+      styles.resolve(ctx.style, merge: style, root: "content")
+    } else { _resolved-style }
+    let padding = if _resolved-padding == none {
+      util.map-dict(util.as-padding-dict(style.padding), (_, v) => {
+        util.resolve-number(ctx, v)
+      })
+    } else { _resolved-padding }
 
     let body = if "wrap" in style and type(style.wrap) == function {
       (style.wrap)(body)
@@ -1149,16 +1156,21 @@
       body = std.scale(x: sx * 100%, y: sy * 100%, body, reflow: true)
     }
 
-    // Compute the baseline offset
-    let (_, line-baseline-height) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "baseline",
-      [ #show linebreak: [ ]; #body]))
-    let (_, line-bounds-height) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "bounds",
-      [ #show linebreak: [ ]; #body]))
+    // Reuse metrics from text-along. Measure in normal calls.
+    let (line-baseline-height, line-bounds-height) = if _metrics == none {
+      let (_, baseline) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "baseline",
+        [ #show linebreak: [ ]; #body]))
+      let (_, bounds) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "bounds",
+        [ #show linebreak: [ ]; #body]))
+      (baseline, bounds)
+    } else { (_metrics.baseline, _metrics.bounds) }
     let baseline-offset = line-bounds-height - line-baseline-height
 
     // Size of the bounding box
     let (content-width, content-height, ..) = if auto-size {
-      util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "baseline", body))
+      if _metrics == none {
+        util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "baseline", body))
+      } else { (_metrics.width, _metrics.baseline) }
     } else {
       vector.sub(b, a)
     }
