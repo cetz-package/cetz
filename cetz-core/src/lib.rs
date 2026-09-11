@@ -5,7 +5,7 @@ use serde::Serialize;
 use wasm_minimal_protocol::*;
 
 mod layout;
-mod path_bool;
+mod path;
 pub use layout::{InputTree, OutputTree};
 initiate_protocol!();
 
@@ -233,7 +233,14 @@ pub fn layout_tree_func(input: &[u8]) -> Result<Vec<u8>, String> {
 
 #[wasm_func]
 pub fn path_bool_func(input: &[u8]) -> Result<Vec<u8>, String> {
-    handle_cbor(input, |args: path_bool::PathBoolArgs| {
-        path_bool::path_bool(args).map_err(|e| e.to_string())
+    handle_cbor(input, |args: path::boolean::PathBoolArgs| {
+        path::boolean::path_bool(args).map_err(|e| e.to_string())
+    })
+}
+
+#[wasm_func]
+pub fn clip_path_batch_func(input: &[u8]) -> Result<Vec<u8>, String> {
+    handle_cbor(input, |args: path::clip::ClipPathBatchArgs| {
+        path::clip::clip_path_batch(args).map_err(|e| e.to_string())
     })
 }

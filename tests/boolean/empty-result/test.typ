@@ -14,8 +14,10 @@
     stroke: 0.2pt + gray,
   )
 
-  let A = circle((0, 0), radius: 2)
-  let C = circle((1, 0), radius: 1.5)
+  // Keep the operands on a nonzero z-plane. Once Y becomes empty it has no
+  // z-plane; treating that as z=0 would make the operations below panic.
+  let A = circle((0, 0, 2), radius: 2)
+  let C = circle((1, 0, 2), radius: 1.5)
 
   // Y is the empty set: a shape minus itself.
   let Y = boolean({ C }, { C }, op: "difference", stroke: black)
