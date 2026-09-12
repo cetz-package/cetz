@@ -9,33 +9,25 @@
 #import "process.typ"
 #import "coordinate.typ"
 
-/// Sets up a canvas for drawing on.
+/// Returns an empty context object usable for calling cetz internal functions
+/// outsides a canvas.
 ///
-/// - length (length): Used to specify what 1 coordinate unit is. Note that ratios are no longer supported! You can wrap the canvas into a `layout(ly => canvas(length: ly.width * <ratio>, ...))`.
-/// - baseline (none,number,coordinate): Specifies the coordinate to use as the baseline. Setting this the canvas behaves like a `box` element instead of a `block`.
-/// - body (none, array, element): A code block in which functions from the `draw` module have been called.
-/// - background (none, color): A color to be used for the background of the canvas.
-/// - stroke (none, stroke): Stroke style to apply to the canvas top-level element (box or block)
-/// - padding (none, number, array, dictionary) = none: How much padding to add to the canvas. `none` applies no padding. A number applies padding to all sides equally. A dictionary applies padding following Typst's `pad` function: https://typst.app/docs/reference/layout/pad/. An array follows CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`.
+/// - length (length): Used to specify what 1 coordinate unit is.
 /// - x (number, vector) = 1.0: Sets up the x vector of the coordinate system to `(x, 0, 0)` or to the given vector.
 /// - y (number, vector) = 1.0: Sets up the y vector of the coordinate system to `(0, y, 0)` or to the given vector.
 /// - z (number, vector) = 1.0: Sets up the z vector of the coordinate system to `(0, 0, z)` or to the given vector.
-/// - debug (bool): Shows the bounding boxes of each element when `true`.
-/// -> content
-#let canvas(length: 1cm, x: 1.0, y: 1.0, z: 1.0, baseline: none, debug: false, background: none, stroke: none, padding: none, body) = context {
-  if body == none {
-    return []
-  }
-  if type(body) != array {
-    panic("Incorrect type for body: " + repr(type(body)))
-  }
+/// -> context
+#let make-ctx(length: 1cm, x: 1.0, y: 1.0, z: 1.0) = {
   if type(length) != std.length {
     panic("Expected `length` to be of type length, got " + repr(length))
   }
 
-  let length = length.to-absolute()
-  assert(length / 1cm != 0,
-    message: "Canvas length must be != 0!")
+  let length = if length.em != 0 {
+    length.to-absolute()
+  } else {
+    length
+  }
+  assert(length / 1cm != 0, message: "Canvas length must be != 0!")
 
   // Prepare the coordinate system
   let resolve-number(x) = {
@@ -49,11 +41,11 @@
   let y = (if type(y) != array { (0.0, y, 0.0) } else { y }).map(resolve-number)
   let z = (if type(z) != array { (0.0, 0.0, z) } else { z }).map(resolve-number)
 
-  let ctx = (
+  return (
     version: version.version,
     length: length,
-    debug: debug,
-    background: background,
+    debug: false,
+    background: none,
     // Previous element position & bbox
     prev: (pt: (0.0, 0.0, 0.0)),
     style: styles.default,
@@ -78,6 +70,32 @@
     // CeTZ itself does not use this dictionary for data.
     shared-state: (:),
   )
+}
+
+/// Sets up a canvas for drawing on.
+///
+/// - length (length): Used to specify what 1 coordinate unit is. Note that ratios are no longer supported! You can wrap the canvas into a `layout(ly => canvas(length: ly.width * <ratio>, ...))`.
+/// - baseline (none,number,coordinate): Specifies the coordinate to use as the baseline. Setting this the canvas behaves like a `box` element instead of a `block`.
+/// - body (none, array, element): A code block in which functions from the `draw` module have been called.
+/// - background (none, color): A color to be used for the background of the canvas.
+/// - stroke (none, stroke): Stroke style to apply to the canvas top-level element (box or block)
+/// - padding (none, number, array, dictionary) = none: How much padding to add to the canvas. `none` applies no padding. A number applies padding to all sides equally. A dictionary applies padding following Typst's `pad` function: https://typst.app/docs/reference/layout/pad/. An array follows CSS like padding: `(y, x)`, `(top, x, bottom)` or `(top, right, bottom, left)`.
+/// - x (number, vector) = 1.0: Sets up the x vector of the coordinate system to `(x, 0, 0)` or to the given vector.
+/// - y (number, vector) = 1.0: Sets up the y vector of the coordinate system to `(0, y, 0)` or to the given vector.
+/// - z (number, vector) = 1.0: Sets up the z vector of the coordinate system to `(0, 0, z)` or to the given vector.
+/// - debug (bool): Shows the bounding boxes of each element when `true`.
+/// -> content
+#let canvas(length: 1cm, x: 1.0, y: 1.0, z: 1.0, baseline: none, debug: false, background: none, stroke: none, padding: none, body) = context {
+  if body == none {
+    return []
+  }
+  if type(body) != array {
+    panic("Incorrect type for body: " + repr(type(body)))
+  }
+
+  let ctx = make-ctx(length: length, x: x, y: y, z: z)
+  ctx.debug = debug
+  ctx.background = background
 
   let (ctx, bounds, drawables) = process.many(ctx, body)
   if bounds == none {

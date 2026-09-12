@@ -193,11 +193,14 @@
       drawables = _sort-by-distance(drawables)
     }
 
-    ctx.transform = transform
     if perspective-mode {
-      drawable.apply-transform(projection-matrix, drawables)
+      drawables = drawable.apply-transform(projection-matrix, drawables)
       ctx._perspective-projection = previous-perspective-mode
     }
+
+    // Restore the old transformation
+    ctx.transform = transform
+
     if not reset-transform {
       drawables = drawable.apply-transform(ctx.transform, drawables)
     }

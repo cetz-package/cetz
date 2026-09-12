@@ -136,11 +136,12 @@
 /// - sort (none,function): A function of the form `(context, array<vector>) -> array<vector>`
 ///   that gets called with the list of intersection points.
 /// - ignore-marks (bool): If true, ignore mark shapes.
+/// - dedup (bool): Do not generate duplicate intersection anchors.
 ///
 ///   CeTZ provides the following sorting functions:
 ///     - sorting.points-by-distace(points, reference: (0, 0, 0))
 ///     - sorting.points-by-angle(points, reference: (0, 0, 0))
-#let intersections(name, ..elements, samples: 10, sort: none, ignore-marks: true) = {
+#let intersections(name, ..elements, samples: 10, sort: none, ignore-marks: true, dedup: true) = {
   samples = calc.clamp(samples, 2, 2500)
 
   assert(type(name) == str and name != "",
@@ -197,6 +198,11 @@
 
     if sort != none {
       pts = (sort)(ctx, pts)
+    }
+
+    if dedup {
+      let _round = calc.round.with(digits: matrix.precision)
+      pts = pts.dedup(key: pt => pt.map(_round))
     }
 
     let anchors = (:)

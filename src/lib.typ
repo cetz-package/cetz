@@ -1,6 +1,8 @@
+// expose name
+#let name = "cetz"
 #import "version.typ": version
 
-#import "canvas.typ": canvas
+#import "canvas.typ": canvas, make-ctx
 #import "draw.typ"
 
 // Expose utilities
@@ -22,6 +24,3 @@
 #import "lib/angle.typ"
 #import "lib/tree.typ"
 #import "lib/decorations.typ"
-
-// expose name
-#let name = "cetz"

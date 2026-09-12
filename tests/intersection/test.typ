@@ -2,12 +2,12 @@
 #import "/src/lib.typ": *
 #import "/tests/helper.typ": *
 
-#let show-intersections(body) = test-case({
+#let show-intersections(body, ..args) = test-case({
   import draw: *
   group({
     intersections("i", {
       body
-    })
+    }, ..args)
     for-each-anchor("i", (name) => {
       content((), [#name], frame: "circle", fill: white.transparentize(50%))
     })
@@ -149,6 +149,15 @@
   hobby(..points)
   line((1.5, 0), (1.5, 6))
 })
+
+// Filter duplicate intersection points
+#show-intersections({
+  import draw: *
+
+  line((190deg, 1), (10deg, 3))
+  circle((0.9, 0), radius: 0.9)
+}, dedup: false)
+
 
 #{
   import "/src/intersection.typ": line-line
