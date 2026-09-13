@@ -633,14 +633,20 @@
       stroke: style.stroke,
     )
 
+    let pt-anchors = for (i, pt) in pts.enumerate() {
+      (("pt-" + str(i)): pt)
+    }
+
     // Get bounds
     let (transform, anchors) = anchor_.setup(
       name => {
         if name == "centroid" {
           return polygon_.simple-centroid(pts)
+        } else if name.starts-with("pt-") {
+          return pt-anchors.at(name)
         }
       },
-      if close != none { ("centroid",) } else { () },
+      if close != none { ("centroid", ..pt-anchors.keys()) } else { pt-anchors.keys() },
       default: if close != none { "centroid" },
       name: name,
       transform: ctx.transform,
@@ -1846,12 +1852,12 @@
       stroke: style.stroke)
 
     let (transform, anchors) = {
-      let a = for (i, pt) in pts.enumerate() {
+      let named-anchors = for (i, pt) in pts.enumerate() {
         (("pt-" + str(i)): pt)
       }
       anchor_.setup(
-        anchor => a.at(anchor), // Would like to return just `a.at` but Typst is mean :<
-        a.keys(),
+        anchor => named-anchors.at(anchor),
+        named-anchors.keys(),
         name: name,
         default: "start",
         transform: ctx.transform,
