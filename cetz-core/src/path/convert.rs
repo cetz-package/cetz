@@ -1,17 +1,25 @@
-//! Conversion between the wire format and `kurbo::BezPath` (the path type
-//! that `linesweeper` operates on).
+//! Conversion between the wire format and `kurbo::BezPath`.
 
 use kurbo::{BezPath, PathEl, Point};
 
-use crate::path_bool::error::PathBoolErr;
-use crate::path_bool::wire::{WirePath, WireSegment, WireSubpath};
+use crate::path::error::PathGeometryError;
+use crate::path::wire::{WirePath, WireSegment, WireSubpath};
 
 /// Convert a [`WirePath`] to a [`kurbo::BezPath`]. Open subpaths are rejected.
-pub fn wire_to_bez(path: &WirePath) -> Result<BezPath, PathBoolErr> {
+pub(crate) fn wire_to_closed_bez(path: &WirePath) -> Result<BezPath, PathGeometryError> {
+    wire_to_bez(path, true)
+}
+
+/// Convert a [`WirePath`] to a [`kurbo::BezPath`]. Open and closed subpaths are allowed.
+pub(crate) fn wire_to_bez_any(path: &WirePath) -> Result<BezPath, PathGeometryError> {
+    wire_to_bez(path, false)
+}
+
+fn wire_to_bez(path: &WirePath, require_closed: bool) -> Result<BezPath, PathGeometryError> {
     let mut bez = BezPath::new();
     for subpath in &path.subpaths {
-        if !subpath.closed {
-            return Err(PathBoolErr::OpenSubpath);
+        if require_closed && !subpath.closed {
+            return Err(PathGeometryError::OpenSubpath);
         }
         bez.move_to(Point::new(subpath.origin[0], subpath.origin[1]));
         for seg in &subpath.segments {
@@ -28,22 +36,35 @@ pub fn wire_to_bez(path: &WirePath) -> Result<BezPath, PathBoolErr> {
                 }
             }
         }
-        bez.close_path();
+        if subpath.closed {
+            bez.close_path();
+        }
     }
     Ok(bez)
 }
 
+pub(crate) fn closed_subpaths(path: &WirePath) -> WirePath {
+    WirePath {
+        subpaths: path
+            .subpaths
+            .iter()
+            .filter(|subpath| subpath.closed)
+            .cloned()
+            .collect(),
+    }
+}
+
 /// Convert a [`kurbo::BezPath`] back to the wire format. `QuadTo` segments
 /// (which CeTZ does not natively support) are elevated to cubic.
-pub fn bez_to_wire(path: &BezPath) -> Result<WirePath, PathBoolErr> {
+pub(crate) fn bez_to_wire(path: &BezPath) -> Result<WirePath, PathGeometryError> {
     let mut subpaths: Vec<WireSubpath> = Vec::new();
     let mut current: Option<WireSubpath> = None;
     let mut current_pt: Option<Point> = None;
 
     fn last_subpath_mut(
         current: &mut Option<WireSubpath>,
-    ) -> Result<&mut WireSubpath, PathBoolErr> {
-        current.as_mut().ok_or(PathBoolErr::MalformedPath)
+    ) -> Result<&mut WireSubpath, PathGeometryError> {
+        current.as_mut().ok_or(PathGeometryError::MalformedPath)
     }
 
     for el in path.iter() {
@@ -65,7 +86,7 @@ pub fn bez_to_wire(path: &BezPath) -> Result<WirePath, PathBoolErr> {
                 current_pt = Some(p);
             }
             PathEl::QuadTo(q, p) => {
-                let p0 = current_pt.ok_or(PathBoolErr::MalformedPath)?;
+                let p0 = current_pt.ok_or(PathGeometryError::MalformedPath)?;
                 let sp = last_subpath_mut(&mut current)?;
                 // Quadratic -> cubic elevation:
                 //   C1 = P0 + 2/3 (Q - P0)
@@ -180,23 +201,21 @@ mod tests {
     #[test]
     fn round_trip_rect() {
         let wire = rect_wire();
-        let bez = wire_to_bez(&wire).unwrap();
+        let bez = wire_to_closed_bez(&wire).unwrap();
         let back = bez_to_wire(&bez).unwrap();
         assert!(paths_equal(&wire, &back), "round-trip mismatch: {back:?}");
     }
 
     #[test]
     fn round_trip_unit_circle_via_kurbo() {
-        // kurbo's Circle::to_path emits cubics
         let circ = kurbo::Circle::new((0.0, 0.0), 1.0);
         let bez = circ.to_path(0.1);
         let wire = bez_to_wire(&bez).unwrap();
-        let bez2 = wire_to_bez(&wire).unwrap();
+        let bez2 = wire_to_closed_bez(&wire).unwrap();
         let wire2 = bez_to_wire(&bez2).unwrap();
         assert!(paths_equal(&wire, &wire2));
-        // kurbo approximates a circle with 4 cubics
         assert!(
-            wire.subpaths[0].segments.len() >= 1,
+            !wire.subpaths[0].segments.is_empty(),
             "expected at least one segment"
         );
         assert!(wire.subpaths[0].closed);
@@ -204,7 +223,6 @@ mod tests {
 
     #[test]
     fn quad_elevation_to_cubic() {
-        // P0=(0,0), Q=(1,2), P=(2,0)  ->  C1=(2/3, 4/3), C2=(4/3, 4/3)
         let mut bez = BezPath::new();
         bez.move_to(Point::new(0.0, 0.0));
         bez.quad_to(Point::new(1.0, 2.0), Point::new(2.0, 0.0));
@@ -227,10 +245,19 @@ mod tests {
     }
 
     #[test]
-    fn open_subpath_is_rejected() {
+    fn open_subpath_is_rejected_for_closed_conversion() {
         let mut wire = rect_wire();
         wire.subpaths[0].closed = false;
-        let err = wire_to_bez(&wire).unwrap_err();
-        assert!(matches!(err, PathBoolErr::OpenSubpath));
+        let err = wire_to_closed_bez(&wire).unwrap_err();
+        assert!(matches!(err, PathGeometryError::OpenSubpath));
+    }
+
+    #[test]
+    fn open_subpath_is_allowed_for_any_conversion() {
+        let mut wire = rect_wire();
+        wire.subpaths[0].closed = false;
+        let bez = wire_to_bez_any(&wire).unwrap();
+        let back = bez_to_wire(&bez).unwrap();
+        assert!(!back.subpaths[0].closed);
     }
 }

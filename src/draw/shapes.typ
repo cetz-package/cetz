@@ -633,14 +633,20 @@
       stroke: style.stroke,
     )
 
+    let pt-anchors = for (i, pt) in pts.enumerate() {
+      (("pt-" + str(i)): pt)
+    }
+
     // Get bounds
     let (transform, anchors) = anchor_.setup(
       name => {
         if name == "centroid" {
           return polygon_.simple-centroid(pts)
+        } else if name.starts-with("pt-") {
+          return pt-anchors.at(name)
         }
       },
-      if close != none { ("centroid",) } else { () },
+      if close != none { ("centroid", ..pt-anchors.keys()) } else { pt-anchors.keys() },
       default: if close != none { "centroid" },
       name: name,
       transform: ctx.transform,
@@ -1044,6 +1050,122 @@
   },)
 }
 
+// Checks whether `body` is an equation, either directly or wrapped in one or
+// more text elements.
+#let _is-equation-content(body) = {
+  if type(body) != type([]) {
+    return false
+  }
+
+  if body.func() == math.equation {
+    return true
+  }
+
+  // A text style wraps its content in a `styled` element. Unwrap these
+  // elements so equations such as `text(size: 20pt, $x$)` are detected too.
+  let fields = body.fields()
+  if "child" in fields and "styles" in fields {
+    return _is-equation-content(fields.child)
+  }
+
+  false
+}
+
+#let _measure-equation(ctx, equation) = {
+  // Use the actual glyph bounds as the text's top and bottom edges.
+  let bounded = text(
+    top-edge: "bounds",
+    bottom-edge: "bounds",
+    equation,
+  )
+
+  let size = std.measure(bounded)
+
+  // Let the y-coordinates of the baseline, bounds top, and bounds bottom be: 0, A, and -D, respectively:
+  //
+  //   bounds top      ─────┬─────  y = A
+  //                        │
+  //   baseline        ─────┼─────  y = 0
+  //                        │
+  //   bounds bottom   ─────┴─────  y = -D
+  //
+  // So A and D are the signed ascent and descent respectively. And we have
+  //
+  //   total-height = A + D =: H
+  //
+  // Either A or D may be negative when the baseline lies outside the bounds.
+  let total-height = size.height
+
+  // Use probes of size P > H on both sides of the baseline:
+  //
+  //   up-probe top       ─────┬─────  y = P
+  //                           │ P
+  //   baseline           ─────┼─────  y = 0
+  //                           │ P
+  //   down-probe bottom  ─────┴─────  y = -P
+  //
+  let probe-size = total-height + 1pt
+
+  let up-probe = box(
+    width: 0pt,
+    height: probe-size,
+    baseline: bottom,
+  )
+
+  let down-probe = box(
+    width: 0pt,
+    height: probe-size,
+    baseline: top,
+  )
+
+  // bounded equation bounds = [-D, A]
+  // down-probe bounds       = [-P, 0]
+  // up-probe bounds         = [ 0, P]
+  // height([a,b] ∪ [c,d]) = max(b,d) - min(a,c)
+
+  // combine bounded equation and up-probe
+  // h↑ = max(A, P) - min(-D, 0) = max(A, P) + max(D, 0)
+  let up-height = std.measure(box[#box(bounded)#up-probe]).height
+
+  // combine bounded equation and down-probe
+  // h↓ = max(A, 0) - min(-D, -P) = max(A, 0) + max(D, P)
+  let down-height = std.measure(box[#box(bounded)#down-probe]).height
+
+  // Recover the signed ascent A.
+  //
+  // If A >= 0, then D <= A + D = H < P, so the downward probe
+  // extends below the equation and:
+  //
+  //   down-height = h↓ = max(A, 0) + max(D, P) = A + P
+  //   A = h↓ - P
+  //
+  // If A < 0, then D = H - A > 0 and we have:
+  //
+  //   up-height = h↑ = max(A, P) + max(D, 0) = P + D = P + H - A
+  //   A = P + H - h↑
+  //
+  // Criterion: h↑ - h↓ > H <=> A < 0
+  // Proof:
+  // - If A < 0, h↑ - h↓ = min(P, D) > H.
+  // - If A >= 0, h↑ - h↓ = -min(P, A) or (H - 2A) <= H.
+
+  let ascent = if up-height - down-height > total-height {
+    probe-size + total-height - up-height
+  } else {
+    down-height - probe-size
+  }
+  let descent = total-height - ascent
+
+  let unit = calc.abs(ctx.length)
+
+  (
+    body: bounded,
+    width: size.width / unit,
+    ascent: ascent / unit,
+    descent: descent / unit,
+  )
+}
+
 /// Positions Typst content in the canvas. Note that the content itself is not transformed only its position is.
 ///
 /// ```example
@@ -1133,6 +1255,7 @@
     } else {
       body
     }
+    let is-equation = _is-equation-content(body)
 
     let (ctx, a) = coordinate.resolve(ctx, a)
     let b = b
@@ -1143,7 +1266,8 @@
 
     let angle = if type(angle) != std.angle {
       let (_, c) = coordinate.resolve(ctx, angle)
-      vector.angle2(a, util.apply-transform(ctx.transform, c))
+      vector.angle2(util.apply-transform(ctx.transform, a),
+                    util.apply-transform(ctx.transform, c))
     } else {
       angle
     }
@@ -1155,27 +1279,40 @@
 
       body = std.scale(x: sx * 100%, y: sy * 100%, body, reflow: true)
     }
+    
+    let equation-metrics = if is-equation {
+      _measure-equation(ctx, body)
+    }
 
-    // Reuse metrics from text-along. Measure in normal calls.
-    let (line-baseline-height, line-bounds-height) = if _metrics == none {
-      let (_, baseline) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "baseline",
+    // Compute the baseline offset. Equations need a probe because Typst's text
+    // edge measurements do not expose their baseline correctly.
+    let baseline-offset = if equation-metrics != none {
+      equation-metrics.descent
+    } else {
+      let (_, line-baseline-height) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "baseline",
         [ #show linebreak: [ ]; #body]))
-      let (_, bounds) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "bounds",
+      let (_, line-bounds-height) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "bounds",
         [ #show linebreak: [ ]; #body]))
-      (baseline, bounds)
-    } else { (_metrics.baseline, _metrics.bounds) }
-    let baseline-offset = line-bounds-height - line-baseline-height
+      line-bounds-height - line-baseline-height
+    }
+
+    let layout-body = if equation-metrics != none {
+      equation-metrics.body
+    } else {
+      text(top-edge: "cap-height", bottom-edge: "baseline", body)
+    }
 
     // Size of the bounding box
     let (content-width, content-height, ..) = if auto-size {
-      if _metrics == none {
-        util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "baseline", body))
-      } else { (_metrics.width, _metrics.baseline) }
+      if equation-metrics != none {
+        (equation-metrics.width, equation-metrics.ascent)
+      } else {
+        util.measure(ctx, layout-body)
+      }
     } else {
       vector.sub(b, a)
     }
 
-    let baseline-height = calc.abs(content-height)
     let bounds-width = calc.abs(content-width)
     let bounds-height = calc.abs(content-height + baseline-offset)
     let content-width = calc.abs(content-width)
@@ -1326,7 +1463,7 @@
               bottom: padding.at("bottom", default: 0) * ctx.length,
               right: padding.at("right", default: 0) * ctx.length,
             ),
-            text(top-edge: "cap-height", bottom-edge: "baseline", body)
+            layout-body
           )
         )
       )
@@ -1704,7 +1841,7 @@
 #let catmull(..pts-style, close: false, name: none) = {
   let (pts, style)  = (pts-style.pos(), pts-style.named())
 
-  assert(pts.len() >= 2, message: "Catmull-rom curve requires at least two points. Got " + repr(pts.len()) + "instead.")
+  assert(pts.len() >= 2, message: "Catmull-rom curve requires at least two points. Got " + repr(pts.len()) + " instead.")
 
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
@@ -1722,12 +1859,12 @@
       stroke: style.stroke)
 
     let (transform, anchors) = {
-      let a = for (i, pt) in pts.enumerate() {
+      let named-anchors = for (i, pt) in pts.enumerate() {
         (("pt-" + str(i)): pt)
       }
       anchor_.setup(
-        anchor => a.at(anchor), // Would like to return just `a.at` but Typst is mean :<
-        a.keys(),
+        anchor => named-anchors.at(anchor),
+        named-anchors.keys(),
         name: name,
         default: "start",
         transform: ctx.transform,
@@ -1776,7 +1913,7 @@
 #let hobby(..pts-style, ta: auto, tb: auto, close: false, name: none) = {
   let (pts, style)  = (pts-style.pos(), pts-style.named())
 
-  assert(pts.len() >= 2, message: "Hobby curve requires at least two points. Got " + repr(pts.len()) + "instead.")
+  assert(pts.len() >= 2, message: "Hobby curve requires at least two points. Got " + repr(pts.len()) + " instead.")
 
   return (ctx => {
     let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
@@ -2184,7 +2321,7 @@
       if cmd in ("z", "Z") {
         assert.eq(args.len(), 0)
         if current != () {
-          paths.push(path-util.make-subpath(origin, current, closed: cmd == "z"))
+          paths.push(path-util.make-subpath(origin, current, closed: true))
         }
 
         current = ()
