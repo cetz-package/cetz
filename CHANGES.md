@@ -1,3 +1,10 @@
+# 0.5.3
+- Fixed mark `inset:` style getting applied twice (#1099)
+- Fixes `matrix.diag` function typo
+- Added a new `make-ctx` function for creating a new canvas context without a canvas
+- Fixed a bug with hobby and boolean rejecting two component vectors
+- Line elements now generate named anchors for their points (`pt-n`, where n is the zero based point index)
+
 # 0.5.1
 - Added the `boolean` draw function for path boolean operations.
 - Fixed border-anchor calculation for small rounded rects (#1083)
@@ -64,7 +71,7 @@
 - The `merge-path` element now support `mark:`; by default,
   marks of the source elements get removed (#922, #948)
 - The `intersections` element ignores mark shapes by default (see `ignore-marks:`) (#948)
-- Added a new `(project: <coordinate>, onto: (<coordinate>, <coordinate>))` 
+- Added a new `(project: <coordinate>, onto: (<coordinate>, <coordinate>))`
   coordinate for projecting a point onto a line (short form: `(pt, "_|_", a, b)`)
 - Debug shapes (bounding boxes) are ignored by `merge-path` (#575)
 - **BREAKING** The `n-star` element now takes the inner radius as a separate style key `inner-radius` (ratio or number) (#920)
@@ -132,14 +139,14 @@ CeTZ 0.3.1 requires Typst 0.12.0.
 
 - Added a new `padding` parameter to the canvas element.
 - Some elements now support Typst 0.12.0 `fill-rule` style.
-- Fixed an issue with reversed marks and `anchor: "center"`. 
+- Fixed an issue with reversed marks and `anchor: "center"`.
 
 # 0.3.0
 
 CeTZ 0.3.0 requires Typst 0.11.0.
 The license changed from Apache-2.0 to LGPLv3.
 
-CeTZ' plotting and charting functionality has been moved to a separate 
+CeTZ' plotting and charting functionality has been moved to a separate
 package called `cetz-plot`.
 
 ## Canvas
@@ -379,4 +386,3 @@ CeTZ requires Typst 0.8.0.
 
 ## Plot
 - Added new library `plot` for drawing line charts (of functions), replacing `typst-plot`.
-
