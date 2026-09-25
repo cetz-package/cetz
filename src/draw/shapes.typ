@@ -1081,7 +1081,8 @@
 
   let size = std.measure(bounded)
 
-  // Let the y-coordinates of the baseline, bounds top, and bounds bottom be: 0, A, and -D, respectively:
+  // Let the y-coordinates of the baseline, bounds top,
+  // and bounds bottom be: 0, A, and -D, respectively:
   //
   //   bounds top      ─────┬─────  y = A
   //                        │
@@ -1109,13 +1110,13 @@
   let up-probe = box(
     width: 0pt,
     height: probe-size,
-    baseline: bottom,
+    baseline: 0pt,
   )
 
   let down-probe = box(
     width: 0pt,
     height: probe-size,
-    baseline: top,
+    baseline: probe-size,
   )
 
   // bounded equation bounds = [-D, A]
@@ -1155,10 +1156,9 @@
     down-height - probe-size
   }
   let descent = total-height - ascent
-
   let unit = calc.abs(ctx.length)
 
-  (
+  return (
     body: bounded,
     width: size.width / unit,
     ascent: ascent / unit,
