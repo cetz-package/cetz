@@ -164,3 +164,5 @@ To run all tests you can run the `just test` target. You need to have
 - [energy-dia](https://github.com/Typsium/energy-dia) Library for creating professional energy diagrams in chemistry and physics.
 - [conchord](https://github.com/sitandr/conchord) Package for writing lyrics with chords that generates fretboard diagrams.
 - [gribouille](https://github.com/mcanouil/gribouille) Create elegant graphics with the Grammar of Graphics for Typst.
+- [magic-cubes](https://github.com/rodalc24/magic-cubes) Package for drawing Rubik's cubes of arbitrary size.
+- [VisualCeTZ](https://github.com/RomeoV/VisualCeTZ) An adoption of [VisualTikZ](https://ctan.org/pkg/visualtikz) to cetz.
