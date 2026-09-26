@@ -140,6 +140,21 @@
     // Connect inner points of the star
     show-inner: false,
   ),
+  text-along: (
+    start: auto,
+    stop: auto,
+    align: auto,
+    raise: auto,
+    reverse: auto,
+    reverse-text: auto,
+    upright: auto,
+    spacing: auto,
+    tracking: auto,
+    overflow: auto,
+    corners: auto,
+    corner-threshold: auto,
+    kerning: auto,
+  ),
   content: (
     padding: auto,
     // Supported values
