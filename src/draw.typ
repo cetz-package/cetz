@@ -1,7 +1,7 @@
 #import "draw/grouping.typ": intersections, group, scope, anchor, copy-anchors, set-ctx, get-ctx, for-each-anchor, on-layer, hide, floating
 #import "draw/transformations.typ": set-transform, transform, rotate, translate, scale, set-origin, move-to, set-viewport
 #import "draw/styling.typ": set-style, fill, stroke, register-mark
-#import "draw/shapes.typ": circle, circle-through, arc, arc-through, mark, line, grid, content, rect, bezier, bezier-through, catmull, hobby, merge-path, polygon, compound-path, n-star, rect-around, svg-path
+#import "draw/shapes.typ": circle, circle-through, arc, arc-through, mark, line, grid, content, _content, rect, bezier, bezier-through, catmull, hobby, merge-path, polygon, compound-path, n-star, rect-around, svg-path
 #import "draw/boolean.typ": boolean
 #import "draw/clip.typ": clip
 #import "draw/projection.typ": ortho, perspective, on-xy, on-xz, on-zy

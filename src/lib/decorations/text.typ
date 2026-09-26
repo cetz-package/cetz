@@ -159,7 +159,7 @@
     // Tangent from point-at is unit length in the canvas plane.
     let normal = (-dy, dx, 0)
     let position = vector.add(info.point, vector.scale(normal, raise))
-    elements += draw.content(util.revert-transform(ctx.transform, position), clusters.at(i),
+    elements += draw._content(util.revert-transform(ctx.transform, position), clusters.at(i),
       angle: angle, anchor: "base",
       _metrics: (
         width: widths.at(i) - padding.left - padding.right,
