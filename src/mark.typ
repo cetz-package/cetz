@@ -278,14 +278,11 @@
     style.mark = none
 
     let mark = _eval-mark-shape-and-anchors(ctx, mark-fn(style), style)
-    let offset = style.at("offset", default: 0)
-    let inset = style.at("inset", default: 0)
-
     let mark-tip-info = path-util.point-at(
         segments, distance, reverse: is-end)
     let mark-base-info = if mark.length != 0 {
       path-util.point-at(
-          segments, distance + mark.length - inset, reverse: is-end)
+          segments, distance + mark.length, reverse: is-end)
     } else {
       mark-tip-info
     }

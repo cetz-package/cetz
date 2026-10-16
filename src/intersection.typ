@@ -1,5 +1,6 @@
 #import "vector.typ"
 #import "util.typ"
+#import "matrix.typ"
 
 /// Checks for a line-line intersection between the given points and returns
 /// its position, otherwise `none`.
@@ -60,7 +61,7 @@
 }
 
 /// Finds the intersections of a line and cubic bezier.
-/// 
+///
 /// - s   (vector): Bezier start point
 /// - e   (vector): Bezier end point
 /// - c1  (vector): Bezier control point 1
@@ -107,7 +108,8 @@
     }
   }
 
-  return pts
+  let _round = calc.round.with(digits: matrix.precision)
+  return pts.dedup(key: pt => pt.map(_round))
 }
 
 /// Finds the intersections between two path {{drawable}}s in 2D.

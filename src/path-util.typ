@@ -93,19 +93,19 @@
 /// `true` iff every other vertex is within `tol` of that z-coordinate.
 /// 
 /// - path (path): Input path; must be non-empty
-/// - tol (float): Absolute z tolerance
+/// - eps (float): Absolute z tolerance
 /// -> array Tuple of the form (z, same-z)
-#let same-z-plane(path, tol: 1e-6) = {
+#let same-z-plane(path, eps: 1e-6) = {
   assert(
     path.len() > 0,
     message: "Cannot determine z-plane of an empty path",
   )
-  let z0 = path.first().at(0).at(2)
+  let z0 = path.first().at(0).at(2, default: 0.0)
   for (origin, _, segments) in path {
-    if calc.abs(origin.at(2) - z0) > tol { return (z0, false) }
+    if calc.abs(origin.at(2, default: 0.0) - z0) > eps { return (z0, false) }
     for (kind, ..args) in segments {
       for v in args {
-        if calc.abs(v.at(2) - z0) > tol { return (z0, false) }
+        if calc.abs(v.at(2, default: 0.0) - z0) > eps { return (z0, false) }
       }
     }
   }
