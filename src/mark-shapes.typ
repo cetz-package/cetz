@@ -157,7 +157,7 @@
       ((0,0), (l, w / 2), (l - i, 0), (l, -w / 2))
     }
 
-    fast-line(..pts, stroke: style.stroke, fill: style.fill, close: true)
+    fast-line(..pts, stroke: (..style.stroke, miter-limit: 100), fill: style.fill, close: true)
     create-triangle-tip-and-base-anchor(style, (0, 0), (l - i, 0))
   },
   curved-stealth: (style) => {
