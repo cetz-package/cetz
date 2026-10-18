@@ -11,6 +11,8 @@
   "src/draw/shapes.typ",
   [Boolean Operations],
   "src/draw/boolean.typ",
+  [Clipping],
+  "src/draw/clip.typ",
   [Styling],
   "src/draw/styling.typ",
   [Grouping],
