@@ -403,6 +403,10 @@ fn collect_pair_split_ts(
     let tolerance = eps.abs().max(1e-12);
     let body_cubic = cubic_for_projection(body.segment, axis);
     let boundary_cubic = cubic_for_projection(boundary.segment, axis);
+    if body_cubic.p0.y.max(boundary_cubic.p0.y) > body_cubic.p3.y.min(boundary_cubic.p3.y) {
+        // Skip comparison when the ranges cannot overlap
+        return true;
+    }
     let order = curve::intersect_cubics(body_cubic, boundary_cubic, tolerance, tolerance * 0.5)
         .with_y_slop(tolerance);
 
