@@ -11,6 +11,6 @@ authors = [
 ]
 categories = [ "visualization" ]
 license = "LGPL-3.0-or-later"
-description = "Drawing with Typst made easy, providing an API inspired by TikZ and Processing."
+description = "Providing a drawing API inspired by TikZ and Processing."
 keywords = [ "draw", "canvas", "tree" ]
 exclude = [ "/gallery/*", "manual.pdf", "manual.typ" ]
