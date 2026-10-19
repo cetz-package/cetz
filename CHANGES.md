@@ -4,6 +4,7 @@
 - Added a new `make-ctx` function for creating a new canvas context without a canvas
 - Fixed a bug with hobby and boolean rejecting two component vectors
 - Line elements now generate named anchors for their points (`pt-n`, where n is the zero based point index)
+- Added a new `clip` element for clipping paths
 
 # 0.5.1
 - Added the `boolean` draw function for path boolean operations.
