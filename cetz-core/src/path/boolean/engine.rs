@@ -25,8 +25,8 @@ pub(crate) fn boolean_bez_paths(
     fill_rule_b: FillRule,
     eps: f64,
 ) -> Result<WirePath, PathGeometryError> {
-    // catch_unwind so a panic inside linesweeper turns into a recoverable
-    // error rather than aborting the WASM module.
+    // catch_unwind only works where panics unwind (native tests); the wasm
+    // build uses `panic = "abort"`, so a linesweeper panic traps the plugin.
     let result = std::panic::catch_unwind(AssertUnwindSafe(|| {
         // We drive `Topology` directly instead of `linesweeper::binary_op` because
         // the latter accepts only a single global `FillRule`; we need one per operand.

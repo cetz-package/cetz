@@ -6,7 +6,7 @@ use kurbo::{
     BezPath, CubicBez, ParamCurve, ParamCurveArclen, ParamCurveExtrema, ParamCurveNearest, PathSeg,
     Point, Shape,
 };
-use linesweeper::curve::{self, Order};
+use linesweeper::curve::{self, CurveOrder, Order};
 use linesweeper::sweep;
 use linesweeper::{FillRule, SegIdx, Segments};
 
@@ -289,6 +289,8 @@ fn axis_span(segment: PathSeg, axis: ProjectionAxis) -> f64 {
     (axis_value(segment.end(), axis) - axis_value(segment.start(), axis)).abs()
 }
 
+/// Picks an axis along which both segments span more than `tol`, so that
+/// neither is horizontal after [`cubic_for_projection`].
 fn common_projection_axis(a: PathSeg, b: PathSeg, tol: f64) -> Option<ProjectionAxis> {
     if axis_span(a, ProjectionAxis::Y) > tol && axis_span(b, ProjectionAxis::Y) > tol {
         Some(ProjectionAxis::Y)
@@ -299,6 +301,10 @@ fn common_projection_axis(a: PathSeg, b: PathSeg, tol: f64) -> Option<Projection
     }
 }
 
+/// Maps `axis` to y and orients the result so that `p0.y <= p3.y`.
+///
+/// `segment` must be monotone along `axis` (true for the `extrema_ranges`
+/// pieces used here); the result is then monotone in y.
 fn cubic_for_projection(segment: PathSeg, axis: ProjectionAxis) -> CubicBez {
     let mut cubic = segment.to_cubic();
     if matches!(axis, ProjectionAxis::X) {
@@ -389,6 +395,25 @@ fn sweep_guard_path(bounds: CurveBounds, point_tol: f64) -> Result<BezPath, Stri
     Ok(guard)
 }
 
+/// Horizontal order of two cubics over their common y range, or `None` if
+/// their y ranges are disjoint, in which case they cannot intersect.
+///
+/// `curve::intersect_cubics` expects both cubics to be monotone and
+/// non-horizontal in y with `p0.y < p3.y`, and their y ranges to overlap.
+fn monotone_cubic_order(c0: CubicBez, c1: CubicBez, tolerance: f64) -> Option<CurveOrder> {
+    if c0.p0.y.max(c1.p0.y) > c0.p3.y.min(c1.p3.y) {
+        return None;
+    }
+    Some(curve::intersect_cubics(c0, c1, tolerance, tolerance * 0.5).with_y_slop(tolerance))
+}
+
+/// Pushes the parameters on `body.source_segment` where `body` comes within
+/// `eps` of `boundary` into `ts`.
+///
+/// Returns `true` when the pair is fully handled, including when it
+/// provably does not intersect, and `false` when the pieces have no common
+/// projection axis and the caller must fall back to the sweep. Both pieces
+/// must be monotone in x and y.
 fn collect_pair_split_ts(
     body: &PendingSweepPiece,
     boundary: BoundaryPiece,
@@ -403,8 +428,9 @@ fn collect_pair_split_ts(
     let tolerance = eps.abs().max(1e-12);
     let body_cubic = cubic_for_projection(body.segment, axis);
     let boundary_cubic = cubic_for_projection(boundary.segment, axis);
-    let order = curve::intersect_cubics(body_cubic, boundary_cubic, tolerance, tolerance * 0.5)
-        .with_y_slop(tolerance);
+    let Some(order) = monotone_cubic_order(body_cubic, boundary_cubic, tolerance) else {
+        return true;
+    };
 
     for (start, end, relation) in order.iter() {
         if relation != Order::Ish {
@@ -498,6 +524,8 @@ fn collect_split_ts(
         return Ok(split_ts);
     }
 
+    // catch_unwind only works where panics unwind (native tests); the wasm
+    // build uses `panic = "abort"`, so a panic in here traps the plugin.
     let result = std::panic::catch_unwind(AssertUnwindSafe(|| {
         let mut pending = Vec::new();
         for (subpath_idx, (subpath, candidates)) in body.iter().zip(touch_candidates).enumerate() {
@@ -1100,7 +1128,7 @@ pub(crate) fn clip_line_path(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use kurbo::CubicBez;
+    use kurbo::{CubicBez, Line};
 
     fn rect_wire(min: (f64, f64), max: (f64, f64)) -> WirePath {
         WirePath {
@@ -1512,6 +1540,143 @@ mod tests {
         )
         .unwrap();
         assert_eq!(out, body);
+    }
+
+    /// Clip region of issue #1145: a corner at (5, -2.3) where a line meets
+    /// a cubic, as built by `merge-path(close: true, { line(..); bezier(..); line(..) })`.
+    fn line_cubic_corner_clip() -> WirePath {
+        WirePath {
+            subpaths: vec![WireSubpath {
+                origin: [-4.5, -1.2],
+                closed: true,
+                segments: vec![
+                    WireSegment::Line { to: [-2.8, 3.5] },
+                    WireSegment::Line { to: [4.5, 3.0] },
+                    WireSegment::Line { to: [5.0, -2.3] },
+                    WireSegment::Cubic {
+                        c1: [3.0, -2.8],
+                        c2: [1.2, -3.5],
+                        to: [0.0, -5.2],
+                    },
+                    WireSegment::Line { to: [-4.5, -1.2] },
+                ],
+            }],
+        }
+    }
+
+    /// The four-cubic circle produced by CeTZ's `circle`.
+    fn cetz_circle(center: (f64, f64), r: f64) -> WirePath {
+        let (x, y) = center;
+        let m = 0.551784 * r;
+        WirePath {
+            subpaths: vec![WireSubpath {
+                origin: [x, y + r],
+                closed: true,
+                segments: vec![
+                    WireSegment::Cubic {
+                        c1: [x - m, y + r],
+                        c2: [x - r, y + m],
+                        to: [x - r, y],
+                    },
+                    WireSegment::Cubic {
+                        c1: [x - r, y - m],
+                        c2: [x - m, y - r],
+                        to: [x, y - r],
+                    },
+                    WireSegment::Cubic {
+                        c1: [x + m, y - r],
+                        c2: [x + r, y - m],
+                        to: [x + r, y],
+                    },
+                    WireSegment::Cubic {
+                        c1: [x + r, y + m],
+                        c2: [x + m, y + r],
+                        to: [x, y + r],
+                    },
+                ],
+            }],
+        }
+    }
+
+    fn path_length(path: &WirePath) -> f64 {
+        crate::path::convert::wire_to_bez_any(path)
+            .unwrap()
+            .segments()
+            .map(|segment| segment.arclen(1e-9))
+            .sum()
+    }
+
+    /// Clips `body` inside and outside `clip` and checks that the two results
+    /// partition it: both calls succeed, their lengths add up to the body's,
+    /// and sampled points away from the boundary lie on the expected side.
+    fn assert_clip_partitions_body(clip: &WirePath, body: &WirePath, eps: f64) {
+        let clip_bez = wire_to_closed_bez(clip).unwrap();
+        let mut total = 0.0;
+        for mode in [ClipMode::Inside, ClipMode::Outside] {
+            let out = clip_line_path(clip, body, FillRule::NonZero, mode, eps)
+                .unwrap_or_else(|err| panic!("{mode:?} clip of {body:?} failed: {err}"));
+            total += path_length(&out);
+            let out_bez = crate::path::convert::wire_to_bez_any(&out).unwrap();
+            for segment in out_bez.segments() {
+                for t in [0.25, 0.5, 0.75] {
+                    let p = segment.eval(t);
+                    let boundary_distance = clip_bez
+                        .segments()
+                        .map(|boundary| boundary.nearest(p, 1e-12).distance_sq)
+                        .fold(f64::INFINITY, f64::min)
+                        .sqrt();
+                    if boundary_distance > 1e-6 {
+                        let inside = winding_inside(clip_bez.winding(p), FillRule::NonZero);
+                        assert_eq!(
+                            inside,
+                            mode == ClipMode::Inside,
+                            "{mode:?} output point {p:?} is on the wrong side for body {body:?}"
+                        );
+                    }
+                }
+            }
+        }
+        let expected = path_length(body);
+        assert!(
+            (total - expected).abs() <= 1e-6 * expected.max(1.0),
+            "inside + outside length {total} != body length {expected} for {body:?}"
+        );
+    }
+
+    #[test]
+    fn circle_centred_on_line_cubic_corner_is_clipped() {
+        // Regression test for #1145: these radii used to panic in
+        // linesweeper (`CurveOrder::with_y_slop` on an empty order).
+        let clip = line_cubic_corner_clip();
+        for r in [0.1, 0.15, 0.2, 0.3, 0.45, 0.6] {
+            let body = cetz_circle((5.0, -2.3), r);
+            assert_clip_partitions_body(&clip, &body, 1e-6);
+            let inside =
+                clip_line_path(&clip, &body, FillRule::NonZero, ClipMode::Inside, 1e-6).unwrap();
+            assert_eq!(inside.subpaths.len(), 1, "r = {r}: {inside:?}");
+            assert!(!inside.subpaths[0].closed);
+        }
+    }
+
+    #[test]
+    fn monotone_cubic_order_rejects_disjoint_ranges() {
+        let vertical = |y0: f64, y1: f64| PathSeg::Line(Line::new((0.0, y0), (0.0, y1))).to_cubic();
+        let tol = 1e-6;
+
+        // A gap smaller than the prefilter tolerance, in either argument order.
+        assert!(monotone_cubic_order(vertical(0.0, 1.0), vertical(1.0 + tol, 2.0), tol).is_none());
+        assert!(monotone_cubic_order(vertical(1.0 + tol, 2.0), vertical(0.0, 1.0), tol).is_none());
+
+        // Ranges touching at one height still get a (single-point) order.
+        let touching = monotone_cubic_order(vertical(0.0, 1.0), vertical(1.0, 2.0), tol).unwrap();
+        assert_eq!(
+            touching.iter().collect::<Vec<_>>(),
+            vec![(1.0, 1.0, Order::Ish)]
+        );
+
+        let overlapping =
+            monotone_cubic_order(vertical(0.0, 1.0), vertical(0.5, 2.0), tol).unwrap();
+        assert!(overlapping.iter().all(|(_, _, order)| order == Order::Ish));
     }
 
     #[test]
