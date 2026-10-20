@@ -7,6 +7,7 @@
 #import "/src/path-util.typ"
 #import "/src/util.typ"
 #import "/src/bezier.typ"
+#import "/src/drawable.typ"
 
 #let default-style = (
   /// Number of segments
@@ -120,7 +121,25 @@
   return style
 }
 
+#let _path-drawables(drawables) = {
+  if type(drawables) == dictionary { drawables = (drawables,) }
+  // Marks and debug bounds decorate paths. They are not geometry.
+  drawable.filter-tagged(drawables, drawable.TAG.mark, drawable.TAG.debug)
+    .filter(d => type(d) == dictionary and d.at("type", default: none) == "path")
+}
+
 #let get-segments(ctx, target) = {
+  if type(target) == str {
+    assert(target in ctx.nodes,
+      message: "Unknown path element " + repr(target))
+    let drawables = ctx.nodes.at(target).at("drawables", default: ())
+    let paths = _path-drawables(drawables)
+    assert(paths.len() == 1,
+      message: "Expected " + repr(target) + " to contain exactly one path drawable")
+    let segments = paths.first().segments
+    return (segments: segments, close: path-util.first-subpath-closed(segments))
+  }
+
   if type(target) == array {
     assert.eq(target.len(), 1,
       message: "Expected a single element, got " + str(target.len()))
@@ -128,11 +147,11 @@
   }
 
   let (ctx, drawables, ..) = process.element(ctx, target)
-  if drawables == none or drawables == () {
-    return ()
-  }
+  assert(drawables != none and drawables != (), message: "Expected a path element")
 
-  let first = drawables.first()
+  let paths = _path-drawables(drawables)
+  assert(paths.len() == 1, message: "Expected a single path element")
+  let first = paths.first()
   let closed = path-util.first-subpath-closed(first.segments)
   return (segments: first.segments, close: closed)
 }

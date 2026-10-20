@@ -34,6 +34,8 @@
       "src/lib/decorations/path.typ",
       [Brace],
       "src/lib/decorations/brace.typ",
+      [Text Along Path],
+      "src/lib/decorations/text.typ",
     1,
     [Palette],
     "src/lib/palette.typ",

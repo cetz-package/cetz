@@ -1166,65 +1166,16 @@
   )
 }
 
-/// Positions Typst content in the canvas. Note that the content itself is not transformed only its position is.
-///
-/// ```example
-/// content((0,0), [Hello World!])
-/// ```
-/// To put text on a line you can let the function calculate the angle between its position and a second coordinate by passing it to `angle`:
-///
-/// ```example
-/// line((0, 0), (3, 1), name: "line")
-/// content(
-///   ("line.start", 50%, "line.end"),
-///   angle: "line.end",
-///   padding: .1,
-///   anchor: "south",
-///   [Text on a line]
-/// )
-/// ```
-///
-/// ```example
-/// // Place content in a rect between two coordinates
-/// content(
-///   (0, 0),
-///   (2, 2),
-///   box(
-///     par(justify: false)[This is a long text.],
-///     stroke: 1pt,
-///     width: 100%,
-///     height: 100%,
-///     inset: 1em
-///   )
-/// )
-/// ```
-///
-/// - ..args-style (coordinate, content, style): When one coordinate is given as a positional argument, the content will be placed at that position. When two coordinates are given as positional arguments, the content will be placed inside a rectangle between the two positions. All named arguments are styling and any additional positional arguments will panic.
-/// - angle (angle,coordinate): Rotates the content by the given angle. A coordinate can be given to rotate the content by the angle between it and the first coordinate given in `args`. This effectively points the right hand side of the content towards the coordinate. This currently exists because Typst's rotate function does not change the width and height of content.
-/// - anchor (none, str):
-/// - name (none, str):
-///
-/// == Styling
-/// *Root*: `content`
-/// - padding (number, dictionary) = 0: Sets the spacing around content. Can be a single number to set padding on all sides or a dictionary to specify each side specifically. The dictionary follows Typst's `pad` function: https://typst.app/docs/reference/layout/pad/
-/// - frame (str, none) = none: Sets the frame style. Can be {{none}}, `"rect"` or `"circle"` and inherits the `stroke` and `fill` style.
-/// - auto-scale (bool): If `true`, apply current canvas scaling to the content. Defaults to `false`.
-/// - wrap (function, none) = none: A function to apply the content body to. Must return content. Example: `text.with(red)` to wrap every content element in a `text(red, <body>)` element.
-///
-/// == Anchors
-/// Supports border anchors, the default anchor is set to *center*.
-/// / mid: Content center, from baseline to top bounds
-/// / mid-east: Content center extended to the east
-/// / mid-west: Content center extended to the west
-/// / base: Horizontally centered baseline of the content
-/// / base-east: Baseline height extended to the east
-/// / base-west: Baseline height extended to the west
-/// / text: Position at the content start on the baseline of the content
-#let content(
+// Private implementation backing `content` with hidden fast-path
+// parameters for text-along reuse. Use `content` for normal calls.
+#let _content(
     ..args-style,
     angle: 0deg,
     anchor: none,
     name: none,
+    _metrics: none,
+    _resolved-style: none,
+    _resolved-padding: none,
   ) = {
   let (args, style) = (args-style.pos(), args-style.named())
 
@@ -1238,10 +1189,14 @@
   }
 
   return (ctx => {
-    let style = styles.resolve(ctx.style, merge: style, root: "content")
-    let padding = util.map-dict(util.as-padding-dict(style.padding), (_, v) => {
-      util.resolve-number(ctx, v)
-    })
+    let style = if _resolved-style == none {
+      styles.resolve(ctx.style, merge: style, root: "content")
+    } else { _resolved-style }
+    let padding = if _resolved-padding == none {
+      util.map-dict(util.as-padding-dict(style.padding), (_, v) => {
+        util.resolve-number(ctx, v)
+      })
+    } else { _resolved-padding }
 
     let body = if "wrap" in style and type(style.wrap) == function {
       (style.wrap)(body)
@@ -1273,13 +1228,18 @@
       body = std.scale(x: sx * 100%, y: sy * 100%, body, reflow: true)
     }
 
-    let equation-metrics = if is-equation {
+    // Reuse precomputed metrics from text-along when provided.
+    // Otherwise equations need a probe because Typst's text edge
+    // measurements do not expose their baseline correctly.
+    let equation-metrics = if _metrics == none and is-equation {
       _measure-equation(ctx, body)
     }
 
     // Compute the baseline offset. Equations need a probe because Typst's text
     // edge measurements do not expose their baseline correctly.
-    let baseline-offset = if equation-metrics != none {
+    let baseline-offset = if _metrics != none {
+      _metrics.bounds - _metrics.baseline
+    } else if equation-metrics != none {
       equation-metrics.descent
     } else {
       let (_, line-baseline-height) = util.measure(ctx, text(top-edge: "cap-height", bottom-edge: "baseline",
@@ -1297,7 +1257,9 @@
 
     // Size of the bounding box
     let (content-width, content-height, ..) = if auto-size {
-      if equation-metrics != none {
+      if _metrics != none {
+        (_metrics.width, _metrics.baseline)
+      } else if equation-metrics != none {
         (equation-metrics.width, equation-metrics.ascent)
       } else {
         util.measure(ctx, layout-body)
@@ -1489,6 +1451,64 @@
       )
     )
   },)
+}
+
+/// Positions Typst content in the canvas. Note that the content itself is not transformed only its position is.
+///
+/// ```example
+/// content((0,0), [Hello World!])
+/// ```
+/// To put text on a line you can let the function calculate the angle between its position and a second coordinate by passing it to `angle`:
+///
+/// ```example
+/// line((0, 0), (3, 1), name: "line")
+/// content(
+///   ("line.start", 50%, "line.end"),
+///   angle: "line.end",
+///   padding: .1,
+///   anchor: "south",
+///   [Text on a line]
+/// )
+/// ```
+///
+/// ```example
+/// // Place content in a rect between two coordinates
+/// content(
+///   (0, 0),
+///   (2, 2),
+///   box(
+///     par(justify: false)[This is a long text.],
+///     stroke: 1pt,
+///     width: 100%,
+///     height: 100%,
+///     inset: 1em
+///   )
+/// )
+/// ```
+///
+/// - ..args-style (coordinate, content, style): When one coordinate is given as a positional argument, the content will be placed at that position. When two coordinates are given as positional arguments, the content will be placed inside a rectangle between the two positions. All named arguments are styling and any additional positional arguments will panic.
+/// - angle (angle,coordinate): Rotates the content by the given angle. A coordinate can be given to rotate the content by the angle between it and the first coordinate given in `args`. This effectively points the right hand side of the content towards the coordinate. This currently exists because Typst's rotate function does not change the width and height of content.
+/// - anchor (none, str):
+/// - name (none, str):
+///
+/// == Styling
+/// *Root*: `content`
+/// - padding (number, dictionary) = 0: Sets the spacing around content. Can be a single number to set padding on all sides or a dictionary to specify each side specifically. The dictionary follows Typst's `pad` function: https://typst.app/docs/reference/layout/pad/
+/// - frame (str, none) = none: Sets the frame style. Can be {{none}}, `"rect"` or `"circle"` and inherits the `stroke` and `fill` style.
+/// - auto-scale (bool): If `true`, apply current canvas scaling to the content. Defaults to `false`.
+/// - wrap (function, none) = none: A function to apply the content body to. Must return content. Example: `text.with(red)` to wrap every content element in a `text(red, <body>)` element.
+///
+/// == Anchors
+/// Supports border anchors, the default anchor is set to *center*.
+/// / mid: Content center, from baseline to top bounds
+/// / mid-east: Content center extended to the east
+/// / mid-west: Content center extended to the west
+/// / base: Horizontally centered baseline of the content
+/// / base-east: Baseline height extended to the east
+/// / base-west: Baseline height extended to the west
+/// / text: Position at the content start on the baseline of the content
+#let content(..args-style, angle: 0deg, anchor: none, name: none) = {
+  _content(..args-style, angle: angle, anchor: anchor, name: name)
 }
 
 /// Draws a rectangle between two coordinates.
