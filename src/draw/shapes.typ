@@ -2042,6 +2042,9 @@
 ///
 /// Elements hidden via [hide](../grouping/hide) are ignored.
 ///
+/// == Styling
+/// *Root*: `merge-path`
+///
 /// == Anchors
 /// / centroid: Centroid of the _closed and non self-intersecting_ shape. Only exists if `close` is true.
 ///   Supports path anchors and shapes where all vertices share the same z-value.
@@ -2106,7 +2109,7 @@
         })
       }
 
-      let style = styles.resolve(ctx.style, merge: style)
+      let style = styles.resolve(ctx.style, merge: style, root: "merge-path")
       let drawables = drawable.path(fill: style.fill, fill-rule: style.fill-rule, stroke: style.stroke, subpaths)
 
       let (transform, anchors) = anchor_.setup(
