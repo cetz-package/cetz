@@ -8,7 +8,34 @@
 /// - init (aabb): Initial aabb
 /// -> aabb
 #let aabb(pts, init: none) = {
-  return call_wasm(cetz-core.aabb_func, (pts: pts, init: init))
+  // Pure Typst implementation (equivalent to the wasm `aabb_func`),
+  // avoiding the CBOR encode/decode + plugin call overhead. Points are
+  // normalized to three dimensions (missing components are zero, extra
+  // components are ignored).
+  let (lx, ly, lz, hx, hy, hz) = if init != none {
+    let (low, high) = (init.low, init.high)
+    (float(low.at(0, default: 0.0)), float(low.at(1, default: 0.0)), float(low.at(2, default: 0.0)),
+     float(high.at(0, default: 0.0)), float(high.at(1, default: 0.0)), float(high.at(2, default: 0.0)))
+  } else {
+    if pts.len() == 0 {
+      panic("Cannot compute AABB: Point list is empty and no initial bounds were provided.")
+    }
+    let p = pts.first()
+    let (x, y, z) = (float(p.at(0, default: 0.0)), float(p.at(1, default: 0.0)), float(p.at(2, default: 0.0)))
+    (x, y, z, x, y, z)
+  }
+  for pt in pts {
+    let x = float(pt.at(0, default: 0.0))
+    let y = float(pt.at(1, default: 0.0))
+    let z = float(pt.at(2, default: 0.0))
+    if x < lx { lx = x }
+    if hx < x { hx = x }
+    if y < ly { ly = y }
+    if hy < y { hy = y }
+    if z < lz { lz = z }
+    if hz < z { hz = z }
+  }
+  return (low: (lx, ly, lz), high: (hx, hy, hz))
 }
 
 #let merge(a, b) = {
