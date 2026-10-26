@@ -388,7 +388,21 @@
   }
 
   let result = ()
+  let has-resolver = resolver.len() > 0
   for c in coordinates.pos() {
+    // Fast path: plain numeric (x, y) / (x, y, z) arrays.
+    if not has-resolver and type(c) == array and c.len() in (2, 3) {
+      let types = c.map(type)
+      if types.all(t => t == float or t == int) {
+        c = (float(c.at(0)), float(c.at(1)), float(c.at(2, default: 0)))
+        if update {
+          ctx.prev.pt = c
+        }
+        result.push(c)
+        continue
+      }
+    }
+
     for resolve-fn in resolver.rev() {
       c = resolve-fn(ctx, c)
     }
