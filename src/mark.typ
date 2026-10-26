@@ -11,8 +11,11 @@
 /// - style (style): The current style.
 /// -> bool
 #let check-mark(style) = {
-  style != none and ("start", "end", "symbol").any(key =>
-    style.at(key, default: none) != none)
+  if style == none { return false }
+  for key in ("start", "end", "symbol") {
+    if style.at(key, default: none) != none { return true }
+  }
+  return false
 }
 
 /// Processes the mark styling.
