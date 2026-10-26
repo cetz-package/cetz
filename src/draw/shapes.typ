@@ -534,6 +534,191 @@
   },)
 }
 
+// Find the intersection between line a-b next to b
+// if no intersection could be found, return a.
+#let _line-element-intersection(ctx, elem, a, b) = {
+  // Vectors a and b are not transformed yet, but the vectors of the
+  // drawable are.
+  let (ta, tb) = util.apply-transform(ctx.transform, a, b)
+
+  let pts = ()
+  for d in elem.at("drawables", default: ()).filter(d => d.type == "path") {
+    pts += intersection.line-path(ta, tb, d)
+  }
+  return if pts == () {
+    a
+  } else {
+    // Find the nearest point
+    let pt = util.sort-points-by-distance(tb, pts).first()
+
+    // Reverse the transformation
+    return util.revert-transform(ctx.transform, pt)
+  }
+}
+
+// Set up the anchors of a line (see `_line-impl`).
+#let _line-setup-anchors(pts, drawables, close, name, transform) = {
+  let pt-anchors = for (i, pt) in pts.enumerate() {
+    (("pt-" + str(i)): pt)
+  }
+
+  anchor_.setup(
+    name => {
+      if name == "centroid" {
+        return polygon_.simple-centroid(pts)
+      } else if name.starts-with("pt-") {
+        return pt-anchors.at(name)
+      }
+    },
+    if close != none { ("centroid", ..pt-anchors.keys()) } else { pt-anchors.keys() },
+    default: if close != none { "centroid" },
+    name: name,
+    transform: transform,
+    path-anchors: true,
+    path: drawables
+  )
+}
+
+#let _line-lazy-anchors(pts, drawables, close, name, transform, ..args) = {
+  _line-setup-anchors(pts, drawables, close, name, transform).at(1)(..args)
+}
+
+#let _ident4 = matrix.ident(4)
+
+#let _line-impl(pts, style, close, name, ctx) = {
+  let has-resolver = type(ctx.resolve-coordinate) == array and ctx.resolve-coordinate.len() > 0
+  let style = styles.resolve(ctx.style, merge: style, root: "line")
+
+  // Inlined `mark_.check-mark(style.mark)` and check for plain numeric
+  // coordinates (which can not refer to elements).
+  let mark = style.mark
+  let fast = not has-resolver and (mark == none or (
+    mark.at("start", default: none) == none and
+    mark.at("end", default: none) == none and
+    mark.at("symbol", default: none) == none))
+  if fast {
+    for c in pts {
+      if type(c) != array or c.len() < 2 or c.len() > 3 {
+        fast = false
+        break
+      }
+      for v in c {
+        let t = type(v)
+        if t != float and t != int {
+          fast = false
+          break
+        }
+      }
+    }
+  }
+
+  // Fast path: Equivalent to the general path below, but avoids most
+  // function calls. Loops are used instead of closures (e.g. `map`), as
+  // closure calls are comparatively expensive.
+  if fast {
+    // Resolve coordinates (equivalent to `coordinate.resolve`).
+    let resolved = ()
+    for (x, y, ..z) in pts {
+      resolved.push((float(x), float(y), float(z.at(0, default: 0))))
+    }
+    let pts = resolved
+    ctx.prev.pt = pts.last()
+
+    // Build the normalized path (equivalent to `drawable.path`).
+    let origin = pts.first()
+    let raw = ()
+    for pt in pts.slice(1) {
+      raw.push(("l", pt))
+    }
+    if close and origin != pts.last() {
+      raw.push(("l", origin))
+    }
+    // Filter out zero-length lines (see `path-util.normalize`).
+    let segments = ()
+    let prev = origin
+    for seg in raw {
+      if seg.at(1) != prev {
+        segments.push(seg)
+      }
+      prev = seg.at(1)
+    }
+    let path = (
+      type: "path",
+      segments: ((origin, close, segments),),
+      fill: style.fill,
+      fill-rule: style.fill-rule,
+      stroke: style.stroke,
+      tags: (),
+    )
+
+    let transform = ctx.transform
+    let (transform, anchors) = if name != none {
+      _line-setup-anchors(pts, path, close, name, transform)
+    } else {
+      // Anchors are only queried if the element is named; compute them lazily.
+      (if transform == none { matrix.ident(4) } else { transform },
+       _line-lazy-anchors.with(pts, path, close, name, transform))
+    }
+
+    return (
+      ctx: ctx,
+      name: name,
+      anchors: anchors,
+      // Equivalent to `drawable.apply-transform(transform, path)`, but skips
+      // the call for the (common) identity transform.
+      drawables: if transform == none or transform == _ident4 {
+        (path,)
+      } else {
+        drawable.apply-transform(transform, path)
+      },
+    )
+  }
+
+  let first-elem = pts.first()
+  let first-is-elem = type(first-elem) == str and not first-elem.contains(".")
+
+  let last-elem = pts.last()
+  let last-is-elem = type(last-elem) == str and not last-elem.contains(".")
+
+  let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
+
+  // If the first/last element, test for intersection
+  // of that element and a line from the two first/last coordinates of this
+  // line strip.
+  if first-is-elem {
+    let elem = ctx.nodes.at(first-elem)
+    pts.first() = _line-element-intersection(ctx, elem, ..pts.slice(0, 2))
+  }
+  if last-is-elem {
+    let elem = ctx.nodes.at(last-elem)
+    pts.last() = _line-element-intersection(ctx, elem, ..pts.slice(-2).rev())
+  }
+
+  let drawables = drawable.path(
+    (path-util.make-subpath(pts.first(), pts.slice(1).map(pt => ("l", pt)), closed: close),),
+    fill: style.fill,
+    fill-rule: style.fill-rule,
+    stroke: style.stroke,
+  )
+
+  // Get bounds
+  let (transform, anchors) = _line-setup-anchors(pts, drawables, close, name, ctx.transform)
+
+  // Place marks and adjust segments
+  if mark_.check-mark(style.mark) {
+    drawables = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
+  } else {
+    drawables = drawable.apply-transform(transform, drawables)
+  }
+
+  return (
+    ctx: ctx,
+    name: name,
+    anchors: anchors,
+    drawables: drawables,
+  )
+}
+
 /// Draws a line, more than two points can be given to create a line-strip.
 ///
 /// ```example
@@ -581,93 +766,7 @@
 
   assert(pts.len() >= 2, message: "Line must have a minimum of two points")
 
-  // Find the intersection between line a-b next to b
-  // if no intersection could be found, return a.
-  let element-line-intersection(ctx, elem, a, b) = {
-    // Vectors a and b are not transformed yet, but the vectors of the
-    // drawable are.
-    let (ta, tb) = util.apply-transform(ctx.transform, a, b)
-
-    let pts = ()
-    for d in elem.at("drawables", default: ()).filter(d => d.type == "path") {
-      pts += intersection.line-path(ta, tb, d)
-    }
-    return if pts == () {
-      a
-    } else {
-      // Find the nearest point
-      let pt = util.sort-points-by-distance(tb, pts).first()
-
-      // Reverse the transformation
-      return util.revert-transform(ctx.transform, pt)
-    }
-  }
-
-  return (ctx => {
-    let first-elem = pts.first()
-    let first-is-elem = type(first-elem) == str and not first-elem.contains(".")
-
-    let last-elem = pts.last()
-    let last-is-elem = type(last-elem) == str and not last-elem.contains(".")
-
-    let (ctx, ..pts) = coordinate.resolve(ctx, ..pts)
-
-    // If the first/last element, test for intersection
-    // of that element and a line from the two first/last coordinates of this
-    // line strip.
-    if first-is-elem {
-      let elem = ctx.nodes.at(first-elem)
-      pts.first() = element-line-intersection(ctx, elem, ..pts.slice(0, 2))
-    }
-    if last-is-elem {
-      let elem = ctx.nodes.at(last-elem)
-      pts.last() = element-line-intersection(ctx, elem, ..pts.slice(-2).rev())
-    }
-
-    let style = styles.resolve(ctx.style, merge: style, root: "line")
-
-    let drawables = drawable.path(
-      (path-util.make-subpath(pts.first(), pts.slice(1).map(pt => ("l", pt)), closed: close),),
-      fill: style.fill,
-      fill-rule: style.fill-rule,
-      stroke: style.stroke,
-    )
-
-    let pt-anchors = for (i, pt) in pts.enumerate() {
-      (("pt-" + str(i)): pt)
-    }
-
-    // Get bounds
-    let (transform, anchors) = anchor_.setup(
-      name => {
-        if name == "centroid" {
-          return polygon_.simple-centroid(pts)
-        } else if name.starts-with("pt-") {
-          return pt-anchors.at(name)
-        }
-      },
-      if close != none { ("centroid", ..pt-anchors.keys()) } else { pt-anchors.keys() },
-      default: if close != none { "centroid" },
-      name: name,
-      transform: ctx.transform,
-      path-anchors: true,
-      path: drawables
-    )
-
-    // Place marks and adjust segments
-    if mark_.check-mark(style.mark) {
-      drawables = mark_.place-marks-along-path(ctx, style.mark, transform, drawables)
-    } else {
-      drawables = drawable.apply-transform(transform, drawables)
-    }
-
-    return (
-      ctx: ctx,
-      name: name,
-      anchors: anchors,
-      drawables: drawables,
-    )
-  },)
+  return (_line-impl.with(pts, style, close, name),)
 }
 
 /// Draws a regular polygon.
