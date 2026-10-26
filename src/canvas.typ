@@ -72,6 +72,124 @@
   )
 }
 
+// Filters hidden drawables and orders the drawables by z-index. Also
+// collects the bodies of content drawables. Separate function so that the
+// result is cached across canvas re-evaluations.
+#let _prepare-drawables(drawables) = {
+  let has-tags = false
+  let has-z-index = false
+  for d in drawables {
+    if d.at("tags", default: ()) != () { has-tags = true }
+    if "z-index" in d { has-z-index = true }
+  }
+  if has-tags {
+    drawables = drawable.filter-tagged(drawables, drawable.TAG.hidden)
+  }
+
+  // Order draw commands by z-index (sorting is stable, so it is a no-op
+  // if no drawable has a z-index set)
+  if has-z-index {
+    drawables = drawables.sorted(key: (cmd) => {
+      return cmd.at("z-index", default: 0)
+    })
+  }
+
+  let bodies = ()
+  for d in drawables {
+    if d.type == "content" { bodies.push(d.body) }
+  }
+  (drawables, bodies)
+}
+
+// Renders a list of drawables to content. This function does not depend on
+// the context; content sizes must be passed via `sizes` (one entry per
+// content drawable, in order).
+#let _render-drawables(drawables, bounds, offset-x, offset-y, length, sizes) = {
+  let content-index = 0
+  for drawable in drawables {
+    if drawable.type == "path" {
+      // Typst path elements have strange bounding boxes. We need to
+      // offset all paths to start at (0, 0) to make gradients work.
+      //
+      // Single pass: check for straight lines only and compute the
+      // min x / max y (equivalent to `aabb.aabb(path-util.bounds(...))`
+      // in that case).
+      let only-lines = true
+      let (lx, hy, ..) = drawable.segments.first().first()
+      for (origin, _, segments) in drawable.segments {
+        let (x, y, ..) = origin
+        if x < lx { lx = x }
+        if hy < y { hy = y }
+        for seg in segments {
+          if seg.first() != "l" { only-lines = false; break }
+          for pt in seg.slice(1) {
+            let (x, y, ..) = pt
+            if x < lx { lx = x }
+            if hy < y { hy = y }
+          }
+        }
+        if not only-lines { break }
+      }
+      let (low-x, high-y) = if only-lines {
+        (float(lx), float(hy))
+      } else {
+        let path-bounds = aabb.aabb(path-util.bounds(drawable.segments))
+        (path-bounds.low.at(0), path-bounds.high.at(1))
+      }
+      let segment-x = low-x - bounds.low.at(0)
+      let segment-y = bounds.high.at(1) - high-y
+
+      let vertices = ()
+      for (origin, closed, segments) in drawable.segments {
+        let (x, y, ..) = origin
+        vertices.push(curve.move((( x - offset-x - segment-x) * length,
+                                  (-y - offset-y - segment-y) * length)))
+
+        for seg in segments {
+          let kind = seg.first()
+          if kind == "l" {
+            for pt in seg.slice(1) {
+              let (x, y, ..) = pt
+              vertices.push(curve.line((( x - offset-x - segment-x) * length,
+                                        (-y - offset-y - segment-y) * length)))
+            }
+          } else if kind == "c" {
+            vertices.push(curve.cubic(..seg.slice(1).map(((x, y, ..)) => (
+              ( x - offset-x - segment-x) * length,
+              (-y - offset-y - segment-y) * length))))
+          } else {
+            panic(kind, seg.slice(1))
+          }
+        }
+
+        if closed {
+          vertices.push(curve.close(mode: "straight"))
+        }
+      }
+
+      if type(drawable.stroke) == dictionary and "thickness" in drawable.stroke and type(drawable.stroke.thickness) != std.length {
+        drawable.stroke.thickness *= length
+      }
+      place(top + left, float: false, std.curve(
+        stroke: drawable.stroke,
+        fill: drawable.fill,
+        fill-rule: drawable.at("fill-rule", default: "non-zero"),
+        ..vertices,
+      ), dx: segment-x * length, dy: segment-y * length)
+    } else if drawable.type == "content" {
+      let (width, height) = sizes.at(content-index)
+      content-index += 1
+      place(top + left, float: false, move(
+        dx: ( drawable.pos.at(0) - offset-x) * length - width / 2,
+        dy: (-drawable.pos.at(1) - offset-y) * length - height / 2,
+        drawable.body,
+      ), dx: 0 * length, dy: 0 * length)
+    } else {
+      place(top + left, float: false, none, dx: 0 * length, dy: 0 * length)
+    }
+  }
+}
+
 /// Sets up a canvas for drawing on.
 ///
 /// - length (length): Used to specify what 1 coordinate unit is. Note that ratios are no longer supported! You can wrap the canvas into a `layout(ly => canvas(length: ly.width * <ratio>, ...))`.
@@ -102,13 +220,9 @@
     return []
   }
 
-  // Filter hidden drawables
-  drawables = drawable.filter-tagged(drawables, drawable.TAG.hidden)
-
-  // Order draw commands by z-index
-  drawables = drawables.sorted(key: (cmd) => {
-    return cmd.at("z-index", default: 0)
-  })
+  // Filter hidden drawables and order by z-index.
+  let bodies
+  (drawables, bodies) = _prepare-drawables(drawables)
 
   // Apply padding
   let padding = util.map-dict(util.as-padding-dict(padding), (_, v) => {
@@ -144,64 +258,15 @@
     container-fn = box.with(baseline: -baseline-offset)
   }
 
-  (container-fn)(width: width, height: height, stroke: stroke, fill: background, align(top, {
-    for drawable in drawables {
-      // Typst path elements have strange bounding boxes. We need to
-      // offset all paths to start at (0, 0) to make gradients work.
-      let (segment-x, segment-y, _) = if drawable.type == "path" {
-        let path-bounds = aabb.aabb(path-util.bounds(drawable.segments))
-        (path-bounds.low.at(0) - bounds.low.at(0),
-         bounds.high.at(1) - path-bounds.high.at(1),
-         0)
-      } else {
-        (0, 0, 0)
-      }
+  // Measure content drawables here (this depends on the context), so that
+  // the rendering of all drawables can be done by a context-independent
+  // (and thus well cacheable) function.
+  let sizes = ()
+  for body in bodies {
+    let (width, height) = std.measure(body)
+    sizes.push((width, height))
+  }
 
-      place(top + left, float: false, if drawable.type == "path" {
-        let vertices = ()
-
-        let transform-point((x, y, ..)) = {
-          (( x - offset-x - segment-x) * length,
-           (-y - offset-y - segment-y) * length)
-        }
-
-        for ((origin, closed, segments)) in drawable.segments {
-          vertices.push(curve.move(transform-point(origin)))
-
-          for ((kind, ..args)) in segments {
-            if kind == "l" {
-              for pt in args {
-                vertices.push(curve.line(transform-point(pt)))
-              }
-            } else if kind == "c" {
-              vertices.push(curve.cubic(..args.map(transform-point)))
-            } else {
-              panic(kind, args)
-            }
-          }
-
-          if closed {
-            vertices.push(curve.close(mode: "straight"))
-          }
-        }
-
-        if type(drawable.stroke) == dictionary and "thickness" in drawable.stroke and type(drawable.stroke.thickness) != std.length {
-          drawable.stroke.thickness *= length
-        }
-        std.curve(
-          stroke: drawable.stroke,
-          fill: drawable.fill,
-          fill-rule: drawable.at("fill-rule", default: "non-zero"),
-          ..vertices,
-        )
-      } else if drawable.type == "content" {
-        let (width, height) = std.measure(drawable.body)
-        move(
-          dx: ( drawable.pos.at(0) - offset-x) * length - width / 2,
-          dy: (-drawable.pos.at(1) - offset-y) * length - height / 2,
-          drawable.body,
-        )
-      }, dx: segment-x * length, dy: segment-y * length)
-    }
-  }))
+  (container-fn)(width: width, height: height, stroke: stroke, fill: background,
+    align(top, _render-drawables(drawables, bounds, offset-x, offset-y, length, sizes)))
 }
