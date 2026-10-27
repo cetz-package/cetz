@@ -27,34 +27,39 @@
     return drawables
   }
 
+  // Bind the transformation function once (equivalent to calling
+  // `util.apply-transform` for each vector).
+  let t = if type(transform) != function {
+    matrix.mul4x4-vec3.with(transform)
+  } else {
+    transform
+  }
+
   for drawable in drawables {
     if type(drawable) != dictionary {
       panic("Expected drawable, got: ", drawable)
     }
 
     if "segments" in drawable {
-      drawable.segments = drawable.segments.map(((origin, closed, segments)) => {
-        origin = util.apply-transform(transform, origin)
+      let new-segments = ()
+      for (origin, closed, segments) in drawable.segments {
+        origin = t(origin)
         if segments != () {
           if type(segments.first()) != array {
             panic("Segments must be an array, got: ", segments)
           }
-          segments = segments.map(((kind, ..args)) => {
-            if args.len() == 1 {
-              (kind, util.apply-transform(transform, ..args))
-            } else if args.len() > 1 {
-              (kind, ..util.apply-transform(transform, ..args))
-            } else {
-              (kind,)
-            }
-          })
+          let transformed = ()
+          for (kind, ..args) in segments {
+            transformed.push((kind, ..args.map(t)))
+          }
+          segments = transformed
         }
-
-        return (origin, closed, segments)
-      })
+        new-segments.push((origin, closed, segments))
+      }
+      drawable.segments = new-segments
     }
     if drawable.type == "content" {
-      drawable.pos = util.apply-transform(transform, drawable.pos)
+      drawable.pos = t(drawable.pos)
     }
     (drawable,)
   }
@@ -85,11 +90,23 @@
 /// -> drawable A single drawable
 /// -> array An array of type:drawable
 #let filter-tagged(drawables, ..tags) = {
+  let tags = tags.pos()
   if type(drawables) == array {
-    return drawables.map(d => filter-tagged(d, ..tags)).filter(d => d != none)
+    if drawables.any(d => type(d) == array) {
+      return drawables.map(d => filter-tagged(d, ..tags)).filter(d => d != none)
+    }
+    // Loop instead of closures (cheaper).
+    let out = ()
+    for d in drawables {
+      let keep = true
+      for t in d.at("tags", default: ()) {
+        if t in tags { keep = false; break }
+      }
+      if keep { out.push(d) }
+    }
+    return out
   }
 
-  let tags = tags.pos()
   if drawables.at("tags", default: ()).any(t => t in tags) {
     return none
   }
