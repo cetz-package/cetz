@@ -79,7 +79,7 @@ For information, see the [API Reference (PDF)](./manual.pdf?raw=true) or the [on
 To use this package, simply add the following code to your document:
 
 ```typ
-#import "@preview/cetz:0.5.3"
+#import "@preview/cetz:0.5.4"
 
 #cetz.canvas({
   import cetz.draw: *
@@ -91,6 +91,25 @@ To use this package, simply add the following code to your document:
 
 - [cetz-plot - Plotting and Charts Library](https://github.com/cetz-package/cetz-plot)
 - [cetz-venn - Simple two- or three-set Venn diagrams](https://github.com/cetz-package/cetz-venn)
+
+## Projects using CeTZ
+
+- [finite](https://github.com/jneug/typst-finite) Finite is a Typst package for rendering finite automata.
+- [fletcher](https://github.com/Jollywatt/typst-fletcher) Package for drawing commutative diagrams and figures with arrows.
+- [chronos](https://git.kb28.ch/HEL/chronos) Package for drawing sequence diagrams.
+- [circuiteria](https://git.kb28.ch/HEL/circuiteria) Package for drawing circuits.
+- [zap](https://codeberg.org/grangelouis/zap) Package for drawing standard electronic circuits.
+- [bone](https://codeberg.org/grangelouis/bone)  Package to draw structural analysis and kinematic diagrams
+- [rivet](https://git.kb28.ch/HEL/rivet-typst) Package for drawing instruction / register diagrams.
+- [plotsy-3d](https://github.com/misskacie/plotsy-3d) Package for rendering 3D objects & plots.
+- [alchemist](https://github.com/Typsium/alchemist) A package to render skeletal formulae using a human-readable format using cetz.
+- [deckz](https://github.com/micheledusi/Deckz) Render Poker-Style playing cards.
+- [neural-netz](https://github.com/edgaremy/neural-netz) Visualize neural network architectures.
+- [energy-dia](https://github.com/Typsium/energy-dia) Library for creating professional energy diagrams in chemistry and physics.
+- [conchord](https://github.com/sitandr/conchord) Package for writing lyrics with chords that generates fretboard diagrams.
+- [gribouille](https://github.com/mcanouil/gribouille) Create elegant graphics with the Grammar of Graphics for Typst.
+- [magic-cubes](https://github.com/rodalc24/magic-cubes) Package for drawing Rubik's cubes of arbitrary size.
+- [VisualCeTZ](https://github.com/RomeoV/VisualCeTZ) An adoption of [VisualTikZ](https://ctan.org/pkg/visualtikz) to cetz.
 
 ## Installing
 
@@ -127,7 +146,7 @@ just install
 The installed version can be imported by prefixing the package name with `@local`.
 
 ```typ
-#import "@local/cetz:0.5.3"
+#import "@local/cetz:0.5.4"
 
 #cetz.canvas({
   import cetz.draw: *
@@ -147,22 +166,3 @@ To install `just` on your system, use your systems package manager. On Windows, 
 This package comes with some unit tests under the `tests` directory.
 To run all tests you can run the `just test` target. You need to have
 [`tytanic`](https://github.com/tingerrr/tytanic/) in your `PATH`: `cargo install tytanic`.
-
-## Projects using CeTZ
-
-- [finite](https://github.com/jneug/typst-finite) Finite is a Typst package for rendering finite automata.
-- [fletcher](https://github.com/Jollywatt/typst-fletcher) Package for drawing commutative diagrams and figures with arrows.
-- [chronos](https://git.kb28.ch/HEL/chronos) Package for drawing sequence diagrams.
-- [circuiteria](https://git.kb28.ch/HEL/circuiteria) Package for drawing circuits.
-- [zap](https://codeberg.org/grangelouis/zap) Package for drawing standard electronic circuits.
-- [bone](https://codeberg.org/grangelouis/bone)  Package to draw structural analysis and kinematic diagrams
-- [rivet](https://git.kb28.ch/HEL/rivet-typst) Package for drawing instruction / register diagrams.
-- [plotsy-3d](https://github.com/misskacie/plotsy-3d) Package for rendering 3D objects & plots.
-- [alchemist](https://github.com/Typsium/alchemist) A package to render skeletal formulae using a human-readable format using cetz.
-- [deckz](https://github.com/micheledusi/Deckz) Render Poker-Style playing cards.
-- [neural-netz](https://github.com/edgaremy/neural-netz) Visualize neural network architectures.
-- [energy-dia](https://github.com/Typsium/energy-dia) Library for creating professional energy diagrams in chemistry and physics.
-- [conchord](https://github.com/sitandr/conchord) Package for writing lyrics with chords that generates fretboard diagrams.
-- [gribouille](https://github.com/mcanouil/gribouille) Create elegant graphics with the Grammar of Graphics for Typst.
-- [magic-cubes](https://github.com/rodalc24/magic-cubes) Package for drawing Rubik's cubes of arbitrary size.
-- [VisualCeTZ](https://github.com/RomeoV/VisualCeTZ) An adoption of [VisualTikZ](https://ctan.org/pkg/visualtikz) to cetz.
