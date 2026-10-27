@@ -70,6 +70,12 @@
     fill-rule: auto,
     stroke: auto,
   ),
+  merge-path: (
+    mark: auto,
+    fill: auto,
+    fill-rule: auto,
+    stroke: auto,
+  ),
   bezier: (
     stroke: auto,
     fill: auto,

@@ -1,0 +1,40 @@
+#!/bin/bash
+#
+# Bump CeTZ version strings
+
+OLD_VER="${1:?Missing old version}"
+NEW_VER="${2:?Missing new version}"
+
+FILES=(
+  typst.toml
+  README.md
+  manual.typ
+  gallery/tree.typ
+  gallery/torus.typ
+  gallery/waves.typ
+  gallery/paciolis.typ
+  gallery/karls-picture.typ
+  gallery/periodic-table.typ
+  gallery/plate-capacitor.typ
+  docs/getting-started.mdx
+  docs/tutorials/karl.mdx
+  docs/genhtml.py
+)
+
+echo "Patching Files:"
+echo "  - src/version.typ"
+sed -i -e "s/${OLD_VER//./,}/${NEW_VER//./,}/" "src/version.typ"
+
+for f in "${FILES[@]}"
+do
+  echo "  - $f"
+  sed -i -e "s/$OLD_VER/$NEW_VER/g" "$f"
+done
+
+echo "Greping for $OLD_VER..."
+grep -FR "$OLD_VER" \
+  --include=\*.typ \
+  --include=\*.md\* \
+  --include=\*.toml \
+  --include=\*.yml \
+  --include=\*.py .

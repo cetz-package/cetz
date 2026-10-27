@@ -1,3 +1,6 @@
+# 0.5.4
+- `merge-path` now honors its own style root: `merge-path`
+
 # 0.5.3
 - Fixed mark `inset:` style getting applied twice (#1099)
 - Fixes `matrix.diag` function typo
