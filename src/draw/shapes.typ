@@ -817,10 +817,11 @@
 
       (inner-point, outer-point)
     })
+    let points = point-pairs.join()
 
     let drawables = {
       let main_shape = drawable.line-strip(
-        point-pairs.flatten().chunks(3),
+        points,
         close: true,
         fill: style.fill,
         stroke: style.stroke,

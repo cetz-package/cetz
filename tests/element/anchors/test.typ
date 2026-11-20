@@ -109,3 +109,8 @@
   import draw: *
   display(catmull, (-2,0), (-1,-1), (0,1), (1,-1), (2,0))
 }))
+
+#box(stroke: 2pt + red, canvas(length: 1cm, {
+  import draw: *
+  display(n-star, (0,0), 5, radius: 3)
+}))
